@@ -1,28 +1,24 @@
-# Используем официальный образ Node.js LTS
+# TimeWeb Cloud обычно использует свою инфраструктуру
+# Этот Dockerfile для локальной разработки
+
 FROM node:18-alpine
 
-# Создаем рабочую директорию
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
+# Копируем package.json
 COPY package*.json ./
 
 # Устанавливаем зависимости
-RUN npm ci --only=production --no-audit
+RUN npm ci --only=production
 
 # Копируем исходный код
 COPY . .
 
-# Создаем временные директории с правильными правами
-RUN mkdir -p /tmp/exports /tmp/logs /tmp/uploads && \
-    chmod -R 777 /tmp/exports /tmp/logs /tmp/uploads
+# Создаем необходимые директории
+RUN mkdir -p uploads public
 
 # Открываем порт
 EXPOSE 3000
 
-# Проверка здоровья
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
-
-# Команда запуска
+# Запуск
 CMD ["npm", "start"]
