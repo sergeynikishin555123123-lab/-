@@ -5,7 +5,7 @@ WORKDIR /app
 # Копируем package.json
 COPY package*.json ./
 
-# Устанавливаем зависимости и чиним уязвимости
+# Устанавливаем зависимости с фиксом безопасности
 RUN npm ci --only=production --no-audit && \
     npm audit fix --force || true
 
@@ -13,16 +13,13 @@ RUN npm ci --only=production --no-audit && \
 COPY . .
 
 # Создаем директории
-RUN mkdir -p logs
+RUN mkdir -p logs uploads exports public
 
 # Открываем порт
 EXPOSE 3000
 
-# Пользователь для безопасности
-USER node
-
 # Health check для TimeWeb
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
 # Запуск
