@@ -2,625 +2,488 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const winston = require('winston');
-const compression = require('compression');
-const rateLimit = require('express-rate-limit');
+const TelegramBot = require('node-telegram-bot-api');
 const path = require('path');
 const fs = require('fs');
-const http = require('http');
-const socketIo = require('socket.io');
 
 // Загрузка переменных окружения
 dotenv.config();
 
-// ==================== НАСТРОЙКА ЛОГГЕРА ====================
-const logger = winston.createLogger({
-    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-    format: winston.format.combine(
-        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        winston.format.errors({ stack: true }),
-        winston.format.json()
-    ),
-    defaultMeta: { service: 'concierge-app' },
-    transports: [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.printf(({ timestamp, level, message, ...meta }) => {
-                    return `${timestamp} ${level}: ${message} ${Object.keys(meta).length ? JSON.stringify(meta) : ''}`;
-                })
-            )
-        }),
-        new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'logs/combined.log' })
-    ]
-});
-
-// ==================== ПРОВЕРКА ПЕРЕМЕННЫХ ОКРУЖЕНИЯ ====================
-const requiredEnvVars = ['PORT', 'JWT_SECRET', 'MONGODB_URI'];
-const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
-
-if (missingEnvVars.length > 0) {
-    logger.error(`❌ Отсутствуют обязательные переменные окружения: ${missingEnvVars.join(', ')}`);
-    if (!process.env.JWT_SECRET) {
-        const crypto = require('crypto');
-        process.env.JWT_SECRET = crypto.randomBytes(64).toString('hex');
-        logger.warn(`⚠️  JWT_SECRET сгенерирован автоматически`);
-    }
-    if (!process.env.MONGODB_URI) {
-        process.env.MONGODB_URI = 'mongodb://localhost:27017/concierge_db';
-        logger.warn(`⚠️  MONGODB_URI установлен по умолчанию: ${process.env.MONGODB_URI}`);
-    }
+// Автогенерация JWT_SECRET если нет
+if (!process.env.JWT_SECRET) {
+    console.log('⚠️  JWT_SECRET не указан, генерируем...');
+    process.env.JWT_SECRET = require('crypto').randomBytes(32).toString('hex');
+    console.log('✅ JWT_SECRET сгенерирован');
 }
 
-// ==================== СОЗДАНИЕ ПРИЛОЖЕНИЯ ====================
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
-    cors: {
-        origin: process.env.FRONTEND_URL || '*',
-        credentials: true
+
+// Минимальные middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Создаем директории если их нет (в /tmp для доступа)
+const tempDirs = ['/tmp/logs', '/tmp/uploads', '/tmp/exports'];
+tempDirs.forEach(dir => {
+    try {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+            console.log(`✅ Директория создана: ${dir}`);
+        }
+    } catch (err) {
+        console.log(`⚠️  Не удалось создать ${dir}: ${err.message}`);
     }
 });
 
-// ==================== MIDDLEWARE ====================
-app.use(helmet({
-    contentSecurityPolicy: false,
-}));
-
-app.use(cors({
-    origin: process.env.FRONTEND_URL ? 
-        (Array.isArray(process.env.FRONTEND_URL) ? process.env.FRONTEND_URL : [process.env.FRONTEND_URL]) 
-        : '*',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
-
-app.use(compression());
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-
-// Rate limiting
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 1000,
-    message: { success: false, error: 'Слишком много запросов' }
-});
-
-app.use('/api/', apiLimiter);
-
-// ==================== СОЗДАНИЕ ДИРЕКТОРИЙ ====================
-['uploads', 'public', 'logs', 'exports'].forEach(dir => {
-    const dirPath = path.join(__dirname, dir);
-    if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-        logger.info(`Создана директория: ${dir}`);
-    }
-});
-
-// ==================== ПОДКЛЮЧЕНИЕ К MONGODB ====================
+// ==================== MONGODB ====================
 const connectDB = async () => {
     try {
-        logger.info(`Подключение к MongoDB...`);
+        const mongoURI = process.env.MONGODB_URI || 'mongodb://mongodb:27017/concierge_db';
+        console.log(`🔗 Подключение к MongoDB: ${mongoURI}`);
         
-        await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 10000,
-            socketTimeoutMS: 45000,
-            maxPoolSize: 100,
-            minPoolSize: 10,
-            retryWrites: true,
-            w: 'majority'
+        await mongoose.connect(mongoURI, {
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 30000,
         });
         
-        logger.info('✅ MongoDB подключена успешно');
+        console.log('✅ MongoDB подключена успешно');
         
-        // Создаем индексы
-        await mongoose.connection.db.collection('users').createIndex({ email: 1 }, { unique: true });
-        await mongoose.connection.db.collection('users').createIndex({ telegramId: 1 }, { sparse: true });
-        await mongoose.connection.db.collection('tasks').createIndex({ taskNumber: 1 }, { unique: true });
-        await mongoose.connection.db.collection('tasks').createIndex({ client: 1, createdAt: -1 });
-        await mongoose.connection.db.collection('tasks').createIndex({ performer: 1, createdAt: -1 });
+        // Создаем модели
+        await createModels();
         
         return true;
-        
     } catch (error) {
-        logger.error('❌ Ошибка подключения к MongoDB:', error.message);
-        
-        if (process.env.NODE_ENV === 'production') {
-            // В продакшене пытаемся переподключиться
-            setTimeout(connectDB, 5000);
-            return false;
-        } else {
-            throw error;
-        }
+        console.error('❌ Ошибка MongoDB:', error.message);
+        console.log('ℹ️  Продолжаем без базы данных');
+        return false;
     }
 };
 
-// ==================== МОДЕЛИ БАЗЫ ДАННЫХ ====================
-// User Model
-const userSchema = new mongoose.Schema({
-    email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true, select: false },
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    phone: String,
-    role: { type: String, enum: ['client', 'performer', 'admin', 'superadmin'], default: 'client' },
-    telegramId: { type: String, unique: true, sparse: true },
-    subscription: {
-        plan: { type: String, enum: ['free', 'basic', 'premium', 'vip'], default: 'free' },
-        status: { type: String, enum: ['active', 'expired', 'cancelled'], default: 'expired' },
-        startDate: Date,
-        endDate: Date,
-        autoRenew: { type: Boolean, default: true }
-    },
-    avatar: { type: String, default: 'default-avatar.png' },
-    rating: { type: Number, default: 0, min: 0, max: 5 },
-    completedTasks: { type: Number, default: 0 },
-    isActive: { type: Boolean, default: true },
-    lastLogin: Date,
-    preferences: {
-        notifications: {
-            email: { type: Boolean, default: true },
-            telegram: { type: Boolean, default: false },
-            push: { type: Boolean, default: true }
+// ==================== МОДЕЛИ ====================
+const createModels = () => {
+    // User Model
+    const userSchema = new mongoose.Schema({
+        email: { type: String, required: true, unique: true },
+        password: { type: String, required: true },
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        phone: String,
+        role: { type: String, enum: ['client', 'performer', 'admin', 'superadmin'], default: 'client' },
+        telegramId: { type: String, unique: true, sparse: true },
+        avatar: String,
+        rating: { type: Number, default: 0 },
+        isActive: { type: Boolean, default: true },
+        createdAt: { type: Date, default: Date.now }
+    });
+
+    const User = mongoose.model('User', userSchema);
+
+    // Task Model
+    const taskSchema = new mongoose.Schema({
+        taskNumber: { type: String, unique: true },
+        title: { type: String, required: true },
+        description: { type: String, required: true },
+        client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        performer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        category: { 
+            type: String, 
+            enum: ['home', 'family', 'beauty', 'courses', 'pets', 'other'],
+            required: true 
         },
-        language: { type: String, default: 'ru' }
-    }
-}, { timestamps: true });
+        status: {
+            type: String,
+            enum: ['new', 'assigned', 'in_progress', 'completed', 'cancelled'],
+            default: 'new'
+        },
+        deadline: { type: Date, required: true },
+        price: { type: Number, required: true },
+        location: {
+            address: String,
+            coordinates: { lat: Number, lng: Number }
+        },
+        rating: { type: Number, min: 1, max: 5 },
+        feedback: String,
+        createdAt: { type: Date, default: Date.now }
+    });
 
-userSchema.virtual('fullName').get(function() {
-    return `${this.firstName} ${this.lastName}`;
-});
-
-const User = mongoose.model('User', userSchema);
-
-// Task Model
-const taskSchema = new mongoose.Schema({
-    taskNumber: { type: String, unique: true, required: true },
-    title: { type: String, required: true, maxlength: 200 },
-    description: { type: String, required: true },
-    client: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    performer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    category: {
-        type: String,
-        enum: ['home', 'family', 'beauty', 'courses', 'pets', 'other'],
-        required: true
-    },
-    subcategory: String,
-    status: {
-        type: String,
-        enum: ['new', 'assigned', 'in_progress', 'completed', 'cancelled', 'reopened'],
-        default: 'new'
-    },
-    priority: { type: String, enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
-    deadline: { type: Date, required: true },
-    price: { type: Number, required: true, min: 0 },
-    paymentStatus: {
-        type: String,
-        enum: ['pending', 'paid', 'refunded', 'cancelled'],
-        default: 'pending'
-    },
-    location: {
-        address: String,
-        coordinates: { lat: Number, lng: Number }
-    },
-    attachments: [{
-        filename: String,
-        path: String,
-        mimetype: String,
-        size: Number,
-        uploadedAt: { type: Date, default: Date.now }
-    }],
-    rating: { type: Number, min: 1, max: 5 },
-    feedback: {
-        text: String,
-        createdAt: Date
-    },
-    cancellationReason: String,
-    cancellationNote: String,
-    history: [{
-        action: String,
-        status: String,
-        changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        timestamp: { type: Date, default: Date.now },
-        note: String
-    }],
-    isArchived: { type: Boolean, default: false }
-}, { timestamps: true });
-
-taskSchema.pre('save', async function(next) {
-    if (!this.taskNumber) {
-        const date = new Date();
-        const year = date.getFullYear().toString().slice(-2);
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        
-        const lastTask = await this.constructor.findOne(
-            { createdAt: { $gte: new Date().setHours(0,0,0,0) } },
-            { taskNumber: 1 },
-            { sort: { createdAt: -1 } }
-        );
-        
-        let sequence = 1;
-        if (lastTask && lastTask.taskNumber) {
-            const lastSeq = parseInt(lastTask.taskNumber.slice(-4));
-            if (!isNaN(lastSeq)) sequence = lastSeq + 1;
+    // Генерация номера задачи
+    taskSchema.pre('save', async function(next) {
+        if (!this.taskNumber) {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const random = Math.floor(1000 + Math.random() * 9000);
+            this.taskNumber = `TASK-${year}${month}${day}-${random}`;
         }
-        
-        this.taskNumber = `TASK-${year}${month}${day}-${sequence.toString().padStart(4, '0')}`;
-    }
-    
-    if (this.isModified('status')) {
-        if (!this.history) this.history = [];
-        this.history.push({
-            action: 'status_change',
-            status: this.status,
-            note: `Статус изменен на ${this.status}`
-        });
-    }
-    
-    next();
-});
+        next();
+    });
 
-const Task = mongoose.model('Task', taskSchema);
+    const Task = mongoose.model('Task', taskSchema);
 
-// Service Model
-const serviceSchema = new mongoose.Schema({
-    name: { type: String, required: true, maxlength: 100 },
-    description: { type: String, required: true },
-    category: {
-        type: String,
-        required: true,
-        enum: ['home_and_household', 'family_and_children', 'beauty_and_health', 
-               'courses_and_education', 'pets', 'events_and_entertainment', 'other']
-    },
-    subcategory: String,
-    icon: { type: String, default: 'default-icon.png' },
-    priceOptions: {
-        oneTime: { type: Number, required: true, min: 0 },
-        subscription: {
-            monthly: Number,
-            quarterly: Number,
-            yearly: Number
-        }
-    },
-    duration: { type: Number, required: true }, // в минутах
-    performers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    requirements: [String],
-    instructions: String,
-    isPopular: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: true },
-    order: { type: Number, default: 0 },
-    tags: [String],
-    statistics: {
-        totalOrders: { type: Number, default: 0 },
-        averageRating: { type: Number, default: 0 },
-        completionRate: { type: Number, default: 0 }
-    },
-    metadata: {
-        createdAt: { type: Date, default: Date.now },
-        updatedAt: { type: Date, default: Date.now },
-        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
-    }
-}, { timestamps: true });
+    // Service Model
+    const serviceSchema = new mongoose.Schema({
+        name: { type: String, required: true },
+        description: { type: String, required: true },
+        category: {
+            type: String,
+            required: true,
+            enum: ['home', 'family', 'beauty', 'courses', 'pets', 'events', 'other']
+        },
+        price: { type: Number, required: true },
+        duration: Number, // в минутах
+        isActive: { type: Boolean, default: true },
+        isPopular: { type: Boolean, default: false },
+        createdAt: { type: Date, default: Date.now }
+    });
 
-const Service = mongoose.model('Service', serviceSchema);
+    const Service = mongoose.model('Service', serviceSchema);
 
-// ==================== TELEGRAM BOT ====================
+    return { User, Task, Service };
+};
+
+let models = {};
 let telegramBot = null;
 
+// ==================== TELEGRAM BOT ====================
 const initializeTelegramBot = async () => {
     try {
         const token = process.env.BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN;
         
-        if (!token || token === 'your_telegram_bot_token_here') {
-            logger.warn('Telegram бот отключен: токен не указан');
-            return;
+        if (!token || token.includes('your_telegram_bot_token')) {
+            console.log('🤖 Telegram бот отключен (токен не указан)');
+            return null;
         }
 
-        const TelegramBot = require('node-telegram-bot-api');
+        console.log('🤖 Инициализация Telegram бота...');
         
+        // Используем polling
         telegramBot = new TelegramBot(token, {
             polling: {
                 interval: 300,
                 autoStart: true,
                 params: {
-                    timeout: 10,
-                    limit: 100
+                    timeout: 10
                 }
             }
         });
 
-        // Обработчики ошибок
+        // Обработка ошибок
         telegramBot.on('polling_error', (error) => {
-            logger.error('Ошибка polling Telegram бота:', error.message);
+            console.error('❌ Ошибка polling:', error.message);
         });
 
         telegramBot.on('error', (error) => {
-            logger.error('Ошибка Telegram бота:', error.message);
+            console.error('❌ Ошибка бота:', error.message);
         });
 
-        // Команды бота
+        // Команда /start
         telegramBot.onText(/\/start/, async (msg) => {
             const chatId = msg.chat.id;
             const username = msg.from.username || msg.from.first_name;
             
-            logger.info(`/start от ${username} (${chatId})`);
+            console.log(`🔄 /start от ${username} (${chatId})`);
             
             try {
-                // Проверяем, зарегистрирован ли пользователь
-                const user = await User.findOne({ telegramId: chatId.toString() });
-                
-                if (user) {
-                    await telegramBot.sendMessage(chatId,
-                        `👋 С возвращением, ${user.firstName}!\n\n` +
-                        `Ваш аккаунт уже привязан.\n` +
-                        `Роль: ${user.role}\n` +
-                        `Email: ${user.email}\n\n` +
-                        `Используйте /help для списка команд.`
-                    );
-                } else {
-                    await telegramBot.sendMessage(chatId,
-                        `👋 Привет, ${username}!\n\n` +
-                        `🎀 Добро пожаловать в *Женский Консьерж Сервис*!\n\n` +
-                        `Я помогу вам:\n` +
-                        `🏠 С домом и бытом\n` +
-                        `👨‍👩‍👧‍👦 С детьми и семьей\n` +
-                        `💅 С красотой и здоровьем\n` +
-                        `🎓 С обучением\n` +
-                        `🐶 С питомцами\n` +
-                        `🎉 И со многим другим!\n\n` +
-                        `Для начала:\n` +
-                        `1. Зарегистрируйтесь: /register\n` +
-                        `2. Посмотрите услуги: /services\n` +
-                        `3. Создайте первую задачу: /newtask\n\n` +
-                        `Всё просто и удобно!`,
-                        { parse_mode: 'Markdown' }
-                    );
+                if (models.User) {
+                    const user = await models.User.findOne({ telegramId: chatId.toString() });
+                    if (user) {
+                        await telegramBot.sendMessage(chatId,
+                            `👋 С возвращением, ${user.firstName}!\n\n` +
+                            `Роль: ${user.role}\n` +
+                            `Email: ${user.email}\n\n` +
+                            `Команды:\n` +
+                            `/help - Справка\n` +
+                            `/services - Услуги\n` +
+                            `/newtask - Новая задача\n` +
+                            `/mytasks - Мои задачи\n` +
+                            `/profile - Профиль`
+                        );
+                        return;
+                    }
                 }
+                
+                await telegramBot.sendMessage(chatId,
+                    `👋 Привет, ${username}!\n\n` +
+                    `🎀 Добро пожаловать в *Женский Консьерж Сервис*!\n\n` +
+                    `Я помогу вам:\n` +
+                    `🏠 С домом и бытом\n` +
+                    `👨‍👩‍👧‍👦 С детьми и семьей\n` +
+                    `💅 С красотой и здоровьем\n` +
+                    `🎓 С обучением\n` +
+                    `🐶 С питомцами\n` +
+                    `🎉 И со многим другим!\n\n` +
+                    `Для регистрации: /register\n` +
+                    `Для помощи: /help`,
+                    { parse_mode: 'Markdown' }
+                );
+                
             } catch (error) {
-                logger.error('Ошибка обработки /start:', error);
-                await telegramBot.sendMessage(chatId, 'Произошла ошибка. Попробуйте позже.');
+                console.error('Ошибка /start:', error);
+                await telegramBot.sendMessage(chatId, '❌ Ошибка. Попробуйте позже.');
             }
         });
 
+        // Команда /help
+        telegramBot.onText(/\/help/, (msg) => {
+            const chatId = msg.chat.id;
+            
+            telegramBot.sendMessage(chatId,
+                `*🤖 Команды бота:*\n\n` +
+                `/start - Начало работы\n` +
+                `/help - Эта справка\n` +
+                `/register - Регистрация\n` +
+                `/services - Наши услуги\n` +
+                `/newtask - Создать задачу\n` +
+                `/mytasks - Мои задачи\n` +
+                `/profile - Мой профиль\n` +
+                `/status - Статус системы\n` +
+                `/id - Мой ID\n\n` +
+                `🌐 Сайт: ${process.env.WEBAPP_URL || 'В разработке'}\n` +
+                `📞 Поддержка: @concierge_support`,
+                { parse_mode: 'Markdown' }
+            );
+        });
+
+        // Команда /register
         telegramBot.onText(/\/register/, async (msg) => {
             const chatId = msg.chat.id;
             const username = msg.from.username || msg.from.first_name;
             
-            try {
-                const existingUser = await User.findOne({ telegramId: chatId.toString() });
-                
-                if (existingUser) {
-                    await telegramBot.sendMessage(chatId,
-                        `✅ Вы уже зарегистрированы!\n\n` +
-                        `👤 ${existingUser.fullName}\n` +
-                        `📧 ${existingUser.email}\n` +
-                        `👑 ${existingUser.role}\n\n` +
-                        `Используйте /profile для профиля.`
-                    );
-                    return;
-                }
-                
-                await telegramBot.sendMessage(chatId,
-                    `📝 *Регистрация в сервисе*\n\n` +
-                    `Отправьте данные в формате:\n\n` +
-                    `*Имя Фамилия*\n` +
-                    `*Email*\n` +
-                    `*Телефон (необязательно)*\n\n` +
-                    `*Пример:*\n` +
-                    `Анна Иванова\n` +
-                    `anna@example.com\n` +
-                    `+79991234567`,
-                    { parse_mode: 'Markdown' }
-                );
-                
-                telegramBot.once('message', async (responseMsg) => {
-                    if (responseMsg.chat.id === chatId && !responseMsg.text.startsWith('/')) {
-                        try {
-                            const lines = responseMsg.text.split('\n').map(l => l.trim());
-                            if (lines.length >= 2) {
-                                const [fullName, email, phone] = lines;
-                                const [firstName, lastName] = fullName.split(' ');
-                                
-                                // Генерируем временный пароль
-                                const tempPassword = require('crypto').randomBytes(8).toString('hex');
-                                
-                                // Создаем пользователя
-                                const newUser = new User({
-                                    email,
-                                    firstName,
-                                    lastName,
-                                    phone: phone || '',
-                                    password: tempPassword,
-                                    telegramId: chatId.toString(),
-                                    role: 'client',
-                                    subscription: {
-                                        plan: 'free',
-                                        status: 'active',
-                                        startDate: new Date(),
-                                        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                                    }
-                                });
-                                
-                                await newUser.save();
-                                
-                                await telegramBot.sendMessage(chatId,
-                                    `🎉 *Регистрация успешна!*\n\n` +
-                                    `✅ Аккаунт создан\n\n` +
-                                    `*Данные:*\n` +
-                                    `👤 ${firstName} ${lastName}\n` +
-                                    `📧 ${email}\n` +
-                                    `📱 ${phone || 'Не указан'}\n\n` +
-                                    `*Временный пароль:*\n\`${tempPassword}\`\n\n` +
-                                    `⚠️ *Сохраните пароль!*\n` +
-                                    `🔗 Сайт: ${process.env.WEBAPP_URL || 'В разработке'}\n\n` +
-                                    `Теперь вы можете:\n` +
-                                    `• Создавать задачи\n` +
-                                    `• Выбирать исполнителей\n` +
-                                    `• Оставлять отзывы\n\n` +
-                                    `Начните с /services`,
-                                    { parse_mode: 'Markdown' }
-                                );
-                                
-                                logger.info(`Новый пользователь: ${email} (${chatId})`);
-                            }
-                        } catch (error) {
-                            await telegramBot.sendMessage(chatId,
-                                `❌ Ошибка: ${error.message}\n\n` +
-                                `Возможно email уже используется.`
-                            );
-                        }
-                    }
-                });
-                
-            } catch (error) {
-                logger.error('Ошибка регистрации:', error);
-                await telegramBot.sendMessage(chatId, '❌ Произошла ошибка. Попробуйте позже.');
+            if (!models.User) {
+                await telegramBot.sendMessage(chatId, '❌ База данных не доступна. Попробуйте позже.');
+                return;
             }
+            
+            const existingUser = await models.User.findOne({ telegramId: chatId.toString() });
+            if (existingUser) {
+                await telegramBot.sendMessage(chatId,
+                    `✅ Вы уже зарегистрированы!\n\n` +
+                    `👤 ${existingUser.firstName} ${existingUser.lastName}\n` +
+                    `📧 ${existingUser.email}\n` +
+                    `👑 ${existingUser.role}\n\n` +
+                    `Используйте /profile`
+                );
+                return;
+            }
+            
+            await telegramBot.sendMessage(chatId,
+                `📝 *Регистрация*\n\n` +
+                `Отправьте данные:\n\n` +
+                `Имя Фамилия\n` +
+                `Email\n` +
+                `Телефон (необязательно)\n\n` +
+                `*Пример:*\n` +
+                `Анна Иванова\n` +
+                `anna@example.com\n` +
+                `+79991234567`,
+                { parse_mode: 'Markdown' }
+            );
+            
+            telegramBot.once('message', async (responseMsg) => {
+                if (responseMsg.chat.id === chatId && !responseMsg.text.startsWith('/')) {
+                    try {
+                        const lines = responseMsg.text.split('\n').map(l => l.trim());
+                        if (lines.length >= 2) {
+                            const [fullName, email, phone] = lines;
+                            const [firstName, lastName] = fullName.split(' ');
+                            
+                            // Хешируем пароль
+                            const bcrypt = require('bcryptjs');
+                            const tempPassword = require('crypto').randomBytes(8).toString('hex');
+                            const hashedPassword = await bcrypt.hash(tempPassword, 10);
+                            
+                            const newUser = new models.User({
+                                email,
+                                firstName,
+                                lastName,
+                                phone: phone || '',
+                                password: hashedPassword,
+                                telegramId: chatId.toString(),
+                                role: 'client'
+                            });
+                            
+                            await newUser.save();
+                            
+                            await telegramBot.sendMessage(chatId,
+                                `🎉 *Регистрация успешна!*\n\n` +
+                                `👤 ${firstName} ${lastName}\n` +
+                                `📧 ${email}\n\n` +
+                                `*Пароль:* \`${tempPassword}\`\n\n` +
+                                `⚠️ Сохраните пароль!\n` +
+                                `🌐 Сайт: ${process.env.WEBAPP_URL || 'В разработке'}`,
+                                { parse_mode: 'Markdown' }
+                            );
+                            
+                            console.log(`✅ Новый пользователь: ${email}`);
+                        }
+                    } catch (error) {
+                        await telegramBot.sendMessage(chatId,
+                            `❌ Ошибка: ${error.message}`
+                        );
+                    }
+                }
+            });
         });
 
+        // Команда /services
         telegramBot.onText(/\/services/, async (msg) => {
             const chatId = msg.chat.id;
             
             try {
-                const services = await Service.find({ isActive: true }).limit(10);
+                let servicesText = `*🎀 Наши услуги:*\n\n`;
                 
-                if (services.length === 0) {
-                    await telegramBot.sendMessage(chatId, '📭 Услуги пока не добавлены.');
-                    return;
+                if (models.Service) {
+                    const services = await models.Service.find({ isActive: true }).limit(10);
+                    services.forEach((service, index) => {
+                        const icon = service.category === 'home' ? '🏠' :
+                                    service.category === 'family' ? '👨‍👩‍👧‍👦' :
+                                    service.category === 'beauty' ? '💅' :
+                                    service.category === 'courses' ? '🎓' :
+                                    service.category === 'pets' ? '🐶' : '📋';
+                        
+                        servicesText += `${index + 1}. ${icon} *${service.name}*\n`;
+                        servicesText += `   💰 ${service.price} руб.\n`;
+                        if (service.duration) {
+                            servicesText += `   ⏱ ${service.duration} мин.\n`;
+                        }
+                        servicesText += `\n`;
+                    });
+                } else {
+                    // Стандартные услуги если базы нет
+                    const defaultServices = [
+                        { name: 'Уборка квартиры', category: 'home', price: 3000, duration: 240 },
+                        { name: 'Няня на день', category: 'family', price: 2000, duration: 480 },
+                        { name: 'Маникюр', category: 'beauty', price: 1500, duration: 90 },
+                        { name: 'Репетитор', category: 'courses', price: 1000, duration: 60 },
+                        { name: 'Выгул собаки', category: 'pets', price: 500, duration: 60 }
+                    ];
+                    
+                    defaultServices.forEach((service, index) => {
+                        const icon = service.category === 'home' ? '🏠' :
+                                    service.category === 'family' ? '👨‍👩‍👧‍👦' :
+                                    service.category === 'beauty' ? '💅' :
+                                    service.category === 'courses' ? '🎓' : '🐶';
+                        
+                        servicesText += `${index + 1}. ${icon} *${service.name}*\n`;
+                        servicesText += `   💰 ${service.price} руб.\n`;
+                        servicesText += `   ⏱ ${service.duration} мин.\n\n`;
+                    });
                 }
                 
-                let message = `🎀 *Наши услуги:*\n\n`;
+                servicesText += `\nДля заказа: /newtask`;
                 
-                services.forEach((service, index) => {
-                    const icon = service.icon === 'default-icon.png' ? '📋' : service.icon;
-                    message += `${index + 1}. ${icon} *${service.name}*\n`;
-                    message += `   💰 ${service.priceOptions.oneTime} руб.\n`;
-                    message += `   ⏱ ${service.duration} мин.\n`;
-                    if (service.description) {
-                        message += `   📝 ${service.description.substring(0, 50)}...\n`;
-                    }
-                    message += `\n`;
-                });
-                
-                message += `\nДля заказа напишите /newtask`;
-                
-                await telegramBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+                await telegramBot.sendMessage(chatId, servicesText, { parse_mode: 'Markdown' });
                 
             } catch (error) {
-                logger.error('Ошибка получения услуг:', error);
-                await telegramBot.sendMessage(chatId, '❌ Не удалось получить список услуг.');
+                console.error('Ошибка услуг:', error);
+                await telegramBot.sendMessage(chatId, '❌ Ошибка получения услуг.');
             }
         });
 
+        // Команда /newtask
         telegramBot.onText(/\/newtask/, async (msg) => {
             const chatId = msg.chat.id;
             
-            try {
-                const user = await User.findOne({ telegramId: chatId.toString() });
-                
-                if (!user) {
-                    await telegramBot.sendMessage(chatId,
-                        `❌ Вы не зарегистрированы.\n\n` +
-                        `Используйте /register для регистрации.`
-                    );
-                    return;
-                }
-                
-                await telegramBot.sendMessage(chatId,
-                    `📝 *Создание новой задачи*\n\n` +
-                    `Отправьте данные в формате:\n\n` +
-                    `*Название задачи*\n` +
-                    `*Описание*\n` +
-                    `*Категория (home/family/beauty/courses/pets/other)*\n` +
-                    `*Цена в рублях*\n` +
-                    `*Срок выполнения (дд.мм.гггг)*\n\n` +
-                    `*Пример:*\n` +
-                    `Уборка квартиры\n` +
-                    `Нужно сделать генеральную уборку 3-х комнатной квартиры\n` +
-                    `home\n` +
-                    `3000\n` +
-                    `15.12.2024`,
-                    { parse_mode: 'Markdown' }
-                );
-                
-                telegramBot.once('message', async (responseMsg) => {
-                    if (responseMsg.chat.id === chatId && !responseMsg.text.startsWith('/')) {
-                        try {
-                            const lines = responseMsg.text.split('\n').map(l => l.trim());
-                            if (lines.length >= 5) {
-                                const [title, description, category, priceStr, deadlineStr] = lines;
-                                const price = parseFloat(priceStr);
-                                const deadline = new Date(deadlineStr.split('.').reverse().join('-'));
-                                
-                                if (isNaN(price) || price <= 0) {
-                                    await telegramBot.sendMessage(chatId, '❌ Неверная цена');
-                                    return;
-                                }
-                                
-                                if (isNaN(deadline.getTime())) {
-                                    await telegramBot.sendMessage(chatId, '❌ Неверная дата');
-                                    return;
-                                }
-                                
-                                // Создаем задачу
-                                const newTask = new Task({
-                                    title,
-                                    description,
-                                    category,
-                                    price,
-                                    deadline,
-                                    client: user._id,
-                                    status: 'new'
-                                });
-                                
-                                await newTask.save();
-                                
-                                await telegramBot.sendMessage(chatId,
-                                    `✅ *Задача создана!*\n\n` +
-                                    `*Номер:* ${newTask.taskNumber}\n` +
-                                    `*Название:* ${title}\n` +
-                                    `*Категория:* ${category}\n` +
-                                    `*Цена:* ${price} руб.\n` +
-                                    `*Срок:* ${deadline.toLocaleDateString('ru-RU')}\n\n` +
-                                    `Задача будет видна исполнителям.\n` +
-                                    `Вы можете отслеживать статус на сайте.`,
-                                    { parse_mode: 'Markdown' }
-                                );
-                                
-                                logger.info(`Новая задача создана: ${newTask.taskNumber} от ${user.email}`);
-                            }
-                        } catch (error) {
-                            await telegramBot.sendMessage(chatId,
-                                `❌ Ошибка: ${error.message}`
-                            );
-                        }
-                    }
-                });
-                
-            } catch (error) {
-                logger.error('Ошибка создания задачи:', error);
-                await telegramBot.sendMessage(chatId, '❌ Произошла ошибка. Попробуйте позже.');
+            if (!models.User || !models.Task) {
+                await telegramBot.sendMessage(chatId, '❌ Сервис временно недоступен.');
+                return;
             }
+            
+            const user = await models.User.findOne({ telegramId: chatId.toString() });
+            if (!user) {
+                await telegramBot.sendMessage(chatId, '❌ Вы не зарегистрированы. Используйте /register');
+                return;
+            }
+            
+            await telegramBot.sendMessage(chatId,
+                `📝 *Новая задача*\n\n` +
+                `Отправьте данные:\n\n` +
+                `Название задачи\n` +
+                `Описание\n` +
+                `Категория (home/family/beauty/courses/pets/other)\n` +
+                `Цена в рублях\n` +
+                `Срок (дд.мм.гггг)\n\n` +
+                `*Пример:*\n` +
+                `Уборка квартиры\n` +
+                `Нужна генеральная уборка 3-х комнатной квартиры\n` +
+                `home\n` +
+                `3000\n` +
+                `15.12.2024`,
+                { parse_mode: 'Markdown' }
+            );
+            
+            telegramBot.once('message', async (responseMsg) => {
+                if (responseMsg.chat.id === chatId && !responseMsg.text.startsWith('/')) {
+                    try {
+                        const lines = responseMsg.text.split('\n').map(l => l.trim());
+                        if (lines.length >= 5) {
+                            const [title, description, category, priceStr, deadlineStr] = lines;
+                            const price = parseFloat(priceStr);
+                            const deadline = new Date(deadlineStr.split('.').reverse().join('-'));
+                            
+                            if (isNaN(price) || price <= 0) {
+                                await telegramBot.sendMessage(chatId, '❌ Неверная цена');
+                                return;
+                            }
+                            
+                            if (isNaN(deadline.getTime())) {
+                                await telegramBot.sendMessage(chatId, '❌ Неверная дата');
+                                return;
+                            }
+                            
+                            const task = new models.Task({
+                                title,
+                                description,
+                                category,
+                                price,
+                                deadline,
+                                client: user._id,
+                                status: 'new'
+                            });
+                            
+                            await task.save();
+                            
+                            await telegramBot.sendMessage(chatId,
+                                `✅ *Задача создана!*\n\n` +
+                                `📋 ${task.taskNumber}\n` +
+                                `🎯 ${title}\n` +
+                                `🏷️ ${category}\n` +
+                                `💰 ${price} руб.\n` +
+                                `📅 ${deadline.toLocaleDateString('ru-RU')}\n\n` +
+                                `Задача будет видна исполнителям.`,
+                                { parse_mode: 'Markdown' }
+                            );
+                            
+                            console.log(`✅ Новая задача: ${task.taskNumber}`);
+                        }
+                    } catch (error) {
+                        await telegramBot.sendMessage(chatId,
+                            `❌ Ошибка: ${error.message}`
+                        );
+                    }
+                }
+            });
         });
 
+        // Команда /mytasks
         telegramBot.onText(/\/mytasks/, async (msg) => {
             const chatId = msg.chat.id;
             
+            if (!models.User || !models.Task) {
+                await telegramBot.sendMessage(chatId, '❌ Сервис временно недоступен.');
+                return;
+            }
+            
+            const user = await models.User.findOne({ telegramId: chatId.toString() });
+            if (!user) {
+                await telegramBot.sendMessage(chatId, '❌ Вы не зарегистрированы.');
+                return;
+            }
+            
             try {
-                const user = await User.findOne({ telegramId: chatId.toString() });
-                
-                if (!user) {
-                    await telegramBot.sendMessage(chatId, '❌ Вы не зарегистрированы.');
-                    return;
-                }
-                
-                const tasks = await Task.find({ client: user._id, isArchived: false })
+                const tasks = await models.Task.find({ client: user._id })
                     .sort({ createdAt: -1 })
                     .limit(5);
                 
@@ -629,156 +492,124 @@ const initializeTelegramBot = async () => {
                     return;
                 }
                 
-                let message = `📋 *Ваши задачи:*\n\n`;
+                let tasksText = `*📋 Ваши задачи:*\n\n`;
                 
                 tasks.forEach((task, index) => {
-                    const statusIcons = {
-                        'new': '🆕',
-                        'assigned': '👤',
-                        'in_progress': '⚙️',
-                        'completed': '✅',
-                        'cancelled': '❌',
-                        'reopened': '🔄'
-                    };
+                    const statusIcon = task.status === 'new' ? '🆕' :
+                                     task.status === 'assigned' ? '👤' :
+                                     task.status === 'in_progress' ? '⚙️' :
+                                     task.status === 'completed' ? '✅' : '❌';
                     
-                    message += `${index + 1}. ${statusIcons[task.status] || '📝'} *${task.title}*\n`;
-                    message += `   №: ${task.taskNumber}\n`;
-                    message += `   Статус: ${task.status}\n`;
-                    message += `   Цена: ${task.price} руб.\n`;
-                    message += `   Срок: ${new Date(task.deadline).toLocaleDateString('ru-RU')}\n\n`;
+                    tasksText += `${index + 1}. ${statusIcon} *${task.title}*\n`;
+                    tasksText += `   №: ${task.taskNumber}\n`;
+                    tasksText += `   Статус: ${task.status}\n`;
+                    tasksText += `   Цена: ${task.price} руб.\n`;
+                    tasksText += `   Срок: ${new Date(task.deadline).toLocaleDateString('ru-RU')}\n\n`;
                 });
                 
-                await telegramBot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+                await telegramBot.sendMessage(chatId, tasksText, { parse_mode: 'Markdown' });
                 
             } catch (error) {
-                logger.error('Ошибка получения задач:', error);
-                await telegramBot.sendMessage(chatId, '❌ Не удалось получить задачи.');
+                console.error('Ошибка задач:', error);
+                await telegramBot.sendMessage(chatId, '❌ Ошибка получения задач.');
             }
         });
 
+        // Команда /profile
         telegramBot.onText(/\/profile/, async (msg) => {
             const chatId = msg.chat.id;
             
+            if (!models.User) {
+                await telegramBot.sendMessage(chatId, '❌ Сервис временно недоступен.');
+                return;
+            }
+            
+            const user = await models.User.findOne({ telegramId: chatId.toString() });
+            if (!user) {
+                await telegramBot.sendMessage(chatId, '❌ Вы не зарегистрированы.');
+                return;
+            }
+            
             try {
-                const user = await User.findOne({ telegramId: chatId.toString() });
+                let tasksCount = 0;
+                let completedTasks = 0;
                 
-                if (!user) {
-                    await telegramBot.sendMessage(chatId, '❌ Вы не зарегистрированы.');
-                    return;
+                if (models.Task) {
+                    tasksCount = await models.Task.countDocuments({ client: user._id });
+                    completedTasks = await models.Task.countDocuments({ 
+                        client: user._id, 
+                        status: 'completed' 
+                    });
                 }
                 
-                // Статистика
-                const tasksCount = await Task.countDocuments({ client: user._id });
-                const completedTasks = await Task.countDocuments({ 
-                    client: user._id, 
-                    status: 'completed' 
-                });
-                
                 await telegramBot.sendMessage(chatId,
-                    `👤 *Ваш профиль*\n\n` +
-                    `*Имя:* ${user.firstName} ${user.lastName}\n` +
-                    `*Email:* ${user.email}\n` +
-                    `*Телефон:* ${user.phone || 'Не указан'}\n` +
-                    `*Роль:* ${user.role}\n` +
-                    `*Рейтинг:* ${user.rating || 'Нет оценок'}\n\n` +
+                    `*👤 Ваш профиль*\n\n` +
+                    `👤 ${user.firstName} ${user.lastName}\n` +
+                    `📧 ${user.email}\n` +
+                    `📱 ${user.phone || 'Не указан'}\n` +
+                    `👑 ${user.role}\n` +
+                    `⭐ ${user.rating || 'Нет оценок'}\n\n` +
                     `*Статистика:*\n` +
-                    `Всего задач: ${tasksCount}\n` +
-                    `Завершено: ${completedTasks}\n\n` +
-                    `*Подписка:* ${user.subscription.plan || 'Нет'}\n` +
-                    `Статус: ${user.subscription.status === 'active' ? '✅ Активна' : '❌ Неактивна'}`,
+                    `📋 Задач: ${tasksCount}\n` +
+                    `✅ Завершено: ${completedTasks}\n\n` +
+                    `Статус: ${user.isActive ? '✅ Активен' : '❌ Неактивен'}`,
                     { parse_mode: 'Markdown' }
                 );
                 
             } catch (error) {
-                logger.error('Ошибка получения профиля:', error);
-                await telegramBot.sendMessage(chatId, '❌ Не удалось получить профиль.');
+                console.error('Ошибка профиля:', error);
+                await telegramBot.sendMessage(chatId, '❌ Ошибка получения профиля.');
             }
         });
 
-        telegramBot.onText(/\/help/, (msg) => {
-            const chatId = msg.chat.id;
-            
-            telegramBot.sendMessage(chatId,
-                `🤖 *Помощь по боту*\n\n` +
-                `*Основные команды:*\n` +
-                `/start - Начало работы\n` +
-                `/help - Эта справка\n` +
-                `/register - Регистрация\n` +
-                `/profile - Ваш профиль\n` +
-                `/services - Услуги\n` +
-                `/newtask - Создать задачу\n` +
-                `/mytasks - Мои задачи\n` +
-                `/status - Статус системы\n` +
-                `/id - Ваш ID\n\n` +
-                `*Веб-сайт:*\n` +
-                `${process.env.WEBAPP_URL || 'В разработке'}\n\n` +
-                `*Версия:* ${process.env.APP_VERSION || '3.0.0'}`,
-                { parse_mode: 'Markdown' }
-            );
-        });
-
+        // Команда /status
         telegramBot.onText(/\/status/, (msg) => {
             const chatId = msg.chat.id;
-            
             const dbStatus = mongoose.connection.readyState === 1 ? '✅ Подключена' : '❌ Отключена';
             const botStatus = telegramBot ? '✅ Активен' : '❌ Неактивен';
             
             telegramBot.sendMessage(chatId,
-                `📊 *Статус системы*\n\n` +
-                `🤖 *Бот:* ${botStatus}\n` +
-                `🗄️ *База данных:* ${dbStatus}\n` +
-                `🕒 *Время:* ${new Date().toLocaleString('ru-RU')}\n` +
-                `⏱️ *Uptime:* ${Math.floor(process.uptime())} сек\n` +
-                `💾 *Память:* ${Math.round(process.memoryUsage().rss / 1024 / 1024)} MB\n` +
-                `🌐 *Режим:* ${process.env.NODE_ENV || 'development'}\n` +
-                `🔧 *Версия:* ${process.env.APP_VERSION || '3.0.0'}`,
+                `*📊 Статус системы*\n\n` +
+                `🤖 Бот: ${botStatus}\n` +
+                `🗄️ База данных: ${dbStatus}\n` +
+                `🕒 Время: ${new Date().toLocaleString('ru-RU')}\n` +
+                `⏱️ Uptime: ${Math.floor(process.uptime())} сек\n` +
+                `🌐 Режим: ${process.env.NODE_ENV || 'development'}\n` +
+                `🔧 Версия: 1.0.0`,
                 { parse_mode: 'Markdown' }
             );
         });
 
+        // Команда /id
         telegramBot.onText(/\/id/, (msg) => {
             const chatId = msg.chat.id;
             const user = msg.from;
             
             telegramBot.sendMessage(chatId,
-                `👤 *Ваши данные Telegram:*\n\n` +
-                `🆔 *User ID:* \`${user.id}\`\n` +
-                `💬 *Chat ID:* \`${chatId}\`\n` +
-                `👤 *Имя:* ${user.first_name}\n` +
-                `📛 *Фамилия:* ${user.last_name || '—'}\n` +
-                `👤 *Username:* ${user.username ? '@' + user.username : '—'}`,
+                `*👤 Ваши данные:*\n\n` +
+                `🆔 User ID: \`${user.id}\`\n` +
+                `💬 Chat ID: \`${chatId}\`\n` +
+                `👤 Имя: ${user.first_name}\n` +
+                `📛 Фамилия: ${user.last_name || '—'}\n` +
+                `👤 Username: ${user.username ? '@' + user.username : '—'}`,
                 { parse_mode: 'Markdown' }
             );
         });
 
-        // Ответ на обычные сообщения
+        // Обычные сообщения
         telegramBot.on('message', async (msg) => {
             if (msg.text && !msg.text.startsWith('/')) {
-                const chatId = msg.chat.id;
-                
-                // Проверяем, зарегистрирован ли пользователь
-                const user = await User.findOne({ telegramId: chatId.toString() });
-                
-                if (!user) {
-                    await telegramBot.sendMessage(chatId,
-                        `👋 Привет! Я вижу, вы написали: "${msg.text.substring(0, 50)}..."\n\n` +
-                        `Для работы с сервисом используйте /register для регистрации.\n` +
-                        `Или /help для списка команд.`
-                    );
-                } else {
-                    // Логируем сообщение от зарегистрированного пользователя
-                    logger.info(`Сообщение от ${user.email}: "${msg.text.substring(0, 100)}..."`);
-                }
+                console.log(`💬 Сообщение от ${msg.chat.id}: "${msg.text.substring(0, 50)}..."`);
             }
         });
 
         // Получаем информацию о боте
         const botInfo = await telegramBot.getMe();
         
-        logger.info(`✅ Telegram бот запущен: @${botInfo.username}`);
-        console.log(`✅ Telegram бот: @${botInfo.username}`);
+        console.log(`✅ Telegram бот запущен: @${botInfo.username}`);
+        console.log(`🔗 Ссылка: https://t.me/${botInfo.username}`);
         
-        // Отправляем уведомление администратору
+        // Уведомление администратору
         const adminId = process.env.SUPER_ADMIN_ID;
         if (adminId) {
             try {
@@ -786,45 +617,23 @@ const initializeTelegramBot = async () => {
                     `🚀 *Сервис запущен!*\n\n` +
                     `🤖 Бот: @${botInfo.username}\n` +
                     `🌐 URL: ${process.env.WEBAPP_URL || 'Не указан'}\n` +
-                    `🕒 Время: ${new Date().toLocaleString('ru-RU')}\n` +
-                    `🔧 Версия: ${process.env.APP_VERSION || '3.0.0'}\n` +
-                    `📊 База данных: ${mongoose.connection.readyState === 1 ? '✅' : '❌'}\n\n` +
+                    `🕒 ${new Date().toLocaleString('ru-RU')}\n` +
                     `✅ Все системы работают!`,
                     { parse_mode: 'Markdown' }
                 );
-                console.log(`📨 Уведомление отправлено администратору ${adminId}`);
+                console.log(`📨 Уведомление администратору ${adminId}`);
             } catch (error) {
-                console.warn('⚠️ Не удалось отправить уведомление администратору');
+                console.log('⚠️ Не удалось отправить уведомление администратору');
             }
         }
         
         return telegramBot;
         
     } catch (error) {
-        logger.error('Ошибка инициализации Telegram бота:', error.message);
         console.error('❌ Ошибка Telegram бота:', error.message);
         return null;
     }
 };
-
-// ==================== SOCKET.IO ====================
-io.on('connection', (socket) => {
-    logger.info(`Socket подключен: ${socket.id}`);
-    
-    socket.on('join', (userId) => {
-        socket.join(`user_${userId}`);
-        logger.info(`Socket ${socket.id} присоединился к комнате user_${userId}`);
-    });
-    
-    socket.on('task_update', (data) => {
-        // Рассылка обновлений задач
-        io.to(`user_${data.userId}`).emit('task_updated', data);
-    });
-    
-    socket.on('disconnect', () => {
-        logger.info(`Socket отключен: ${socket.id}`);
-    });
-});
 
 // ==================== API МАРШРУТЫ ====================
 
@@ -833,7 +642,7 @@ app.get('/health', (req, res) => {
     res.json({
         status: 'OK',
         service: 'concierge-app',
-        version: process.env.APP_VERSION || '3.0.0',
+        version: '1.0.0',
         timestamp: new Date().toISOString(),
         uptime: Math.floor(process.uptime()),
         environment: process.env.NODE_ENV || 'development',
@@ -841,8 +650,7 @@ app.get('/health', (req, res) => {
         checks: {
             server: 'running',
             telegram: telegramBot ? 'connected' : 'disconnected',
-            database: mongoose.connection?.readyState === 1 ? 'connected' : 'disconnected',
-            sockets: io.engine.clientsCount
+            database: mongoose.connection?.readyState === 1 ? 'connected' : 'disconnected'
         }
     });
 });
@@ -852,88 +660,51 @@ app.get('/', (req, res) => {
     res.json({
         message: '🎀 Женский Консьерж Сервис',
         description: 'Полноценная система управления задачами и услугами',
-        version: process.env.APP_VERSION || '3.0.0',
-        documentation: {
+        version: '1.0.0',
+        endpoints: {
             health: '/health',
             api: '/api/v1',
-            admin: '/admin',
             telegram: '/telegram-bot'
         },
-        statistics: {
-            users: 'User.count()',
-            tasks: 'Task.count()',
-            services: 'Service.count()'
-        },
-        features: [
-            'Полная система пользователей (4 роли)',
-            'Создание и управление задачами',
-            'Каталог услуг с категориями',
-            'Telegram бот интеграция',
-            'Real-time уведомления (Socket.IO)',
-            'Панель администратора',
-            'Экспорт данных в Excel',
-            'Система подписок и платежей',
-            'Рейтинги и отзывы',
-            'Мобильная оптимизация'
-        ]
+        telegram: {
+            bot: telegramBot ? 'active' : 'inactive',
+            commands: ['/start', '/help', '/register', '/services', '/newtask', '/mytasks', '/profile', '/status', '/id']
+        }
     });
 });
 
 // API v1
 app.get('/api/v1', async (req, res) => {
     try {
-        const usersCount = await User.countDocuments();
-        const tasksCount = await Task.countDocuments();
-        const servicesCount = await Service.countDocuments();
-        const activeTasks = await Task.countDocuments({ 
-            status: { $in: ['new', 'assigned', 'in_progress'] } 
-        });
+        let stats = {
+            users: 0,
+            tasks: 0,
+            services: 0
+        };
+        
+        if (models.User) stats.users = await models.User.countDocuments();
+        if (models.Task) stats.tasks = await models.Task.countDocuments();
+        if (models.Service) stats.services = await models.Service.countDocuments();
         
         res.json({
             success: true,
             api: 'v1',
-            version: process.env.APP_VERSION || '3.0.0',
-            statistics: {
-                users: usersCount,
-                tasks: tasksCount,
-                services: servicesCount,
-                active_tasks: activeTasks
-            },
+            version: '1.0.0',
+            statistics: stats,
             endpoints: {
                 auth: {
                     register: 'POST /api/v1/auth/register',
                     login: 'POST /api/v1/auth/login',
-                    profile: 'GET /api/v1/auth/profile',
-                    refresh: 'POST /api/v1/auth/refresh'
+                    profile: 'GET /api/v1/auth/profile'
                 },
                 tasks: {
                     list: 'GET /api/v1/tasks',
                     create: 'POST /api/v1/tasks',
-                    get: 'GET /api/v1/tasks/:id',
-                    update: 'PUT /api/v1/tasks/:id',
-                    delete: 'DELETE /api/v1/tasks/:id',
-                    assign: 'POST /api/v1/tasks/:id/assign',
-                    complete: 'POST /api/v1/tasks/:id/complete',
-                    cancel: 'POST /api/v1/tasks/:id/cancel',
-                    review: 'POST /api/v1/tasks/:id/review'
+                    get: 'GET /api/v1/tasks/:id'
                 },
                 services: {
                     list: 'GET /api/v1/services',
-                    get: 'GET /api/v1/services/:id',
-                    categories: 'GET /api/v1/services/categories',
-                    popular: 'GET /api/v1/services/popular'
-                },
-                users: {
-                    list: 'GET /api/v1/users',
-                    get: 'GET /api/v1/users/:id',
-                    update: 'PUT /api/v1/users/:id',
-                    stats: 'GET /api/v1/users/:id/stats'
-                },
-                admin: {
-                    stats: 'GET /api/v1/admin/stats',
-                    users: 'GET /api/v1/admin/users',
-                    tasks: 'GET /api/v1/admin/tasks',
-                    export: 'GET /api/v1/admin/export/:type'
+                    categories: 'GET /api/v1/services/categories'
                 }
             }
         });
@@ -945,15 +716,16 @@ app.get('/api/v1', async (req, res) => {
 // Регистрация пользователя
 app.post('/api/v1/auth/register', async (req, res) => {
     try {
-        const { email, password, firstName, lastName, phone, role } = req.body;
+        const { email, password, firstName, lastName, phone } = req.body;
         
-        // Проверяем, существует ли пользователь
-        const existingUser = await User.findOne({ email });
+        if (!models.User) {
+            return res.status(500).json({ error: 'База данных не доступна' });
+        }
+        
+        // Проверяем существование
+        const existingUser = await models.User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Пользователь с таким email уже существует' 
-            });
+            return res.status(400).json({ error: 'Email уже используется' });
         }
         
         // Хешируем пароль
@@ -961,38 +733,31 @@ app.post('/api/v1/auth/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         
         // Создаем пользователя
-        const user = new User({
+        const user = new models.User({
             email,
             password: hashedPassword,
             firstName,
             lastName,
-            phone,
-            role: role || 'client',
-            subscription: {
-                plan: 'free',
-                status: 'active',
-                startDate: new Date(),
-                endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            }
+            phone: phone || '',
+            role: 'client'
         });
         
         await user.save();
         
-        // Генерируем JWT токен
+        // JWT токен
         const jwt = require('jsonwebtoken');
         const token = jwt.sign(
             { id: user._id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRE || '7d' }
+            { expiresIn: '7d' }
         );
         
-        // Убираем пароль из ответа
         const userResponse = user.toObject();
         delete userResponse.password;
         
         res.status(201).json({
             success: true,
-            message: 'Пользователь успешно зарегистрирован',
+            message: 'Регистрация успешна',
             data: {
                 user: userResponse,
                 token
@@ -1000,11 +765,8 @@ app.post('/api/v1/auth/register', async (req, res) => {
         });
         
     } catch (error) {
-        logger.error('Ошибка регистрации:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при регистрации пользователя' 
-        });
+        console.error('Ошибка регистрации:', error);
+        res.status(500).json({ error: 'Ошибка регистрации' });
     }
 });
 
@@ -1013,52 +775,41 @@ app.post('/api/v1/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
-        // Находим пользователя
-        const user = await User.findOne({ email }).select('+password');
-        if (!user) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Неверный email или пароль' 
-            });
+        if (!models.User) {
+            return res.status(500).json({ error: 'База данных не доступна' });
         }
         
-        // Проверяем пароль
+        const user = await models.User.findOne({ email }).select('+password');
+        if (!user) {
+            return res.status(401).json({ error: 'Неверный email или пароль' });
+        }
+        
         const bcrypt = require('bcryptjs');
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Неверный email или пароль' 
-            });
+            return res.status(401).json({ error: 'Неверный email или пароль' });
         }
         
-        // Проверяем активность аккаунта
         if (!user.isActive) {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Аккаунт деактивирован' 
-            });
+            return res.status(403).json({ error: 'Аккаунт деактивирован' });
         }
         
-        // Обновляем последний вход
         user.lastLogin = new Date();
         await user.save();
         
-        // Генерируем JWT токен
         const jwt = require('jsonwebtoken');
         const token = jwt.sign(
             { id: user._id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: process.env.JWT_EXPIRE || '7d' }
+            { expiresIn: '7d' }
         );
         
-        // Убираем пароль из ответа
         const userResponse = user.toObject();
         delete userResponse.password;
         
         res.json({
             success: true,
-            message: 'Вход выполнен успешно',
+            message: 'Вход выполнен',
             data: {
                 user: userResponse,
                 token
@@ -1066,84 +817,34 @@ app.post('/api/v1/auth/login', async (req, res) => {
         });
         
     } catch (error) {
-        logger.error('Ошибка входа:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при входе в систему' 
-        });
-    }
-});
-
-// Получение профиля пользователя
-app.get('/api/v1/auth/profile', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Токен не предоставлен' 
-            });
-        }
-        
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        const user = await User.findById(decoded.id);
-        if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Пользователь не найден' 
-            });
-        }
-        
-        res.json({
-            success: true,
-            data: { user }
-        });
-        
-    } catch (error) {
-        logger.error('Ошибка получения профиля:', error);
-        res.status(401).json({ 
-            success: false, 
-            error: 'Неверный токен' 
-        });
+        console.error('Ошибка входа:', error);
+        res.status(500).json({ error: 'Ошибка входа' });
     }
 });
 
 // Список задач
 app.get('/api/v1/tasks', async (req, res) => {
     try {
-        const { 
-            status, 
-            category, 
-            page = 1, 
-            limit = 20,
-            sortBy = 'createdAt',
-            sortOrder = 'desc'
-        } = req.query;
+        const { status, category, page = 1, limit = 20 } = req.query;
         
-        // Строим фильтр
-        const filter = { isArchived: false };
+        if (!models.Task) {
+            return res.json({ success: true, tasks: [], total: 0 });
+        }
+        
+        const filter = {};
         if (status) filter.status = status;
         if (category) filter.category = category;
         
-        // Настройки сортировки
-        const sort = {};
-        sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
-        
-        // Пагинация
         const skip = (page - 1) * limit;
         
-        // Получаем задачи
-        const tasks = await Task.find(filter)
-            .populate('client', 'firstName lastName email avatar')
-            .populate('performer', 'firstName lastName email avatar rating')
-            .sort(sort)
+        const tasks = await models.Task.find(filter)
+            .populate('client', 'firstName lastName email')
+            .populate('performer', 'firstName lastName email')
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
         
-        // Общее количество
-        const total = await Task.countDocuments(filter);
+        const total = await models.Task.countDocuments(filter);
         
         res.json({
             success: true,
@@ -1159,63 +860,40 @@ app.get('/api/v1/tasks', async (req, res) => {
         });
         
     } catch (error) {
-        logger.error('Ошибка получения задач:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при получении задач' 
-        });
+        console.error('Ошибка задач:', error);
+        res.status(500).json({ error: 'Ошибка получения задач' });
     }
 });
 
 // Создание задачи
 app.post('/api/v1/tasks', async (req, res) => {
     try {
-        const { 
-            title, 
-            description, 
-            category, 
-            deadline, 
-            price,
-            priority,
-            location 
-        } = req.body;
+        const { title, description, category, deadline, price, location } = req.body;
         
-        // Получаем пользователя из токена
+        if (!models.Task) {
+            return res.status(500).json({ error: 'База данных не доступна' });
+        }
+        
+        // Проверяем токен
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Требуется авторизация' 
-            });
+            return res.status(401).json({ error: 'Требуется авторизация' });
         }
         
         const jwt = require('jsonwebtoken');
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        const user = await User.findById(decoded.id);
+        const user = await models.User.findById(decoded.id);
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Пользователь не найден' 
-            });
+            return res.status(404).json({ error: 'Пользователь не найден' });
         }
         
-        // Проверяем подписку пользователя
-        if (user.role === 'client' && user.subscription.status !== 'active') {
-            return res.status(403).json({ 
-                success: false, 
-                error: 'Для создания задач требуется активная подписка' 
-            });
-        }
-        
-        // Создаем задачу
-        const task = new Task({
+        const task = new models.Task({
             title,
             description,
             category,
             deadline: new Date(deadline),
             price: parseFloat(price),
-            priority: priority || 'medium',
             location,
             client: user._id,
             status: 'new'
@@ -1223,84 +901,43 @@ app.post('/api/v1/tasks', async (req, res) => {
         
         await task.save();
         
-        // Отправляем уведомление через Socket.IO
-        io.emit('task_created', {
-            taskId: task._id,
-            taskNumber: task.taskNumber,
-            title: task.title,
-            category: task.category,
-            price: task.price
-        });
-        
-        logger.info(`Создана новая задача: ${task.taskNumber} от ${user.email}`);
+        console.log(`✅ Задача создана: ${task.taskNumber}`);
         
         res.status(201).json({
             success: true,
-            message: 'Задача успешно создана',
+            message: 'Задача создана',
             data: { task }
         });
         
     } catch (error) {
-        logger.error('Ошибка создания задачи:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при создании задачи' 
-        });
+        console.error('Ошибка создания задачи:', error);
+        res.status(500).json({ error: 'Ошибка создания задачи' });
     }
 });
 
 // Список услуг
 app.get('/api/v1/services', async (req, res) => {
     try {
-        const { category, popular, page = 1, limit = 20 } = req.query;
+        const { category, popular } = req.query;
         
-        // Строим фильтр
-        const filter = { isActive: true };
-        if (category) filter.category = category;
-        if (popular === 'true') filter.isPopular = true;
+        let services = [];
         
-        // Пагинация
-        const skip = (page - 1) * limit;
-        
-        // Получаем услуги
-        const services = await Service.find(filter)
-            .populate('performers', 'firstName lastName avatar rating')
-            .sort({ order: 1, name: 1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-        
-        // Общее количество
-        const total = await Service.countDocuments(filter);
-        
-        // Группируем по категориям
-        const groupedServices = {};
-        services.forEach(service => {
-            if (!groupedServices[service.category]) {
-                groupedServices[service.category] = [];
-            }
-            groupedServices[service.category].push(service);
-        });
+        if (models.Service) {
+            const filter = { isActive: true };
+            if (category) filter.category = category;
+            if (popular === 'true') filter.isPopular = true;
+            
+            services = await models.Service.find(filter).sort({ createdAt: -1 });
+        }
         
         res.json({
             success: true,
-            data: {
-                services,
-                grouped: groupedServices,
-                pagination: {
-                    total,
-                    page: parseInt(page),
-                    pages: Math.ceil(total / limit),
-                    limit: parseInt(limit)
-                }
-            }
+            data: { services }
         });
         
     } catch (error) {
-        logger.error('Ошибка получения услуг:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при получении услуг' 
-        });
+        console.error('Ошибка услуг:', error);
+        res.status(500).json({ error: 'Ошибка получения услуг' });
     }
 });
 
