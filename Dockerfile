@@ -1,6 +1,3 @@
-# TimeWeb Cloud обычно использует свою инфраструктуру
-# Этот Dockerfile для локальной разработки
-
 FROM node:18-alpine
 
 WORKDIR /app
@@ -15,7 +12,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Создаем необходимые директории
-RUN mkdir -p uploads public
+RUN mkdir -p uploads public logs exports
 
 # Открываем порт
 EXPOSE 3000
