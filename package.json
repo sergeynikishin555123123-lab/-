@@ -8,9 +8,9 @@
     "dev": "nodemon server.js",
     "build": "npm ci --only=production --no-audit",
     "audit:fix": "npm audit fix --force",
-    "clean": "rm -rf node_modules package-lock.json database.sqlite",
+    "clean": "rm -rf node_modules package-lock.json concierge.db",
     "reset": "npm run clean && npm install",
-    "reset-db": "rm -f database.sqlite && npm start",
+    "reset-db": "rm -f concierge.db && npm start",
     "test": "echo \"Тесты будут добавлены позже\" && exit 0"
   },
   "keywords": [
