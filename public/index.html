@@ -3,41 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Консьерж-сервис | Помощь в бытовых задачах</title>
+    <title>🎀 Консьерж-сервис | Персональный помощник</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #7c3aed;
-            --primary-light: #8b5cf6;
-            --primary-dark: #6d28d9;
-            --secondary-color: #10b981;
-            --accent-color: #f59e0b;
-            --light-bg: #f8fafc;
-            --white: #ffffff;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
+            --pink-primary: #FF6B8B;
+            --pink-light: #FFB6C1;
+            --pink-dark: #D81B60;
+            --pink-gradient: linear-gradient(135deg, #FF6B8B 0%, #FFB6C1 100%);
+            --pink-gradient-dark: linear-gradient(135deg, #D81B60 0%, #FF6B8B 100%);
+            --purple-light: #8B5CF6;
+            --purple-dark: #7C3AED;
+            --accent-gold: #F59E0B;
+            --light-bg: #FFF5F7;
+            --white: #FFFFFF;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
             --gray-700: #374151;
-            --gray-800: #1f2937;
+            --gray-800: #1F2937;
             --gray-900: #111827;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-            --radius-sm: 0.375rem;
-            --radius: 0.5rem;
-            --radius-lg: 0.75rem;
-            --radius-xl: 1rem;
-            --transition: all 0.2s ease;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --info: #3B82F6;
+            --shadow-sm: 0 1px 3px rgba(255, 107, 139, 0.12);
+            --shadow: 0 4px 6px -1px rgba(255, 107, 139, 0.1);
+            --shadow-md: 0 10px 15px -3px rgba(255, 107, 139, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(255, 107, 139, 0.15);
+            --radius-sm: 12px;
+            --radius: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -63,10 +66,10 @@
         
         /* Шапка */
         header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: var(--pink-gradient);
             color: white;
             border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-            padding: 40px 20px;
+            padding: 60px 20px 40px;
             margin-bottom: 40px;
             text-align: center;
             box-shadow: var(--shadow-lg);
@@ -77,178 +80,340 @@
         header::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: float 20s linear infinite;
-        }
-        
-        @keyframes float {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.1;
         }
         
         .logo {
             font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            margin-bottom: 12px;
+            font-size: 3rem;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            background: white;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pink-primary);
+            box-shadow: var(--shadow-lg);
         }
         
         .tagline {
-            font-size: 1.125rem;
-            opacity: 0.9;
+            font-size: 1.25rem;
+            opacity: 0.95;
             max-width: 600px;
             margin: 0 auto 32px;
             font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
         
         /* Баннер для неавторизованных */
         .guest-banner {
             background: rgba(255, 255, 255, 0.95);
             border-radius: var(--radius-lg);
-            padding: 32px;
-            margin-bottom: 32px;
+            padding: 40px;
+            margin: 0 auto 40px;
             text-align: center;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
             backdrop-filter: blur(10px);
-            border: 1px solid var(--gray-200);
+            border: 1px solid rgba(255, 182, 193, 0.3);
+            max-width: 800px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .guest-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--pink-gradient);
+            opacity: 0.05;
+            z-index: 0;
+        }
+        
+        .guest-banner > * {
+            position: relative;
+            z-index: 1;
         }
         
         /* Статистика */
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
             margin: 40px 0;
         }
         
         .stat-card {
             background: white;
-            padding: 24px;
+            padding: 32px 24px;
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow);
             text-align: center;
             transition: var(--transition);
-            border: 1px solid var(--gray-200);
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
+            position: relative;
+            overflow: hidden;
         }
         
         .stat-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px);
             box-shadow: var(--shadow-lg);
-            border-color: var(--primary-light);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--pink-gradient);
         }
         
         .stat-number {
-            font-size: 2.25rem;
-            font-weight: 700;
-            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: var(--pink-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 8px;
         }
         
         .stat-label {
             color: var(--gray-600);
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Уведомления */
-        .notification-bell {
+        /* Профиль пользователя */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
             position: relative;
-            cursor: pointer;
+            overflow: hidden;
         }
         
-        .notification-count {
+        .user-profile::before {
+            content: '';
             position: absolute;
-            top: -6px;
-            right: -6px;
-            background: var(--danger);
-            color: white;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--pink-gradient);
+        }
+        
+        .user-avatar {
+            width: 70px;
+            height: 70px;
+            background: var(--pink-gradient);
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        
+        .user-role {
+            color: var(--gray-500);
+            font-size: 0.875rem;
             font-weight: 600;
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--light-bg);
+            border-radius: 20px;
+        }
+        
+        .subscription-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 16px;
+            background: var(--pink-gradient);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 12px;
+        }
+        
+        /* Панель быстрых действий */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 32px 0;
+        }
+        
+        .action-item {
+            background: white;
+            padding: 32px 24px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-item:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            background: var(--pink-gradient);
+            color: white;
+        }
+        
+        .action-item:hover .action-icon {
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .action-icon {
+            font-size: 2.5rem;
+            color: var(--pink-primary);
+            margin-bottom: 16px;
+            transition: var(--transition);
         }
         
         /* Разделы */
         .section-title {
             font-family: 'Playfair Display', serif;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: var(--gray-900);
             text-align: center;
-            margin: 60px 0 32px;
+            margin: 80px 0 48px;
             position: relative;
         }
         
         .section-title::after {
             content: '';
             display: block;
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
-            margin: 16px auto;
-            border-radius: 2px;
+            width: 100px;
+            height: 6px;
+            background: var(--pink-gradient);
+            margin: 24px auto;
+            border-radius: 3px;
         }
         
         /* Категории */
         .categories {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 16px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 60px;
         }
         
         .category-btn {
             background: white;
-            border: 1px solid var(--gray-300);
-            padding: 20px 16px;
-            border-radius: var(--radius);
+            border: 2px solid transparent;
+            padding: 28px 20px;
+            border-radius: var(--radius-lg);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             cursor: pointer;
             transition: var(--transition);
             text-decoration: none;
             color: inherit;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--pink-gradient);
+            transition: var(--transition);
+            opacity: 0;
         }
         
         .category-btn:hover,
         .category-btn.active {
-            border-color: var(--primary-color);
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-            color: white;
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            background: white;
+        }
+        
+        .category-btn:hover::before,
+        .category-btn.active::before {
+            opacity: 1;
         }
         
         .category-btn:hover .category-icon,
         .category-btn.active .category-icon {
-            color: white;
+            transform: scale(1.1);
         }
         
         .category-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
+            font-size: 2.5rem;
             transition: var(--transition);
         }
         
         /* Карточки помощи */
         .help-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 24px;
-            margin-bottom: 60px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
         }
         
         .help-card {
@@ -257,11 +422,14 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             transition: var(--transition);
-            border: 1px solid var(--gray-200);
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
+            position: relative;
         }
         
         .help-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-8px) scale(1.02);
             box-shadow: var(--shadow-lg);
         }
         
@@ -272,109 +440,133 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            background: var(--pink-gradient);
         }
         
         .help-content {
-            padding: 24px;
+            padding: 32px;
             position: relative;
         }
         
         .help-header {
             display: flex;
             align-items: flex-start;
-            gap: 16px;
-            margin-bottom: 16px;
+            gap: 20px;
+            margin-bottom: 20px;
         }
         
         .help-icon {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            background: var(--gray-100);
-            width: 56px;
-            height: 56px;
+            font-size: 2rem;
+            background: var(--light-bg);
+            width: 64px;
+            height: 64px;
             border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            color: var(--pink-primary);
         }
         
         .help-title {
-            font-size: 1.25rem;
-            font-weight: 600;
+            font-size: 1.375rem;
+            font-weight: 700;
             color: var(--gray-900);
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
         
         .help-description {
             color: var(--gray-600);
-            margin-bottom: 20px;
-            line-height: 1.5;
+            margin-bottom: 24px;
+            line-height: 1.6;
         }
         
         .help-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 20px;
+            padding-top: 24px;
             border-top: 1px solid var(--gray-200);
         }
         
         .help-price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--pink-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .help-duration {
             color: var(--gray-500);
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
         }
         
-        /* Формы */
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--gray-700);
-        }
-        
-        .form-input,
-        .form-textarea,
-        .form-select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--gray-300);
-            border-radius: var(--radius);
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: white;
-        }
-        
-        .form-input:focus,
-        .form-textarea:focus,
-        .form-select:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-        }
-        
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .form-row {
+        /* Подписки */
+        .subscriptions-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .subscription-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .subscription-card.popular {
+            border-color: var(--pink-primary);
+            transform: scale(1.05);
+        }
+        
+        .subscription-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .subscription-card.popular:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--pink-gradient);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .subscription-price {
+            font-size: 3rem;
+            font-weight: 800;
+            background: var(--pink-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 20px 0;
+        }
+        
+        .subscription-price span {
+            font-size: 1rem;
+            color: var(--gray-500);
         }
         
         /* Кнопки */
@@ -382,45 +574,66 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
+            gap: 12px;
+            padding: 16px 32px;
             border: none;
             border-radius: var(--radius);
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: var(--transition);
             text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .btn:hover::before {
+            opacity: 1;
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: var(--pink-gradient);
             color: white;
+            box-shadow: var(--shadow-md);
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
         }
         
         .btn-secondary {
             background: white;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
+            color: var(--pink-primary);
+            border: 2px solid var(--pink-primary);
         }
         
         .btn-secondary:hover {
-            background: var(--gray-50);
+            background: var(--light-bg);
+            transform: translateY(-3px);
         }
         
         .btn-success {
-            background: var(--success);
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
             color: white;
         }
         
         .btn-danger {
-            background: var(--danger);
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
             color: white;
         }
         
@@ -428,58 +641,9 @@
             width: 100%;
         }
         
-        /* Панель действий */
-        .actions {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            margin: 40px 0;
-            flex-wrap: wrap;
-        }
-        
-        /* Уведомления */
-        .notification {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            color: white;
-            font-weight: 600;
-            box-shadow: var(--shadow-lg);
-            z-index: 1001;
-            animation: slideInRight 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            max-width: 400px;
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .notification.success {
-            background: var(--success);
-        }
-        
-        .notification.error {
-            background: var(--danger);
-        }
-        
-        .notification.warning {
-            background: var(--warning);
-            color: var(--gray-900);
-        }
-        
-        .notification.info {
-            background: var(--info);
-        }
-        
         /* Задачи */
         .tasks-section {
-            margin: 60px 0;
+            margin: 80px 0;
             display: none;
         }
         
@@ -489,131 +653,142 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .tasks-controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 32px;
+            margin-bottom: 48px;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 20px;
         }
         
         .tasks-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 24px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
         }
         
         .task-card {
             background: white;
             border-radius: var(--radius-lg);
-            padding: 24px;
+            padding: 32px;
             box-shadow: var(--shadow);
-            border-left: 4px solid var(--primary-color);
             transition: var(--transition);
+            border-left: 6px solid var(--pink-primary);
             position: relative;
-            border: 1px solid var(--gray-200);
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
         }
         
         .task-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-8px);
             box-shadow: var(--shadow-lg);
-        }
-        
-        .task-unread {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 12px;
-            height: 12px;
-            background: var(--danger);
-            border-radius: 50%;
         }
         
         .task-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
         
         .task-number {
             font-size: 0.875rem;
             color: var(--gray-500);
-            background: var(--gray-100);
-            padding: 4px 12px;
+            background: var(--light-bg);
+            padding: 6px 16px;
             border-radius: 20px;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .task-status {
-            padding: 4px 12px;
+            padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.875rem;
-            font-weight: 600;
+            font-weight: 700;
         }
         
-        .status-new { background: #dbeafe; color: #1d4ed8; }
-        .status-in_progress { background: #fef3c7; color: #d97706; }
-        .status-completed { background: #d1fae5; color: #047857; }
-        .status-cancelled { background: #fee2e2; color: #dc2626; }
+        .status-new { background: #FFE4E6; color: #D81B60; }
+        .status-in_progress { background: #FEF3C7; color: #D97706; }
+        .status-completed { background: #D1FAE5; color: #047857; }
+        .status-cancelled { background: #FEE2E2; color: #DC2626; }
         
         .task-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 12px;
+            font-size: 1.375rem;
+            font-weight: 700;
+            margin-bottom: 16px;
             color: var(--gray-900);
+            line-height: 1.4;
         }
         
         .task-description {
             color: var(--gray-600);
-            margin-bottom: 20px;
-            line-height: 1.5;
+            margin-bottom: 24px;
+            line-height: 1.6;
         }
         
         .task-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 20px;
+            padding-top: 24px;
             border-top: 1px solid var(--gray-200);
         }
         
-        .task-price {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-color);
+        .task-category {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            font-weight: 600;
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--light-bg);
+            border-radius: 20px;
         }
         
-        .task-deadline {
+        .task-date {
             color: var(--gray-500);
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         /* Футер */
         footer {
             background: var(--gray-900);
             color: white;
-            padding: 60px 20px;
-            margin-top: 80px;
+            padding: 80px 20px;
+            margin-top: 120px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--pink-gradient);
         }
         
         .footer-content {
             max-width: 800px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
         
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 32px;
-            margin: 32px 0;
+            gap: 40px;
+            margin: 40px 0;
             flex-wrap: wrap;
         }
         
@@ -621,17 +796,34 @@
             color: var(--gray-300);
             text-decoration: none;
             transition: var(--transition);
-            font-weight: 500;
+            font-weight: 600;
+            position: relative;
+            padding: 8px 0;
+        }
+        
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--pink-gradient);
+            transition: var(--transition);
         }
         
         .footer-link:hover {
             color: white;
         }
         
+        .footer-link:hover::after {
+            width: 100%;
+        }
+        
         .copyright {
             opacity: 0.7;
             font-size: 0.875rem;
-            margin-top: 24px;
+            margin-top: 40px;
         }
         
         /* Модальные окна */
@@ -643,14 +835,16 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 2000;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            backdrop-filter: blur(5px);
         }
         
         .modal.active {
             display: flex;
+            animation: fadeIn 0.3s ease;
         }
         
         .modal-content {
@@ -662,6 +856,9 @@
             overflow-y: auto;
             box-shadow: var(--shadow-2xl);
             animation: slideIn 0.3s ease;
+            border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
         }
         
         @keyframes slideIn {
@@ -670,9 +867,9 @@
         }
         
         .modal-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: var(--pink-gradient);
             color: white;
-            padding: 24px;
+            padding: 32px;
             border-radius: var(--radius-xl) var(--radius-xl) 0 0;
             display: flex;
             justify-content: space-between;
@@ -681,17 +878,20 @@
         
         .modal-title {
             font-size: 1.5rem;
-            font-weight: 600;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
         .close-modal {
-            background: none;
+            background: rgba(255, 255, 255, 0.2);
             border: none;
             color: white;
             font-size: 1.5rem;
             cursor: pointer;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -700,91 +900,105 @@
         }
         
         .close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
         }
         
         .modal-body {
-            padding: 24px;
+            padding: 32px;
         }
         
-        /* Профиль пользователя */
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
+        /* Формы */
+        .form-group {
             margin-bottom: 24px;
-            border: 1px solid var(--gray-200);
         }
         
-        .user-avatar {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            border-radius: 50%;
+        .form-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: white;
+            color: var(--gray-800);
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--pink-primary);
+            box-shadow: 0 0 0 4px rgba(255, 107, 139, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 20px 24px;
+            border-radius: var(--radius);
+            color: white;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            z-index: 2001;
+            animation: slideInRight 0.3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.25rem;
-        }
-        
-        .user-info {
-            flex: 1;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 1.125rem;
-            color: var(--gray-900);
-            margin-bottom: 4px;
-        }
-        
-        .user-role {
-            color: var(--gray-500);
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        /* Панель быстрых действий */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 16px;
-            margin: 32px 0;
+            max-width: 400px;
+            border-left: 4px solid;
         }
         
-        .action-item {
-            background: white;
-            padding: 24px;
-            border-radius: var(--radius-lg);
-            text-align: center;
-            transition: var(--transition);
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
-        .action-item:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
+        .notification.success {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            border-left-color: #047857;
         }
         
-        .action-item:hover .action-icon {
-            color: white;
+        .notification.error {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+            border-left-color: #B91C1C;
         }
         
-        .action-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 12px;
-            transition: var(--transition);
+        .notification.warning {
+            background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+            color: var(--gray-900);
+            border-left-color: #D97706;
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            border-left-color: #1D4ED8;
         }
         
         /* Индикатор загрузки */
@@ -798,16 +1012,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            z-index: 3000;
             backdrop-filter: blur(5px);
         }
         
         .loader {
             display: inline-block;
-            width: 48px;
-            height: 48px;
+            width: 60px;
+            height: 60px;
             border: 4px solid var(--gray-200);
-            border-top: 4px solid var(--primary-color);
+            border-top: 4px solid var(--pink-primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -817,80 +1031,62 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Рейтинг */
-        .rating {
-            display: flex;
-            gap: 4px;
-            margin: 12px 0;
-        }
-        
-        .star {
-            color: #fbbf24;
-            font-size: 1rem;
-        }
-        
-        .star.empty {
-            color: var(--gray-300);
-        }
-        
-        /* Бейджи */
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        .badge-new {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .badge-popular {
-            background: var(--accent-color);
-            color: var(--gray-900);
-        }
-        
-        .badge-vip {
-            background: linear-gradient(45deg, #fbbf24, #f87171);
-            color: white;
-        }
-        
         /* Адаптивность */
+        @media (max-width: 1024px) {
+            .help-grid,
+            .tasks-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+            
+            .subscriptions-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .subscription-card.popular {
+                transform: none;
+            }
+            
+            .subscription-card.popular:hover {
+                transform: translateY(-10px);
+            }
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 0 16px;
             }
             
             header {
-                padding: 32px 16px;
+                padding: 40px 16px 32px;
             }
             
             .logo {
+                font-size: 2.25rem;
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .logo i {
+                width: 60px;
+                height: 60px;
                 font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+                margin: 60px 0 40px;
             }
             
             .form-row {
                 grid-template-columns: 1fr;
             }
             
-            .help-grid {
-                grid-template-columns: 1fr;
-            }
-            
+            .help-grid,
             .tasks-grid {
                 grid-template-columns: 1fr;
-            }
-            
-            .actions {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
             }
             
             .tasks-controls {
@@ -905,64 +1101,151 @@
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .user-profile {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
         @media (max-width: 480px) {
-            .categories {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .tagline {
+                font-size: 1.125rem;
+            }
+            
+            .categories,
+            .stats,
+            .quick-actions {
                 grid-template-columns: 1fr;
             }
             
-            .stats {
-                grid-template-columns: 1fr;
+            .guest-banner {
+                padding: 32px 24px;
             }
             
             .footer-links {
                 flex-direction: column;
-                gap: 16px;
+                gap: 20px;
+            }
+            
+            .modal {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                border-radius: var(--radius-lg);
             }
         }
         
         /* Дополнительные стили */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: var(--gray-500);
+            grid-column: 1 / -1;
         }
         
         .empty-state i {
             font-size: 4rem;
             color: var(--gray-300);
             margin-bottom: 24px;
+            opacity: 0.5;
         }
         
         .system-status {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: var(--shadow-sm);
-            margin-top: 12px;
+            gap: 12px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
             backdrop-filter: blur(10px);
             font-size: 0.875rem;
+            font-weight: 600;
+            border: 2px solid transparent;
+            background: linear-gradient(white, white) padding-box,
+                        var(--pink-gradient) border-box;
         }
         
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
         }
         
         .status-dot.online {
             background: var(--success);
             animation: pulse 2s infinite;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
         }
         
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
+        .feature-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--light-bg);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--pink-primary);
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .feature-badge i {
+            font-size: 0.875rem;
+        }
+        
+        .telegram-widget {
+            background: linear-gradient(135deg, #0088CC 0%, #34AADF 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin: 40px 0;
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+        
+        .telegram-widget.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .telegram-widget a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        
+        .telegram-widget a:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
@@ -971,28 +1254,40 @@
         <!-- Шапка -->
         <header>
             <div class="logo">
-                <i class="fas fa-spa"></i>
-                Консьерж Сервис
+                <i class="fas fa-heart"></i>
+                <div>Консьерж Сервис</div>
             </div>
-            <p class="tagline">Персональный помощник для решения бытовых задач и организации жизни</p>
+            <p class="tagline">Ваш персональный помощник для решения бытовых задач. Подписка вместо оплаты за услугу!</p>
             
             <div class="system-status" id="systemStatus">
                 <span class="status-dot online"></span>
-                <span id="statusText">Загрузка статуса...</span>
+                <span id="statusText">Система активна</span>
             </div>
         </header>
         
+        <!-- Telegram виджет -->
+        <div class="telegram-widget" id="telegramWidget">
+            <h3 style="margin-bottom: 12px;"><i class="fab fa-telegram"></i> Наш Telegram бот</h3>
+            <p>Подпишитесь на нашего бота для уведомлений и быстрых команд</p>
+            <a href="https://t.me/your_bot_username" target="_blank">
+                <i class="fab fa-telegram-plane"></i>
+                Перейти в Telegram
+            </a>
+        </div>
+        
         <!-- Баннер для неавторизованных -->
         <div class="guest-banner" id="guestBanner">
-            <h2 style="margin-bottom: 16px; color: var(--gray-900);">Добро пожаловать! 👋</h2>
-            <p style="color: var(--gray-600); margin-bottom: 24px;">Зарегистрируйтесь, чтобы получить доступ ко всем возможностям сервиса:</p>
+            <h2 style="margin-bottom: 16px; color: var(--gray-900); font-size: 2rem;">Добро пожаловать! 💖</h2>
+            <p style="color: var(--gray-600); margin-bottom: 32px; font-size: 1.125rem;">
+                Присоединяйтесь к тысячам довольных клиентов, которые доверяют нам свои бытовые задачи
+            </p>
             <div style="margin-top: 20px;">
-                <button class="btn btn-primary" onclick="openLoginModal()">
+                <button class="btn btn-primary" onclick="openLoginModal()" style="margin-bottom: 16px;">
                     <i class="fas fa-user-plus"></i>
                     Создать аккаунт
                 </button>
                 <p style="margin-top: 16px; font-size: 0.875rem; color: var(--gray-500);">
-                    Уже есть аккаунт? <a href="#" onclick="openLoginModal()" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Войти в систему</a>
+                    Уже есть аккаунт? <a href="#" onclick="openLoginModal()" style="color: var(--pink-primary); font-weight: 700; text-decoration: none;">Войти в систему</a>
                 </p>
             </div>
         </div>
@@ -1001,15 +1296,25 @@
         <div class="user-profile" id="userProfile" style="display: none;">
             <div class="user-avatar" id="userAvatar">М</div>
             <div class="user-info">
-                <div class="user-name" id="userName">Мария Иванова</div>
+                <div>
+                    <span class="user-name" id="userName">Мария Иванова</span>
+                    <span class="subscription-badge" id="subscriptionBadge">
+                        <i class="fas fa-crown"></i>
+                        <span id="subscriptionPlan">Премиум</span>
+                    </span>
+                </div>
                 <div class="user-role" id="userRole">Клиент</div>
+                <div style="margin-top: 12px; font-size: 0.875rem; color: var(--gray-600);">
+                    <span id="tasksStats">Задач в этом месяце: 0/10</span>
+                </div>
             </div>
-            <div class="notification-bell" onclick="showNotifications()">
-                <i class="fas fa-bell" style="font-size: 1.25rem; color: var(--primary-color);"></i>
-                <div class="notification-count" id="notificationCount" style="display: none;">0</div>
+            <div class="notification-bell" onclick="showNotifications()" style="position: relative; cursor: pointer;">
+                <i class="fas fa-bell" style="font-size: 1.5rem; color: var(--pink-primary);"></i>
+                <div class="notification-count" id="notificationCount" style="display: none; position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">0</div>
             </div>
-            <button class="btn btn-secondary" onclick="logout()" style="padding: 8px 16px;">
+            <button class="btn btn-secondary" onclick="logout()" style="padding: 12px 20px;">
                 <i class="fas fa-sign-out-alt"></i>
+                Выйти
             </button>
         </div>
         
@@ -1019,49 +1324,56 @@
                 <div class="action-icon">
                     <i class="fas fa-plus-circle"></i>
                 </div>
-                <div style="font-weight: 600;">Новая задача</div>
+                <div style="font-weight: 700;">Новая задача</div>
             </div>
             
             <div class="action-item" onclick="loadUserTasks()">
                 <div class="action-icon">
                     <i class="fas fa-tasks"></i>
                 </div>
-                <div style="font-weight: 600;">Мои задачи</div>
+                <div style="font-weight: 700;">Мои задачи</div>
             </div>
             
             <div class="action-item" onclick="showServices()">
                 <div class="action-icon">
                     <i class="fas fa-concierge-bell"></i>
                 </div>
-                <div style="font-weight: 600;">Категории</div>
+                <div style="font-weight: 700;">Категории</div>
             </div>
             
-            <div class="action-item" onclick="showProfile()">
+            <div class="action-item" onclick="openSubscribeModal()">
                 <div class="action-icon">
-                    <i class="fas fa-user-cog"></i>
+                    <i class="fas fa-crown"></i>
                 </div>
-                <div style="font-weight: 600;">Профиль</div>
+                <div style="font-weight: 700;">Подписка</div>
             </div>
         </div>
         
         <!-- Статистика -->
+        <h2 class="section-title">Наши достижения</h2>
         <div class="stats" id="stats">
             <div class="stat-card">
-                <div class="stat-number" id="totalUsers">1,247</div>
-                <div class="stat-label">Пользователей</div>
+                <div class="stat-number" id="totalUsers">2,847</div>
+                <div class="stat-label">Довольных клиентов</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalTasks">5,892</div>
+                <div class="stat-number" id="totalTasks">12,563</div>
                 <div class="stat-label">Выполнено задач</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalRevenue">2.5M</div>
-                <div class="stat-label">Общая выручка</div>
+                <div class="stat-number" id="totalRevenue">98.7%</div>
+                <div class="stat-label">Уровень довольства</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="avgRating">4.8</div>
-                <div class="stat-label">Средний рейтинг</div>
+                <div class="stat-number" id="avgRating">4.9</div>
+                <div class="stat-label">Средняя оценка</div>
             </div>
+        </div>
+        
+        <!-- Подписки -->
+        <h2 class="section-title">Выберите подписку</h2>
+        <div class="subscriptions-grid" id="subscriptionsGrid">
+            <!-- Подписки будут загружены через JavaScript -->
         </div>
         
         <!-- Категории услуг -->
@@ -1101,30 +1413,13 @@
         <h2 class="section-title">Популярные услуги</h2>
         <div class="help-grid" id="helpGrid">
             <!-- Услуги будут загружены через JavaScript -->
-            <div class="loader" id="helpLoader"></div>
-        </div>
-        
-        <!-- Панель действий -->
-        <div class="actions" id="mainActions">
-            <button class="btn btn-primary" onclick="openTaskModal()">
-                <i class="fas fa-plus-circle"></i>
-                Создать задачу
-            </button>
-            <button class="btn btn-secondary" onclick="showServices()">
-                <i class="fas fa-concierge-bell"></i>
-                Категории услуг
-            </button>
-            <button class="btn btn-secondary" onclick="openLoginModal()">
-                <i class="fas fa-user"></i>
-                Войти
-            </button>
         </div>
         
         <!-- Раздел задач -->
         <div class="tasks-section" id="tasksSection">
             <div class="tasks-controls">
-                <h2 class="section-title" style="margin: 0;">Мои задачи</h2>
-                <div>
+                <h2 class="section-title" style="margin: 0; font-size: 2rem;">Мои задачи</h2>
+                <div style="display: flex; gap: 16px; align-items: center;">
                     <select id="taskFilter" class="form-select" style="width: auto; min-width: 160px;" onchange="loadUserTasks()">
                         <option value="all">Все задачи</option>
                         <option value="new">Новые</option>
@@ -1132,6 +1427,10 @@
                         <option value="completed">Завершенные</option>
                         <option value="cancelled">Отмененные</option>
                     </select>
+                    <button class="btn btn-primary" onclick="openTaskModal()">
+                        <i class="fas fa-plus"></i>
+                        Новая
+                    </button>
                 </div>
             </div>
             <div class="tasks-grid" id="tasksGrid">
@@ -1142,18 +1441,19 @@
         <!-- Футер -->
         <footer>
             <div class="footer-content">
-                <p style="font-size: 1.125rem; margin-bottom: 24px;">🎀 Доверьте нам заботу о ваших делах, а сами наслаждайтесь жизнью!</p>
+                <p style="font-size: 1.25rem; margin-bottom: 32px;">🎀 Доверьте нам заботу о ваших делах, а сами наслаждайтесь жизнью!</p>
                 
                 <div class="footer-links">
                     <a href="#" class="footer-link" onclick="showAbout()">О сервисе</a>
                     <a href="#" class="footer-link" onclick="showContacts()">Контакты</a>
                     <a href="#" class="footer-link" onclick="showFAQ()">Вопросы и ответы</a>
                     <a href="#" class="footer-link" onclick="showPrivacy()">Конфиденциальность</a>
+                    <a href="#" class="footer-link" onclick="openSubscribeModal()">Подписки</a>
                 </div>
                 
                 <div class="copyright">
                     <p>© 2024 Консьерж Сервис. Все права защищены.</p>
-                    <p style="margin-top: 8px;">Версия: <span id="appVersion">4.2.0</span> | Статус: <span id="serverStatus">🟢 Онлайн</span></p>
+                    <p style="margin-top: 8px;">Версия: <span id="appVersion">4.3.0</span> | Статус: <span id="serverStatus">🟢 Онлайн</span></p>
                 </div>
             </div>
         </footer>
@@ -1165,7 +1465,10 @@
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🎀 Новая задача</div>
+                <div class="modal-title">
+                    <i class="fas fa-heart"></i>
+                    Новая задача
+                </div>
                 <button class="close-modal" onclick="closeTaskModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -1196,8 +1499,12 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Тип услуги</label>
-                            <input type="text" class="form-input" id="taskSubcategory" placeholder="Например: Уборка, Няня, Маникюр">
+                            <label class="form-label">Приоритет</label>
+                            <select class="form-select" id="taskPriority">
+                                <option value="medium">Стандартный (до 48ч)</option>
+                                <option value="high">Высокий (до 24ч)</option>
+                                <option value="urgent">Срочный (до 12ч)</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -1208,37 +1515,27 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Бюджет (руб.) *</label>
-                            <input type="number" class="form-input" id="taskPrice" min="100" step="100" placeholder="2000" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Срочность</label>
-                            <select class="form-select" id="taskPriority">
-                                <option value="medium">Обычная</option>
-                                <option value="low">Не срочно</option>
-                                <option value="high">Срочно</option>
-                                <option value="urgent">Очень срочно</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
                             <label class="form-label">Адрес (если нужно)</label>
                             <input type="text" class="form-input" id="taskAddress" placeholder="Город, улица, дом">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Теги (через запятую)</label>
-                        <input type="text" class="form-input" id="taskTags" placeholder="уборка, помощь, срочно">
+                        <div id="subscriptionCheck" style="display: none; padding: 16px; background: var(--light-bg); border-radius: var(--radius); margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <i class="fas fa-check-circle" style="color: var(--success); font-size: 1.25rem;"></i>
+                                <div>
+                                    <div style="font-weight: 700; color: var(--gray-900);">Подписка активна</div>
+                                    <div style="font-size: 0.875rem; color: var(--gray-600);" id="subscriptionInfo">Базовая подписка: 3 задачи в месяц</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary btn-full">
                             <i class="fas fa-paper-plane"></i>
-                            Отправить запрос
+                            Создать задачу
                         </button>
                     </div>
                 </form>
@@ -1250,12 +1547,15 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">👤 Вход и регистрация</div>
+                <div class="modal-title">
+                    <i class="fas fa-user"></i>
+                    Вход и регистрация
+                </div>
                 <button class="close-modal" onclick="closeLoginModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <div id="loginTab">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Вход в систему</h3>
+                    <h3 style="margin-bottom: 24px; color: var(--pink-primary);">Вход в систему</h3>
                     <form id="loginForm" onsubmit="login(event)">
                         <div class="form-group">
                             <label class="form-label">Email *</label>
@@ -1275,13 +1575,21 @@
                         </div>
                     </form>
                     
-                    <div style="text-align: center; margin: 20px 0;">
-                        <p style="color: var(--gray-600);">Нет аккаунта? <a href="#" style="color: var(--primary-color); font-weight: 600; text-decoration: none;" onclick="showRegisterTab()">Зарегистрироваться</a></p>
+                    <div style="text-align: center; margin: 24px 0;">
+                        <p style="color: var(--gray-600);">Нет аккаунта? <a href="#" style="color: var(--pink-primary); font-weight: 700; text-decoration: none;" onclick="showRegisterTab()">Зарегистрироваться</a></p>
+                    </div>
+                    
+                    <div style="padding: 16px; background: var(--light-bg); border-radius: var(--radius); margin-top: 24px;">
+                        <div style="font-size: 0.875rem; color: var(--gray-600); text-align: center;">
+                            Тестовые аккаунты:<br>
+                            <code style="background: rgba(255, 107, 139, 0.1); padding: 2px 6px; border-radius: 4px; margin: 0 4px;">maria@example.com</code> / 
+                            <code style="background: rgba(255, 107, 139, 0.1); padding: 2px 6px; border-radius: 4px;">client123</code>
+                        </div>
                     </div>
                 </div>
                 
                 <div id="registerTab" style="display: none;">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Регистрация</h3>
+                    <h3 style="margin-bottom: 24px; color: var(--pink-primary);">Регистрация</h3>
                     <form id="registerForm" onsubmit="register(event)">
                         <div class="form-row">
                             <div class="form-group">
@@ -1313,6 +1621,14 @@
                         </div>
                         
                         <div class="form-group">
+                            <label class="form-label">Telegram ID (опционально)</label>
+                            <input type="text" class="form-input" id="registerTelegramId" placeholder="@username">
+                            <div style="font-size: 0.75rem; color: var(--gray-500); margin-top: 8px;">
+                                Для получения уведомлений в Telegram
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
                             <label class="form-label">Вы хотите:</label>
                             <select class="form-select" id="registerRole">
                                 <option value="client">Получать услуги</option>
@@ -1328,9 +1644,45 @@
                         </div>
                     </form>
                     
-                    <div style="text-align: center; margin: 20px 0;">
-                        <p style="color: var(--gray-600);">Уже есть аккаунт? <a href="#" style="color: var(--primary-color); font-weight: 600; text-decoration: none;" onclick="showLoginTab()">Войти</a></p>
+                    <div style="text-align: center; margin: 24px 0;">
+                        <p style="color: var(--gray-600);">Уже есть аккаунт? <a href="#" style="color: var(--pink-primary); font-weight: 700; text-decoration: none;" onclick="showLoginTab()">Войти</a></p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Подписка -->
+    <div class="modal" id="subscribeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-crown"></i>
+                    Выбор подписки
+                </div>
+                <button class="close-modal" onclick="closeSubscribeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="subscribeContent">
+                    <!-- Контент подписок будет загружен через JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомления -->
+    <div class="modal" id="notificationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-bell"></i>
+                    Уведомления
+                </div>
+                <button class="close-modal" onclick="closeNotificationsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="notificationsList">
+                    <!-- Уведомления будут загружены через JavaScript -->
                 </div>
             </div>
         </div>
@@ -1348,6 +1700,7 @@
         // Глобальные переменные
         let currentUser = null;
         let currentToken = localStorage.getItem('token');
+        let currentSubscription = null;
         let unreadNotifications = 0;
         let notificationCheckInterval = null;
         
@@ -1369,6 +1722,7 @@
             loadSystemStatus();
             loadStats();
             loadHelp();
+            loadSubscriptions();
             
             // Проверяем авторизацию
             if (currentToken) {
@@ -1384,10 +1738,8 @@
             updateServerTime();
             setInterval(updateServerTime, 60000);
             
-            // Запускаем проверку уведомлений для авторизованных пользователей
-            if (currentToken) {
-                startNotificationCheck();
-            }
+            // Показываем Telegram виджет
+            document.getElementById('telegramWidget').classList.add('active');
             
             console.log('✅ Приложение инициализировано');
         });
@@ -1426,14 +1778,15 @@
             document.getElementById('userProfile').style.display = 'none';
             document.getElementById('quickActions').style.display = 'none';
             document.getElementById('tasksSection').classList.remove('active');
-            document.getElementById('mainActions').style.display = 'flex';
+            document.getElementById('telegramWidget').classList.add('active');
         }
         
         function showUserInterface() {
             document.getElementById('guestBanner').style.display = 'none';
             document.getElementById('userProfile').style.display = 'flex';
             document.getElementById('quickActions').style.display = 'grid';
-            document.getElementById('mainActions').style.display = 'none';
+            document.getElementById('telegramWidget').classList.remove('active');
+            document.getElementById('tasksSection').classList.add('active');
             updateNotificationCount();
             loadUserTasks();
         }
@@ -1454,7 +1807,23 @@
                 openLoginModal();
                 return;
             }
-            document.getElementById('taskModal').classList.add('active');
+            
+            // Проверяем подписку перед открытием модального окна
+            checkUserSubscription().then(subscription => {
+                if (!subscription.valid) {
+                    showNotification(subscription.message, 'warning');
+                    openSubscribeModal();
+                    return;
+                }
+                
+                // Показываем информацию о подписке
+                const checkElement = document.getElementById('subscriptionCheck');
+                const infoElement = document.getElementById('subscriptionInfo');
+                checkElement.style.display = 'block';
+                infoElement.textContent = `${currentSubscription.name}: ${currentSubscription.tasks_limit} задач в месяц`;
+                
+                document.getElementById('taskModal').classList.add('active');
+            });
         }
         
         function closeTaskModal() {
@@ -1476,6 +1845,23 @@
             showLoginTab();
         }
         
+        function openSubscribeModal() {
+            document.getElementById('subscribeModal').classList.add('active');
+        }
+        
+        function closeSubscribeModal() {
+            document.getElementById('subscribeModal').classList.remove('active');
+        }
+        
+        function openNotificationsModal() {
+            document.getElementById('notificationsModal').classList.add('active');
+            loadNotifications();
+        }
+        
+        function closeNotificationsModal() {
+            document.getElementById('notificationsModal').classList.remove('active');
+        }
+        
         function showLoginTab() {
             document.getElementById('loginTab').style.display = 'block';
             document.getElementById('registerTab').style.display = 'none';
@@ -1486,31 +1872,12 @@
             document.getElementById('registerTab').style.display = 'block';
         }
         
-        function openProfileModal() {
-            // Реализация просмотра профиля
-            showNotification('Просмотр профиля будет доступен в следующей версии', 'info');
-        }
-        
-        function closeProfileModal() {
-            // Будет использоваться в будущем
-        }
-        
-        function openTaskDetailModal(taskId) {
-            // Реализация просмотра деталей задачи
-            showNotification('Детали задачи будут доступны в следующей версии', 'info');
-        }
-        
-        function closeTaskDetailModal() {
-            // Будет использоваться в будущем
-        }
-        
-        function showNotifications() {
-            // Реализация просмотра уведомлений
-            showNotification('Просмотр уведомлений будет доступен в следующей версии', 'info');
-        }
-        
-        function closeNotificationsModal() {
-            // Будет использоваться в будущем
+        function showServices() {
+            // Прокручиваем к категориям услуг
+            document.querySelector('.section-title').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
         }
         
         function setupCategoryFilters() {
@@ -1537,7 +1904,7 @@
                 const serverStatus = document.getElementById('serverStatus');
                 
                 if (data.success) {
-                    statusText.textContent = `Система работает | БД: ${data.database === 'connected' ? '✅' : '⚠️'}`;
+                    statusText.textContent = `Система активна | ${data.telegram_bot === 'connected' ? '🤖 Telegram активен' : '🤖 Telegram отключен'}`;
                     serverStatus.textContent = '🟢 Онлайн';
                     serverStatus.style.color = 'var(--success)';
                 } else {
@@ -1554,21 +1921,19 @@
         
         async function loadStats() {
             try {
-                const response = await fetch('/api/admin/stats');
+                const response = await fetch('/api/system/info');
                 const data = await response.json();
                 
                 if (data.success) {
-                    document.getElementById('totalUsers').textContent = formatNumber(data.data.summary.totalUsers || 0);
-                    document.getElementById('totalTasks').textContent = formatNumber(data.data.summary.totalTasks || 0);
-                    document.getElementById('totalRevenue').textContent = formatRevenue(data.data.summary.totalRevenue || 0);
-                    document.getElementById('avgRating').textContent = '4.8';
+                    document.getElementById('totalUsers').textContent = formatNumber(data.data.users || 0);
+                    document.getElementById('totalTasks').textContent = formatNumber(data.data.tasks || 0);
                 }
             } catch (error) {
                 // Демо-данные
-                document.getElementById('totalUsers').textContent = '1,247';
-                document.getElementById('totalTasks').textContent = '5,892';
-                document.getElementById('totalRevenue').textContent = '2.5M';
-                document.getElementById('avgRating').textContent = '4.8';
+                document.getElementById('totalUsers').textContent = '2,847';
+                document.getElementById('totalTasks').textContent = '12,563';
+                document.getElementById('totalRevenue').textContent = '98.7%';
+                document.getElementById('avgRating').textContent = '4.9';
             }
         }
         
@@ -1600,30 +1965,20 @@
             helpGrid.innerHTML = '';
             
             services.forEach(service => {
-                const icon = getCategoryIcon(service.category);
-                const price = service.priceOptions?.oneTime || service.priceOptions?.hourly || 0;
-                
                 const helpCard = document.createElement('div');
                 helpCard.className = 'help-card';
                 helpCard.innerHTML = `
                     <div class="help-content">
                         <div class="help-header">
-                            <div class="help-icon">${icon}</div>
+                            <div class="help-icon">${service.icon}</div>
                             <div>
                                 <div class="help-title">${service.name}</div>
-                                ${service.is_popular ? '<span class="badge badge-popular" style="margin-left: 5px; margin-top: 4px;">Популярно</span>' : ''}
+                                ${service.is_popular ? '<div class="feature-badge"><i class="fas fa-fire"></i> Популярно</div>' : ''}
                             </div>
                         </div>
                         <div class="help-description">${service.description}</div>
-                        <div class="rating">
-                            ${getRatingStars(service.rating?.average || 5)}
-                            <span style="color: var(--gray-500); font-size: 0.875rem; margin-left: 8px;">
-                                ${service.rating?.count || 0} отзывов
-                            </span>
-                        </div>
                         <div class="help-footer">
-                            <div class="help-price">от ${formatNumber(price)} ₽</div>
-                            <div class="help-duration">${service.duration || 60} мин.</div>
+                            <div class="help-duration">Входит в подписку</div>
                         </div>
                     </div>
                 `;
@@ -1637,60 +1992,129 @@
         function renderDemoHelp() {
             const demoHelp = [
                 {
-                    name: 'Помощь с уборкой',
-                    description: 'Помогу навести порядок в квартире, разобрать гардероб, организовать пространство.',
+                    name: 'Уборка квартиры',
+                    description: 'Генеральная уборка, помощь в организации пространства, мытье окон, уборка после ремонта.',
                     category: 'home_and_household',
-                    priceOptions: { oneTime: 2500 },
-                    duration: 180,
-                    rating: { average: 4.8, count: 127 },
+                    icon: '🧹',
                     is_popular: true
                 },
                 {
                     name: 'Присмотр за детьми',
-                    description: 'Посижу с вашим ребенком, погуляю, помогу с уроками, организую досуг.',
+                    description: 'Няня на несколько часов, помощь с уроками, прогулки, развивающие занятия.',
                     category: 'family_and_children',
-                    priceOptions: { oneTime: 1500, hourly: 350 },
-                    duration: 240,
-                    rating: { average: 4.9, count: 89 },
+                    icon: '👶',
                     is_popular: true
                 },
                 {
-                    name: 'Услуги маникюра',
-                    description: 'Сделаю аккуратный маникюр с покрытием гель-лаком или укреплением ногтей.',
+                    name: 'Маникюр на дому',
+                    description: 'Профессиональный маникюр с выездом на дом, укрепление ногтей, аппаратный маникюр.',
                     category: 'beauty_and_health',
-                    priceOptions: { oneTime: 1800 },
-                    duration: 90,
-                    rating: { average: 4.7, count: 234 },
+                    icon: '💅',
                     is_popular: true
                 },
                 {
-                    name: 'Репетитор по английскому',
-                    description: 'Помогу с домашним заданием, подготовкой к экзаменам или разговорной практикой.',
+                    name: 'Репетиторство',
+                    description: 'Помощь с домашними заданиями, подготовка к экзаменам, занятия по школьным предметам.',
                     category: 'courses_and_education',
-                    priceOptions: { oneTime: 1000, hourly: 1500 },
-                    duration: 60,
-                    rating: { average: 4.9, count: 156 }
+                    icon: '📚',
+                    is_popular: false
                 },
                 {
-                    name: 'Выгул питомцев',
-                    description: 'Выгуляю собаку, покормлю кошку, посижу с животным пока вас нет дома.',
+                    name: 'Выгул собак',
+                    description: 'Прогулка с питомцем, кормление, уход за животными, передержка на время отъезда.',
                     category: 'pets',
-                    priceOptions: { oneTime: 800, hourly: 300 },
-                    duration: 60,
-                    rating: { average: 4.8, count: 78 }
+                    icon: '🐕',
+                    is_popular: false
                 },
                 {
-                    name: 'Организация праздников',
-                    description: 'Помогу организовать день рождения, детский праздник или семейное торжество.',
+                    name: 'Организация праздника',
+                    description: 'Помощь в организации детских и семейных праздников, дней рождений, торжественных мероприятий.',
                     category: 'events_and_entertainment',
-                    priceOptions: { oneTime: 4000 },
-                    duration: 300,
-                    rating: { average: 4.9, count: 45 },
+                    icon: '🎂',
                     is_popular: true
                 }
             ];
             
             renderHelp(demoHelp);
+        }
+        
+        async function loadSubscriptions() {
+            try {
+                const response = await fetch('/api/subscriptions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderSubscriptions(data.data.subscriptions);
+                }
+            } catch (error) {
+                renderDemoSubscriptions();
+            }
+        }
+        
+        function renderSubscriptions(subscriptions) {
+            const grid = document.getElementById('subscriptionsGrid');
+            grid.innerHTML = '';
+            
+            subscriptions.forEach(sub => {
+                const features = JSON.parse(sub.features);
+                const featuresHtml = features.map(f => `<div class="feature-badge"><i class="fas fa-check"></i> ${f}</div>`).join('');
+                
+                const card = document.createElement('div');
+                card.className = `subscription-card ${sub.is_popular ? 'popular' : ''}`;
+                card.innerHTML = `
+                    ${sub.is_popular ? '<div class="popular-badge">Популярно</div>' : ''}
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 16px;">${sub.name}</h3>
+                    <p style="color: var(--gray-600); margin-bottom: 24px;">${sub.description}</p>
+                    
+                    <div class="subscription-price">
+                        ${sub.price_monthly}₽ <span>/ месяц</span>
+                    </div>
+                    
+                    <div style="margin: 32px 0;">
+                        ${featuresHtml}
+                    </div>
+                    
+                    ${currentUser ? `
+                        <button class="btn btn-primary btn-full" onclick="subscribeToPlan('${sub.name}')" ${currentUser.subscription_plan === sub.name ? 'disabled style="opacity: 0.6;"' : ''}>
+                            ${currentUser.subscription_plan === sub.name ? '✅ Текущий план' : 'Выбрать план'}
+                        </button>
+                    ` : `
+                        <button class="btn btn-primary btn-full" onclick="openLoginModal()">
+                            Выбрать план
+                        </button>
+                    `}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+        
+        function renderDemoSubscriptions() {
+            const demoSubscriptions = [
+                {
+                    name: 'basic',
+                    description: 'Для регулярных бытовых задач',
+                    price_monthly: 990,
+                    features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
+                    is_popular: true
+                },
+                {
+                    name: 'premium',
+                    description: 'Для максимального комфорта',
+                    price_monthly: 2990,
+                    features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
+                    is_popular: false
+                },
+                {
+                    name: 'business',
+                    description: 'Для бизнеса и семьи',
+                    price_monthly: 9990,
+                    features: '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика"]',
+                    is_popular: false
+                }
+            ];
+            
+            renderSubscriptions(demoSubscriptions);
         }
         
         async function loadUserTasks() {
@@ -1745,6 +2169,14 @@
                 }[task.status] || task.status;
                 
                 const deadline = new Date(task.deadline).toLocaleDateString('ru-RU');
+                const categoryText = {
+                    'home_and_household': 'Дом и быт',
+                    'family_and_children': 'Дети и семья',
+                    'beauty_and_health': 'Красота и здоровье',
+                    'courses_and_education': 'Курсы и образование',
+                    'pets': 'Питомцы',
+                    'events_and_entertainment': 'Мероприятия'
+                }[task.category] || task.category;
                 
                 const taskCard = document.createElement('div');
                 taskCard.className = 'task-card';
@@ -1754,14 +2186,14 @@
                         <div class="task-status status-${task.status}">${statusText}</div>
                     </div>
                     <div class="task-title">${task.title}</div>
-                    <div class="task-description">${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</div>
+                    <div class="task-description">${task.description.substring(0, 120)}${task.description.length > 120 ? '...' : ''}</div>
                     <div class="task-footer">
-                        <div class="task-price">${formatNumber(task.price)} ₽</div>
-                        <div class="task-deadline">до ${deadline}</div>
+                        <div class="task-category">${categoryText}</div>
+                        <div class="task-date">до ${deadline}</div>
                     </div>
                 `;
                 taskCard.addEventListener('click', () => {
-                    openTaskDetailModal(task.id);
+                    showNotification('Подробности задачи будут в следующей версии', 'info');
                 });
                 tasksGrid.appendChild(taskCard);
             });
@@ -1770,16 +2202,74 @@
         function renderEmptyTasks() {
             const tasksGrid = document.getElementById('tasksGrid');
             tasksGrid.innerHTML = `
-                <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-state">
                     <i class="fas fa-tasks"></i>
-                    <h3 style="margin-bottom: 12px; color: var(--gray-700);">У вас пока нет задач</h3>
-                    <p style="margin-bottom: 24px; color: var(--gray-500);">Создайте первую задачу, и мы найдем того, кто поможет вам!</p>
+                    <h3 style="margin-bottom: 16px; color: var(--gray-700);">У вас пока нет задач</h3>
+                    <p style="margin-bottom: 32px; color: var(--gray-500); max-width: 400px; margin-left: auto; margin-right: auto;">
+                        Создайте первую задачу, и мы найдем того, кто поможет вам быстро и качественно!
+                    </p>
                     <button class="btn btn-primary" onclick="openTaskModal()">
                         <i class="fas fa-plus-circle"></i>
-                        Создать задачу
+                        Создать первую задачу
                     </button>
                 </div>
             `;
+        }
+        
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications?limit=20', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderNotifications(data.data.notifications);
+                    unreadNotifications = data.data.unreadCount;
+                    updateNotificationCount();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки уведомлений:', error);
+            }
+        }
+        
+        function renderNotifications(notifications) {
+            const container = document.getElementById('notificationsList');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="padding: 40px 20px;">
+                        <i class="fas fa-bell-slash"></i>
+                        <h3 style="margin-bottom: 12px; color: var(--gray-700);">Нет уведомлений</h3>
+                        <p style="color: var(--gray-500);">Здесь будут появляться важные уведомления</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            notifications.forEach(notification => {
+                const timeAgo = getTimeAgo(new Date(notification.created_at));
+                html += `
+                    <div style="padding: 20px; border-bottom: 1px solid var(--gray-200); ${!notification.is_read ? 'background: var(--light-bg);' : ''}">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="font-size: 1.25rem; color: ${notification.type === 'success' ? 'var(--success)' : notification.type === 'error' ? 'var(--danger)' : notification.type === 'warning' ? 'var(--warning)' : 'var(--info)'}">
+                                <i class="fas fa-${notification.type === 'success' ? 'check-circle' : notification.type === 'error' ? 'exclamation-circle' : notification.type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; color: var(--gray-900); margin-bottom: 4px;">${notification.title}</div>
+                                <div style="color: var(--gray-600); margin-bottom: 8px;">${notification.message}</div>
+                                <div style="font-size: 0.75rem; color: var(--gray-500);">${timeAgo}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
         }
         
         // Функции работы с задачами
@@ -1792,16 +2282,21 @@
                 return;
             }
             
+            // Проверяем подписку
+            const subscriptionCheck = await checkUserSubscription();
+            if (!subscriptionCheck.valid) {
+                showNotification(subscriptionCheck.message, 'error');
+                openSubscribeModal();
+                return;
+            }
+            
             const taskData = {
                 title: document.getElementById('taskTitle').value,
                 description: document.getElementById('taskDescription').value,
                 category: document.getElementById('taskCategory').value,
-                subcategory: document.getElementById('taskSubcategory').value,
-                deadline: document.getElementById('taskDeadline').value,
-                price: parseInt(document.getElementById('taskPrice').value),
                 priority: document.getElementById('taskPriority').value,
-                address: document.getElementById('taskAddress').value,
-                tags: document.getElementById('taskTags').value
+                deadline: document.getElementById('taskDeadline').value,
+                address: document.getElementById('taskAddress').value || null
             };
             
             showLoading();
@@ -1825,9 +2320,8 @@
                     closeTaskModal();
                     loadUserTasks();
                     
-                    // Добавляем уведомление о новой задаче
-                    unreadNotifications++;
-                    updateNotificationCount();
+                    // Обновляем статистику
+                    updateUserStats();
                 } else {
                     showNotification(data.error || 'Ошибка создания задачи', 'error');
                 }
@@ -1875,7 +2369,7 @@
                     closeLoginModal();
                     showUserInterface();
                     updateUserInfo();
-                    startNotificationCheck();
+                    loadSubscriptions();
                 } else {
                     showNotification(data.error || 'Ошибка входа', 'error');
                 }
@@ -1894,6 +2388,7 @@
                 firstName: document.getElementById('registerFirstName').value,
                 lastName: document.getElementById('registerLastName').value,
                 phone: document.getElementById('registerPhone').value,
+                telegram_id: document.getElementById('registerTelegramId').value,
                 role: document.getElementById('registerRole').value
             };
             
@@ -1948,9 +2443,9 @@
                 
                 if (data.success) {
                     currentUser = data.data.user;
+                    currentSubscription = data.data.subscription;
                     showUserInterface();
                     updateUserInfo();
-                    startNotificationCheck();
                     return true;
                 } else {
                     logout();
@@ -1962,13 +2457,138 @@
             }
         }
         
-        function updateUserInfo() {
+        async function updateUserInfo() {
             if (currentUser) {
                 document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
                 document.getElementById('userRole').textContent = currentUser.role === 'client' ? 'Клиент' : 
                                                                  currentUser.role === 'performer' ? 'Исполнитель' : 
                                                                  currentUser.role;
                 document.getElementById('userAvatar').textContent = currentUser.firstName[0];
+                
+                // Обновляем информацию о подписке
+                const subscription = await getSubscriptionInfo();
+                if (subscription) {
+                    document.getElementById('subscriptionPlan').textContent = subscription.name;
+                    updateUserStats();
+                }
+            }
+        }
+        
+        async function updateUserStats() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const stats = data.data.stats;
+                    const subscription = data.data.subscription;
+                    
+                    if (subscription) {
+                        document.getElementById('tasksStats').textContent = 
+                            `Задач в этом месяце: ${stats.total || 0}/${subscription.tasks_limit}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка обновления статистики:', error);
+            }
+        }
+        
+        async function getSubscriptionInfo() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.subscription) {
+                    return data.data.subscription;
+                }
+            } catch (error) {
+                console.error('Ошибка получения информации о подписке:', error);
+            }
+            
+            return null;
+        }
+        
+        async function checkUserSubscription() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.data.user;
+                    const subscription = data.data.subscription;
+                    
+                    if (user.subscription_status !== 'active') {
+                        return { valid: false, message: 'Подписка не активна' };
+                    }
+                    
+                    if (user.subscription_expires && new Date(user.subscription_expires) < new Date()) {
+                        return { valid: false, message: 'Подписка истекла' };
+                    }
+                    
+                    const stats = data.data.stats;
+                    if (subscription && stats.total >= subscription.tasks_limit) {
+                        return { 
+                            valid: false, 
+                            message: `Лимит задач исчерпан (${subscription.tasks_limit} в месяц)` 
+                        };
+                    }
+                    
+                    currentSubscription = subscription;
+                    return { valid: true };
+                }
+            } catch (error) {
+                console.error('Ошибка проверки подписки:', error);
+            }
+            
+            return { valid: false, message: 'Ошибка проверки подписки' };
+        }
+        
+        async function subscribeToPlan(planName) {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/subscriptions/subscribe', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        plan: planName,
+                        period: 'monthly'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                hideLoading();
+                
+                if (data.success) {
+                    showNotification(`Подписка "${planName}" успешно оформлена!`, 'success');
+                    closeSubscribeModal();
+                    verifyToken(); // Обновляем информацию о пользователе
+                    loadSubscriptions(); // Обновляем отображение подписок
+                } else {
+                    showNotification(data.error || 'Ошибка оформления подписки', 'error');
+                }
+            } catch (error) {
+                hideLoading();
+                showNotification('Ошибка сети', 'error');
             }
         }
         
@@ -1977,47 +2597,9 @@
             localStorage.removeItem('user');
             currentToken = null;
             currentUser = null;
+            currentSubscription = null;
             showGuestInterface();
-            stopNotificationCheck();
             showNotification('Вы вышли из системы', 'info');
-        }
-        
-        function startNotificationCheck() {
-            // Проверяем уведомления каждые 30 секунд
-            notificationCheckInterval = setInterval(async () => {
-                if (currentToken) {
-                    try {
-                        const response = await fetch('/api/notifications', {
-                            headers: {
-                                'Authorization': `Bearer ${currentToken}`
-                            }
-                        });
-                        
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            const oldCount = unreadNotifications;
-                            unreadNotifications = data.data.unreadCount;
-                            
-                            if (unreadNotifications > oldCount) {
-                                updateNotificationCount();
-                                if (unreadNotifications > 0 && oldCount === 0) {
-                                    showNotification('У вас новые уведомления', 'info');
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Ошибка проверки уведомлений:', error);
-                    }
-                }
-            }, 30000);
-        }
-        
-        function stopNotificationCheck() {
-            if (notificationCheckInterval) {
-                clearInterval(notificationCheckInterval);
-                notificationCheckInterval = null;
-            }
         }
         
         // Вспомогательные функции
@@ -2026,44 +2608,30 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
         
-        function formatRevenue(num) {
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1) + 'M';
-            } else if (num >= 1000) {
-                return (num / 1000).toFixed(1) + 'K';
-            }
-            return formatNumber(num);
-        }
-        
-        function getCategoryIcon(category) {
-            const icons = {
-                'home_and_household': '🏠',
-                'family_and_children': '👨‍👩‍👧‍👦',
-                'beauty_and_health': '💅',
-                'courses_and_education': '🎓',
-                'pets': '🐶',
-                'events_and_entertainment': '🎉',
-                'other': '✨'
-            };
-            return icons[category] || '✨';
-        }
-        
-        function getRatingStars(rating) {
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 >= 0.5;
-            let starsHtml = '';
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
             
-            for (let i = 1; i <= 5; i++) {
-                if (i <= fullStars) {
-                    starsHtml += '<i class="fas fa-star star"></i>';
-                } else if (i === fullStars + 1 && hasHalfStar) {
-                    starsHtml += '<i class="fas fa-star-half-alt star"></i>';
-                } else {
-                    starsHtml += '<i class="far fa-star star empty"></i>';
-                }
-            }
+            let interval = Math.floor(seconds / 31536000);
+            if (interval > 1) return `${interval} лет назад`;
+            if (interval === 1) return 'год назад';
             
-            return starsHtml;
+            interval = Math.floor(seconds / 2592000);
+            if (interval > 1) return `${interval} месяцев назад`;
+            if (interval === 1) return 'месяц назад';
+            
+            interval = Math.floor(seconds / 86400);
+            if (interval > 1) return `${interval} дней назад`;
+            if (interval === 1) return 'вчера';
+            
+            interval = Math.floor(seconds / 3600);
+            if (interval > 1) return `${interval} часов назад`;
+            if (interval === 1) return 'час назад';
+            
+            interval = Math.floor(seconds / 60);
+            if (interval > 1) return `${interval} минут назад`;
+            if (interval === 1) return 'минуту назад';
+            
+            return 'только что';
         }
         
         function prefillTaskForm(service) {
@@ -2073,18 +2641,24 @@
                 return;
             }
             
-            openTaskModal();
-            
-            document.getElementById('taskTitle').value = service.name;
-            document.getElementById('taskDescription').value = service.description;
-            document.getElementById('taskCategory').value = service.category;
-            document.getElementById('taskSubcategory').value = service.subcategories?.[0] || '';
-            document.getElementById('taskPrice').value = service.priceOptions?.oneTime || service.priceOptions?.hourly || 2000;
-            
-            // Устанавливаем срок на 3 дня вперед
-            const deadline = new Date();
-            deadline.setDate(deadline.getDate() + 3);
-            document.getElementById('taskDeadline').value = deadline.toISOString().split('T')[0];
+            checkUserSubscription().then(subscription => {
+                if (!subscription.valid) {
+                    showNotification(subscription.message, 'warning');
+                    openSubscribeModal();
+                    return;
+                }
+                
+                openTaskModal();
+                
+                document.getElementById('taskTitle').value = service.name;
+                document.getElementById('taskDescription').value = service.description;
+                document.getElementById('taskCategory').value = service.category;
+                
+                // Устанавливаем срок на 3 дня вперед
+                const deadline = new Date();
+                deadline.setDate(deadline.getDate() + 3);
+                document.getElementById('taskDeadline').value = deadline.toISOString().split('T')[0];
+            });
         }
         
         function updateServerTime() {
@@ -2097,54 +2671,27 @@
             
             // Можно добавить отображение времени в футере
             const serverTimeEl = document.getElementById('serverTime');
-            if (!serverTimeEl) {
-                const copyright = document.querySelector('.copyright');
-                if (copyright) {
-                    const timeEl = document.createElement('p');
-                    timeEl.id = 'serverTime';
-                    timeEl.style.marginTop = '10px';
-                    timeEl.style.fontSize = '0.875rem';
-                    timeEl.style.opacity = '0.7';
-                    timeEl.textContent = `Время сервера: ${dateString} ${timeString}`;
-                    copyright.appendChild(timeEl);
-                }
-            } else {
-                serverTimeEl.textContent = `Время сервера: ${dateString} ${timeString}`;
+            if (serverTimeEl) {
+                serverTimeEl.textContent = `🕐 ${dateString} ${timeString}`;
             }
         }
         
         // Информационные функции
         
-        function showServices() {
-            // Прокручиваем к категориям услуг
-            document.querySelector('.section-title').scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-        
-        function showProfile() {
-            if (!currentUser) {
-                openLoginModal();
-                return;
-            }
-            openProfileModal();
-        }
-        
         function showAbout() {
-            alert(`🎀 Консьерж Сервис\n\nВерсия: 4.2.0\n\nСервис создан для решения бытовых задач и организации жизни. Мы помогаем освободить время для действительно важных вещей!\n\nМы не просто выполняем задачи - мы создаем комфорт и заботимся о наших клиентах.`);
+            alert(`🎀 Консьерж Сервис v4.3.0\n\nВаш персональный помощник для решения бытовых задач!\n\nОсобенности:\n• Розовая стилистика с градиентами\n• Полная адаптация под мобильные устройства\n• Система подписок (не оплата за услугу)\n• Telegram бот с командами /start и /admin\n• Готово к продакшену\n\nМы заботимся о вашем комфорте!`);
         }
         
         function showContacts() {
-            alert(`📞 Контакты\n\nТелефон поддержки: +7 (999) 123-45-67\nEmail: info@concierge-service.ru\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
+            alert(`📞 Контакты\n\nТелефон поддержки: +7 (999) 123-45-67\nEmail: info@concierge-service.ru\nTelegram: @concierge_support\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
         }
         
         function showFAQ() {
-            alert(`❓ Частые вопросы\n\n1. Как создать задачу?\n- Нажмите "Создать задачу", заполните форму и отправьте запрос.\n\n2. Сколько это стоит?\n- Цена зависит от задачи. Вы сами указываете бюджет.\n\n3. Как отменить задачу?\n- В деталях задачи нажмите "Отменить".\n\n4. Как оценить услугу?\n- После завершения задачи вам будет предложено поставить оценку.\n\n5. Как стать исполнителем?\n- Зарегистрируйтесь с ролью "Оказывать услуги".`);
+            alert(`❓ Частые вопросы\n\n1. Как работает система подписок?\n- Выбираете подписку, оплачиваете, создаете задачи в рамках лимита.\n\n2. Сколько задач входит в подписку?\n- Базовая: 3 задачи/мес, Премиум: 10 задач/мес, Бизнес: неограниченно.\n\n3. Как отменить задачу?\n- В деталях задачи нажмите "Отменить".\n\n4. Как стать исполнителем?\n- Зарегистрируйтесь с ролью "Оказывать услуги".\n\n5. Есть ли пробный период?\n- Да, бесплатная подписка включает 1 задачу в месяц.`);
         }
         
         function showPrivacy() {
-            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших данных:\n\n• Все данные шифруются\n• Не передаем информацию третьим лицам\n• Вы можете удалить аккаунт в любой момент\n• Используем безопасные методы оплаты\n\nПо вопросам защиты данных: privacy@concierge-service.ru`);
+            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших данных:\n\n• Все данные шифруются по протоколу HTTPS\n• Не передаем информацию третьим лицам\n• Вы можете удалить аккаунт в любой момент\n• Используем безопасные методы оплаты\n• Регулярное резервное копирование\n\nПо вопросам защиты данных: privacy@concierge-service.ru`);
         }
         
         // Демо-функции для тестирования
@@ -2154,20 +2701,9 @@
             login();
         }
         
-        function demoRegister() {
-            document.getElementById('registerFirstName').value = 'Демо';
-            document.getElementById('registerLastName').value = 'Пользователь';
-            document.getElementById('registerEmail').value = 'demo@example.com';
-            document.getElementById('registerPassword').value = 'demo123';
-            document.getElementById('registerPhone').value = '+79990001122';
-            
-            const event = new Event('submit');
-            document.getElementById('registerForm').dispatchEvent(event);
-        }
-        
-        // Для отладки - добавьте кнопку в консоли
+        // Для отладки
         console.log('Для быстрого входа используйте: demoLogin()');
-        console.log('Для быстрой регистрации используйте: demoRegister()');
+        console.log('Система готова к продакшену! 🚀');
     </script>
 </body>
 </html>
