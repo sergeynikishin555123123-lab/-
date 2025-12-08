@@ -2,27 +2,30 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Устанавливаем системные зависимости
-RUN apk add --no-cache curl
-
-# Копируем package.json
+# Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm ci --only=production --no-audit
+# Создаем package-lock.json если его нет
+RUN npm init -y 2>/dev/null || true && \
+    if [ ! -f package-lock.json ]; then \
+        npm install --package-lock-only --no-audit; \
+    fi
+
+# Устанавливаем зависимости только для production
+RUN npm ci --only=production --no-audit --prefer-offline
 
 # Копируем остальные файлы
 COPY . .
 
-# Создаем директории
+# Создаем необходимые директории
 RUN mkdir -p logs uploads exports
 
 # Открываем порт
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+# Health check для TimeWeb
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-# Запуск
-CMD ["npm", "start"]
+# Запуск приложения
+CMD ["node", "server.js"]
