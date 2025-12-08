@@ -1880,18 +1880,24 @@
             });
         }
         
-        function setupCategoryFilters() {
-            const categoryBtns = document.querySelectorAll('.category-btn');
-            categoryBtns.forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    categoryBtns.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    const category = this.dataset.category;
-                    loadHelp(category);
-                });
+       function setupCategoryFilters() {
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            categoryBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const category = this.dataset.category;
+            loadHelp(category);
+            
+            // Прокручиваем к услугам
+            document.querySelector('#helpGrid').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
             });
-        }
+        });
+    });
+}
         
         // Функции загрузки данных
         
@@ -1938,27 +1944,60 @@
         }
         
         async function loadHelp(category = 'all') {
-            const helpGrid = document.getElementById('helpGrid');
-            helpGrid.innerHTML = '<div class="loader"></div>';
-            
-            try {
-                let url = '/api/services?limit=6';
-                if (category !== 'all') {
-                    url += `&category=${category}`;
-                }
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.success && data.data.services.length > 0) {
-                    renderHelp(data.data.services);
-                } else {
-                    renderDemoHelp();
-                }
-            } catch (error) {
-                renderDemoHelp();
+    const helpGrid = document.getElementById('helpGrid');
+    helpGrid.innerHTML = '<div class="loader"></div>';
+    
+    try {
+        const response = await fetch('/api/services');
+        const data = await response.json();
+        
+        if (data.success && data.data.services.length > 0) {
+            // Фильтруем услуги по категории
+            let services = data.data.services;
+            if (category !== 'all') {
+                services = services.filter(service => service.category === category);
             }
+            
+            if (services.length > 0) {
+                renderHelp(services);
+            } else {
+                renderEmptyHelp(category);
+            }
+        } else {
+            renderDemoHelp(category);
         }
+    } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        renderDemoHelp(category);
+    }
+}
+
+function renderEmptyHelp(category) {
+    const helpGrid = document.getElementById('helpGrid');
+    const categoryNames = {
+        'all': 'всех категорий',
+        'home_and_household': 'Дом и быт',
+        'family_and_children': 'Дети и семья',
+        'beauty_and_health': 'Красота и здоровье',
+        'courses_and_education': 'Образование',
+        'pets': 'Питомцы',
+        'events_and_entertainment': 'Мероприятия'
+    };
+    
+    helpGrid.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3 style="margin-bottom: 16px; color: var(--gray-700);">Услуг в категории "${categoryNames[category] || category}" пока нет</h3>
+            <p style="margin-bottom: 32px; color: var(--gray-500); max-width: 400px; margin-left: auto; margin-right: auto;">
+                Мы активно работаем над добавлением новых услуг. Попробуйте выбрать другую категорию.
+            </p>
+            <button class="btn btn-primary" onclick="document.querySelector('[data-category=\"all\"]').click()">
+                <i class="fas fa-star"></i>
+                Показать все услуги
+            </button>
+        </div>
+    `;
+}
         
         function renderHelp(services) {
             const helpGrid = document.getElementById('helpGrid');
@@ -1989,133 +2028,182 @@
             });
         }
         
-        function renderDemoHelp() {
-            const demoHelp = [
-                {
-                    name: 'Уборка квартиры',
-                    description: 'Генеральная уборка, помощь в организации пространства, мытье окон, уборка после ремонта.',
-                    category: 'home_and_household',
-                    icon: '🧹',
-                    is_popular: true
-                },
-                {
-                    name: 'Присмотр за детьми',
-                    description: 'Няня на несколько часов, помощь с уроками, прогулки, развивающие занятия.',
-                    category: 'family_and_children',
-                    icon: '👶',
-                    is_popular: true
-                },
-                {
-                    name: 'Маникюр на дому',
-                    description: 'Профессиональный маникюр с выездом на дом, укрепление ногтей, аппаратный маникюр.',
-                    category: 'beauty_and_health',
-                    icon: '💅',
-                    is_popular: true
-                },
-                {
-                    name: 'Репетиторство',
-                    description: 'Помощь с домашними заданиями, подготовка к экзаменам, занятия по школьным предметам.',
-                    category: 'courses_and_education',
-                    icon: '📚',
-                    is_popular: false
-                },
-                {
-                    name: 'Выгул собак',
-                    description: 'Прогулка с питомцем, кормление, уход за животными, передержка на время отъезда.',
-                    category: 'pets',
-                    icon: '🐕',
-                    is_popular: false
-                },
-                {
-                    name: 'Организация праздника',
-                    description: 'Помощь в организации детских и семейных праздников, дней рождений, торжественных мероприятий.',
-                    category: 'events_and_entertainment',
-                    icon: '🎂',
-                    is_popular: true
-                }
-            ];
-            
-            renderHelp(demoHelp);
+       function renderDemoHelp(category = 'all') {
+    const demoHelp = [
+        {
+            id: 1,
+            name: 'Уборка квартиры',
+            description: 'Генеральная уборка, помощь в организации пространства, мытье окон, уборка после ремонта.',
+            category: 'home_and_household',
+            icon: '🧹',
+            is_popular: true
+        },
+        {
+            id: 2,
+            name: 'Присмотр за детьми',
+            description: 'Няня на несколько часов, помощь с уроками, прогулки, развивающие занятия.',
+            category: 'family_and_children',
+            icon: '👶',
+            is_popular: true
+        },
+        {
+            id: 3,
+            name: 'Маникюр на дому',
+            description: 'Профессиональный маникюр с выездом на дом, укрепление ногтей, аппаратный маникюр.',
+            category: 'beauty_and_health',
+            icon: '💅',
+            is_popular: true
+        },
+        {
+            id: 4,
+            name: 'Репетиторство',
+            description: 'Помощь с домашними заданиями, подготовка к экзаменам, занятия по школьным предметам.',
+            category: 'courses_and_education',
+            icon: '📚',
+            is_popular: false
+        },
+        {
+            id: 5,
+            name: 'Выгул собак',
+            description: 'Прогулка с питомцем, кормление, уход за животными, передержка на время отъезда.',
+            category: 'pets',
+            icon: '🐕',
+            is_popular: false
+        },
+        {
+            id: 6,
+            name: 'Организация праздника',
+            description: 'Помощь в организации детских и семейных праздников, дней рождений, торжественных мероприятий.',
+            category: 'events_and_entertainment',
+            icon: '🎂',
+            is_popular: true
         }
+    ];
+    
+    // Фильтруем по категории если нужно
+    let services = demoHelp;
+    if (category !== 'all') {
+        services = demoHelp.filter(service => service.category === category);
+    }
+    
+    if (services.length > 0) {
+        renderHelp(services);
+    } else {
+        renderEmptyHelp(category);
+    }
+}
         
         async function loadSubscriptions() {
-            try {
-                const response = await fetch('/api/subscriptions');
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderSubscriptions(data.data.subscriptions);
-                }
-            } catch (error) {
-                renderDemoSubscriptions();
-            }
+    try {
+        const response = await fetch('/api/subscriptions');
+        const data = await response.json();
+        
+        if (data.success && data.data.subscriptions.length > 0) {
+            renderSubscriptions(data.data.subscriptions);
+        } else {
+            renderDemoSubscriptions();
         }
+    } catch (error) {
+        console.error('Ошибка загрузки подписок:', error);
+        renderDemoSubscriptions();
+    }
+}
         
         function renderSubscriptions(subscriptions) {
-            const grid = document.getElementById('subscriptionsGrid');
-            grid.innerHTML = '';
+    const grid = document.getElementById('subscriptionsGrid');
+    grid.innerHTML = '';
+    
+    const planNames = {
+        'free': 'Бесплатная',
+        'basic': 'Базовая',
+        'premium': 'Премиум',
+        'business': 'Бизнес'
+    };
+    
+    subscriptions.forEach(sub => {
+        const features = typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features;
+        const featuresHtml = Array.isArray(features) 
+            ? features.map(f => `<div class="feature-badge"><i class="fas fa-check"></i> ${f}</div>`).join('')
+            : '';
+        
+        const card = document.createElement('div');
+        card.className = `subscription-card ${sub.is_popular ? 'popular' : ''}`;
+        
+        const displayName = planNames[sub.name] || sub.name;
+        const isCurrentPlan = currentUser && currentUser.subscription_plan === sub.name;
+        
+        card.innerHTML = `
+            ${sub.is_popular ? '<div class="popular-badge">Популярно</div>' : ''}
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 16px;">${displayName}</h3>
+            <p style="color: var(--gray-600); margin-bottom: 24px;">${sub.description}</p>
             
-            subscriptions.forEach(sub => {
-                const features = JSON.parse(sub.features);
-                const featuresHtml = features.map(f => `<div class="feature-badge"><i class="fas fa-check"></i> ${f}</div>`).join('');
-                
-                const card = document.createElement('div');
-                card.className = `subscription-card ${sub.is_popular ? 'popular' : ''}`;
-                card.innerHTML = `
-                    ${sub.is_popular ? '<div class="popular-badge">Популярно</div>' : ''}
-                    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--gray-900); margin-bottom: 16px;">${sub.name}</h3>
-                    <p style="color: var(--gray-600); margin-bottom: 24px;">${sub.description}</p>
-                    
-                    <div class="subscription-price">
-                        ${sub.price_monthly}₽ <span>/ месяц</span>
-                    </div>
-                    
-                    <div style="margin: 32px 0;">
-                        ${featuresHtml}
-                    </div>
-                    
-                    ${currentUser ? `
-                        <button class="btn btn-primary btn-full" onclick="subscribeToPlan('${sub.name}')" ${currentUser.subscription_plan === sub.name ? 'disabled style="opacity: 0.6;"' : ''}>
-                            ${currentUser.subscription_plan === sub.name ? '✅ Текущий план' : 'Выбрать план'}
-                        </button>
-                    ` : `
-                        <button class="btn btn-primary btn-full" onclick="openLoginModal()">
-                            Выбрать план
-                        </button>
-                    `}
-                `;
-                
-                grid.appendChild(card);
-            });
-        }
+            <div class="subscription-price">
+                ${sub.price_monthly}₽ <span>/ месяц</span>
+            </div>
+            
+            <div style="margin: 32px 0;">
+                ${featuresHtml}
+            </div>
+            
+            ${currentUser ? `
+                <button class="btn ${isCurrentPlan ? 'btn-success' : 'btn-primary'} btn-full" 
+                        onclick="${isCurrentPlan ? '' : `subscribeToPlan('${sub.name}')`}" 
+                        ${isCurrentPlan ? 'disabled style="opacity: 0.7;"' : ''}>
+                    ${isCurrentPlan ? '✅ Текущий план' : 'Выбрать план'}
+                </button>
+            ` : `
+                <button class="btn btn-primary btn-full" onclick="openLoginModal()">
+                    Выбрать план
+                </button>
+            `}
+        `;
+        
+        grid.appendChild(card);
+    });
+}
         
         function renderDemoSubscriptions() {
-            const demoSubscriptions = [
-                {
-                    name: 'basic',
-                    description: 'Для регулярных бытовых задач',
-                    price_monthly: 990,
-                    features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
-                    is_popular: true
-                },
-                {
-                    name: 'premium',
-                    description: 'Для максимального комфорта',
-                    price_monthly: 2990,
-                    features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
-                    is_popular: false
-                },
-                {
-                    name: 'business',
-                    description: 'Для бизнеса и семьи',
-                    price_monthly: 9990,
-                    features: '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика"]',
-                    is_popular: false
-                }
-            ];
-            
-            renderSubscriptions(demoSubscriptions);
+    const demoSubscriptions = [
+        {
+            name: 'free',
+            description: 'Для знакомства с сервисом',
+            price_monthly: 0,
+            price_yearly: 0,
+            tasks_limit: 1,
+            features: '["1 задача в месяц", "Базовые категории", "Поддержка в чате"]',
+            is_popular: false
+        },
+        {
+            name: 'basic',
+            description: 'Для регулярных бытовых задач',
+            price_monthly: 990,
+            price_yearly: 9900,
+            tasks_limit: 3,
+            features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
+            is_popular: true
+        },
+        {
+            name: 'premium',
+            description: 'Для максимального комфорта',
+            price_monthly: 2990,
+            price_yearly: 29900,
+            tasks_limit: 10,
+            features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
+            is_popular: false
+        },
+        {
+            name: 'business',
+            description: 'Для бизнеса и семьи',
+            price_monthly: 9990,
+            price_yearly: 99900,
+            tasks_limit: 999,
+            features: '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика", "API доступ"]',
+            is_popular: false
         }
+    ];
+    
+    renderSubscriptions(demoSubscriptions);
+}
         
         async function loadUserTasks() {
             if (!currentUser) {
@@ -2431,31 +2519,42 @@
             }
         }
         
-        async function verifyToken() {
-            try {
-                const response = await fetch('/api/auth/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentUser = data.data.user;
-                    currentSubscription = data.data.subscription;
-                    showUserInterface();
-                    updateUserInfo();
-                    return true;
-                } else {
-                    logout();
-                    return false;
-                }
-            } catch (error) {
-                logout();
-                return false;
+      async function verifyToken() {
+    try {
+        const response = await fetch('/api/auth/profile', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
             }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = data.data.user;
+            currentSubscription = data.data.subscription;
+            showUserInterface();
+            updateUserInfo();
+            
+            // Обновляем информацию о подписке в UI
+            if (currentSubscription) {
+                document.getElementById('subscriptionPlan').textContent = 
+                    currentSubscription.name === 'free' ? 'Бесплатная' :
+                    currentSubscription.name === 'basic' ? 'Базовая' :
+                    currentSubscription.name === 'premium' ? 'Премиум' :
+                    currentSubscription.name === 'business' ? 'Бизнес' : currentSubscription.name;
+            }
+            
+            return true;
+        } else {
+            logout();
+            return false;
         }
+    } catch (error) {
+        console.error('Ошибка проверки токена:', error);
+        logout();
+        return false;
+    }
+}
         
         async function updateUserInfo() {
             if (currentUser) {
