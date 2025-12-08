@@ -236,6 +236,21 @@ const createTestData = async () => {
 
         console.log('✅ Подписки созданы');
 
+// Тестовые подписки для демонстрации
+console.log('✅ Создаю тестовые подписки...');
+
+// Активируем бесплатную подписку для тестового пользователя
+await db.run(
+    `UPDATE users SET subscription_plan = 'free', subscription_status = 'active', subscription_expires = '2025-12-31' WHERE email = 'test@example.com'`
+);
+
+console.log('✅ Тестовые аккаунты настроены:');
+console.log('👑 Суперадмин: superadmin@concierge.com / admin123 (business подписка)');
+console.log('👩‍💼 Админ: admin@concierge.com / admin123 (premium подписка)');
+console.log('👩 Клиент: maria@example.com / client123 (basic подписка)');
+console.log('👨‍🏫 Исполнитель: elena@performer.com / performer123 (premium подписка)');
+console.log('🎯 Демо: test@example.com / test123 (free подписка)');
+        
         // Тестовые услуги
         const services = [
             ['Уборка квартиры', 'Генеральная уборка, помощь в организации пространства', 'home_and_household', '🧹', 1, 1],
@@ -281,75 +296,354 @@ const createTestData = async () => {
 // ==================== ИНИЦИАЛИЗАЦИЯ TELEGRAM BOT ====================
 const initTelegramBot = () => {
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const ADMIN_TELEGRAM_ID = '898508164'; // Ваш ID администратора
     
     if (TelegramBot && TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN_HERE') {
         try {
             telegramBot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
             
-            telegramBot.onText(/\/start/, (msg) => {
+            console.log('🤖 Telegram Bot запущен для пользователя:', ADMIN_TELEGRAM_ID);
+            
+            // Команда /start
+            telegramBot.onText(/\/start/, async (msg) => {
                 const chatId = msg.chat.id;
-                const welcomeMessage = `🎀 Добро пожаловать в Консьерж Сервис!\n\n` +
-                    `Я ваш персональный помощник в бытовых вопросах.\n\n` +
-                    `Доступные команды:\n` +
-                    `/start - Начало работы\n` +
-                    `/help - Помощь\n` +
-                    `/status - Статус сервиса\n` +
-                    `/admin - Связь с администратором\n` +
-                    `/subscribe - Информация о подписках`;
+                const userName = msg.from.first_name || 'пользователь';
                 
-                telegramBot.sendMessage(chatId, welcomeMessage);
+                // Проверяем, админ ли это
+                const isAdmin = msg.from.id.toString() === ADMIN_TELEGRAM_ID;
+                
+                const welcomeMessage = `🎀 Привет, ${userName}! Добро пожаловать в Консьерж Сервис!\n\n` +
+                    `Я ваш персональный помощник в бытовых вопросах.\n\n` +
+                    `🛠️ Доступные команды:\n` +
+                    `/start - Начало работы\n` +
+                    `/help - Помощь и инструкции\n` +
+                    `/status - Статус системы\n` +
+                    `/admin - Админ-панель\n` +
+                    `/subscribe - Подписки и цены\n` +
+                    `/website - Перейти на сайт`;
+                
+                const options = {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ],
+                            [
+                                { text: '📱 Мобильная версия', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ]
+                        ]
+                    }
+                };
+                
+                // Если это администратор, добавляем кнопку админки
+                if (isAdmin) {
+                    options.reply_markup.inline_keyboard.unshift([
+                        { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' }
+                    ]);
+                }
+                
+                telegramBot.sendMessage(chatId, welcomeMessage, options);
             });
             
+            // Команда /admin
+            telegramBot.onText(/\/admin/, (msg) => {
+                const chatId = msg.chat.id;
+                
+                // Проверяем, является ли пользователь администратором
+                if (msg.from.id.toString() !== ADMIN_TELEGRAM_ID) {
+                    telegramBot.sendMessage(chatId, '⛔ У вас нет доступа к админ-панели.', {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
+                                    { text: '👑 Стать клиентом', callback_data: 'become_client' }
+                                ]
+                            ]
+                        }
+                    });
+                    return;
+                }
+                
+                const adminMessage = `⚙️ Панель администратора\n\n` +
+                    `Добро пожаловать, администратор!\n\n` +
+                    `🔧 Доступные действия:`;
+                
+                telegramBot.sendMessage(chatId, adminMessage, {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '🔧 Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' },
+                                { text: '📊 Статистика', callback_data: 'get_stats' }
+                            ],
+                            [
+                                { text: '👥 Пользователи', callback_data: 'manage_users' },
+                                { text: '📋 Задачи', callback_data: 'manage_tasks' }
+                            ],
+                            [
+                                { text: '🔄 Обновить систему', callback_data: 'refresh_system' }
+                            ],
+                            [
+                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ]
+                        ]
+                    }
+                });
+            });
+            
+            // Команда /website
+            telegramBot.onText(/\/website/, (msg) => {
+                const chatId = msg.chat.id;
+                
+                telegramBot.sendMessage(chatId, '🌐 Перейдите на наш сайт:', {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
+                                { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' }
+                            ],
+                            [
+                                { text: '📱 Мобильная версия', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ]
+                        ]
+                    }
+                });
+            });
+            
+            // Команда /help
             telegramBot.onText(/\/help/, (msg) => {
                 const chatId = msg.chat.id;
                 const helpMessage = `🆘 Помощь по Консьерж Сервису\n\n` +
                     `📋 Как работает сервис:\n` +
                     `1. Выбираете подписку\n` +
                     `2. Создаете задачи\n` +
-                    `3. Исполнители помогают\n\n` +
-                    `🎟️ Подписки:\n` +
-                    `• Базовая: 3 задачи в месяц\n` +
-                    `• Премиум: 10 задач + приоритет\n` +
-                    `• Бизнес: неограниченно + личный менеджер\n\n` +
-                    `💬 Вопросы: @concierge_support`;
+                    `3. Исполнители помогают\n` +
+                    `4. Оцениваете результат\n\n` +
+                    `🎟️ Система подписок:\n` +
+                    `• Бесплатная: 1 задача/мес\n` +
+                    `• Базовая: 3 задачи/мес - 990₽\n` +
+                    `• Премиум: 10 задач/мес - 2 990₽\n` +
+                    `• Бизнес: неограниченно - 9 990₽\n\n` +
+                    `💖 Преимущества:\n` +
+                    `• Оплата по подписке, не за услугу\n` +
+                    `• Проверенные исполнители\n` +
+                    `• Гарантия качества\n` +
+                    `• Поддержка 24/7`;
                 
-                telegramBot.sendMessage(chatId, helpMessage);
+                telegramBot.sendMessage(chatId, helpMessage, {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ],
+                            [
+                                { text: '💖 Оформить подписку', callback_data: 'subscribe' }
+                            ]
+                        ]
+                    }
+                });
             });
             
-            telegramBot.onText(/\/status/, (msg) => {
+            // Команда /status
+            telegramBot.onText(/\/status/, async (msg) => {
                 const chatId = msg.chat.id;
-                const statusMessage = `📊 Статус системы:\n\n` +
-                    `✅ Веб-сайт: Работает\n` +
-                    `✅ База данных: Активна\n` +
-                    `✅ API: Доступен\n` +
-                    `✅ Подписки: Активны\n\n` +
-                    `🔄 Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
                 
-                telegramBot.sendMessage(chatId, statusMessage);
+                try {
+                    const response = await fetch('http://localhost:3000/health');
+                    const data = await response.json();
+                    
+                    const statusMessage = `📊 Статус системы:\n\n` +
+                        `✅ Веб-сайт: ${data.success ? 'Работает' : 'Ошибка'}\n` +
+                        `✅ База данных: ${data.database || 'Активна'}\n` +
+                        `✅ Telegram Bot: ${telegramBot ? 'Активен' : 'Отключен'}\n` +
+                        `✅ API: ${data.success ? 'Доступен' : 'Недоступен'}\n` +
+                        `✅ Подписки: Активны\n\n` +
+                        `👥 Пользователей: ${data.users || 'N/A'}\n` +
+                        `📋 Активных задач: ${data.tasks || 'N/A'}\n\n` +
+                        `🔄 Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
+                    
+                    telegramBot.sendMessage(chatId, statusMessage, {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: '🔄 Обновить статус', callback_data: 'refresh_status' },
+                                    { text: '📊 Подробная статистика', callback_data: 'detailed_stats' }
+                                ],
+                                [
+                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                                ]
+                            ]
+                        }
+                    });
+                } catch (error) {
+                    telegramBot.sendMessage(chatId, `⚠️ Ошибка получения статуса: ${error.message}`);
+                }
             });
             
+            // Команда /subscribe
             telegramBot.onText(/\/subscribe/, (msg) => {
                 const chatId = msg.chat.id;
                 const subscribeMessage = `💖 Подписки Консьерж Сервиса\n\n` +
+                    `🎗️ БЕСПЛАТНАЯ\n` +
+                    `• 1 задача в месяц\n` +
+                    `• Базовые категории\n` +
+                    `• Поддержка в чате\n` +
+                    `💰 Цена: 0₽\n\n` +
                     `🎗️ БАЗОВАЯ - 990₽/мес\n` +
                     `• 3 задачи в месяц\n` +
-                    `• Базовые категории\n` +
+                    `• Все категории\n` +
+                    `• Приоритет 48ч\n` +
                     `• Поддержка 24/7\n\n` +
                     `👑 ПРЕМИУМ - 2 990₽/мес\n` +
                     `• 10 задач в месяц\n` +
                     `• Все категории\n` +
-                    `• Приоритетное выполнение\n` +
-                    `• Личный куратор\n\n` +
+                    `• Приоритетное выполнение (24ч)\n` +
+                    `• Личный куратор\n` +
+                    `• Статистика и отчеты\n\n` +
                     `🏢 БИЗНЕС - 9 990₽/мес\n` +
                     `• Неограниченные задачи\n` +
                     `• Все категории + эксклюзив\n` +
+                    `• Приоритет 12ч\n` +
                     `• Личный менеджер\n` +
-                    `• Статистика и отчеты`;
+                    `• Расширенная статистика\n` +
+                    `• API доступ\n\n` +
+                    `💡 Тестовая подписка:\n` +
+                    `Для тестирования системы используйте бесплатную подписку или аккаунт тестового пользователя.\n\n` +
+                    `Тестовый аккаунт:\n` +
+                    `📧 Email: test@example.com\n` +
+                    `🔑 Пароль: test123`;
                 
-                telegramBot.sendMessage(chatId, subscribeMessage);
+                telegramBot.sendMessage(chatId, subscribeMessage, {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '🌐 Оформить на сайте', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
+                                { text: '👑 Выбрать план', callback_data: 'choose_plan' }
+                            ],
+                            [
+                                { text: '📞 Консультация', callback_data: 'consultation' }
+                            ]
+                        ]
+                    }
+                });
             });
             
-            console.log('🤖 Telegram Bot запущен');
+            // Обработка callback-запросов
+            telegramBot.on('callback_query', async (callbackQuery) => {
+                const chatId = callbackQuery.message.chat.id;
+                const data = callbackQuery.data;
+                const messageId = callbackQuery.message.message_id;
+                
+                try {
+                    switch(data) {
+                        case 'refresh_status':
+                            telegramBot.answerCallbackQuery(callbackQuery.id);
+                            telegramBot.deleteMessage(chatId, messageId);
+                            telegramBot.sendMessage(chatId, '🔄 Обновляю статус...');
+                            // Имитируем команду /status
+                            const fakeMsg = { chat: { id: chatId }, from: callbackQuery.from };
+                            telegramBot.onText(/\/status/, fakeMsg);
+                            break;
+                            
+                        case 'get_stats':
+                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Загружаю статистику...' });
+                            // Здесь можно добавить запрос к API для получения статистики
+                            const statsResponse = await fetch('http://localhost:3000/api/admin/stats');
+                            const statsData = await statsResponse.json();
+                            
+                            if (statsData.success) {
+                                const statsMessage = `📊 Статистика системы:\n\n` +
+                                    `👥 Пользователей: ${statsData.data.summary.totalUsers}\n` +
+                                    `📋 Всего задач: ${statsData.data.summary.totalTasks}\n` +
+                                    `✅ Активных подписок: ${statsData.data.summary.activeSubscriptions}\n` +
+                                    `💰 Выручка: ${statsData.data.summary.totalRevenue || 0}₽\n\n` +
+                                    `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`;
+                                
+                                telegramBot.sendMessage(chatId, statsMessage);
+                            }
+                            break;
+                            
+                        case 'subscribe':
+                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Перенаправляю на страницу подписок...' });
+                            telegramBot.sendMessage(chatId, '💖 Для оформления подписки перейдите на наш сайт:', {
+                                reply_markup: {
+                                    inline_keyboard: [
+                                        [
+                                            { text: '🌐 Оформить подписку', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                                        ]
+                                    ]
+                                }
+                            });
+                            break;
+                            
+                        case 'become_client':
+                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Отлично! Регистрируйтесь на сайте!' });
+                            telegramBot.sendMessage(chatId, '🎉 Для регистрации перейдите по ссылке:', {
+                                reply_markup: {
+                                    inline_keyboard: [
+                                        [
+                                            { text: '🌐 Зарегистрироваться', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                                        ]
+                                    ]
+                                }
+                            });
+                            break;
+                            
+                        default:
+                            telegramBot.answerCallbackQuery(callbackQuery.id);
+                    }
+                } catch (error) {
+                    console.error('Ошибка обработки callback:', error);
+                    telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Произошла ошибка' });
+                }
+            });
+            
+            // Обработка текстовых сообщений
+            telegramBot.on('message', (msg) => {
+                // Игнорируем команды, которые уже обработаны
+                if (msg.text && msg.text.startsWith('/')) return;
+                
+                const chatId = msg.chat.id;
+                
+                // Простое эхо для демонстрации
+                if (msg.text) {
+                    telegramBot.sendMessage(chatId, `Вы написали: "${msg.text}"\n\nДля получения помощи используйте команду /help`, {
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
+                                    { text: '🆘 Помощь', callback_data: 'help' }
+                                ]
+                            ]
+                        }
+                    });
+                }
+            });
+            
+            // Отправляем уведомление администратору при запуске
+            if (ADMIN_TELEGRAM_ID) {
+                const adminMessage = `🤖 Консьерж Сервис бот запущен!\n\n` +
+                    `✅ Сервер: Работает\n` +
+                    `✅ Telegram Bot: Активен\n` +
+                    `✅ База данных: Готова\n` +
+                    `✅ Тестовые данные: Созданы\n\n` +
+                    `🕐 Время запуска: ${new Date().toLocaleString('ru-RU')}\n\n` +
+                    `Для управления используйте команды:\n` +
+                    `/admin - Админ-панель\n` +
+                    `/status - Статус системы`;
+                
+                telegramBot.sendMessage(ADMIN_TELEGRAM_ID, adminMessage, {
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' },
+                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
+                            ]
+                        ]
+                    }
+                });
+            }
+            
+            console.log('🤖 Telegram Bot запущен с расширенным функционалом');
             return true;
         } catch (error) {
             console.warn('⚠️ Telegram Bot не запущен:', error.message);
