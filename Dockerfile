@@ -2,16 +2,27 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --only=production
+# Устанавливаем системные зависимости
+RUN apk add --no-cache curl
 
+# Копируем package.json
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm ci --only=production --no-audit
+
+# Копируем остальные файлы
 COPY . .
 
-RUN mkdir -p logs uploads exports public
+# Создаем директории
+RUN mkdir -p logs uploads exports
 
+# Открываем порт
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
 
+# Запуск
 CMD ["npm", "start"]
