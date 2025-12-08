@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎀 Женский Консьерж Сервис</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f9f0ff 0%, #e6f7ff 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 0;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            color: #ff69b4;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 200px;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            color: #ff69b4;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .services {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .service-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .service-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .service-title {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .service-desc {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .price {
+            color: #ff69b4;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 20px;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 10px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255,105,180,0.3);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .service-card {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎀 Женский Консьерж Сервис</h1>
+            <p class="subtitle">Ваш персональный помощник для решения бытовых задач</p>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="usersCount">0</div>
+                    <div class="stat-label">Пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="tasksCount">0</div>
+                    <div class="stat-label">Выполненных задач</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="rating">5.0</div>
+                    <div class="stat-label">Средняя оценка</div>
+                </div>
+            </div>
+        </header>
+        
+        <section class="services">
+            <div class="service-card">
+                <div class="service-icon">🏠</div>
+                <h3 class="service-title">Дом и быт</h3>
+                <p class="service-desc">Уборка, ремонт, организация пространства и помощь по хозяйству</p>
+                <div class="price">от 1500 руб.</div>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">👨‍👩‍👧‍👦</div>
+                <h3 class="service-title">Дети и семья</h3>
+                <p class="service-desc">Няни, репетиторы, организация детских праздников</p>
+                <div class="price">от 1000 руб./час</div>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">💅</div>
+                <h3 class="service-title">Красота и здоровье</h3>
+                <p class="service-desc">Маникюр, стилисты, фитнес-тренеры, массаж на дому</p>
+                <div class="price">от 1200 руб.</div>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">🎓</div>
+                <h3 class="service-title">Курсы и образование</h3>
+                <p class="service-desc">Онлайн и оффлайн курсы, обучение новым навыкам</p>
+                <div class="price">от 800 руб./час</div>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">🐶</div>
+                <h3 class="service-title">Питомцы</h3>
+                <p class="service-desc">Выгул, передержка, груминг, ветеринарные услуги</p>
+                <div class="price">от 500 руб.</div>
+            </div>
+            
+            <div class="service-card">
+                <div class="service-icon">🎉</div>
+                <h3 class="service-title">Мероприятия</h3>
+                <p class="service-desc">Организация праздников, поиск локаций, кейтеринг</p>
+                <div class="price">от 5000 руб.</div>
+            </div>
+        </section>
+        
+        <section class="cta-section">
+            <h2>Готовы заказать услугу?</h2>
+            <p>Создайте задачу и получите помощь в течение 24 часов</p>
+            <div>
+                <a href="#" class="btn" onclick="createTask()">🎀 Создать задачу</a>
+                <a href="#" class="btn" onclick="viewServices()">📋 Все услуги</a>
+            </div>
+        </section>
+        
+        <footer>
+            <p>© 2024 Женский Консьерж Сервис. Все права защищены.</p>
+            <p>Версия: <span id="appVersion">4.0.0</span> | Статус: <span id="appStatus">🟢 Работает</span></p>
+        </footer>
+    </div>
+    
+    <script>
+        // Загружаем статистику
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/admin/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('usersCount').textContent = data.data.totalUsers;
+                    document.getElementById('tasksCount').textContent = data.data.completedTasks;
+                    // Имитируем рейтинг
+                    document.getElementById('rating').textContent = '4.8';
+                }
+            } catch (error) {
+                console.log('Не удалось загрузить статистику');
+            }
+        }
+        
+        function createTask() {
+            const taskData = {
+                title: prompt('Название задачи:', 'Уборка квартиры'),
+                description: prompt('Описание задачи:', 'Нужна генеральная уборка 3-х комнатной квартиры'),
+                category: prompt('Категория (home/family/beauty/courses/pets/events/other):', 'home'),
+                deadline: prompt('Срок (ДД.ММ.ГГГГ):', '25.12.2024'),
+                price: prompt('Бюджет (руб.):', '3000')
+            };
+            
+            if (taskData.title && taskData.description && taskData.category && taskData.deadline && taskData.price) {
+                fetch('/api/tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(taskData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`✅ Задача создана!\nНомер: ${data.data.taskNumber}`);
+                    } else {
+                        alert('❌ Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => alert('❌ Ошибка сети'));
+            }
+        }
+        
+        function viewServices() {
+            fetch('/api/services')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        let message = '🎀 Наши услуги:\n\n';
+                        data.data.forEach(service => {
+                            message += `• ${service.name}\n`;
+                        });
+                        alert(message);
+                    }
+                });
+        }
+        
+        // Загружаем статистику при загрузке страницы
+        loadStats();
+        document.getElementById('appVersion').textContent = '4.0.0';
+    </script>
+</body>
+</html>
