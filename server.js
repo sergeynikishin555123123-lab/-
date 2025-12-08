@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path'); // если еще нет
 const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
@@ -115,8 +117,15 @@ let db;
 
 const initDatabase = async () => {
     try {
+        // Создаем папку для базы данных если её нет
+        const dbDir = path.join(__dirname, 'data');
+        if (!fs.existsSync(dbDir)) {
+            fs.mkdirSync(dbDir, { recursive: true });
+        }
+        
+        // Используем файловую базу данных
         db = await open({
-            filename: 'database.sqlite',
+            filename: path.join(dbDir, 'concierge.db'),
             driver: sqlite3.Database
         });
 
@@ -1239,7 +1248,7 @@ const startServer = async () => {
         console.log('✅ База данных готова');
         
         // Инициализируем Telegram бота
-        initTelegramBot();
+        initTelegramBot();  // ← ЭТУ СТРОКУ ДОБАВИТЬ
         
         const PORT = process.env.PORT || 3000;
         
@@ -1256,14 +1265,6 @@ const startServer = async () => {
             console.log('👩‍💼 Админ: admin@concierge.com / admin123');
             console.log('👩 Клиент: maria@example.com / client123');
             console.log('👨‍🏫 Исполнитель: elena@performer.com / performer123');
-            console.log('🎯 Демо: test@example.com / test123');
-            
-            console.log('\n💖 Особенности системы:');
-            console.log('• Розовая стилистика с градиентами');
-            console.log('• Полная адаптация под мобильные устройства');
-            console.log('• Система подписок (не оплата за услугу)');
-            console.log('• Telegram бот с командами /start и /admin');
-            console.log('• Готово к продакшену');
         });
         
     } catch (error) {
