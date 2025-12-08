@@ -3,29 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Админ-панель - Женский Консьерж</title>
+    <title>🎀 Админ-панель - Консьерж Сервис</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-pink: #ff69b4;
-            --light-pink: #ffb6c1;
-            --dark-pink: #db7093;
-            --primary-purple: #9370db;
+            --primary-color: #7c3aed;
+            --primary-light: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --light-bg: #f8fafc;
             --white: #ffffff;
-            --light-gray: #f8f9fa;
-            --medium-gray: #e9ecef;
-            --dark-gray: #495057;
-            --black: #212529;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.05);
-            --radius: 15px;
-            --radius-sm: 8px;
-            --transition: all 0.3s ease;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --transition: all 0.2s ease;
         }
         
         * {
@@ -35,9 +47,9 @@
         }
         
         body {
-            font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #fff5f7 0%, #f8f0ff 100%);
-            color: var(--black);
+            font-family: 'Inter', sans-serif;
+            background: var(--light-bg);
+            color: var(--gray-800);
             line-height: 1.6;
             min-height: 100vh;
         }
@@ -45,17 +57,17 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
         
         /* Шапка админ-панели */
         .admin-header {
-            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            margin-bottom: 30px;
-            box-shadow: var(--shadow);
+            padding: 24px;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-lg);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -64,9 +76,9 @@
         .admin-title {
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-size: 1.8em;
-            font-weight: 700;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 600;
         }
         
         .admin-info {
@@ -80,37 +92,41 @@
             align-items: center;
             gap: 10px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
+            padding: 8px 16px;
             border-radius: 50px;
+            font-weight: 500;
         }
         
         /* Навигация */
         .admin-nav {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
+            gap: 8px;
+            margin-bottom: 32px;
             flex-wrap: wrap;
+            padding: 0 8px;
         }
         
         .nav-btn {
-            padding: 12px 25px;
+            padding: 12px 20px;
             background: white;
-            border: 2px solid var(--medium-gray);
-            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
             cursor: pointer;
             font-weight: 600;
-            color: var(--dark-gray);
+            color: var(--gray-700);
             transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 8px;
+            text-decoration: none;
+            font-size: 0.875rem;
         }
         
         .nav-btn:hover,
         .nav-btn.active {
-            background: var(--primary-pink);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            border-color: var(--primary-pink);
+            border-color: var(--primary-color);
         }
         
         /* Основной контент */
@@ -131,40 +147,43 @@
         /* Карточки статистики */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
         }
         
         .stat-card {
             background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-light);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
             transition: var(--transition);
-            border-left: 5px solid var(--primary-pink);
+            border: 1px solid var(--gray-200);
+            border-left: 4px solid var(--primary-color);
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
         
         .stat-value {
-            font-size: 2.5em;
+            font-size: 2rem;
             font-weight: 700;
-            color: var(--primary-pink);
-            margin: 10px 0;
+            color: var(--primary-color);
+            margin: 12px 0;
         }
         
         .stat-label {
-            color: var(--dark-gray);
-            font-size: 0.9em;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         
         .stat-change {
-            font-size: 0.85em;
-            margin-top: 5px;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            font-weight: 500;
         }
         
         .stat-change.positive {
@@ -178,18 +197,26 @@
         /* Таблицы */
         .table-container {
             background: white;
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: var(--shadow-light);
-            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            margin-bottom: 32px;
+            border: 1px solid var(--gray-200);
         }
         
         .table-header {
-            background: linear-gradient(135deg, var(--light-pink) 0%, var(--light-pink) 100%);
+            background: var(--gray-50);
             padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table-header h3 {
+            color: var(--gray-900);
+            font-size: 1.125rem;
+            font-weight: 600;
         }
         
         table {
@@ -198,99 +225,106 @@
         }
         
         th {
-            background: var(--light-gray);
-            padding: 15px;
+            background: var(--gray-50);
+            padding: 16px;
             text-align: left;
             font-weight: 600;
-            color: var(--dark-gray);
-            border-bottom: 2px solid var(--medium-gray);
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-300);
+            font-size: 0.875rem;
         }
         
         td {
-            padding: 15px;
-            border-bottom: 1px solid var(--medium-gray);
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-200);
             vertical-align: middle;
+            font-size: 0.875rem;
         }
         
         tr:hover {
-            background: #fff9fb;
+            background: var(--gray-50);
         }
         
         /* Статусы */
         .status-badge {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.75rem;
             font-weight: 600;
         }
         
-        .status-new { background: #e3f2fd; color: #1976d2; }
-        .status-in_progress { background: #fff3e0; color: #f57c00; }
-        .status-completed { background: #e8f5e9; color: #388e3c; }
-        .status-cancelled { background: #ffebee; color: #d32f2f; }
+        .status-new { background: #dbeafe; color: #1d4ed8; }
+        .status-in_progress { background: #fef3c7; color: #d97706; }
+        .status-completed { background: #d1fae5; color: #047857; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
         .status-pending { background: #f3e5f5; color: #7b1fa2; }
         
         .role-badge {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.75rem;
             font-weight: 600;
         }
         
-        .role-client { background: #e8f5e9; color: #388e3c; }
-        .role-performer { background: #e3f2fd; color: #1976d2; }
-        .role-admin { background: #fff3e0; color: #f57c00; }
+        .role-client { background: #d1fae5; color: #047857; }
+        .role-performer { background: #dbeafe; color: #1d4ed8; }
+        .role-admin { background: #fef3c7; color: #d97706; }
         .role-superadmin { background: #f3e5f5; color: #7b1fa2; }
         
         /* Фильтры и поиск */
         .filters {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 16px;
+            margin-bottom: 24px;
             flex-wrap: wrap;
+            padding: 0 8px;
         }
         
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
         
         .filter-label {
-            font-size: 0.9em;
-            color: var(--dark-gray);
-            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            font-weight: 500;
         }
         
         .filter-select,
         .filter-input {
-            padding: 10px 15px;
-            border: 2px solid var(--medium-gray);
-            border-radius: var(--radius-sm);
-            font-family: 'Nunito', sans-serif;
-            min-width: 200px;
+            padding: 10px 14px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            min-width: 180px;
+            font-size: 0.875rem;
+            background: white;
         }
         
         .filter-select:focus,
         .filter-input:focus {
             outline: none;
-            border-color: var(--primary-pink);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
         }
         
         /* Кнопки действий */
         .action-btn {
-            padding: 8px 15px;
+            padding: 8px 16px;
             border: none;
-            border-radius: var(--radius-sm);
+            border-radius: var(--radius);
             cursor: pointer;
             font-weight: 600;
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.9em;
+            gap: 6px;
+            font-size: 0.875rem;
+            text-decoration: none;
         }
         
         .action-btn.view {
@@ -299,7 +333,7 @@
         }
         
         .action-btn.edit {
-            background: var(--warning);
+            background: var(--primary-color);
             color: white;
         }
         
@@ -313,51 +347,15 @@
             color: white;
         }
         
+        .action-btn.logout {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
         .action-btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
-        }
-        
-        /* Графики */
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .chart-container {
-            background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-light);
-        }
-        
-        .chart-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: var(--dark-pink);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        /* Уведомления */
-        .notification-badge {
-            background: var(--danger);
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8em;
-            font-weight: 600;
-            position: absolute;
-            top: -5px;
-            right: -5px;
         }
         
         /* Лоадер */
@@ -365,11 +363,11 @@
             display: inline-block;
             width: 40px;
             height: 40px;
-            border: 4px solid var(--light-pink);
-            border-top: 4px solid var(--primary-pink);
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 50px auto;
+            margin: 60px auto;
             display: block;
         }
         
@@ -378,29 +376,49 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Уведомления */
+        .notification-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+        }
+        
         /* Адаптивность */
         @media (max-width: 768px) {
             .container {
-                padding: 10px;
+                padding: 0 16px;
             }
             
             .admin-header {
                 flex-direction: column;
-                gap: 15px;
+                gap: 16px;
                 text-align: center;
+                padding: 20px 16px;
             }
             
             .admin-nav {
                 justify-content: center;
+                padding: 0;
             }
             
             .nav-btn {
-                padding: 10px 15px;
-                font-size: 0.9em;
+                padding: 10px 16px;
+                font-size: 0.8125rem;
             }
             
             .filters {
                 flex-direction: column;
+                padding: 0;
             }
             
             .filter-select,
@@ -408,13 +426,25 @@
                 min-width: 100%;
             }
             
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            
             table {
                 display: block;
                 overflow-x: auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-nav {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: stretch;
             }
         }
     </style>
@@ -425,7 +455,7 @@
         <div class="admin-header">
             <div class="admin-title">
                 <i class="fas fa-crown"></i>
-                <span>🎀 Админ-панель Женского Консьержа</span>
+                <span>🎀 Админ-панель Консьерж Сервиса</span>
             </div>
             
             <div class="admin-info">
@@ -449,20 +479,14 @@
             <button class="nav-btn" onclick="showTab('users')">
                 <i class="fas fa-users"></i>
                 Пользователи
-                <span class="notification-badge" id="usersBadge" style="display: none;">0</span>
             </button>
             <button class="nav-btn" onclick="showTab('tasks')">
                 <i class="fas fa-tasks"></i>
                 Задачи
-                <span class="notification-badge" id="tasksBadge" style="display: none;">0</span>
             </button>
             <button class="nav-btn" onclick="showTab('services')">
-                <i class="fas fa-hands-helping"></i>
-                Помощь
-            </button>
-            <button class="nav-btn" onclick="showTab('analytics')">
-                <i class="fas fa-chart-line"></i>
-                Аналитика
+                <i class="fas fa-concierge-bell"></i>
+                Услуги
             </button>
             <button class="nav-btn" onclick="showTab('settings')">
                 <i class="fas fa-cog"></i>
@@ -476,49 +500,23 @@
                 <div class="loader"></div>
             </div>
             
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-chart-pie"></i>
-                        Распределение задач по категориям
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-history"></i> Последние задачи</h3>
+                    <div>
+                        <span id="totalTasksCount">0</span> задач всего
                     </div>
-                    <canvas id="categoryChart" height="250"></canvas>
                 </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-chart-bar"></i>
-                        Задачи по статусам
-                    </div>
-                    <canvas id="statusChart" height="250"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-chart-line"></i>
-                        Новые пользователи (30 дней)
-                    </div>
-                    <canvas id="usersChart" height="250"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-money-bill-wave"></i>
-                        Выручка по месяцам
-                    </div>
-                    <canvas id="revenueChart" height="250"></canvas>
+                <div id="recentTasks">
+                    <div class="loader"></div>
                 </div>
             </div>
             
             <div class="table-container">
                 <div class="table-header">
-                    <h3><i class="fas fa-history"></i> Последние задачи</h3>
-                    <button class="action-btn export" onclick="exportData('tasks')">
-                        <i class="fas fa-file-export"></i>
-                        Экспорт
-                    </button>
+                    <h3><i class="fas fa-chart-pie"></i> Статистика по категориям</h3>
                 </div>
-                <div id="recentTasks">
+                <div id="categoryStats">
                     <div class="loader"></div>
                 </div>
             </div>
@@ -543,22 +541,7 @@
                            placeholder="Имя, email или телефон" oninput="loadUsers()">
                 </div>
                 
-                <div class="filter-group">
-                    <div class="filter-label">Статус подписки</div>
-                    <select class="filter-select" id="subscriptionFilter" onchange="loadUsers()">
-                        <option value="all">Все</option>
-                        <option value="active">Активные</option>
-                        <option value="expired">Истекшие</option>
-                        <option value="cancelled">Отмененные</option>
-                    </select>
-                </div>
-                
                 <div style="flex: 1;"></div>
-                
-                <button class="action-btn export" onclick="exportData('users')">
-                    <i class="fas fa-file-export"></i>
-                    Экспорт пользователей
-                </button>
                 
                 <button class="action-btn edit" onclick="showAddUserModal()">
                     <i class="fas fa-user-plus"></i>
@@ -615,13 +598,6 @@
                     <div class="filter-label">Дата по</div>
                     <input type="date" class="filter-input" id="dateTo" onchange="loadTasks()">
                 </div>
-                
-                <div style="flex: 1;"></div>
-                
-                <button class="action-btn export" onclick="exportData('tasks')">
-                    <i class="fas fa-file-export"></i>
-                    Экспорт задач
-                </button>
             </div>
             
             <div class="table-container">
@@ -637,7 +613,7 @@
             </div>
         </div>
         
-        <!-- Контент: Помощь -->
+        <!-- Контент: Услуги -->
         <div id="services" class="admin-content">
             <div class="filters">
                 <div class="filter-group">
@@ -666,74 +642,18 @@
                 
                 <button class="action-btn edit" onclick="showAddServiceModal()">
                     <i class="fas fa-plus"></i>
-                    Добавить помощь
+                    Добавить услугу
                 </button>
             </div>
             
             <div class="table-container">
                 <div class="table-header">
-                    <h3><i class="fas fa-hands-helping"></i> Виды помощи</h3>
+                    <h3><i class="fas fa-concierge-bell"></i> Список услуг</h3>
                     <div>
-                        <span id="servicesCount">0</span> видов помощи
+                        <span id="servicesCount">0</span> услуг
                     </div>
                 </div>
                 <div id="servicesTable">
-                    <div class="loader"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Контент: Аналитика -->
-        <div id="analytics" class="admin-content">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Конверсия клиентов</div>
-                    <div class="stat-value" id="conversionRate">0%</div>
-                    <div class="stat-change positive">+5.2% за месяц</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">Средний чек</div>
-                    <div class="stat-value" id="avgOrderValue">0 ₽</div>
-                    <div class="stat-change positive">+12% за месяц</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">Удовлетворенность</div>
-                    <div class="stat-value" id="satisfactionRate">0%</div>
-                    <div class="stat-change positive">+3.1% за месяц</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-label">Повторные обращения</div>
-                    <div class="stat-value" id="repeatRate">0%</div>
-                    <div class="stat-change negative">-2.4% за месяц</div>
-                </div>
-            </div>
-            
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-chart-area"></i>
-                        Активность по часам
-                    </div>
-                    <canvas id="activityChart" height="250"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <i class="fas fa-map-marked-alt"></i>
-                        География заказов
-                    </div>
-                    <canvas id="geoChart" height="250"></canvas>
-                </div>
-            </div>
-            
-            <div class="table-container">
-                <div class="table-header">
-                    <h3><i class="fas fa-star"></i> Топ исполнителей</h3>
-                </div>
-                <div id="topPerformers">
                     <div class="loader"></div>
                 </div>
             </div>
@@ -746,32 +666,32 @@
                     <h3><i class="fas fa-cog"></i> Настройки системы</h3>
                 </div>
                 
-                <div style="padding: 30px;">
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Основные настройки</h3>
+                <div style="padding: 32px;">
+                    <div style="margin-bottom: 32px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 16px;">Основные настройки</h3>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                             <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Название сервиса</label>
-                                <input type="text" class="filter-input" value="Женский Консьерж Сервис" style="width: 100%;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Название сервиса</label>
+                                <input type="text" class="filter-input" value="Консьерж Сервис" style="width: 100%;">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Контактный email</label>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Контактный email</label>
                                 <input type="email" class="filter-input" value="info@concierge-service.ru" style="width: 100%;">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Телефон поддержки</label>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Телефон поддержки</label>
                                 <input type="tel" class="filter-input" value="+7 (999) 123-45-67" style="width: 100%;">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Комиссия сервиса (%)</label>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Комиссия сервиса (%)</label>
                                 <input type="number" class="filter-input" value="15" min="0" max="50" style="width: 100%;">
                             </div>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Уведомления</h3>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="margin-bottom: 32px;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 16px;">Уведомления</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
                             <label style="display: flex; align-items: center; gap: 10px;">
                                 <input type="checkbox" checked>
                                 <span>Email уведомления о новых задачах</span>
@@ -780,35 +700,10 @@
                                 <input type="checkbox" checked>
                                 <span>SMS уведомления клиентам</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox">
-                                <span>Уведомления в Telegram</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 10px;">
-                                <input type="checkbox" checked>
-                                <span>Ежедневные отчеты на email</span>
-                            </label>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 30px;">
-                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Безопасность</h3>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Требовать двухфакторную аутентификацию для админов</label>
-                                <select class="filter-select" style="width: 200px;">
-                                    <option value="true">Да</option>
-                                    <option value="false" selected>Нет</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Автоматическое разлогинивание через (минут)</label>
-                                <input type="number" class="filter-input" value="60" min="5" style="width: 200px;">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="action-btn edit" style="padding: 12px 30px;">
+                    <button class="action-btn edit" style="padding: 12px 24px;">
                         <i class="fas fa-save"></i>
                         Сохранить изменения
                     </button>
@@ -817,71 +712,14 @@
         </div>
     </div>
     
-    <!-- Модальные окна -->
-    <div class="modal" id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
-        <div style="background: white; border-radius: var(--radius); padding: 30px; width: 90%; max-width: 500px;">
-            <h2 style="color: var(--primary-pink); margin-bottom: 20px;">Добавить пользователя</h2>
-            <form id="addUserForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Имя</label>
-                        <input type="text" class="filter-input" required style="width: 100%;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Фамилия</label>
-                        <input type="text" class="filter-input" required style="width: 100%;">
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email</label>
-                    <input type="email" class="filter-input" required style="width: 100%;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Пароль</label>
-                    <input type="password" class="filter-input" required style="width: 100%;">
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Телефон</label>
-                        <input type="tel" class="filter-input" style="width: 100%;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Роль</label>
-                        <select class="filter-select" style="width: 100%;">
-                            <option value="client">Клиент</option>
-                            <option value="performer">Исполнитель</option>
-                            <option value="admin">Администратор</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 25px;">
-                    <button type="button" class="action-btn delete" onclick="hideAddUserModal()" style="flex: 1;">
-                        Отмена
-                    </button>
-                    <button type="submit" class="action-btn edit" style="flex: 1;">
-                        <i class="fas fa-save"></i>
-                        Сохранить
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Глобальные переменные
         let currentUser = null;
         let currentToken = localStorage.getItem('adminToken');
-        let charts = {};
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', async function() {
             if (!currentToken) {
-                // Если нет токена, показываем форму входа
                 showLoginModal();
             } else {
                 await verifyToken();
@@ -894,34 +732,31 @@
             
             document.getElementById('dateFrom').value = monthAgo.toISOString().split('T')[0];
             document.getElementById('dateTo').value = today.toISOString().split('T')[0];
-            
-            // Запускаем обновление уведомлений
-            setInterval(updateNotificationCounts, 30000);
         });
         
         // Функции аутентификации
         function showLoginModal() {
             const loginHTML = `
-                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%); display: flex; justify-content: center; align-items: center; z-index: 2000;">
-                    <div style="background: white; border-radius: var(--radius); padding: 40px; width: 90%; max-width: 400px; text-align: center;">
-                        <h2 style="color: var(--primary-pink); margin-bottom: 30px;">
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%); display: flex; justify-content: center; align-items: center; z-index: 2000;">
+                    <div style="background: white; border-radius: var(--radius-lg); padding: 40px; width: 90%; max-width: 400px; text-align: center; box-shadow: var(--shadow-lg);">
+                        <h2 style="color: var(--primary-color); margin-bottom: 24px;">
                             <i class="fas fa-crown"></i>
                             Админ-панель
                         </h2>
-                        <p style="color: var(--dark-gray); margin-bottom: 30px;">Войдите в систему</p>
+                        <p style="color: var(--gray-600); margin-bottom: 32px;">Войдите в систему</p>
                         
-                        <div style="margin-bottom: 20px;">
-                            <input type="email" id="loginEmail" class="filter-input" placeholder="Email" style="width: 100%; margin-bottom: 15px;">
-                            <input type="password" id="loginPassword" class="filter-input" placeholder="Пароль" style="width: 100%;">
+                        <div style="margin-bottom: 24px;">
+                            <input type="email" id="loginEmail" class="filter-input" placeholder="Email" style="width: 100%; margin-bottom: 16px;" value="superadmin@concierge.com">
+                            <input type="password" id="loginPassword" class="filter-input" placeholder="Пароль" style="width: 100%;" value="admin123">
                         </div>
                         
-                        <button class="action-btn edit" onclick="adminLogin()" style="width: 100%; padding: 12px;">
+                        <button class="action-btn edit" onclick="adminLogin()" style="width: 100%; padding: 12px; background: var(--primary-color);">
                             <i class="fas fa-sign-in-alt"></i>
                             Войти
                         </button>
                         
-                        <p style="margin-top: 20px; color: var(--dark-gray); font-size: 0.9em;">
-                            Используйте тестовые данные:<br>
+                        <p style="margin-top: 20px; color: var(--gray-500); font-size: 0.875rem;">
+                            Тестовые данные:<br>
                             superadmin@concierge.com / admin123
                         </p>
                     </div>
@@ -961,7 +796,7 @@
                     alert('Доступ только для администраторов');
                 }
             } catch (error) {
-                alert('Ошибка входа');
+                alert('Ошибка входа: ' + error.message);
             }
         }
         
@@ -1037,9 +872,6 @@
                 case 'services':
                     loadServices();
                     break;
-                case 'analytics':
-                    loadAnalytics();
-                    break;
             }
         }
         
@@ -1056,7 +888,6 @@
                 
                 if (data.success) {
                     renderDashboard(data.data);
-                    updateNotificationCounts();
                 }
             } catch (error) {
                 console.error('Ошибка загрузки дашборда:', error);
@@ -1088,81 +919,6 @@
                 </div>
             `;
             
-            // График по категориям
-            if (charts.categoryChart) {
-                charts.categoryChart.destroy();
-            }
-            
-            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            charts.categoryChart = new Chart(categoryCtx, {
-                type: 'pie',
-                data: {
-                    labels: stats.categories.map(c => c.name),
-                    datasets: [{
-                        data: stats.categories.map(c => c.count),
-                        backgroundColor: [
-                            '#ff69b4', '#9370db', '#ffb6c1', '#d8bfd8', '#ff69b4', '#9370db'
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                }
-            });
-            
-            // График по статусам
-            const statusCounts = {
-                'new': 0,
-                'in_progress': 0,
-                'completed': 0,
-                'cancelled': 0
-            };
-            
-            stats.recentTasks.forEach(task => {
-                if (statusCounts[task.status] !== undefined) {
-                    statusCounts[task.status]++;
-                }
-            });
-            
-            if (charts.statusChart) {
-                charts.statusChart.destroy();
-            }
-            
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            charts.statusChart = new Chart(statusCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Новые', 'В работе', 'Завершены', 'Отменены'],
-                    datasets: [{
-                        label: 'Количество',
-                        data: [
-                            statusCounts.new,
-                            statusCounts.in_progress,
-                            statusCounts.completed,
-                            statusCounts.cancelled
-                        ],
-                        backgroundColor: [
-                            '#1976d2', '#f57c00', '#388e3c', '#d32f2f'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            
             // Последние задачи
             let tasksHtml = `
                 <table>
@@ -1190,14 +946,14 @@
                 
                 tasksHtml += `
                     <tr>
-                        <td>${task.taskNumber || '-'}</td>
+                        <td>${task.task_number || '-'}</td>
                         <td>${task.title}</td>
-                        <td>${task.client?.firstName || '-'}</td>
+                        <td>${task.firstName || '-'}</td>
                         <td><span class="status-badge status-${task.status}">${statusText}</span></td>
-                        <td>${new Date(task.createdAt).toLocaleDateString('ru-RU')}</td>
+                        <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
                         <td>${formatNumber(task.price)} ₽</td>
                         <td>
-                            <button class="action-btn view" onclick="viewTask('${task._id}')">
+                            <button class="action-btn view" onclick="viewTask('${task.id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </td>
@@ -1207,6 +963,45 @@
             
             tasksHtml += '</tbody></table>';
             document.getElementById('recentTasks').innerHTML = tasksHtml;
+            
+            // Статистика по категориям
+            let categoryHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Категория</th>
+                            <th>Количество задач</th>
+                            <th>Общая выручка</th>
+                            <th>Доля</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            stats.categories.forEach(cat => {
+                const percentage = Math.round(cat.count / stats.summary.totalTasks * 100);
+                categoryHtml += `
+                    <tr>
+                        <td>${cat.name}</td>
+                        <td>${cat.count}</td>
+                        <td>${formatNumber(cat.revenue)} ₽</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 100px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${percentage}%; height: 100%; background: var(--primary-color);"></div>
+                                </div>
+                                <span>${percentage}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            categoryHtml += '</tbody></table>';
+            document.getElementById('categoryStats').innerHTML = categoryHtml;
+            
+            // Общее количество задач
+            document.getElementById('totalTasksCount').textContent = stats.summary.totalTasks;
         }
         
         // Загрузка пользователей
@@ -1265,22 +1060,22 @@
                 
                 usersHtml += `
                     <tr>
-                        <td>${user._id.toString().slice(-6)}</td>
+                        <td>${user.id}</td>
                         <td>${user.firstName} ${user.lastName}</td>
                         <td>${user.email}</td>
                         <td><span class="role-badge role-${user.role}">${roleText}</span></td>
                         <td>${user.phone || '-'}</td>
-                        <td>${user.subscription?.plan || 'free'}</td>
-                        <td>${new Date(user.createdAt).toLocaleDateString('ru-RU')}</td>
+                        <td>${user.subscription_plan || 'free'}</td>
+                        <td>${new Date(user.created_at).toLocaleDateString('ru-RU')}</td>
                         <td>
-                            <button class="action-btn view" onclick="viewUser('${user._id}')">
+                            <button class="action-btn view" onclick="viewUser('${user.id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="action-btn edit" onclick="editUser('${user._id}')">
+                            <button class="action-btn edit" onclick="editUser('${user.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
                             ${currentUser.role === 'superadmin' ? `
-                            <button class="action-btn delete" onclick="deleteUser('${user._id}')">
+                            <button class="action-btn delete" onclick="deleteUser('${user.id}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                             ` : ''}
@@ -1301,7 +1096,7 @@
                 for (let i = 1; i <= data.pagination.pages; i++) {
                     usersHtml += `
                         <button onclick="loadUsers(${i})" 
-                                style="padding: 8px 12px; border: 1px solid var(--medium-gray); background: ${i === data.pagination.page ? 'var(--primary-pink)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--dark-gray)'}; border-radius: 4px; cursor: pointer;">
+                                style="padding: 8px 12px; border: 1px solid var(--gray-300); background: ${i === data.pagination.page ? 'var(--primary-color)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--gray-700)'}; border-radius: 4px; cursor: pointer;">
                             ${i}
                         </button>
                     `;
@@ -1356,7 +1151,6 @@
                             <th>№ задачи</th>
                             <th>Название</th>
                             <th>Клиент</th>
-                            <th>Исполнитель</th>
                             <th>Статус</th>
                             <th>Категория</th>
                             <th>Срок</th>
@@ -1386,19 +1180,18 @@
                 
                 tasksHtml += `
                     <tr>
-                        <td>${task.taskNumber || '-'}</td>
+                        <td>${task.task_number || '-'}</td>
                         <td>${task.title}</td>
                         <td>${task.client?.firstName || '-'}</td>
-                        <td>${task.performer?.firstName || '-'}</td>
                         <td><span class="status-badge status-${task.status}">${statusText}</span></td>
                         <td>${categoryText}</td>
                         <td>${new Date(task.deadline).toLocaleDateString('ru-RU')}</td>
                         <td>${formatNumber(task.price)} ₽</td>
                         <td>
-                            <button class="action-btn view" onclick="viewTask('${task._id}')">
+                            <button class="action-btn view" onclick="viewTask('${task.id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="action-btn edit" onclick="editTask('${task._id}')">
+                            <button class="action-btn edit" onclick="editTask('${task.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
@@ -1418,7 +1211,7 @@
                 for (let i = 1; i <= data.pagination.pages; i++) {
                     tasksHtml += `
                         <button onclick="loadTasks(${i})" 
-                                style="padding: 8px 12px; border: 1px solid var(--medium-gray); background: ${i === data.pagination.page ? 'var(--primary-pink)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--dark-gray)'}; border-radius: 4px; cursor: pointer;">
+                                style="padding: 8px 12px; border: 1px solid var(--gray-300); background: ${i === data.pagination.page ? 'var(--primary-color)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--gray-700)'}; border-radius: 4px; cursor: pointer;">
                             ${i}
                         </button>
                     `;
@@ -1433,7 +1226,7 @@
             document.getElementById('tasksTable').innerHTML = tasksHtml;
         }
         
-        // Загрузка видов помощи
+        // Загрузка услуг
         async function loadServices() {
             try {
                 const category = document.getElementById('serviceCategoryFilter').value;
@@ -1448,8 +1241,8 @@
                 if (data.success) {
                     renderServices(data.data.services.filter(s => 
                         status === 'all' || 
-                        (status === 'active' && s.isActive) || 
-                        (status === 'inactive' && !s.isActive)
+                        (status === 'active' && s.is_active) || 
+                        (status === 'inactive' && !s.is_active)
                     ));
                 }
             } catch (error) {
@@ -1491,15 +1284,15 @@
                         <td>${service.name}</td>
                         <td>${categoryText}</td>
                         <td>${service.description.substring(0, 50)}...</td>
-                        <td>от ${formatNumber(service.priceOptions?.oneTime || service.priceOptions?.hourly || 0)} ₽</td>
-                        <td>${service.rating?.average || 0}/5 (${service.rating?.count || 0})</td>
-                        <td>${service.isActive ? 'Активна' : 'Неактивна'}</td>
+                        <td>от ${formatNumber(service.price_one_time || service.price_hourly || 0)} ₽</td>
+                        <td>${service.rating_average || 0}/5 (${service.rating_count || 0})</td>
+                        <td>${service.is_active ? 'Активна' : 'Неактивна'}</td>
                         <td>
-                            <button class="action-btn edit" onclick="editService('${service._id}')">
+                            <button class="action-btn edit" onclick="editService('${service.id}')">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="action-btn delete" onclick="toggleServiceStatus('${service._id}', ${!service.isActive})">
-                                <i class="fas fa-${service.isActive ? 'eye-slash' : 'eye'}"></i>
+                            <button class="action-btn delete" onclick="toggleServiceStatus('${service.id}', ${!service.is_active})">
+                                <i class="fas fa-${service.is_active ? 'eye-slash' : 'eye'}"></i>
                             </button>
                         </td>
                     </tr>
@@ -1508,134 +1301,6 @@
             
             servicesHtml += '</tbody></table>';
             document.getElementById('servicesTable').innerHTML = servicesHtml;
-        }
-        
-        // Загрузка аналитики
-        async function loadAnalytics() {
-            try {
-                // Здесь можно добавить запросы к аналитике
-                // Пока что демо-данные
-                
-                document.getElementById('conversionRate').textContent = '42.5%';
-                document.getElementById('avgOrderValue').textContent = '2,450 ₽';
-                document.getElementById('satisfactionRate').textContent = '94.7%';
-                document.getElementById('repeatRate').textContent = '68.3%';
-                
-                // Загружаем топ исполнителей
-                const response = await fetch('/api/admin/users?role=performer&limit=10', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    let performersHtml = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Имя</th>
-                                    <th>Email</th>
-                                    <th>Рейтинг</th>
-                                    <th>Выполнено задач</th>
-                                    <th>Средняя цена</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    data.data.users.forEach(user => {
-                        performersHtml += `
-                            <tr>
-                                <td>${user.firstName} ${user.lastName}</td>
-                                <td>${user.email}</td>
-                                <td>${user.rating || 'Нет'}</td>
-                                <td>${Math.floor(Math.random() * 50) + 10}</td>
-                                <td>${formatNumber(Math.floor(Math.random() * 3000) + 1000)} ₽</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    performersHtml += '</tbody></table>';
-                    document.getElementById('topPerformers').innerHTML = performersHtml;
-                }
-                
-            } catch (error) {
-                console.error('Ошибка загрузки аналитики:', error);
-            }
-        }
-        
-        // Обновление счетчиков уведомлений
-        async function updateNotificationCounts() {
-            try {
-                // Запрос на получение непрочитанных уведомлений
-                // Пока что демо-данные
-                const newUsers = Math.floor(Math.random() * 5);
-                const newTasks = Math.floor(Math.random() * 10);
-                
-                const usersBadge = document.getElementById('usersBadge');
-                const tasksBadge = document.getElementById('tasksBadge');
-                
-                if (newUsers > 0) {
-                    usersBadge.textContent = newUsers;
-                    usersBadge.style.display = 'flex';
-                } else {
-                    usersBadge.style.display = 'none';
-                }
-                
-                if (newTasks > 0) {
-                    tasksBadge.textContent = newTasks;
-                    tasksBadge.style.display = 'flex';
-                } else {
-                    tasksBadge.style.display = 'none';
-                }
-                
-            } catch (error) {
-                console.error('Ошибка обновления уведомлений:', error);
-            }
-        }
-        
-        // Экспорт данных
-        async function exportData(type) {
-            try {
-                const response = await fetch(`/api/admin/export/${type}`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${type}_export.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    
-                    alert(`Экспорт ${type} успешно завершен`);
-                } else {
-                    alert('Ошибка экспорта данных');
-                }
-            } catch (error) {
-                alert('Ошибка сети при экспорте');
-            }
-        }
-        
-        // Модальные окна
-        function showAddUserModal() {
-            document.getElementById('addUserModal').style.display = 'flex';
-        }
-        
-        function hideAddUserModal() {
-            document.getElementById('addUserModal').style.display = 'none';
-        }
-        
-        function showAddServiceModal() {
-            alert('Функция добавления помощи будет реализована в следующей версии');
         }
         
         // Вспомогательные функции
@@ -1671,6 +1336,14 @@
         
         function toggleServiceStatus(serviceId, newStatus) {
             alert(`Изменение статуса услуги ${serviceId} - функция будет реализована`);
+        }
+        
+        function showAddUserModal() {
+            alert('Добавление пользователя будет реализовано в следующей версии');
+        }
+        
+        function showAddServiceModal() {
+            alert('Добавление услуги будет реализовано в следующей версии');
         }
     </script>
 </body>
