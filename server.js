@@ -28,6 +28,39 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+// ==================== CORS КОНФИГУРАЦИЯ (ДОБАВЬТЕ ЭТО ПЕРВЫМ!) ====================
+const corsOptions = {
+    origin: [
+        'https://sergeynikishin555123123-lab--86fa.twc1.net',
+        'http://localhost:3000',
+        'http://localhost:8080',
+        'http://localhost:5500'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+};
+
+// Используем CORS с нашими настройками
+app.use(cors(corsOptions));
+
+// Обрабатываем preflight запросы
+app.options('*', cors(corsOptions));
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+
+// Добавьте middleware для логирования запросов (для отладки)
+app.use((req, res, next) => {
+    console.log(`🌐 ${req.method} ${req.path}`);
+    if (req.headers.authorization) {
+        console.log('🔐 Authorization header present');
+    }
+    next();
+});
+
 // ==================== SQLite БАЗА ДАННЫХ ====================
 let db;
 
@@ -399,43 +432,266 @@ const setupBotHandlers = (bot) => {
 const authMiddleware = (roles = []) => {
     return async (req, res, next) => {
         try {
-            const authHeader = req.header('Authorization');
-            console.log('🔐 Auth header:', authHeader ? 'present' : 'missing');
+            console.log('🔐 Проверка авторизации для:', req.method, req.path);
             
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                console.log('❌ Нет токена авторизации');
+            // Проверяем заголовок несколькими способами
+            let authHeader = req.headers.authorization;
+            
+            console.log('🔐 Заголовки авторизации:', {
+                'Authorization': req.headers.authorization,
+                'authorization': req.headers.authorization
+            });
+            
+            if (!authHeader) {
+                console.log('❌ Нет заголовка Authorization');
+                
+                // Разрешаем публичные маршруты без авторизации
+                if (req.method === 'GET' && !req.path.includes('/api/auth/profile') && 
+                    !req.path.includes('/api/tasks') && !req.path.includes('/api/subscriptions/subscribe')) {
+                    console.log('✅ Публичный маршрут, пропускаем авторизацию');
+                    return next();
+                }
+                
                 return res.status(401).json({ 
                     success: false, 
-                    error: 'Требуется авторизация' 
+                    error: 'Требуется авторизация',
+                    details: 'Отсутствует заголовок Authorization'
                 });
             }
             
-            const token = authHeader.replace('Bearer ', '');
+            if (!authHeader.startsWith('Bearer ')) {
+                console.log('❌ Неправильный формат токена:', authHeader.substring(0, 20) + '...');
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Неверный формат токена. Используйте "Bearer <token>"' 
+                });
+            }
+            
+            const token = authHeader.replace('Bearer ', '').trim();
+            
+            if (!token || token.length < 10) {
+                console.log('❌ Токен слишком короткий или пустой');
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Неверный токен' 
+                });
+            }
+            
             console.log('🔐 Токен получен, длина:', token.length);
             
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-pink-secret-2024');
-            console.log('🔐 Токен расшифрован для пользователя:', decoded.email);
-            
-            req.user = decoded;
-            
-            if (roles.length > 0 && !roles.includes(decoded.role)) {
-                console.log(`❌ Недостаточно прав. Роль: ${decoded.role}, требуемые: ${roles}`);
-                return res.status(403).json({ 
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-pink-secret-2024');
+                console.log('✅ Токен валиден для пользователя:', decoded.email);
+                
+                // Проверяем, что пользователь существует в БД
+                const user = await db.get('SELECT id FROM users WHERE id = ?', [decoded.id]);
+                if (!user) {
+                    console.log('❌ Пользователь не найден в БД');
+                    return res.status(401).json({ 
+                        success: false, 
+                        error: 'Пользователь не найден' 
+                    });
+                }
+                
+                req.user = decoded;
+                
+                // Проверка ролей если требуется
+                if (roles.length > 0) {
+                    const userRole = decoded.role || 'client';
+                    if (!roles.includes(userRole)) {
+                        console.log(`❌ Недостаточно прав: ${userRole}, требуется: ${roles.join(', ')}`);
+                        return res.status(403).json({ 
+                            success: false, 
+                            error: 'Недостаточно прав' 
+                        });
+                    }
+                }
+                
+                console.log('✅ Авторизация успешна');
+                next();
+                
+            } catch (jwtError) {
+                console.error('❌ Ошибка JWT:', jwtError.message);
+                
+                if (jwtError.name === 'TokenExpiredError') {
+                    return res.status(401).json({ 
+                        success: false, 
+                        error: 'Токен истёк. Пожалуйста, войдите снова.' 
+                    });
+                }
+                
+                return res.status(401).json({ 
                     success: false, 
-                    error: 'Недостаточно прав' 
+                    error: 'Неверный токен' 
                 });
             }
             
-            next();
         } catch (error) {
-            console.error('❌ Ошибка проверки токена:', error.message);
-            res.status(401).json({ 
+            console.error('❌ Ошибка в authMiddleware:', error);
+            return res.status(500).json({ 
                 success: false, 
-                error: 'Неверный или просроченный токен' 
+                error: 'Внутренняя ошибка сервера при проверке авторизации' 
             });
         }
     };
 };
+
+// ==================== ПОДПИСКИ ====================
+
+// ЭТОТ МАРШРУТ ДОЛЖЕН БЫТЬ ПОСЛЕ middleware И ПЕРЕД ДРУГИМИ МАРШРУТАМИ
+
+// Подписка на план
+app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        console.log('📝 Запрос на подписку от пользователя:', req.user.email);
+        console.log('📝 Данные запроса:', req.body);
+        
+        const { plan, period = 'monthly' } = req.body;
+        
+        if (!plan) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите план подписки'
+            });
+        }
+        
+        // Проверяем существование плана
+        const subscriptionPlan = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ?',
+            [plan]
+        );
+        
+        if (!subscriptionPlan) {
+            console.log(`❌ План "${plan}" не найден в БД`);
+            return res.status(404).json({
+                success: false,
+                error: `План подписки "${plan}" не найден`
+            });
+        }
+        
+        console.log(`✅ План найден: ${subscriptionPlan.name} - ${subscriptionPlan.description}`);
+        
+        // Обновляем подписку пользователя
+        const expiryDate = new Date();
+        if (period === 'monthly') {
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+        } else if (period === 'yearly') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        }
+        
+        const expiryDateString = expiryDate.toISOString().split('T')[0];
+        
+        console.log(`📅 Устанавливаем срок подписки до: ${expiryDateString}`);
+        
+        await db.run(
+            `UPDATE users SET 
+                subscription_plan = ?,
+                subscription_status = 'active',
+                subscription_expires = ?
+             WHERE id = ?`,
+            [plan, expiryDateString, req.user.id]
+        );
+        
+        console.log(`✅ Подписка обновлена для пользователя ${req.user.id}`);
+        
+        // Получаем обновленного пользователя
+        const user = await db.get(
+            'SELECT id, email, firstName, lastName, subscription_plan, subscription_status, subscription_expires FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        
+        console.log(`✅ Новые данные пользователя:`, user);
+        
+        res.json({
+            success: true,
+            message: `Подписка "${subscriptionPlan.name}" успешно оформлена!`,
+            data: { 
+                user,
+                subscription: subscriptionPlan
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка оформления подписки:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка оформления подписки',
+            details: error.message
+        });
+    }
+});
+
+// Получение всех подписок (публичный доступ)
+app.get('/api/subscriptions', async (req, res) => {
+    try {
+        console.log('📊 Получение списка подписок');
+        
+        const subscriptions = await db.all(
+            'SELECT * FROM subscriptions ORDER BY price_monthly ASC'
+        );
+        
+        console.log(`✅ Найдено подписок: ${subscriptions ? subscriptions.length : 0}`);
+        
+        if (!subscriptions || subscriptions.length === 0) {
+            console.log('📝 Возвращаем демо-подписки');
+            const demoSubscriptions = [
+                {
+                    id: 1,
+                    name: 'free',
+                    description: 'Бесплатная подписка',
+                    price_monthly: 0,
+                    price_yearly: 0,
+                    tasks_limit: 1,
+                    features: '["1 задача в месяц", "Базовые категории", "Поддержка в чате"]',
+                    is_popular: 0
+                },
+                {
+                    id: 2,
+                    name: 'basic',
+                    description: 'Для регулярных бытовых задач',
+                    price_monthly: 990,
+                    price_yearly: 9900,
+                    tasks_limit: 3,
+                    features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
+                    is_popular: 1
+                },
+                {
+                    id: 3,
+                    name: 'premium',
+                    description: 'Для максимального комфорта',
+                    price_monthly: 2990,
+                    price_yearly: 29900,
+                    tasks_limit: 10,
+                    features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
+                    is_popular: 0
+                }
+            ];
+            
+            return res.json({
+                success: true,
+                data: {
+                    subscriptions: demoSubscriptions,
+                    count: demoSubscriptions.length
+                }
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                subscriptions,
+                count: subscriptions.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения подписок:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения подписок'
+        });
+    }
+});
 
 // ==================== API МАРШРУТЫ ====================
 
@@ -660,184 +916,6 @@ app.get('/api/services', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка получения услуг'
-        });
-    }
-});
-
-// ==================== ПОДПИСКИ ====================
-
-// Подписка на план (этот маршрут должен быть ДО /api/subscriptions)
-app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
-    try {
-        console.log('📝 Запрос на подписку:', req.body);
-        
-        const { plan, period = 'monthly' } = req.body;
-        
-        if (!plan) {
-            return res.status(400).json({
-                success: false,
-                error: 'Укажите план подписки'
-            });
-        }
-        
-        // Проверяем существование плана
-        const subscriptionPlan = await db.get(
-            'SELECT * FROM subscriptions WHERE name = ?',
-            [plan]
-        );
-        
-        if (!subscriptionPlan) {
-            return res.status(404).json({
-                success: false,
-                error: `План подписки "${plan}" не найден`
-            });
-        }
-        
-        // Обновляем подписку пользователя
-        const expiryDate = new Date();
-        if (period === 'monthly') {
-            expiryDate.setMonth(expiryDate.getMonth() + 1);
-        } else if (period === 'yearly') {
-            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-        }
-        
-        await db.run(
-            `UPDATE users SET 
-                subscription_plan = ?,
-                subscription_status = 'active',
-                subscription_expires = ?
-             WHERE id = ?`,
-            [plan, expiryDate.toISOString().split('T')[0], req.user.id]
-        );
-        
-        // Создаем запись о платеже (демо-режим)
-        const amount = period === 'monthly' ? subscriptionPlan.price_monthly : subscriptionPlan.price_yearly;
-        
-        // Проверяем существование таблицы payments
-        try {
-            await db.run(
-                `INSERT INTO payments (user_id, amount, description, status, payment_method) 
-                 VALUES (?, ?, ?, 'completed', 'subscription')`,
-                [req.user.id, amount, `Подписка ${subscriptionPlan.name} (${period})`]
-            );
-        } catch (paymentError) {
-            console.log('⚠️ Таблица payments не существует, пропускаем создание платежа');
-        }
-        
-        // Создаем уведомление
-        try {
-            await db.run(
-                `INSERT INTO notifications (user_id, title, message, type) 
-                 VALUES (?, ?, ?, 'success')`,
-                [req.user.id, 'Подписка оформлена', `Вы успешно оформили подписку ${subscriptionPlan.name}`, 'success']
-            );
-        } catch (notificationError) {
-            console.log('⚠️ Таблица notifications не существует, пропускаем создание уведомления');
-        }
-        
-        // Получаем обновленного пользователя
-        const user = await db.get(
-            'SELECT id, email, firstName, lastName, subscription_plan, subscription_status, subscription_expires FROM users WHERE id = ?',
-            [req.user.id]
-        );
-        
-        console.log(`✅ Подписка "${plan}" оформлена для пользователя ${user.email}`);
-        
-        res.json({
-            success: true,
-            message: `Подписка успешно оформлена!`,
-            data: { 
-                user,
-                subscription: subscriptionPlan
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка оформления подписки:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Внутренняя ошибка сервера при оформлении подписки'
-        });
-    }
-});
-
-// Получение всех подписок
-app.get('/api/subscriptions', async (req, res) => {
-    try {
-        const subscriptions = await db.all(
-            'SELECT * FROM subscriptions ORDER BY price_monthly ASC'
-        );
-        
-        console.log(`📊 Загружено подписок: ${subscriptions ? subscriptions.length : 0}`);
-        
-        // Если нет подписок в базе, возвращаем демо-данные
-        if (!subscriptions || subscriptions.length === 0) {
-            console.log('📝 Возвращаем демо-подписки');
-            const demoSubscriptions = [
-                {
-                    id: 1,
-                    name: 'free',
-                    description: 'Бесплатная подписка для знакомства с сервисом',
-                    price_monthly: 0,
-                    price_yearly: 0,
-                    tasks_limit: 1,
-                    features: '["1 задача в месяц", "Базовые категории", "Поддержка в чате"]',
-                    is_popular: 0
-                },
-                {
-                    id: 2,
-                    name: 'basic',
-                    description: 'Для регулярных бытовых задач',
-                    price_monthly: 990,
-                    price_yearly: 9900,
-                    tasks_limit: 3,
-                    features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
-                    is_popular: 1
-                },
-                {
-                    id: 3,
-                    name: 'premium',
-                    description: 'Для максимального комфорта',
-                    price_monthly: 2990,
-                    price_yearly: 29900,
-                    tasks_limit: 10,
-                    features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
-                    is_popular: 0
-                },
-                {
-                    id: 4,
-                    name: 'business',
-                    description: 'Для бизнеса и семьи',
-                    price_monthly: 9990,
-                    price_yearly: 99900,
-                    tasks_limit: 999,
-                    features: '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика"]',
-                    is_popular: 0
-                }
-            ];
-            
-            return res.json({
-                success: true,
-                data: {
-                    subscriptions: demoSubscriptions,
-                    count: demoSubscriptions.length
-                }
-            });
-        }
-        
-        res.json({
-            success: true,
-            data: {
-                subscriptions: subscriptions || [],
-                count: subscriptions ? subscriptions.length : 0
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка получения подписок:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения подписок'
         });
     }
 });
