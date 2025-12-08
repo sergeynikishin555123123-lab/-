@@ -842,7 +842,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Получение профиля
+// В функции получения профиля /api/auth/profile добавьте подписку и статистику:
 app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
     try {
         const user = await db.get(
@@ -857,9 +857,29 @@ app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
             });
         }
         
+        // Получаем информацию о подписке
+        const subscription = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ?',
+            [user.subscription_plan || 'free']
+        );
+        
+        // Получаем статистику задач пользователя за текущий месяц
+        const currentDate = new Date();
+        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
+        
+        const stats = await db.get(`
+            SELECT COUNT(*) as total FROM tasks 
+            WHERE client_id = ? 
+            AND DATE(created_at) >= ?
+        `, [req.user.id, firstDayOfMonth]);
+        
         res.json({
             success: true,
-            data: { user }
+            data: { 
+                user,
+                subscription: subscription || null,
+                stats: stats || { total: 0 }
+            }
         });
         
     } catch (error) {
