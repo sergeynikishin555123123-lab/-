@@ -1880,7 +1880,7 @@
             });
         }
         
-       function setupCategoryFilters() {
+function setupCategoryFilters() {
     const categoryBtns = document.querySelectorAll('.category-btn');
     categoryBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -2028,12 +2028,12 @@ function renderEmptyHelp(category) {
             });
         }
         
-       function renderDemoHelp(category = 'all') {
+function renderDemoHelp(category = 'all') {
     const demoHelp = [
         {
             id: 1,
             name: 'Уборка квартиры',
-            description: 'Генеральная уборка, помощь в организации пространства, мытье окон, уборка после ремонта.',
+            description: 'Генеральная уборка, помощь в организации пространства',
             category: 'home_and_household',
             icon: '🧹',
             is_popular: true
@@ -2041,7 +2041,7 @@ function renderEmptyHelp(category) {
         {
             id: 2,
             name: 'Присмотр за детьми',
-            description: 'Няня на несколько часов, помощь с уроками, прогулки, развивающие занятия.',
+            description: 'Няня на несколько часов, помощь с уроками',
             category: 'family_and_children',
             icon: '👶',
             is_popular: true
@@ -2049,7 +2049,7 @@ function renderEmptyHelp(category) {
         {
             id: 3,
             name: 'Маникюр на дому',
-            description: 'Профессиональный маникюр с выездом на дом, укрепление ногтей, аппаратный маникюр.',
+            description: 'Профессиональный маникюр с выездом',
             category: 'beauty_and_health',
             icon: '💅',
             is_popular: true
@@ -2057,7 +2057,7 @@ function renderEmptyHelp(category) {
         {
             id: 4,
             name: 'Репетиторство',
-            description: 'Помощь с домашними заданиями, подготовка к экзаменам, занятия по школьным предметам.',
+            description: 'Помощь с уроками, подготовка к экзаменам',
             category: 'courses_and_education',
             icon: '📚',
             is_popular: false
@@ -2065,7 +2065,7 @@ function renderEmptyHelp(category) {
         {
             id: 5,
             name: 'Выгул собак',
-            description: 'Прогулка с питомцем, кормление, уход за животными, передержка на время отъезда.',
+            description: 'Прогулка с питомцем, кормление',
             category: 'pets',
             icon: '🐕',
             is_popular: false
@@ -2073,7 +2073,7 @@ function renderEmptyHelp(category) {
         {
             id: 6,
             name: 'Организация праздника',
-            description: 'Помощь в организации детских и семейных праздников, дней рождений, торжественных мероприятий.',
+            description: 'Помощь в организации детских и семейных праздников',
             category: 'events_and_entertainment',
             icon: '🎂',
             is_popular: true
