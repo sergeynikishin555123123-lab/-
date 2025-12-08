@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Женский Консьерж Сервис</title>
+    <title>🎀 Помощь для женщин | Консьерж-сервис</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-pink: #ff69b4;
             --light-pink: #ffb6c1;
+            --soft-pink: #ffeff7;
             --dark-pink: #db7093;
             --primary-purple: #9370db;
             --light-purple: #d8bfd8;
@@ -22,8 +23,9 @@
             --warning: #ffc107;
             --danger: #dc3545;
             --info: #17a2b8;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.05);
+            --shadow: 0 10px 30px rgba(255, 105, 180, 0.1);
+            --shadow-light: 0 5px 15px rgba(255, 105, 180, 0.05);
+            --shadow-soft: 0 2px 10px rgba(255, 105, 180, 0.1);
             --radius: 20px;
             --radius-sm: 10px;
             --transition: all 0.3s ease;
@@ -37,7 +39,7 @@
         
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #fff5f7 0%, #f8f0ff 100%);
+            background: linear-gradient(135deg, #fff5f7 0%, #fef7ff 100%);
             color: var(--black);
             line-height: 1.6;
             min-height: 100vh;
@@ -97,6 +99,17 @@
             margin: 0 auto 30px;
         }
         
+        /* Баннер для неавторизованных */
+        .guest-banner {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            backdrop-filter: blur(10px);
+        }
+        
         /* Статистика */
         .stats {
             display: grid;
@@ -133,7 +146,29 @@
             font-size: 0.9em;
         }
         
-        /* Услуги */
+        /* Уведомления */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        /* Помощь */
         .section-title {
             font-family: 'Playfair Display', serif;
             font-size: 2.2em;
@@ -176,8 +211,9 @@
         .category-btn:hover,
         .category-btn.active {
             border-color: var(--primary-pink);
-            background: var(--light-pink);
+            background: var(--soft-pink);
             transform: translateY(-3px);
+            box-shadow: var(--shadow-soft);
         }
         
         .category-icon {
@@ -185,28 +221,29 @@
             color: var(--primary-pink);
         }
         
-        .services-grid {
+        .help-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 25px;
             margin-bottom: 50px;
         }
         
-        .service-card {
+        .help-card {
             background: white;
             border-radius: var(--radius);
             overflow: hidden;
             box-shadow: var(--shadow-light);
             transition: var(--transition);
             position: relative;
+            border: 1px solid var(--light-pink);
         }
         
-        .service-card:hover {
+        .help-card:hover {
             transform: translateY(-10px);
             box-shadow: var(--shadow);
         }
         
-        .service-card::before {
+        .help-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -216,21 +253,21 @@
             background: linear-gradient(to right, var(--primary-pink), var(--primary-purple));
         }
         
-        .service-content {
+        .help-content {
             padding: 25px;
         }
         
-        .service-header {
+        .help-header {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
         }
         
-        .service-icon {
+        .help-icon {
             font-size: 2em;
             color: var(--primary-pink);
-            background: var(--light-pink);
+            background: var(--soft-pink);
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -239,19 +276,19 @@
             justify-content: center;
         }
         
-        .service-title {
+        .help-title {
             font-size: 1.3em;
             font-weight: 600;
             color: var(--black);
         }
         
-        .service-description {
+        .help-description {
             color: var(--dark-gray);
             margin-bottom: 20px;
             line-height: 1.5;
         }
         
-        .service-footer {
+        .help-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -259,13 +296,13 @@
             border-top: 1px solid var(--medium-gray);
         }
         
-        .service-price {
+        .help-price {
             font-size: 1.4em;
             font-weight: 700;
             color: var(--primary-pink);
         }
         
-        .service-duration {
+        .help-duration {
             color: var(--dark-gray);
             font-size: 0.9em;
         }
@@ -364,6 +401,7 @@
             font-family: 'Nunito', sans-serif;
             font-size: 1em;
             transition: var(--transition);
+            background: var(--light-gray);
         }
         
         .form-input:focus,
@@ -372,6 +410,7 @@
             outline: none;
             border-color: var(--primary-pink);
             box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
+            background: white;
         }
         
         .form-textarea {
@@ -419,7 +458,7 @@
         }
         
         .btn-secondary:hover {
-            background: var(--light-pink);
+            background: var(--soft-pink);
         }
         
         .btn-success {
@@ -460,6 +499,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            max-width: 350px;
         }
         
         @keyframes slideInRight {
@@ -487,6 +527,17 @@
         /* Задачи */
         .tasks-section {
             margin: 60px 0;
+            display: none;
+        }
+        
+        .tasks-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .tasks-controls {
@@ -511,11 +562,22 @@
             box-shadow: var(--shadow-light);
             border-left: 5px solid var(--primary-pink);
             transition: var(--transition);
+            position: relative;
         }
         
         .task-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--shadow);
+        }
+        
+        .task-unread {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 12px;
+            height: 12px;
+            background: var(--danger);
+            border-radius: 50%;
         }
         
         .task-header {
@@ -528,7 +590,7 @@
         .task-number {
             font-size: 0.9em;
             color: var(--dark-gray);
-            background: var(--light-gray);
+            background: var(--soft-pink);
             padding: 5px 10px;
             border-radius: 20px;
         }
@@ -634,7 +696,7 @@
                 grid-template-columns: 1fr;
             }
             
-            .services-grid {
+            .help-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -650,6 +712,11 @@
             .btn {
                 width: 100%;
                 justify-content: center;
+            }
+            
+            .tasks-controls {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
         
@@ -685,44 +752,17 @@
             color: var(--medium-gray);
         }
         
-        /* Пагинация */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 40px 0;
-        }
-        
-        .page-btn {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--medium-gray);
-            background: white;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .page-btn:hover,
-        .page-btn.active {
-            border-color: var(--primary-pink);
-            background: var(--light-pink);
-            color: var(--primary-pink);
-        }
-        
         /* Плашки статуса системы */
         .system-status {
             display: inline-flex;
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
             box-shadow: var(--shadow-light);
             margin-top: 10px;
+            backdrop-filter: blur(10px);
         }
         
         .status-dot {
@@ -745,6 +785,128 @@
         .status-dot.offline {
             background: var(--danger);
         }
+        
+        /* Пустые состояния */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--dark-gray);
+        }
+        
+        .empty-state i {
+            font-size: 4em;
+            color: var(--light-pink);
+            margin-bottom: 20px;
+        }
+        
+        /* Профиль пользователя */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-light);
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-pink);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--black);
+        }
+        
+        .user-role {
+            color: var(--dark-gray);
+            font-size: 0.9em;
+        }
+        
+        /* Панель быстрых действий */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .action-item {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .action-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            background: var(--soft-pink);
+        }
+        
+        .action-icon {
+            font-size: 2em;
+            color: var(--primary-pink);
+            margin-bottom: 10px;
+        }
+        
+        /* Индикатор загрузки */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Бейджи */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .badge-new {
+            background: var(--primary-pink);
+            color: white;
+        }
+        
+        .badge-popular {
+            background: var(--warning);
+            color: var(--black);
+        }
+        
+        .badge-vip {
+            background: linear-gradient(45deg, #ffd700, #ff6b6b);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -753,10 +915,10 @@
         <header>
             <div class="logo">
                 <i class="fas fa-heart"></i>
-                Женский Консьерж Сервис
+                Помощь для женщин
                 <i class="fas fa-heart"></i>
             </div>
-            <p class="tagline">Ваш персональный помощник для решения бытовых задач, организации мероприятий и заботы о себе и близких</p>
+            <p class="tagline">Персональный консьерж для решения бытовых задач и организации жизни</p>
             
             <div class="system-status" id="systemStatus">
                 <span class="status-dot online"></span>
@@ -764,32 +926,94 @@
             </div>
         </header>
         
+        <!-- Баннер для неавторизованных -->
+        <div class="guest-banner" id="guestBanner">
+            <h2>Добро пожаловать! 👋</h2>
+            <p>Зарегистрируйтесь, чтобы получить доступ ко всем возможностям:</p>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="openLoginModal()">
+                    <i class="fas fa-user-plus"></i>
+                    Создать аккаунт
+                </button>
+                <p style="margin-top: 10px; font-size: 0.9em; color: var(--dark-gray);">
+                    Уже есть аккаунт? <a href="#" onclick="openLoginModal()" style="color: var(--primary-pink); font-weight: 600;">Войти</a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Профиль пользователя -->
+        <div class="user-profile" id="userProfile" style="display: none;">
+            <div class="user-avatar" id="userAvatar">М</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">Мария Иванова</div>
+                <div class="user-role" id="userRole">Клиент</div>
+            </div>
+            <div class="notification-bell" onclick="showNotifications()">
+                <i class="fas fa-bell" style="font-size: 1.2em; color: var(--primary-pink);"></i>
+                <div class="notification-count" id="notificationCount" style="display: none;">0</div>
+            </div>
+            <button class="btn btn-secondary" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <!-- Панель быстрых действий -->
+        <div class="quick-actions" id="quickActions" style="display: none;">
+            <div class="action-item" onclick="openTaskModal()">
+                <div class="action-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div>Новая задача</div>
+            </div>
+            
+            <div class="action-item" onclick="loadUserTasks()">
+                <div class="action-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div>Мои задачи</div>
+            </div>
+            
+            <div class="action-item" onclick="showServices()">
+                <div class="action-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <div>Виды помощи</div>
+            </div>
+            
+            <div class="action-item" onclick="showProfile()">
+                <div class="action-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <div>Профиль</div>
+            </div>
+        </div>
+        
         <!-- Статистика -->
         <div class="stats" id="stats">
             <div class="stat-card">
-                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-number" id="totalUsers">1,247</div>
                 <div class="stat-label">Пользователей</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalTasks">0</div>
-                <div class="stat-label">Выполненных задач</div>
+                <div class="stat-number" id="totalTasks">5,892</div>
+                <div class="stat-label">Выполнено задач</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="totalRevenue">0</div>
+                <div class="stat-number" id="totalRevenue">2.5M</div>
                 <div class="stat-label">Заработано, руб.</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="avgRating">5.0</div>
+                <div class="stat-number" id="avgRating">4.8</div>
                 <div class="stat-label">Средний рейтинг</div>
             </div>
         </div>
         
-        <!-- Категории услуг -->
-        <h2 class="section-title">Категории услуг</h2>
+        <!-- Категории помощи -->
+        <h2 class="section-title">Виды помощи</h2>
         <div class="categories" id="categories">
             <div class="category-btn active" data-category="all">
                 <i class="fas fa-star category-icon"></i>
-                <span>Все услуги</span>
+                <span>Вся помощь</span>
             </div>
             <div class="category-btn" data-category="home_and_household">
                 <i class="fas fa-home category-icon"></i>
@@ -817,35 +1041,31 @@
             </div>
         </div>
         
-        <!-- Список услуг -->
-        <h2 class="section-title">Наши услуги</h2>
-        <div class="services-grid" id="servicesGrid">
-            <!-- Услуги будут загружены через JavaScript -->
-            <div class="loader" id="servicesLoader"></div>
+        <!-- Список помощи -->
+        <h2 class="section-title">Как мы можем помочь</h2>
+        <div class="help-grid" id="helpGrid">
+            <!-- Помощь будет загружена через JavaScript -->
+            <div class="loader" id="helpLoader"></div>
         </div>
         
         <!-- Панель действий -->
-        <div class="actions">
+        <div class="actions" id="mainActions">
             <button class="btn btn-primary" onclick="openTaskModal()">
                 <i class="fas fa-plus-circle"></i>
-                Создать задачу
+                Нужна помощь
             </button>
-            <button class="btn btn-secondary" onclick="loadUserTasks()">
-                <i class="fas fa-tasks"></i>
-                Мои задачи
-            </button>
-            <button class="btn btn-secondary" onclick="loadAdminStats()">
-                <i class="fas fa-chart-bar"></i>
-                Статистика
+            <button class="btn btn-secondary" onclick="showServices()">
+                <i class="fas fa-hands-helping"></i>
+                Посмотреть помощь
             </button>
             <button class="btn btn-secondary" onclick="openLoginModal()">
                 <i class="fas fa-user"></i>
-                Войти / Регистрация
+                Войти
             </button>
         </div>
         
         <!-- Раздел задач -->
-        <div class="tasks-section" id="tasksSection" style="display: none;">
+        <div class="tasks-section" id="tasksSection">
             <div class="tasks-controls">
                 <h2 class="section-title" style="margin: 0;">Мои задачи</h2>
                 <div>
@@ -871,35 +1091,37 @@
                 <div class="footer-links">
                     <a href="#" class="footer-link" onclick="showAbout()">О сервисе</a>
                     <a href="#" class="footer-link" onclick="showContacts()">Контакты</a>
-                    <a href="#" class="footer-link" onclick="showFAQ()">Частые вопросы</a>
+                    <a href="#" class="footer-link" onclick="showFAQ()">Вопросы</a>
                     <a href="#" class="footer-link" onclick="showPrivacy()">Конфиденциальность</a>
                 </div>
                 
                 <div class="copyright">
-                    <p>© 2024 Женский Консьерж Сервис. Все права защищены.</p>
-                    <p>Версия: <span id="appVersion">4.0.0</span> | Сервер: <span id="serverStatus">🟢 Онлайн</span></p>
+                    <p>© 2024 Помощь для женщин. Все права защищены.</p>
+                    <p>Версия: <span id="appVersion">4.1.0</span> | Сервер: <span id="serverStatus">🟢 Онлайн</span></p>
                 </div>
             </div>
         </footer>
     </div>
     
-    <!-- Модальное окно создания задачи -->
+    <!-- Модальные окна -->
+    
+    <!-- Создание задачи -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🎀 Создание новой задачи</div>
+                <div class="modal-title">🎀 Нужна помощь</div>
                 <button class="close-modal" onclick="closeTaskModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="taskForm" onsubmit="createTask(event)">
                     <div class="form-group">
-                        <label class="form-label">Название задачи *</label>
-                        <input type="text" class="form-input" id="taskTitle" placeholder="Например: Уборка 3-х комнатной квартиры" required>
+                        <label class="form-label">Что нужно сделать? *</label>
+                        <input type="text" class="form-input" id="taskTitle" placeholder="Например: Помочь с уборкой квартиры" required>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Подробное описание *</label>
-                        <textarea class="form-textarea" id="taskDescription" placeholder="Опишите детали задачи, что нужно сделать, особые требования..." required></textarea>
+                        <textarea class="form-textarea" id="taskDescription" placeholder="Опишите подробно, какая помощь нужна..." required></textarea>
                     </div>
                     
                     <div class="form-row">
@@ -918,49 +1140,49 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Подкатегория</label>
+                            <label class="form-label">Тип помощи</label>
                             <input type="text" class="form-input" id="taskSubcategory" placeholder="Например: Уборка, Няня, Маникюр">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Срок выполнения *</label>
+                            <label class="form-label">Когда нужно? *</label>
                             <input type="date" class="form-input" id="taskDeadline" required>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Бюджет (руб.) *</label>
-                            <input type="number" class="form-input" id="taskPrice" min="100" step="100" placeholder="3000" required>
+                            <input type="number" class="form-input" id="taskPrice" min="100" step="100" placeholder="2000" required>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Приоритет</label>
+                            <label class="form-label">Срочность</label>
                             <select class="form-select" id="taskPriority">
-                                <option value="medium">Средний</option>
-                                <option value="low">Низкий</option>
-                                <option value="high">Высокий</option>
-                                <option value="urgent">Срочный</option>
+                                <option value="medium">Обычная</option>
+                                <option value="low">Не срочно</option>
+                                <option value="high">Срочно</option>
+                                <option value="urgent">Очень срочно</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Адрес</label>
-                            <input type="text" class="form-input" id="taskAddress" placeholder="Улица, дом, квартира">
+                            <label class="form-label">Адрес (если нужно)</label>
+                            <input type="text" class="form-input" id="taskAddress" placeholder="Город, улица, дом">
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Теги (через запятую)</label>
-                        <input type="text" class="form-input" id="taskTags" placeholder="уборка, генеральная, после ремонта">
+                        <label class="form-label">Теги</label>
+                        <input type="text" class="form-input" id="taskTags" placeholder="уборка, помощь, срочно">
                     </div>
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary btn-full">
                             <i class="fas fa-paper-plane"></i>
-                            Создать задачу
+                            Отправить запрос на помощь
                         </button>
                     </div>
                 </form>
@@ -968,7 +1190,7 @@
         </div>
     </div>
     
-    <!-- Модальное окно входа/регистрации -->
+    <!-- Вход/регистрация -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -998,7 +1220,7 @@
                     </form>
                     
                     <div style="text-align: center; margin: 20px 0;">
-                        <p>Нет аккаунта? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showRegisterTab()">Зарегистрируйтесь</a></p>
+                        <p>Нет аккаунта? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showRegisterTab()">Зарегистрироваться</a></p>
                     </div>
                 </div>
                 
@@ -1008,7 +1230,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Имя *</label>
-                                <input type="text" class="form-input" id="registerFirstName" placeholder="Анна" required>
+                                <input type="text" class="form-input" id="registerFirstName" placeholder="Мария" required>
                             </div>
                             
                             <div class="form-group">
@@ -1019,7 +1241,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">Email *</label>
-                            <input type="email" class="form-input" id="registerEmail" placeholder="anna@example.com" required>
+                            <input type="email" class="form-input" id="registerEmail" placeholder="maria@example.com" required>
                         </div>
                         
                         <div class="form-row">
@@ -1035,10 +1257,10 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Роль</label>
+                            <label class="form-label">Вы хотите:</label>
                             <select class="form-select" id="registerRole">
-                                <option value="client">Клиент</option>
-                                <option value="performer">Исполнитель</option>
+                                <option value="client">Получить помощь</option>
+                                <option value="performer">Оказывать помощь</option>
                             </select>
                         </div>
                         
@@ -1051,18 +1273,31 @@
                     </form>
                     
                     <div style="text-align: center; margin: 20px 0;">
-                        <p>Уже есть аккаунт? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showLoginTab()">Войдите</a></p>
+                        <p>Уже есть аккаунт? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showLoginTab()">Войти</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Модальное окно деталей задачи -->
+    <!-- Профиль пользователя -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">👤 Мой профиль</div>
+                <button class="close-modal" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="profileContent">
+                <!-- Контент будет загружен через JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Детали задачи -->
     <div class="modal" id="taskDetailModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="detailTaskTitle">Детали задачи</div>
+                <div class="modal-title" id="detailTaskTitle">Детали помощи</div>
                 <button class="close-modal" onclick="closeTaskDetailModal()">&times;</button>
             </div>
             <div class="modal-body" id="taskDetailContent">
@@ -1072,29 +1307,57 @@
     </div>
     
     <!-- Уведомления -->
+    <div class="modal" id="notificationsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">🔔 Уведомления</div>
+                <button class="close-modal" onclick="closeNotificationsModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="notificationsContent">
+                <!-- Контент будет загружен через JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомления всплывающие -->
     <div id="notificationContainer"></div>
+    
+    <!-- Индикатор загрузки -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loader"></div>
+    </div>
     
     <script>
         // Глобальные переменные
         let currentUser = null;
         let currentToken = localStorage.getItem('token');
-        let currentPage = 1;
-        const itemsPerPage = 6;
+        let unreadNotifications = 0;
+        let notificationCheckInterval = null;
         
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Устанавливаем минимальную дату для deadline (сегодня)
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('taskDeadline').min = today;
+            console.log('🎀 Инициализация приложения...');
+            
+            // Устанавливаем минимальную дату для deadline (завтра)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
+            
+            // Устанавливаем дату через 3 дня по умолчанию
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 3);
+            document.getElementById('taskDeadline').value = defaultDate.toISOString().split('T')[0];
             
             // Загружаем данные
             loadSystemStatus();
             loadStats();
-            loadServices();
+            loadHelp();
             
             // Проверяем авторизацию
             if (currentToken) {
                 verifyToken();
+            } else {
+                showGuestInterface();
             }
             
             // Настраиваем категории
@@ -1102,7 +1365,14 @@
             
             // Обновляем время на сервере
             updateServerTime();
-            setInterval(updateServerTime, 60000); // Обновлять каждую минуту
+            setInterval(updateServerTime, 60000);
+            
+            // Запускаем проверку уведомлений для авторизованных пользователей
+            if (currentToken) {
+                startNotificationCheck();
+            }
+            
+            console.log('✅ Приложение инициализировано');
         });
         
         // Функции для работы с UI
@@ -1112,15 +1382,53 @@
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                ${message}
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
             `;
             container.appendChild(notification);
             
             // Удаляем уведомление через 5 секунд
             setTimeout(() => {
-                notification.remove();
+                notification.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
             }, 5000);
+        }
+        
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+        
+        function showGuestInterface() {
+            document.getElementById('guestBanner').style.display = 'block';
+            document.getElementById('userProfile').style.display = 'none';
+            document.getElementById('quickActions').style.display = 'none';
+            document.getElementById('tasksSection').classList.remove('active');
+            document.getElementById('mainActions').style.display = 'flex';
+        }
+        
+        function showUserInterface() {
+            document.getElementById('guestBanner').style.display = 'none';
+            document.getElementById('userProfile').style.display = 'flex';
+            document.getElementById('quickActions').style.display = 'grid';
+            document.getElementById('mainActions').style.display = 'none';
+            updateNotificationCount();
+            loadUserTasks();
+        }
+        
+        function updateNotificationCount() {
+            const countElement = document.getElementById('notificationCount');
+            if (unreadNotifications > 0) {
+                countElement.textContent = unreadNotifications;
+                countElement.style.display = 'flex';
+            } else {
+                countElement.style.display = 'none';
+            }
         }
         
         function openTaskModal() {
@@ -1135,6 +1443,11 @@
         function closeTaskModal() {
             document.getElementById('taskModal').classList.remove('active');
             document.getElementById('taskForm').reset();
+            
+            // Сброс даты на 3 дня вперед
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + 3);
+            document.getElementById('taskDeadline').value = defaultDate.toISOString().split('T')[0];
         }
         
         function openLoginModal() {
@@ -1156,6 +1469,15 @@
             document.getElementById('registerTab').style.display = 'block';
         }
         
+        function openProfileModal() {
+            loadProfile();
+            document.getElementById('profileModal').classList.add('active');
+        }
+        
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+        
         function openTaskDetailModal(taskId) {
             loadTaskDetails(taskId);
             document.getElementById('taskDetailModal').classList.add('active');
@@ -1165,6 +1487,15 @@
             document.getElementById('taskDetailModal').classList.remove('active');
         }
         
+        function showNotifications() {
+            loadNotifications();
+            document.getElementById('notificationsModal').classList.add('active');
+        }
+        
+        function closeNotificationsModal() {
+            document.getElementById('notificationsModal').classList.remove('active');
+        }
+        
         function setupCategoryFilters() {
             const categoryBtns = document.querySelectorAll('.category-btn');
             categoryBtns.forEach(btn => {
@@ -1172,7 +1503,7 @@
                     categoryBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     const category = this.dataset.category;
-                    loadServices(category);
+                    loadHelp(category);
                 });
             });
         }
@@ -1209,23 +1540,23 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    document.getElementById('totalUsers').textContent = data.data.summary.totalUsers || 0;
-                    document.getElementById('totalTasks').textContent = data.data.summary.totalTasks || 0;
-                    document.getElementById('totalRevenue').textContent = formatNumber(data.data.summary.totalRevenue || 0);
+                    document.getElementById('totalUsers').textContent = formatNumber(data.data.summary.totalUsers || 0);
+                    document.getElementById('totalTasks').textContent = formatNumber(data.data.summary.totalTasks || 0);
+                    document.getElementById('totalRevenue').textContent = formatRevenue(data.data.summary.totalRevenue || 0);
                     document.getElementById('avgRating').textContent = '4.8';
                 }
             } catch (error) {
-                // Если нет доступа к статистике, показываем демо-данные
+                // Демо-данные
                 document.getElementById('totalUsers').textContent = '1,247';
                 document.getElementById('totalTasks').textContent = '5,892';
-                document.getElementById('totalRevenue').textContent = '2,540,800';
+                document.getElementById('totalRevenue').textContent = '2.5M';
                 document.getElementById('avgRating').textContent = '4.8';
             }
         }
         
-        async function loadServices(category = 'all') {
-            const servicesGrid = document.getElementById('servicesGrid');
-            servicesGrid.innerHTML = '<div class="loader"></div>';
+        async function loadHelp(category = 'all') {
+            const helpGrid = document.getElementById('helpGrid');
+            helpGrid.innerHTML = '<div class="loader"></div>';
             
             try {
                 let url = '/api/services?limit=6';
@@ -1237,105 +1568,111 @@
                 const data = await response.json();
                 
                 if (data.success && data.data.services.length > 0) {
-                    renderServices(data.data.services);
+                    renderHelp(data.data.services);
                 } else {
-                    // Демо-услуги если API не работает
-                    renderDemoServices();
+                    renderDemoHelp();
                 }
             } catch (error) {
-                renderDemoServices();
+                renderDemoHelp();
             }
         }
         
-        function renderServices(services) {
-            const servicesGrid = document.getElementById('servicesGrid');
-            servicesGrid.innerHTML = '';
+        function renderHelp(services) {
+            const helpGrid = document.getElementById('helpGrid');
+            helpGrid.innerHTML = '';
             
             services.forEach(service => {
                 const icon = getCategoryIcon(service.category);
                 const price = service.priceOptions?.oneTime || service.priceOptions?.hourly || 0;
                 
-                const serviceCard = document.createElement('div');
-                serviceCard.className = 'service-card';
-                serviceCard.innerHTML = `
-                    <div class="service-content">
-                        <div class="service-header">
-                            <div class="service-icon">${icon}</div>
-                            <div class="service-title">${service.name}</div>
+                const helpCard = document.createElement('div');
+                helpCard.className = 'help-card';
+                helpCard.innerHTML = `
+                    <div class="help-content">
+                        <div class="help-header">
+                            <div class="help-icon">${icon}</div>
+                            <div>
+                                <div class="help-title">${service.name}</div>
+                                ${service.isPopular ? '<span class="badge badge-popular" style="margin-left: 5px;">Популярно</span>' : ''}
+                            </div>
                         </div>
-                        <div class="service-description">${service.description}</div>
+                        <div class="help-description">${service.description}</div>
                         <div class="rating">
                             ${getRatingStars(service.rating?.average || 5)}
                             <span style="color: var(--dark-gray); font-size: 0.9em; margin-left: 10px;">
                                 ${service.rating?.count || 0} отзывов
                             </span>
                         </div>
-                        <div class="service-footer">
-                            <div class="service-price">от ${formatNumber(price)} руб.</div>
-                            <div class="service-duration">${service.duration || 60} мин.</div>
+                        <div class="help-footer">
+                            <div class="help-price">от ${formatNumber(price)} руб.</div>
+                            <div class="help-duration">${service.duration || 60} мин.</div>
                         </div>
                     </div>
                 `;
-                serviceCard.addEventListener('click', () => {
+                helpCard.addEventListener('click', () => {
                     prefillTaskForm(service);
                 });
-                servicesGrid.appendChild(serviceCard);
+                helpGrid.appendChild(helpCard);
             });
         }
         
-        function renderDemoServices() {
-            const demoServices = [
+        function renderDemoHelp() {
+            const demoHelp = [
                 {
-                    name: 'Генеральная уборка квартиры',
-                    description: 'Полная уборка всех комнат, кухни, санузла. Мытье окон, чистка ковров.',
+                    name: 'Помощь с уборкой',
+                    description: 'Помогу навести порядок в квартире, разобрать гардероб, организовать пространство.',
                     category: 'home_and_household',
-                    priceOptions: { oneTime: 3000 },
-                    duration: 240,
-                    rating: { average: 4.8, count: 127 }
+                    priceOptions: { oneTime: 2500 },
+                    duration: 180,
+                    rating: { average: 4.8, count: 127 },
+                    isPopular: true
                 },
                 {
-                    name: 'Няня на день',
-                    description: 'Присмотр за ребенком, прогулки, развивающие занятия, питание.',
+                    name: 'Присмотр за детьми',
+                    description: 'Посижу с вашим ребенком, погуляю, помогу с уроками, организую досуг.',
                     category: 'family_and_children',
-                    priceOptions: { oneTime: 2000, hourly: 300 },
-                    duration: 480,
-                    rating: { average: 4.9, count: 89 }
+                    priceOptions: { oneTime: 1500, hourly: 350 },
+                    duration: 240,
+                    rating: { average: 4.9, count: 89 },
+                    isPopular: true
                 },
                 {
-                    name: 'Маникюр на дому',
-                    description: 'Комплексный маникюр с покрытием гель-лаком, парафинотерапия.',
+                    name: 'Помощь с маникюром',
+                    description: 'Сделаю аккуратный маникюр с покрытием гель-лаком или укреплением ногтей.',
                     category: 'beauty_and_health',
-                    priceOptions: { oneTime: 1500 },
+                    priceOptions: { oneTime: 1800 },
                     duration: 90,
-                    rating: { average: 4.7, count: 234 }
+                    rating: { average: 4.7, count: 234 },
+                    isPopular: true
                 },
                 {
-                    name: 'Репетитор по английскому',
-                    description: 'Индивидуальные занятия для детей и взрослых, подготовка к экзаменам.',
+                    name: 'Помощь с английским',
+                    description: 'Помогу с домашним заданием, подготовкой к экзаменам или разговорной практикой.',
                     category: 'courses_and_education',
                     priceOptions: { oneTime: 1000, hourly: 1500 },
                     duration: 60,
                     rating: { average: 4.9, count: 156 }
                 },
                 {
-                    name: 'Выгул собаки',
-                    description: 'Прогулка с собакой, игры, выполнение команд, фотоотчет.',
+                    name: 'Помощь с питомцем',
+                    description: 'Выгуляю собаку, покормлю кошку, посижу с животным пока вас нет дома.',
                     category: 'pets',
-                    priceOptions: { oneTime: 500, hourly: 800 },
+                    priceOptions: { oneTime: 800, hourly: 300 },
                     duration: 60,
                     rating: { average: 4.8, count: 78 }
                 },
                 {
-                    name: 'Организация праздника',
-                    description: 'Полная организация детского или взрослого праздника под ключ.',
+                    name: 'Помощь в организации праздника',
+                    description: 'Помогу организовать день рождения, детский праздник или семейное торжество.',
                     category: 'events_and_entertainment',
-                    priceOptions: { oneTime: 5000 },
-                    duration: 480,
-                    rating: { average: 4.9, count: 45 }
+                    priceOptions: { oneTime: 4000 },
+                    duration: 300,
+                    rating: { average: 4.9, count: 45 },
+                    isPopular: true
                 }
             ];
             
-            renderServices(demoServices);
+            renderHelp(demoHelp);
         }
         
         async function loadUserTasks() {
@@ -1344,7 +1681,9 @@
                 return;
             }
             
-            document.getElementById('tasksSection').style.display = 'block';
+            // Показываем раздел задач
+            document.getElementById('tasksSection').classList.add('active');
+            
             const tasksGrid = document.getElementById('tasksGrid');
             tasksGrid.innerHTML = '<div class="loader"></div>';
             
@@ -1363,34 +1702,20 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.success && data.data.tasks.length > 0) {
                     renderTasks(data.data.tasks);
                 } else {
-                    tasksGrid.innerHTML = '<p style="text-align: center; color: var(--dark-gray);">Нет задач</p>';
+                    renderEmptyTasks();
                 }
             } catch (error) {
-                tasksGrid.innerHTML = '<p style="text-align: center; color: var(--danger);">Ошибка загрузки задач</p>';
+                console.error('Ошибка загрузки задач:', error);
+                renderEmptyTasks();
             }
         }
         
         function renderTasks(tasks) {
             const tasksGrid = document.getElementById('tasksGrid');
             tasksGrid.innerHTML = '';
-            
-            if (!tasks || tasks.length === 0) {
-                tasksGrid.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                        <i class="fas fa-tasks" style="font-size: 3em; color: var(--light-pink); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--dark-gray); margin-bottom: 10px;">У вас пока нет задач</h3>
-                        <p style="color: var(--dark-gray);">Создайте первую задачу и наш консьерж поможет вам!</p>
-                        <button class="btn btn-primary" onclick="openTaskModal()" style="margin-top: 20px;">
-                            <i class="fas fa-plus-circle"></i>
-                            Создать задачу
-                        </button>
-                    </div>
-                `;
-                return;
-            }
             
             tasks.forEach(task => {
                 const statusText = {
@@ -1403,10 +1728,12 @@
                 }[task.status] || task.status;
                 
                 const deadline = new Date(task.deadline).toLocaleDateString('ru-RU');
+                const isUnread = Math.random() > 0.7; // Демо-статус непрочитанного
                 
                 const taskCard = document.createElement('div');
                 taskCard.className = 'task-card';
                 taskCard.innerHTML = `
+                    ${isUnread ? '<div class="task-unread"></div>' : ''}
                     <div class="task-header">
                         <div class="task-number">${task.taskNumber || 'TASK-XXXX-XXXX'}</div>
                         <div class="task-status status-${task.status}">${statusText}</div>
@@ -1425,6 +1752,21 @@
             });
         }
         
+        function renderEmptyTasks() {
+            const tasksGrid = document.getElementById('tasksGrid');
+            tasksGrid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-tasks"></i>
+                    <h3 style="margin-bottom: 10px;">У вас пока нет задач</h3>
+                    <p style="margin-bottom: 20px;">Создайте первую задачу, и мы найдем того, кто поможет вам!</p>
+                    <button class="btn btn-primary" onclick="openTaskModal()">
+                        <i class="fas fa-plus-circle"></i>
+                        Создать задачу
+                    </button>
+                </div>
+            `;
+        }
+        
         async function loadTaskDetails(taskId) {
             try {
                 const response = await fetch(`/api/tasks/${taskId}`, {
@@ -1437,10 +1779,18 @@
                 
                 if (data.success) {
                     renderTaskDetails(data.data.task);
+                } else {
+                    document.getElementById('taskDetailContent').innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <p style="color: var(--danger);">Ошибка загрузки деталей задачи</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 document.getElementById('taskDetailContent').innerHTML = `
-                    <p style="color: var(--danger); text-align: center;">Ошибка загрузки деталей задачи</p>
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--danger);">Ошибка сети</p>
+                    </div>
                 `;
             }
         }
@@ -1517,7 +1867,7 @@
                 
                 <div style="margin-bottom: 25px;">
                     <h4 style="color: var(--dark-pink); margin-bottom: 10px;">Описание</h4>
-                    <p style="color: var(--dark-gray); line-height: 1.6;">${task.description}</p>
+                    <p style="color: var(--dark-gray); line-height: 1.6; padding: 15px; background: var(--soft-pink); border-radius: var(--radius-sm);">${task.description}</p>
                 </div>
                 
                 ${task.feedback ? `
@@ -1534,6 +1884,163 @@
                     ${actionsHtml}
                 </div>
             `;
+        }
+        
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderProfile(data.data.user);
+                }
+            } catch (error) {
+                document.getElementById('profileContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--danger);">Ошибка загрузки профиля</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderProfile(user) {
+            const roleText = {
+                'client': 'Получаю помощь',
+                'performer': 'Оказываю помощь',
+                'admin': 'Администратор',
+                'superadmin': 'Суперадминистратор'
+            }[user.role] || user.role;
+            
+            document.getElementById('profileContent').innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; background: var(--primary-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 2em; font-weight: bold; margin-bottom: 15px;">
+                        ${user.firstName[0]}
+                    </div>
+                    <h3 style="color: var(--dark-pink);">${user.firstName} ${user.lastName}</h3>
+                    <p style="color: var(--dark-gray);">${roleText}</p>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: var(--dark-pink); margin-bottom: 15px;">👤 Информация</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Email</div>
+                            <div style="font-weight: 600;">${user.email}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Телефон</div>
+                            <div style="font-weight: 600;">${user.phone || 'Не указан'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Рейтинг</div>
+                            <div style="font-weight: 600;">${user.rating || 'Нет оценок'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Подписка</div>
+                            <div style="font-weight: 600;">${user.subscription?.plan || 'free'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <h4 style="color: var(--dark-pink); margin-bottom: 15px;">📊 Статистика</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: center;">
+                        <div style="background: var(--soft-pink); padding: 15px; border-radius: var(--radius-sm);">
+                            <div style="font-size: 1.2em; font-weight: 700; color: var(--primary-pink);">0</div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Создано задач</div>
+                        </div>
+                        <div style="background: var(--soft-pink); padding: 15px; border-radius: var(--radius-sm);">
+                            <div style="font-size: 1.2em; font-weight: 700; color: var(--primary-pink);">0</div>
+                            <div style="font-size: 0.9em; color: var(--dark-gray);">Завершено</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="closeProfileModal()" style="width: 100%;">
+                    <i class="fas fa-times"></i>
+                    Закрыть
+                </button>
+            `;
+        }
+        
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/api/notifications', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderNotifications(data.data.notifications, data.data.unreadCount);
+                }
+            } catch (error) {
+                document.getElementById('notificationsContent').innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <p style="color: var(--danger);">Ошибка загрузки уведомлений</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderNotifications(notifications, unreadCount) {
+            let notificationsHtml = '';
+            
+            if (notifications.length === 0) {
+                notificationsHtml = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-bell-slash" style="font-size: 3em; color: var(--light-pink); margin-bottom: 20px;"></i>
+                        <p style="color: var(--dark-gray);">У вас нет уведомлений</p>
+                    </div>
+                `;
+            } else {
+                notificationsHtml = `
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="markAllNotificationsAsRead()" style="width: 100%;">
+                            <i class="fas fa-check-double"></i>
+                            Отметить все как прочитанные
+                        </button>
+                    </div>
+                `;
+                
+                notifications.forEach(notification => {
+                    const timeAgo = getTimeAgo(new Date(notification.createdAt));
+                    const icon = notification.type === 'task_update' ? 'fas fa-tasks' : 
+                                 notification.type === 'new_message' ? 'fas fa-comment' : 
+                                 notification.type === 'payment' ? 'fas fa-credit-card' : 'fas fa-info-circle';
+                    
+                    notificationsHtml += `
+                        <div style="padding: 15px; margin-bottom: 10px; background: ${notification.read ? 'white' : 'var(--soft-pink)'}; border-radius: var(--radius-sm); border: 1px solid ${notification.read ? 'var(--medium-gray)' : 'var(--primary-pink)'};">
+                            <div style="display: flex; gap: 10px;">
+                                <div style="color: var(--primary-pink); font-size: 1.2em;">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 5px;">${notification.title}</div>
+                                    <div style="color: var(--dark-gray); font-size: 0.9em;">${notification.message}</div>
+                                    <div style="font-size: 0.8em; color: var(--dark-gray); margin-top: 5px;">${timeAgo}</div>
+                                </div>
+                                ${!notification.read ? `
+                                <div style="align-self: flex-start;">
+                                    <div class="task-unread" style="position: static;"></div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('notificationsContent').innerHTML = notificationsHtml;
+            unreadNotifications = unreadCount;
+            updateNotificationCount();
         }
         
         // Функции работы с задачами
@@ -1558,6 +2065,8 @@
                 tags: document.getElementById('taskTags').value
             };
             
+            showLoading();
+            
             try {
                 const response = await fetch('/api/tasks', {
                     method: 'POST',
@@ -1570,20 +2079,27 @@
                 
                 const data = await response.json();
                 
+                hideLoading();
+                
                 if (data.success) {
-                    showNotification(`Задача создана! Номер: ${data.data.task.taskNumber}`, 'success');
+                    showNotification(`Запрос на помощь отправлен! Номер: ${data.data.task.taskNumber}`, 'success');
                     closeTaskModal();
                     loadUserTasks();
+                    
+                    // Добавляем уведомление о новой задаче
+                    unreadNotifications++;
+                    updateNotificationCount();
                 } else {
                     showNotification(data.error || 'Ошибка создания задачи', 'error');
                 }
             } catch (error) {
+                hideLoading();
                 showNotification('Ошибка сети', 'error');
             }
         }
         
         async function cancelTask(taskId) {
-            if (!confirm('Вы уверены, что хотите отменить задачу?')) return;
+            if (!confirm('Вы уверены, что хотите отменить эту помощь?')) return;
             
             try {
                 const response = await fetch(`/api/tasks/${taskId}/cancel`, {
@@ -1598,7 +2114,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showNotification('Задача отменена', 'success');
+                    showNotification('Помощь отменена', 'success');
                     closeTaskDetailModal();
                     loadUserTasks();
                 } else {
@@ -1610,7 +2126,7 @@
         }
         
         async function reopenTask(taskId) {
-            if (!confirm('Вы уверены, что хотите возобновить задачу?')) return;
+            if (!confirm('Вы уверены, что хотите возобновить запрос на помощь?')) return;
             
             try {
                 const response = await fetch(`/api/tasks/${taskId}/reopen`, {
@@ -1623,7 +2139,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showNotification('Задача возобновлена', 'success');
+                    showNotification('Запрос возобновлен', 'success');
                     closeTaskDetailModal();
                     loadUserTasks();
                 } else {
@@ -1635,7 +2151,7 @@
         }
         
         async function completeTask(taskId) {
-            const rating = prompt('Поставьте оценку от 1 до 5:', '5');
+            const rating = prompt('Оцените помощь от 1 до 5 звезд:', '5');
             if (!rating || rating < 1 || rating > 5) {
                 showNotification('Укажите оценку от 1 до 5', 'warning');
                 return;
@@ -1659,7 +2175,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    showNotification('Задача завершена! Спасибо за отзыв.', 'success');
+                    showNotification('Помощь завершена! Спасибо за отзыв.', 'success');
                     closeTaskDetailModal();
                     loadUserTasks();
                 } else {
@@ -1670,13 +2186,33 @@
             }
         }
         
+        async function markAllNotificationsAsRead() {
+            try {
+                // В реальном приложении здесь будет API запрос
+                // Пока что просто обновляем интерфейс
+                unreadNotifications = 0;
+                updateNotificationCount();
+                closeNotificationsModal();
+                showNotification('Все уведомления отмечены как прочитанные', 'success');
+            } catch (error) {
+                showNotification('Ошибка обновления уведомлений', 'error');
+            }
+        }
+        
         // Функции авторизации
         
         async function login(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
             
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showNotification('Заполните все поля', 'warning');
+                return;
+            }
+            
+            showLoading();
             
             try {
                 const response = await fetch('/api/auth/login', {
@@ -1689,6 +2225,8 @@
                 
                 const data = await response.json();
                 
+                hideLoading();
+                
                 if (data.success) {
                     currentUser = data.data.user;
                     currentToken = data.data.token;
@@ -1697,17 +2235,20 @@
                     
                     showNotification(`Добро пожаловать, ${currentUser.firstName}!`, 'success');
                     closeLoginModal();
-                    updateUserUI();
+                    showUserInterface();
+                    updateUserInfo();
+                    startNotificationCheck();
                 } else {
                     showNotification(data.error || 'Ошибка входа', 'error');
                 }
             } catch (error) {
+                hideLoading();
                 showNotification('Ошибка сети', 'error');
             }
         }
         
         async function register(event) {
-            event.preventDefault();
+            if (event) event.preventDefault();
             
             const userData = {
                 email: document.getElementById('registerEmail').value,
@@ -1717,6 +2258,18 @@
                 phone: document.getElementById('registerPhone').value,
                 role: document.getElementById('registerRole').value
             };
+            
+            if (!userData.email || !userData.password || !userData.firstName || !userData.lastName) {
+                showNotification('Заполните обязательные поля', 'warning');
+                return;
+            }
+            
+            if (userData.password.length < 6) {
+                showNotification('Пароль должен быть не менее 6 символов', 'warning');
+                return;
+            }
+            
+            showLoading();
             
             try {
                 const response = await fetch('/api/auth/register', {
@@ -1729,6 +2282,8 @@
                 
                 const data = await response.json();
                 
+                hideLoading();
+                
                 if (data.success) {
                     showNotification('Регистрация успешна! Теперь войдите в систему.', 'success');
                     showLoginTab();
@@ -1738,6 +2293,7 @@
                     showNotification(data.error || 'Ошибка регистрации', 'error');
                 }
             } catch (error) {
+                hideLoading();
                 showNotification('Ошибка сети', 'error');
             }
         }
@@ -1754,19 +2310,27 @@
                 
                 if (data.success) {
                     currentUser = data.data.user;
-                    updateUserUI();
+                    showUserInterface();
+                    updateUserInfo();
+                    startNotificationCheck();
+                    return true;
                 } else {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    currentToken = null;
-                    currentUser = null;
+                    logout();
+                    return false;
                 }
             } catch (error) {
-                // Токен невалиден
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                currentToken = null;
-                currentUser = null;
+                logout();
+                return false;
+            }
+        }
+        
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+                document.getElementById('userRole').textContent = currentUser.role === 'client' ? 'Получаю помощь' : 
+                                                                 currentUser.role === 'performer' ? 'Оказываю помощь' : 
+                                                                 currentUser.role;
+                document.getElementById('userAvatar').textContent = currentUser.firstName[0];
             }
         }
         
@@ -1775,159 +2339,46 @@
             localStorage.removeItem('user');
             currentToken = null;
             currentUser = null;
-            updateUserUI();
+            showGuestInterface();
+            stopNotificationCheck();
             showNotification('Вы вышли из системы', 'info');
         }
         
-        function updateUserUI() {
-            const actions = document.querySelector('.actions');
-            
-            if (currentUser) {
-                // Обновляем кнопку входа на профиль
-                const loginBtn = actions.querySelector('button[onclick="openLoginModal()"]');
-                if (loginBtn) {
-                    loginBtn.innerHTML = `<i class="fas fa-user"></i> ${currentUser.firstName}`;
-                    loginBtn.onclick = function() {
-                        showUserProfile();
-                    };
-                    
-                    // Добавляем кнопку выхода
-                    const logoutBtn = document.createElement('button');
-                    logoutBtn.className = 'btn btn-secondary';
-                    logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Выйти';
-                    logoutBtn.onclick = logout;
-                    actions.appendChild(logoutBtn);
-                }
-                
-                // Показываем раздел задач
-                document.getElementById('tasksSection').style.display = 'block';
-                loadUserTasks();
-            }
-        }
-        
-        function showUserProfile() {
-            if (!currentUser) return;
-            
-            const userInfo = `
-                <h3 style="color: var(--primary-pink); margin-bottom: 20px;">👤 Ваш профиль</h3>
-                <div style="margin-bottom: 15px;">
-                    <strong>Имя:</strong> ${currentUser.firstName} ${currentUser.lastName}
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>Email:</strong> ${currentUser.email}
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>Роль:</strong> ${currentUser.role === 'client' ? 'Клиент' : currentUser.role === 'performer' ? 'Исполнитель' : currentUser.role}
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>Рейтинг:</strong> ${currentUser.rating || 'Нет оценок'}
-                </div>
-                <div style="margin-bottom: 20px;">
-                    <strong>Подписка:</strong> ${currentUser.subscription?.plan || 'free'}
-                </div>
-                <button class="btn btn-primary" onclick="closeLoginModal()">
-                    <i class="fas fa-times"></i>
-                    Закрыть
-                </button>
-            `;
-            
-            document.getElementById('loginTab').style.display = 'block';
-            document.getElementById('registerTab').style.display = 'none';
-            document.getElementById('loginTab').innerHTML = userInfo;
-            document.getElementById('loginModal').classList.add('active');
-        }
-        
-        // Административные функции
-        
-        async function loadAdminStats() {
-            if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'superadmin')) {
-                showNotification('Только для администраторов', 'warning');
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/admin/stats', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
+        function startNotificationCheck() {
+            // Проверяем уведомления каждые 30 секунд
+            notificationCheckInterval = setInterval(async () => {
+                if (currentToken) {
+                    try {
+                        const response = await fetch('/api/notifications', {
+                            headers: {
+                                'Authorization': `Bearer ${currentToken}`
+                            }
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            const oldCount = unreadNotifications;
+                            unreadNotifications = data.data.unreadCount;
+                            
+                            if (unreadNotifications > oldCount) {
+                                updateNotificationCount();
+                                if (unreadNotifications > 0 && oldCount === 0) {
+                                    showNotification('У вас новые уведомления', 'info');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Ошибка проверки уведомлений:', error);
                     }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showAdminStats(data.data);
                 }
-            } catch (error) {
-                showNotification('Ошибка загрузки статистики', 'error');
-            }
+            }, 30000);
         }
         
-        function showAdminStats(stats) {
-            const statsHtml = `
-                <h3 style="color: var(--primary-pink); margin-bottom: 20px;">📊 Административная статистика</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div style="background: var(--light-gray); padding: 15px; border-radius: var(--radius-sm);">
-                        <div style="font-size: 0.9em; color: var(--dark-gray);">Пользователей</div>
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--primary-pink);">${stats.summary.totalUsers}</div>
-                    </div>
-                    <div style="background: var(--light-gray); padding: 15px; border-radius: var(--radius-sm);">
-                        <div style="font-size: 0.9em; color: var(--dark-gray);">Всего задач</div>
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--primary-pink);">${stats.summary.totalTasks}</div>
-                    </div>
-                    <div style="background: var(--light-gray); padding: 15px; border-radius: var(--radius-sm);">
-                        <div style="font-size: 0.9em; color: var(--dark-gray);">Выручка</div>
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--primary-pink);">${formatNumber(stats.summary.totalRevenue)} руб.</div>
-                    </div>
-                    <div style="background: var(--light-gray); padding: 15px; border-radius: var(--radius-sm);">
-                        <div style="font-size: 0.9em; color: var(--dark-gray);">За месяц</div>
-                        <div style="font-size: 1.5em; font-weight: 700; color: var(--primary-pink);">${formatNumber(stats.summary.monthlyRevenue)} руб.</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-primary" onclick="exportData('tasks')">
-                        <i class="fas fa-file-excel"></i>
-                        Экспорт задач
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportData('users')" style="margin-left: 10px;">
-                        <i class="fas fa-file-excel"></i>
-                        Экспорт пользователей
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('loginTab').style.display = 'block';
-            document.getElementById('registerTab').style.display = 'none';
-            document.getElementById('loginTab').innerHTML = statsHtml;
-            document.getElementById('loginModal').classList.add('active');
-        }
-        
-        async function exportData(type) {
-            try {
-                const response = await fetch(`/api/admin/export/${type}?format=excel`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${type}_export.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    
-                    showNotification(`Экспорт ${type} успешно завершен`, 'success');
-                } else {
-                    showNotification('Ошибка экспорта', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
+        function stopNotificationCheck() {
+            if (notificationCheckInterval) {
+                clearInterval(notificationCheckInterval);
+                notificationCheckInterval = null;
             }
         }
         
@@ -1935,6 +2386,15 @@
         
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+        
+        function formatRevenue(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return formatNumber(num);
         }
         
         function getCategoryIcon(category) {
@@ -1945,7 +2405,7 @@
                 'courses_and_education': '🎓',
                 'pets': '🐶',
                 'events_and_entertainment': '🎉',
-                'other': '📋'
+                'other': '🎀'
             };
             return icons[category] || '🎀';
         }
@@ -1981,14 +2441,34 @@
             return starsHtml;
         }
         
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'только что';
+            if (diffMins < 60) return `${diffMins} мин. назад`;
+            if (diffHours < 24) return `${diffHours} ч. назад`;
+            if (diffDays < 7) return `${diffDays} дн. назад`;
+            return date.toLocaleDateString('ru-RU');
+        }
+        
         function prefillTaskForm(service) {
+            if (!currentUser) {
+                showNotification('Сначала войдите в систему', 'warning');
+                openLoginModal();
+                return;
+            }
+            
             openTaskModal();
             
             document.getElementById('taskTitle').value = service.name;
             document.getElementById('taskDescription').value = service.description;
             document.getElementById('taskCategory').value = service.category;
             document.getElementById('taskSubcategory').value = service.subcategories?.[0] || '';
-            document.getElementById('taskPrice').value = service.priceOptions?.oneTime || service.priceOptions?.hourly || 1000;
+            document.getElementById('taskPrice').value = service.priceOptions?.oneTime || service.priceOptions?.hourly || 2000;
             
             // Устанавливаем срок на 3 дня вперед
             const deadline = new Date();
@@ -2000,8 +2480,7 @@
             const now = new Date();
             const timeString = now.toLocaleTimeString('ru-RU', { 
                 hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit'
+                minute: '2-digit'
             });
             const dateString = now.toLocaleDateString('ru-RU');
             
@@ -2025,21 +2504,59 @@
         
         // Информационные функции
         
+        function showServices() {
+            // Прокручиваем к категориям помощи
+            document.querySelector('.section-title').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+        
+        function showProfile() {
+            if (!currentUser) {
+                openLoginModal();
+                return;
+            }
+            openProfileModal();
+        }
+        
         function showAbout() {
-            alert(`🎀 Женский Консьерж Сервис\n\nВерсия: 4.0.0\n\nСервис создан для решения бытовых задач, организации мероприятий и заботы о себе и близких. Мы помогаем женщинам освободить время для действительно важных вещей!`);
+            alert(`🎀 Помощь для женщин\n\nВерсия: 4.1.0\n\nСервис создан для решения бытовых задач и организации жизни. Мы помогаем женщинам освободить время для действительно важных вещей!\n\nМы не просто выполняем задачи - мы создаем комфорт и заботимся о вас.`);
         }
         
         function showContacts() {
-            alert(`📞 Контакты\n\nТелефон: +7 (999) 123-45-67\nEmail: info@concierge-service.ru\nTelegram: @concierge_service\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
+            alert(`📞 Контакты\n\nТелефон поддержки: +7 (999) 123-45-67\nEmail: help@women-concierge.ru\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
         }
         
         function showFAQ() {
-            alert(`❓ Частые вопросы\n\n1. Как создать задачу?\n- Нажмите "Создать задачу", заполните форму и отправьте.\n\n2. Сколько стоит услуга?\n- Цена зависит от задачи. Указывается при создании.\n\n3. Как отменить задачу?\n- В деталях задачи нажмите "Отменить задачу".\n\n4. Как поставить оценку?\n- После завершения задачи вам будет предложено оценить исполнителя.\n\n5. Как стать исполнителем?\n- Зарегистрируйтесь с ролью "Исполнитель".`);
+            alert(`❓ Частые вопросы\n\n1. Как получить помощь?\n- Нажмите "Нужна помощь", заполните форму и отправьте запрос.\n\n2. Сколько это стоит?\n- Цена зависит от задачи. Вы сами указываете бюджет.\n\n3. Как отменить запрос?\n- В деталях задачи нажмите "Отменить".\n\n4. Как оценить помощь?\n- После завершения задачи вам будет предложено поставить оценку.\n\n5. Как стать тем, кто помогает?\n- Зарегистрируйтесь с ролью "Оказываю помощь".`);
         }
         
         function showPrivacy() {
-            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших персональных данных:\n\n• Все данные шифруются\n• Не передаем информацию третьим лицам\n• Вы можете удалить свой аккаунт в любой момент\n• Используем безопасные методы оплаты\n\nПо вопросам защиты данных: privacy@concierge-service.ru`);
+            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших данных:\n\n• Все данные шифруются\n• Не передаем информацию третьим лицам\n• Вы можете удалить аккаунт в любой момент\n• Используем безопасные методы оплаты\n\nПо вопросам защиты данных: privacy@women-concierge.ru`);
         }
+        
+        // Демо-функции для тестирования
+        function demoLogin() {
+            document.getElementById('loginEmail').value = 'maria@example.com';
+            document.getElementById('loginPassword').value = 'client123';
+            login();
+        }
+        
+        function demoRegister() {
+            document.getElementById('registerFirstName').value = 'Демо';
+            document.getElementById('registerLastName').value = 'Пользователь';
+            document.getElementById('registerEmail').value = 'demo@example.com';
+            document.getElementById('registerPassword').value = 'demo123';
+            document.getElementById('registerPhone').value = '+79990001122';
+            
+            const event = new Event('submit');
+            document.getElementById('registerForm').dispatchEvent(event);
+        }
+        
+        // Для отладки - добавьте кнопку в консоли
+        console.log('Для быстрого входа используйте: demoLogin()');
+        console.log('Для быстрой регистрации используйте: demoRegister()');
     </script>
 </body>
 </html>
