@@ -4,7 +4,6 @@ const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
-const path = require('path'); // если еще нет
 const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
