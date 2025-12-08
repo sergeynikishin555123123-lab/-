@@ -3,32 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Помощь для женщин | Консьерж-сервис</title>
+    <title>🎀 Консьерж-сервис | Помощь в бытовых задачах</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-pink: #ff69b4;
-            --light-pink: #ffb6c1;
-            --soft-pink: #ffeff7;
-            --dark-pink: #db7093;
-            --primary-purple: #9370db;
-            --light-purple: #d8bfd8;
+            --primary-color: #7c3aed;
+            --primary-light: #8b5cf6;
+            --primary-dark: #6d28d9;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --light-bg: #f8fafc;
             --white: #ffffff;
-            --light-gray: #f8f9fa;
-            --medium-gray: #e9ecef;
-            --dark-gray: #495057;
-            --black: #212529;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
-            --shadow: 0 10px 30px rgba(255, 105, 180, 0.1);
-            --shadow-light: 0 5px 15px rgba(255, 105, 180, 0.05);
-            --shadow-soft: 0 2px 10px rgba(255, 105, 180, 0.1);
-            --radius: 20px;
-            --radius-sm: 10px;
-            --transition: all 0.3s ease;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --transition: all 0.2s ease;
         }
         
         * {
@@ -38,9 +47,9 @@
         }
         
         body {
-            font-family: 'Nunito', sans-serif;
-            background: linear-gradient(135deg, #fff5f7 0%, #fef7ff 100%);
-            color: var(--black);
+            font-family: 'Inter', sans-serif;
+            background: var(--light-bg);
+            color: var(--gray-800);
             line-height: 1.6;
             min-height: 100vh;
             overflow-x: hidden;
@@ -49,18 +58,18 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0 20px;
         }
         
         /* Шапка */
         header {
-            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            border-radius: var(--radius);
-            padding: 40px;
+            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+            padding: 40px 20px;
             margin-bottom: 40px;
             text-align: center;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
             position: relative;
             overflow: hidden;
         }
@@ -73,7 +82,7 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-size: 40px 40px;
             animation: float 20s linear infinite;
         }
         
@@ -84,30 +93,32 @@
         
         .logo {
             font-family: 'Playfair Display', serif;
-            font-size: 3.5em;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
         }
         
         .tagline {
-            font-size: 1.2em;
+            font-size: 1.125rem;
             opacity: 0.9;
             max-width: 600px;
-            margin: 0 auto 30px;
+            margin: 0 auto 32px;
+            font-weight: 400;
         }
         
         /* Баннер для неавторизованных */
         .guest-banner {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: var(--radius);
-            padding: 30px;
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 32px;
             text-align: center;
-            box-shadow: var(--shadow-light);
+            box-shadow: var(--shadow);
             backdrop-filter: blur(10px);
+            border: 1px solid var(--gray-200);
         }
         
         /* Статистика */
@@ -120,30 +131,31 @@
         
         .stat-card {
             background: white;
-            padding: 25px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-light);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
             text-align: center;
             transition: var(--transition);
-            border: 2px solid transparent;
+            border: 1px solid var(--gray-200);
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-            border-color: var(--light-pink);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
         }
         
         .stat-number {
-            font-size: 2.5em;
+            font-size: 2.25rem;
             font-weight: 700;
-            color: var(--primary-pink);
-            margin-bottom: 10px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
         }
         
         .stat-label {
-            color: var(--dark-gray);
-            font-size: 0.9em;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         
         /* Уведомления */
@@ -154,8 +166,8 @@
         
         .notification-count {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -6px;
+            right: -6px;
             background: var(--danger);
             color: white;
             border-radius: 50%;
@@ -164,83 +176,93 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8em;
+            font-size: 0.75rem;
             font-weight: 600;
         }
         
-        /* Помощь */
+        /* Разделы */
         .section-title {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2em;
-            color: var(--dark-pink);
+            font-size: 2rem;
+            color: var(--gray-900);
             text-align: center;
-            margin: 50px 0 30px;
+            margin: 60px 0 32px;
             position: relative;
         }
         
         .section-title::after {
             content: '';
             display: block;
-            width: 100px;
+            width: 80px;
             height: 4px;
-            background: linear-gradient(to right, var(--primary-pink), var(--primary-purple));
-            margin: 15px auto;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            margin: 16px auto;
             border-radius: 2px;
         }
         
+        /* Категории */
         .categories {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
             margin-bottom: 40px;
         }
         
         .category-btn {
             background: white;
-            border: 2px solid var(--medium-gray);
-            padding: 15px;
-            border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-300);
+            padding: 20px 16px;
+            border-radius: var(--radius);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
             transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
         }
         
         .category-btn:hover,
         .category-btn.active {
-            border-color: var(--primary-pink);
-            background: var(--soft-pink);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-soft);
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            color: white;
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .category-btn:hover .category-icon,
+        .category-btn.active .category-icon {
+            color: white;
         }
         
         .category-icon {
-            font-size: 2em;
-            color: var(--primary-pink);
+            font-size: 2rem;
+            color: var(--primary-color);
+            transition: var(--transition);
         }
         
+        /* Карточки помощи */
         .help-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
         }
         
         .help-card {
             background: white;
-            border-radius: var(--radius);
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: var(--shadow-light);
+            box-shadow: var(--shadow);
             transition: var(--transition);
-            position: relative;
-            border: 1px solid var(--light-pink);
+            border: 1px solid var(--gray-200);
         }
         
         .help-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
         }
         
         .help-card::before {
@@ -249,41 +271,44 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 5px;
-            background: linear-gradient(to right, var(--primary-pink), var(--primary-purple));
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
         }
         
         .help-content {
-            padding: 25px;
+            padding: 24px;
+            position: relative;
         }
         
         .help-header {
             display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
         }
         
         .help-icon {
-            font-size: 2em;
-            color: var(--primary-pink);
-            background: var(--soft-pink);
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            background: var(--gray-100);
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         
         .help-title {
-            font-size: 1.3em;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: var(--black);
+            color: var(--gray-900);
+            margin-bottom: 4px;
         }
         
         .help-description {
-            color: var(--dark-gray);
+            color: var(--gray-600);
             margin-bottom: 20px;
             line-height: 1.5;
         }
@@ -293,93 +318,22 @@
             justify-content: space-between;
             align-items: center;
             padding-top: 20px;
-            border-top: 1px solid var(--medium-gray);
+            border-top: 1px solid var(--gray-200);
         }
         
         .help-price {
-            font-size: 1.4em;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--primary-pink);
+            color: var(--primary-color);
         }
         
         .help-duration {
-            color: var(--dark-gray);
-            font-size: 0.9em;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         
-        /* Форма создания задачи */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .modal.active {
-            display: flex;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: var(--radius);
-            width: 100%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow);
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%);
-            color: white;
-            padding: 20px 25px;
-            border-radius: var(--radius) var(--radius) 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-title {
-            font-size: 1.5em;
-            font-weight: 600;
-        }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5em;
-            cursor: pointer;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-        
-        .close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .modal-body {
-            padding: 25px;
-        }
-        
+        /* Формы */
         .form-group {
             margin-bottom: 20px;
         }
@@ -387,30 +341,29 @@
         .form-label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-gray);
+            font-weight: 500;
+            color: var(--gray-700);
         }
         
         .form-input,
         .form-textarea,
         .form-select {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--medium-gray);
-            border-radius: var(--radius-sm);
-            font-family: 'Nunito', sans-serif;
-            font-size: 1em;
+            padding: 12px 16px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
             transition: var(--transition);
-            background: var(--light-gray);
+            background: white;
         }
         
         .form-input:focus,
         .form-textarea:focus,
         .form-select:focus {
             outline: none;
-            border-color: var(--primary-pink);
-            box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.1);
-            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
         }
         
         .form-textarea {
@@ -421,7 +374,7 @@
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 16px;
         }
         
         /* Кнопки */
@@ -429,12 +382,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 15px 30px;
+            gap: 8px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 50px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 1em;
+            border-radius: var(--radius);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
@@ -442,23 +395,23 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--dark-pink) 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
         }
         
         .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 105, 180, 0.3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
         
         .btn-secondary {
             background: white;
-            color: var(--primary-pink);
-            border: 2px solid var(--primary-pink);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
         }
         
         .btn-secondary:hover {
-            background: var(--soft-pink);
+            background: var(--gray-50);
         }
         
         .btn-success {
@@ -479,7 +432,7 @@
         .actions {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 16px;
             margin: 40px 0;
             flex-wrap: wrap;
         }
@@ -487,19 +440,19 @@
         /* Уведомления */
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: var(--radius-sm);
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: var(--radius);
             color: white;
             font-weight: 600;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
             z-index: 1001;
             animation: slideInRight 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 10px;
-            max-width: 350px;
+            gap: 12px;
+            max-width: 400px;
         }
         
         @keyframes slideInRight {
@@ -517,7 +470,7 @@
         
         .notification.warning {
             background: var(--warning);
-            color: var(--black);
+            color: var(--gray-900);
         }
         
         .notification.info {
@@ -544,36 +497,37 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 16px;
         }
         
         .tasks-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
         }
         
         .task-card {
             background: white;
-            border-radius: var(--radius);
-            padding: 25px;
-            box-shadow: var(--shadow-light);
-            border-left: 5px solid var(--primary-pink);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
             transition: var(--transition);
             position: relative;
+            border: 1px solid var(--gray-200);
         }
         
         .task-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
         
         .task-unread {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 16px;
+            right: 16px;
             width: 12px;
             height: 12px;
             background: var(--danger);
@@ -584,38 +538,39 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         
         .task-number {
-            font-size: 0.9em;
-            color: var(--dark-gray);
-            background: var(--soft-pink);
-            padding: 5px 10px;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            background: var(--gray-100);
+            padding: 4px 12px;
             border-radius: 20px;
+            font-weight: 500;
         }
         
         .task-status {
-            padding: 5px 15px;
+            padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.8em;
+            font-size: 0.875rem;
             font-weight: 600;
         }
         
-        .status-new { background: #e3f2fd; color: #1976d2; }
-        .status-in_progress { background: #fff3e0; color: #f57c00; }
-        .status-completed { background: #e8f5e9; color: #388e3c; }
-        .status-cancelled { background: #ffebee; color: #d32f2f; }
+        .status-new { background: #dbeafe; color: #1d4ed8; }
+        .status-in_progress { background: #fef3c7; color: #d97706; }
+        .status-completed { background: #d1fae5; color: #047857; }
+        .status-cancelled { background: #fee2e2; color: #dc2626; }
         
         .task-title {
-            font-size: 1.3em;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--black);
+            margin-bottom: 12px;
+            color: var(--gray-900);
         }
         
         .task-description {
-            color: var(--dark-gray);
+            color: var(--gray-600);
             margin-bottom: 20px;
             line-height: 1.5;
         }
@@ -625,27 +580,27 @@
             justify-content: space-between;
             align-items: center;
             padding-top: 20px;
-            border-top: 1px solid var(--medium-gray);
+            border-top: 1px solid var(--gray-200);
         }
         
         .task-price {
-            font-size: 1.2em;
+            font-size: 1.25rem;
             font-weight: 700;
-            color: var(--primary-pink);
+            color: var(--primary-color);
         }
         
         .task-deadline {
-            color: var(--dark-gray);
-            font-size: 0.9em;
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            font-weight: 500;
         }
         
         /* Футер */
         footer {
-            background: linear-gradient(135deg, var(--dark-pink) 0%, var(--primary-purple) 100%);
+            background: var(--gray-900);
             color: white;
-            padding: 40px 20px;
-            border-radius: var(--radius);
-            margin-top: 60px;
+            padding: 60px 20px;
+            margin-top: 80px;
             text-align: center;
         }
         
@@ -657,39 +612,263 @@
         .footer-links {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin: 30px 0;
+            gap: 32px;
+            margin: 32px 0;
             flex-wrap: wrap;
         }
         
         .footer-link {
-            color: white;
+            color: var(--gray-300);
             text-decoration: none;
             transition: var(--transition);
+            font-weight: 500;
         }
         
         .footer-link:hover {
-            color: var(--light-pink);
+            color: white;
         }
         
         .copyright {
-            opacity: 0.8;
-            font-size: 0.9em;
-            margin-top: 20px;
+            opacity: 0.7;
+            font-size: 0.875rem;
+            margin-top: 24px;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-2xl);
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        /* Профиль пользователя */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .user-avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        
+        .user-role {
+            color: var(--gray-500);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        /* Панель быстрых действий */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin: 32px 0;
+        }
+        
+        .action-item {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .action-item:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        
+        .action-item:hover .action-icon {
+            color: white;
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            transition: var(--transition);
+        }
+        
+        /* Индикатор загрузки */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-200);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Рейтинг */
+        .rating {
+            display: flex;
+            gap: 4px;
+            margin: 12px 0;
+        }
+        
+        .star {
+            color: #fbbf24;
+            font-size: 1rem;
+        }
+        
+        .star.empty {
+            color: var(--gray-300);
+        }
+        
+        /* Бейджи */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-new {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .badge-popular {
+            background: var(--accent-color);
+            color: var(--gray-900);
+        }
+        
+        .badge-vip {
+            background: linear-gradient(45deg, #fbbf24, #f87171);
+            color: white;
         }
         
         /* Адаптивность */
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
+                padding: 0 16px;
             }
             
             header {
-                padding: 30px 20px;
+                padding: 32px 16px;
             }
             
             .logo {
-                font-size: 2.5em;
+                font-size: 2rem;
             }
             
             .form-row {
@@ -718,41 +897,44 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+            
+            .categories {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
         
-        /* Лоадер */
-        .loader {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--light-pink);
-            border-top: 4px solid var(--primary-pink);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        @media (max-width: 480px) {
+            .categories {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        /* Дополнительные стили */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
         }
         
-        /* Рейтинг */
-        .rating {
-            display: flex;
-            gap: 5px;
-            margin: 10px 0;
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--gray-300);
+            margin-bottom: 24px;
         }
         
-        .star {
-            color: #ffd700;
-            font-size: 1.2em;
-        }
-        
-        .star.empty {
-            color: var(--medium-gray);
-        }
-        
-        /* Плашки статуса системы */
         .system-status {
             display: inline-flex;
             align-items: center;
@@ -760,9 +942,10 @@
             padding: 8px 16px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
-            box-shadow: var(--shadow-light);
-            margin-top: 10px;
+            box-shadow: var(--shadow-sm);
+            margin-top: 12px;
             backdrop-filter: blur(10px);
+            font-size: 0.875rem;
         }
         
         .status-dot {
@@ -781,132 +964,6 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
-        .status-dot.offline {
-            background: var(--danger);
-        }
-        
-        /* Пустые состояния */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--dark-gray);
-        }
-        
-        .empty-state i {
-            font-size: 4em;
-            color: var(--light-pink);
-            margin-bottom: 20px;
-        }
-        
-        /* Профиль пользователя */
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: white;
-            padding: 15px 20px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-light);
-            margin-bottom: 20px;
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            background: var(--primary-pink);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .user-info {
-            flex: 1;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 1.1em;
-            color: var(--black);
-        }
-        
-        .user-role {
-            color: var(--dark-gray);
-            font-size: 0.9em;
-        }
-        
-        /* Панель быстрых действий */
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .action-item {
-            background: white;
-            padding: 20px;
-            border-radius: var(--radius);
-            text-align: center;
-            transition: var(--transition);
-            cursor: pointer;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .action-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-            background: var(--soft-pink);
-        }
-        
-        .action-icon {
-            font-size: 2em;
-            color: var(--primary-pink);
-            margin-bottom: 10px;
-        }
-        
-        /* Индикатор загрузки */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(5px);
-        }
-        
-        /* Бейджи */
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: 600;
-        }
-        
-        .badge-new {
-            background: var(--primary-pink);
-            color: white;
-        }
-        
-        .badge-popular {
-            background: var(--warning);
-            color: var(--black);
-        }
-        
-        .badge-vip {
-            background: linear-gradient(45deg, #ffd700, #ff6b6b);
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -914,11 +971,10 @@
         <!-- Шапка -->
         <header>
             <div class="logo">
-                <i class="fas fa-heart"></i>
-                Помощь для женщин
-                <i class="fas fa-heart"></i>
+                <i class="fas fa-spa"></i>
+                Консьерж Сервис
             </div>
-            <p class="tagline">Персональный консьерж для решения бытовых задач и организации жизни</p>
+            <p class="tagline">Персональный помощник для решения бытовых задач и организации жизни</p>
             
             <div class="system-status" id="systemStatus">
                 <span class="status-dot online"></span>
@@ -928,15 +984,15 @@
         
         <!-- Баннер для неавторизованных -->
         <div class="guest-banner" id="guestBanner">
-            <h2>Добро пожаловать! 👋</h2>
-            <p>Зарегистрируйтесь, чтобы получить доступ ко всем возможностям:</p>
+            <h2 style="margin-bottom: 16px; color: var(--gray-900);">Добро пожаловать! 👋</h2>
+            <p style="color: var(--gray-600); margin-bottom: 24px;">Зарегистрируйтесь, чтобы получить доступ ко всем возможностям сервиса:</p>
             <div style="margin-top: 20px;">
                 <button class="btn btn-primary" onclick="openLoginModal()">
                     <i class="fas fa-user-plus"></i>
                     Создать аккаунт
                 </button>
-                <p style="margin-top: 10px; font-size: 0.9em; color: var(--dark-gray);">
-                    Уже есть аккаунт? <a href="#" onclick="openLoginModal()" style="color: var(--primary-pink); font-weight: 600;">Войти</a>
+                <p style="margin-top: 16px; font-size: 0.875rem; color: var(--gray-500);">
+                    Уже есть аккаунт? <a href="#" onclick="openLoginModal()" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Войти в систему</a>
                 </p>
             </div>
         </div>
@@ -949,10 +1005,10 @@
                 <div class="user-role" id="userRole">Клиент</div>
             </div>
             <div class="notification-bell" onclick="showNotifications()">
-                <i class="fas fa-bell" style="font-size: 1.2em; color: var(--primary-pink);"></i>
+                <i class="fas fa-bell" style="font-size: 1.25rem; color: var(--primary-color);"></i>
                 <div class="notification-count" id="notificationCount" style="display: none;">0</div>
             </div>
-            <button class="btn btn-secondary" onclick="logout()">
+            <button class="btn btn-secondary" onclick="logout()" style="padding: 8px 16px;">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -963,28 +1019,28 @@
                 <div class="action-icon">
                     <i class="fas fa-plus-circle"></i>
                 </div>
-                <div>Новая задача</div>
+                <div style="font-weight: 600;">Новая задача</div>
             </div>
             
             <div class="action-item" onclick="loadUserTasks()">
                 <div class="action-icon">
                     <i class="fas fa-tasks"></i>
                 </div>
-                <div>Мои задачи</div>
+                <div style="font-weight: 600;">Мои задачи</div>
             </div>
             
             <div class="action-item" onclick="showServices()">
                 <div class="action-icon">
-                    <i class="fas fa-hands-helping"></i>
+                    <i class="fas fa-concierge-bell"></i>
                 </div>
-                <div>Виды помощи</div>
+                <div style="font-weight: 600;">Категории</div>
             </div>
             
             <div class="action-item" onclick="showProfile()">
                 <div class="action-icon">
                     <i class="fas fa-user-cog"></i>
                 </div>
-                <div>Профиль</div>
+                <div style="font-weight: 600;">Профиль</div>
             </div>
         </div>
         
@@ -1000,7 +1056,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="totalRevenue">2.5M</div>
-                <div class="stat-label">Заработано, руб.</div>
+                <div class="stat-label">Общая выручка</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="avgRating">4.8</div>
@@ -1008,43 +1064,43 @@
             </div>
         </div>
         
-        <!-- Категории помощи -->
-        <h2 class="section-title">Виды помощи</h2>
+        <!-- Категории услуг -->
+        <h2 class="section-title">Категории услуг</h2>
         <div class="categories" id="categories">
-            <div class="category-btn active" data-category="all">
+            <a class="category-btn active" data-category="all">
                 <i class="fas fa-star category-icon"></i>
-                <span>Вся помощь</span>
-            </div>
-            <div class="category-btn" data-category="home_and_household">
+                <span>Все услуги</span>
+            </a>
+            <a class="category-btn" data-category="home_and_household">
                 <i class="fas fa-home category-icon"></i>
                 <span>Дом и быт</span>
-            </div>
-            <div class="category-btn" data-category="family_and_children">
+            </a>
+            <a class="category-btn" data-category="family_and_children">
                 <i class="fas fa-users category-icon"></i>
                 <span>Дети и семья</span>
-            </div>
-            <div class="category-btn" data-category="beauty_and_health">
+            </a>
+            <a class="category-btn" data-category="beauty_and_health">
                 <i class="fas fa-spa category-icon"></i>
                 <span>Красота и здоровье</span>
-            </div>
-            <div class="category-btn" data-category="courses_and_education">
+            </a>
+            <a class="category-btn" data-category="courses_and_education">
                 <i class="fas fa-graduation-cap category-icon"></i>
-                <span>Курсы и образование</span>
-            </div>
-            <div class="category-btn" data-category="pets">
+                <span>Образование</span>
+            </a>
+            <a class="category-btn" data-category="pets">
                 <i class="fas fa-paw category-icon"></i>
                 <span>Питомцы</span>
-            </div>
-            <div class="category-btn" data-category="events_and_entertainment">
+            </a>
+            <a class="category-btn" data-category="events_and_entertainment">
                 <i class="fas fa-glass-cheers category-icon"></i>
                 <span>Мероприятия</span>
-            </div>
+            </a>
         </div>
         
-        <!-- Список помощи -->
-        <h2 class="section-title">Как мы можем помочь</h2>
+        <!-- Список услуг -->
+        <h2 class="section-title">Популярные услуги</h2>
         <div class="help-grid" id="helpGrid">
-            <!-- Помощь будет загружена через JavaScript -->
+            <!-- Услуги будут загружены через JavaScript -->
             <div class="loader" id="helpLoader"></div>
         </div>
         
@@ -1052,11 +1108,11 @@
         <div class="actions" id="mainActions">
             <button class="btn btn-primary" onclick="openTaskModal()">
                 <i class="fas fa-plus-circle"></i>
-                Нужна помощь
+                Создать задачу
             </button>
             <button class="btn btn-secondary" onclick="showServices()">
-                <i class="fas fa-hands-helping"></i>
-                Посмотреть помощь
+                <i class="fas fa-concierge-bell"></i>
+                Категории услуг
             </button>
             <button class="btn btn-secondary" onclick="openLoginModal()">
                 <i class="fas fa-user"></i>
@@ -1069,7 +1125,7 @@
             <div class="tasks-controls">
                 <h2 class="section-title" style="margin: 0;">Мои задачи</h2>
                 <div>
-                    <select id="taskFilter" class="form-select" style="width: auto;" onchange="loadUserTasks()">
+                    <select id="taskFilter" class="form-select" style="width: auto; min-width: 160px;" onchange="loadUserTasks()">
                         <option value="all">Все задачи</option>
                         <option value="new">Новые</option>
                         <option value="in_progress">В работе</option>
@@ -1086,18 +1142,18 @@
         <!-- Футер -->
         <footer>
             <div class="footer-content">
-                <p>🎀 Доверьте нам заботу о ваших делах, а сами наслаждайтесь жизнью!</p>
+                <p style="font-size: 1.125rem; margin-bottom: 24px;">🎀 Доверьте нам заботу о ваших делах, а сами наслаждайтесь жизнью!</p>
                 
                 <div class="footer-links">
                     <a href="#" class="footer-link" onclick="showAbout()">О сервисе</a>
                     <a href="#" class="footer-link" onclick="showContacts()">Контакты</a>
-                    <a href="#" class="footer-link" onclick="showFAQ()">Вопросы</a>
+                    <a href="#" class="footer-link" onclick="showFAQ()">Вопросы и ответы</a>
                     <a href="#" class="footer-link" onclick="showPrivacy()">Конфиденциальность</a>
                 </div>
                 
                 <div class="copyright">
-                    <p>© 2024 Помощь для женщин. Все права защищены.</p>
-                    <p>Версия: <span id="appVersion">4.1.0</span> | Сервер: <span id="serverStatus">🟢 Онлайн</span></p>
+                    <p>© 2024 Консьерж Сервис. Все права защищены.</p>
+                    <p style="margin-top: 8px;">Версия: <span id="appVersion">4.2.0</span> | Статус: <span id="serverStatus">🟢 Онлайн</span></p>
                 </div>
             </div>
         </footer>
@@ -1109,7 +1165,7 @@
     <div class="modal" id="taskModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🎀 Нужна помощь</div>
+                <div class="modal-title">🎀 Новая задача</div>
                 <button class="close-modal" onclick="closeTaskModal()">&times;</button>
             </div>
             <div class="modal-body">
@@ -1140,7 +1196,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Тип помощи</label>
+                            <label class="form-label">Тип услуги</label>
                             <input type="text" class="form-input" id="taskSubcategory" placeholder="Например: Уборка, Няня, Маникюр">
                         </div>
                     </div>
@@ -1175,14 +1231,14 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Теги</label>
+                        <label class="form-label">Теги (через запятую)</label>
                         <input type="text" class="form-input" id="taskTags" placeholder="уборка, помощь, срочно">
                     </div>
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary btn-full">
                             <i class="fas fa-paper-plane"></i>
-                            Отправить запрос на помощь
+                            Отправить запрос
                         </button>
                     </div>
                 </form>
@@ -1199,7 +1255,7 @@
             </div>
             <div class="modal-body">
                 <div id="loginTab">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-pink);">Вход в систему</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Вход в систему</h3>
                     <form id="loginForm" onsubmit="login(event)">
                         <div class="form-group">
                             <label class="form-label">Email *</label>
@@ -1220,12 +1276,12 @@
                     </form>
                     
                     <div style="text-align: center; margin: 20px 0;">
-                        <p>Нет аккаунта? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showRegisterTab()">Зарегистрироваться</a></p>
+                        <p style="color: var(--gray-600);">Нет аккаунта? <a href="#" style="color: var(--primary-color); font-weight: 600; text-decoration: none;" onclick="showRegisterTab()">Зарегистрироваться</a></p>
                     </div>
                 </div>
                 
                 <div id="registerTab" style="display: none;">
-                    <h3 style="margin-bottom: 20px; color: var(--primary-pink);">Регистрация</h3>
+                    <h3 style="margin-bottom: 20px; color: var(--primary-color);">Регистрация</h3>
                     <form id="registerForm" onsubmit="register(event)">
                         <div class="form-row">
                             <div class="form-group">
@@ -1259,8 +1315,8 @@
                         <div class="form-group">
                             <label class="form-label">Вы хотите:</label>
                             <select class="form-select" id="registerRole">
-                                <option value="client">Получить помощь</option>
-                                <option value="performer">Оказывать помощь</option>
+                                <option value="client">Получать услуги</option>
+                                <option value="performer">Оказывать услуги</option>
                             </select>
                         </div>
                         
@@ -1273,48 +1329,9 @@
                     </form>
                     
                     <div style="text-align: center; margin: 20px 0;">
-                        <p>Уже есть аккаунт? <a href="#" style="color: var(--primary-pink); font-weight: 600;" onclick="showLoginTab()">Войти</a></p>
+                        <p style="color: var(--gray-600);">Уже есть аккаунт? <a href="#" style="color: var(--primary-color); font-weight: 600; text-decoration: none;" onclick="showLoginTab()">Войти</a></p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Профиль пользователя -->
-    <div class="modal" id="profileModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">👤 Мой профиль</div>
-                <button class="close-modal" onclick="closeProfileModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="profileContent">
-                <!-- Контент будет загружен через JavaScript -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Детали задачи -->
-    <div class="modal" id="taskDetailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title" id="detailTaskTitle">Детали помощи</div>
-                <button class="close-modal" onclick="closeTaskDetailModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="taskDetailContent">
-                <!-- Контент будет загружен через JavaScript -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Уведомления -->
-    <div class="modal" id="notificationsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">🔔 Уведомления</div>
-                <button class="close-modal" onclick="closeNotificationsModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="notificationsContent">
-                <!-- Контент будет загружен через JavaScript -->
             </div>
         </div>
     </div>
@@ -1470,36 +1487,37 @@
         }
         
         function openProfileModal() {
-            loadProfile();
-            document.getElementById('profileModal').classList.add('active');
+            // Реализация просмотра профиля
+            showNotification('Просмотр профиля будет доступен в следующей версии', 'info');
         }
         
         function closeProfileModal() {
-            document.getElementById('profileModal').classList.remove('active');
+            // Будет использоваться в будущем
         }
         
         function openTaskDetailModal(taskId) {
-            loadTaskDetails(taskId);
-            document.getElementById('taskDetailModal').classList.add('active');
+            // Реализация просмотра деталей задачи
+            showNotification('Детали задачи будут доступны в следующей версии', 'info');
         }
         
         function closeTaskDetailModal() {
-            document.getElementById('taskDetailModal').classList.remove('active');
+            // Будет использоваться в будущем
         }
         
         function showNotifications() {
-            loadNotifications();
-            document.getElementById('notificationsModal').classList.add('active');
+            // Реализация просмотра уведомлений
+            showNotification('Просмотр уведомлений будет доступен в следующей версии', 'info');
         }
         
         function closeNotificationsModal() {
-            document.getElementById('notificationsModal').classList.remove('active');
+            // Будет использоваться в будущем
         }
         
         function setupCategoryFilters() {
             const categoryBtns = document.querySelectorAll('.category-btn');
             categoryBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     categoryBtns.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     const category = this.dataset.category;
@@ -1519,11 +1537,11 @@
                 const serverStatus = document.getElementById('serverStatus');
                 
                 if (data.success) {
-                    statusText.textContent = `Сервер работает | БД: ${data.database === 'connected' ? '✅' : '⚠️'}`;
+                    statusText.textContent = `Система работает | БД: ${data.database === 'connected' ? '✅' : '⚠️'}`;
                     serverStatus.textContent = '🟢 Онлайн';
                     serverStatus.style.color = 'var(--success)';
                 } else {
-                    statusText.textContent = 'Сервер недоступен';
+                    statusText.textContent = 'Система недоступна';
                     serverStatus.textContent = '🔴 Оффлайн';
                     serverStatus.style.color = 'var(--danger)';
                 }
@@ -1593,18 +1611,18 @@
                             <div class="help-icon">${icon}</div>
                             <div>
                                 <div class="help-title">${service.name}</div>
-                                ${service.isPopular ? '<span class="badge badge-popular" style="margin-left: 5px;">Популярно</span>' : ''}
+                                ${service.is_popular ? '<span class="badge badge-popular" style="margin-left: 5px; margin-top: 4px;">Популярно</span>' : ''}
                             </div>
                         </div>
                         <div class="help-description">${service.description}</div>
                         <div class="rating">
                             ${getRatingStars(service.rating?.average || 5)}
-                            <span style="color: var(--dark-gray); font-size: 0.9em; margin-left: 10px;">
+                            <span style="color: var(--gray-500); font-size: 0.875rem; margin-left: 8px;">
                                 ${service.rating?.count || 0} отзывов
                             </span>
                         </div>
                         <div class="help-footer">
-                            <div class="help-price">от ${formatNumber(price)} руб.</div>
+                            <div class="help-price">от ${formatNumber(price)} ₽</div>
                             <div class="help-duration">${service.duration || 60} мин.</div>
                         </div>
                     </div>
@@ -1625,7 +1643,7 @@
                     priceOptions: { oneTime: 2500 },
                     duration: 180,
                     rating: { average: 4.8, count: 127 },
-                    isPopular: true
+                    is_popular: true
                 },
                 {
                     name: 'Присмотр за детьми',
@@ -1634,19 +1652,19 @@
                     priceOptions: { oneTime: 1500, hourly: 350 },
                     duration: 240,
                     rating: { average: 4.9, count: 89 },
-                    isPopular: true
+                    is_popular: true
                 },
                 {
-                    name: 'Помощь с маникюром',
+                    name: 'Услуги маникюра',
                     description: 'Сделаю аккуратный маникюр с покрытием гель-лаком или укреплением ногтей.',
                     category: 'beauty_and_health',
                     priceOptions: { oneTime: 1800 },
                     duration: 90,
                     rating: { average: 4.7, count: 234 },
-                    isPopular: true
+                    is_popular: true
                 },
                 {
-                    name: 'Помощь с английским',
+                    name: 'Репетитор по английскому',
                     description: 'Помогу с домашним заданием, подготовкой к экзаменам или разговорной практикой.',
                     category: 'courses_and_education',
                     priceOptions: { oneTime: 1000, hourly: 1500 },
@@ -1654,7 +1672,7 @@
                     rating: { average: 4.9, count: 156 }
                 },
                 {
-                    name: 'Помощь с питомцем',
+                    name: 'Выгул питомцев',
                     description: 'Выгуляю собаку, покормлю кошку, посижу с животным пока вас нет дома.',
                     category: 'pets',
                     priceOptions: { oneTime: 800, hourly: 300 },
@@ -1662,13 +1680,13 @@
                     rating: { average: 4.8, count: 78 }
                 },
                 {
-                    name: 'Помощь в организации праздника',
+                    name: 'Организация праздников',
                     description: 'Помогу организовать день рождения, детский праздник или семейное торжество.',
                     category: 'events_and_entertainment',
                     priceOptions: { oneTime: 4000 },
                     duration: 300,
                     rating: { average: 4.9, count: 45 },
-                    isPopular: true
+                    is_popular: true
                 }
             ];
             
@@ -1723,30 +1741,27 @@
                     'assigned': 'Назначена',
                     'in_progress': 'В работе',
                     'completed': 'Завершена',
-                    'cancelled': 'Отменена',
-                    'reopened': 'Возобновлена'
+                    'cancelled': 'Отменена'
                 }[task.status] || task.status;
                 
                 const deadline = new Date(task.deadline).toLocaleDateString('ru-RU');
-                const isUnread = Math.random() > 0.7; // Демо-статус непрочитанного
                 
                 const taskCard = document.createElement('div');
                 taskCard.className = 'task-card';
                 taskCard.innerHTML = `
-                    ${isUnread ? '<div class="task-unread"></div>' : ''}
                     <div class="task-header">
-                        <div class="task-number">${task.taskNumber || 'TASK-XXXX-XXXX'}</div>
+                        <div class="task-number">${task.task_number || 'TASK-XXXX-XXXX'}</div>
                         <div class="task-status status-${task.status}">${statusText}</div>
                     </div>
                     <div class="task-title">${task.title}</div>
                     <div class="task-description">${task.description.substring(0, 100)}${task.description.length > 100 ? '...' : ''}</div>
                     <div class="task-footer">
-                        <div class="task-price">${formatNumber(task.price)} руб.</div>
+                        <div class="task-price">${formatNumber(task.price)} ₽</div>
                         <div class="task-deadline">до ${deadline}</div>
                     </div>
                 `;
                 taskCard.addEventListener('click', () => {
-                    openTaskDetailModal(task._id || task.id);
+                    openTaskDetailModal(task.id);
                 });
                 tasksGrid.appendChild(taskCard);
             });
@@ -1757,290 +1772,14 @@
             tasksGrid.innerHTML = `
                 <div class="empty-state" style="grid-column: 1 / -1;">
                     <i class="fas fa-tasks"></i>
-                    <h3 style="margin-bottom: 10px;">У вас пока нет задач</h3>
-                    <p style="margin-bottom: 20px;">Создайте первую задачу, и мы найдем того, кто поможет вам!</p>
+                    <h3 style="margin-bottom: 12px; color: var(--gray-700);">У вас пока нет задач</h3>
+                    <p style="margin-bottom: 24px; color: var(--gray-500);">Создайте первую задачу, и мы найдем того, кто поможет вам!</p>
                     <button class="btn btn-primary" onclick="openTaskModal()">
                         <i class="fas fa-plus-circle"></i>
                         Создать задачу
                     </button>
                 </div>
             `;
-        }
-        
-        async function loadTaskDetails(taskId) {
-            try {
-                const response = await fetch(`/api/tasks/${taskId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderTaskDetails(data.data.task);
-                } else {
-                    document.getElementById('taskDetailContent').innerHTML = `
-                        <div style="text-align: center; padding: 40px;">
-                            <p style="color: var(--danger);">Ошибка загрузки деталей задачи</p>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                document.getElementById('taskDetailContent').innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <p style="color: var(--danger);">Ошибка сети</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function renderTaskDetails(task) {
-            const statusText = {
-                'new': 'Новая',
-                'assigned': 'Назначена',
-                'in_progress': 'В работе',
-                'completed': 'Завершена',
-                'cancelled': 'Отменена',
-                'reopened': 'Возобновлена'
-            }[task.status] || task.status;
-            
-            const deadline = new Date(task.deadline).toLocaleDateString('ru-RU');
-            const createdAt = new Date(task.createdAt).toLocaleString('ru-RU');
-            
-            let actionsHtml = '';
-            if (task.status === 'new' || task.status === 'assigned' || task.status === 'in_progress') {
-                actionsHtml = `
-                    <button class="btn btn-danger" onclick="cancelTask('${task._id || task.id}')">
-                        <i class="fas fa-times"></i>
-                        Отменить задачу
-                    </button>
-                `;
-            }
-            
-            if (task.status === 'cancelled') {
-                actionsHtml = `
-                    <button class="btn btn-success" onclick="reopenTask('${task._id || task.id}')">
-                        <i class="fas fa-redo"></i>
-                        Возобновить задачу
-                    </button>
-                `;
-            }
-            
-            if (task.status === 'in_progress' || task.status === 'assigned') {
-                actionsHtml += `
-                    <button class="btn btn-success" onclick="completeTask('${task._id || task.id}')" style="margin-left: 10px;">
-                        <i class="fas fa-check"></i>
-                        Завершить задачу
-                    </button>
-                `;
-            }
-            
-            document.getElementById('detailTaskTitle').textContent = task.title;
-            document.getElementById('taskDetailContent').innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: var(--dark-gray);">Номер задачи:</span>
-                        <span style="font-weight: 600;">${task.taskNumber}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: var(--dark-gray);">Статус:</span>
-                        <span class="task-status status-${task.status}">${statusText}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: var(--dark-gray);">Категория:</span>
-                        <span>${getCategoryName(task.category)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: var(--dark-gray);">Создана:</span>
-                        <span>${createdAt}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: var(--dark-gray);">Срок выполнения:</span>
-                        <span>${deadline}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                        <span style="color: var(--dark-gray);">Бюджет:</span>
-                        <span style="font-size: 1.2em; font-weight: 700; color: var(--primary-pink);">${formatNumber(task.price)} руб.</span>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: var(--dark-pink); margin-bottom: 10px;">Описание</h4>
-                    <p style="color: var(--dark-gray); line-height: 1.6; padding: 15px; background: var(--soft-pink); border-radius: var(--radius-sm);">${task.description}</p>
-                </div>
-                
-                ${task.feedback ? `
-                <div style="margin-bottom: 25px; padding: 15px; background: var(--light-gray); border-radius: var(--radius-sm);">
-                    <h4 style="color: var(--dark-pink); margin-bottom: 10px;">Отзыв клиента</h4>
-                    <div class="rating" style="margin-bottom: 10px;">
-                        ${getRatingStars(task.rating)}
-                    </div>
-                    <p style="color: var(--dark-gray); line-height: 1.6;">${task.feedback.text || task.feedback}</p>
-                </div>
-                ` : ''}
-                
-                <div style="display: flex; gap: 10px; margin-top: 30px;">
-                    ${actionsHtml}
-                </div>
-            `;
-        }
-        
-        async function loadProfile() {
-            try {
-                const response = await fetch('/api/auth/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderProfile(data.data.user);
-                }
-            } catch (error) {
-                document.getElementById('profileContent').innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <p style="color: var(--danger);">Ошибка загрузки профиля</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function renderProfile(user) {
-            const roleText = {
-                'client': 'Получаю помощь',
-                'performer': 'Оказываю помощь',
-                'admin': 'Администратор',
-                'superadmin': 'Суперадминистратор'
-            }[user.role] || user.role;
-            
-            document.getElementById('profileContent').innerHTML = `
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <div style="width: 80px; height: 80px; background: var(--primary-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 2em; font-weight: bold; margin-bottom: 15px;">
-                        ${user.firstName[0]}
-                    </div>
-                    <h3 style="color: var(--dark-pink);">${user.firstName} ${user.lastName}</h3>
-                    <p style="color: var(--dark-gray);">${roleText}</p>
-                </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: var(--dark-pink); margin-bottom: 15px;">👤 Информация</h4>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Email</div>
-                            <div style="font-weight: 600;">${user.email}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Телефон</div>
-                            <div style="font-weight: 600;">${user.phone || 'Не указан'}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Рейтинг</div>
-                            <div style="font-weight: 600;">${user.rating || 'Нет оценок'}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Подписка</div>
-                            <div style="font-weight: 600;">${user.subscription?.plan || 'free'}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: var(--dark-pink); margin-bottom: 15px;">📊 Статистика</h4>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; text-align: center;">
-                        <div style="background: var(--soft-pink); padding: 15px; border-radius: var(--radius-sm);">
-                            <div style="font-size: 1.2em; font-weight: 700; color: var(--primary-pink);">0</div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Создано задач</div>
-                        </div>
-                        <div style="background: var(--soft-pink); padding: 15px; border-radius: var(--radius-sm);">
-                            <div style="font-size: 1.2em; font-weight: 700; color: var(--primary-pink);">0</div>
-                            <div style="font-size: 0.9em; color: var(--dark-gray);">Завершено</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <button class="btn btn-primary" onclick="closeProfileModal()" style="width: 100%;">
-                    <i class="fas fa-times"></i>
-                    Закрыть
-                </button>
-            `;
-        }
-        
-        async function loadNotifications() {
-            try {
-                const response = await fetch('/api/notifications', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderNotifications(data.data.notifications, data.data.unreadCount);
-                }
-            } catch (error) {
-                document.getElementById('notificationsContent').innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <p style="color: var(--danger);">Ошибка загрузки уведомлений</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function renderNotifications(notifications, unreadCount) {
-            let notificationsHtml = '';
-            
-            if (notifications.length === 0) {
-                notificationsHtml = `
-                    <div style="text-align: center; padding: 40px;">
-                        <i class="fas fa-bell-slash" style="font-size: 3em; color: var(--light-pink); margin-bottom: 20px;"></i>
-                        <p style="color: var(--dark-gray);">У вас нет уведомлений</p>
-                    </div>
-                `;
-            } else {
-                notificationsHtml = `
-                    <div style="margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="markAllNotificationsAsRead()" style="width: 100%;">
-                            <i class="fas fa-check-double"></i>
-                            Отметить все как прочитанные
-                        </button>
-                    </div>
-                `;
-                
-                notifications.forEach(notification => {
-                    const timeAgo = getTimeAgo(new Date(notification.createdAt));
-                    const icon = notification.type === 'task_update' ? 'fas fa-tasks' : 
-                                 notification.type === 'new_message' ? 'fas fa-comment' : 
-                                 notification.type === 'payment' ? 'fas fa-credit-card' : 'fas fa-info-circle';
-                    
-                    notificationsHtml += `
-                        <div style="padding: 15px; margin-bottom: 10px; background: ${notification.read ? 'white' : 'var(--soft-pink)'}; border-radius: var(--radius-sm); border: 1px solid ${notification.read ? 'var(--medium-gray)' : 'var(--primary-pink)'};">
-                            <div style="display: flex; gap: 10px;">
-                                <div style="color: var(--primary-pink); font-size: 1.2em;">
-                                    <i class="${icon}"></i>
-                                </div>
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 600; margin-bottom: 5px;">${notification.title}</div>
-                                    <div style="color: var(--dark-gray); font-size: 0.9em;">${notification.message}</div>
-                                    <div style="font-size: 0.8em; color: var(--dark-gray); margin-top: 5px;">${timeAgo}</div>
-                                </div>
-                                ${!notification.read ? `
-                                <div style="align-self: flex-start;">
-                                    <div class="task-unread" style="position: static;"></div>
-                                </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-            
-            document.getElementById('notificationsContent').innerHTML = notificationsHtml;
-            unreadNotifications = unreadCount;
-            updateNotificationCount();
         }
         
         // Функции работы с задачами
@@ -2082,7 +1821,7 @@
                 hideLoading();
                 
                 if (data.success) {
-                    showNotification(`Запрос на помощь отправлен! Номер: ${data.data.task.taskNumber}`, 'success');
+                    showNotification(`Задача создана! Номер: ${data.data.task.task_number}`, 'success');
                     closeTaskModal();
                     loadUserTasks();
                     
@@ -2095,107 +1834,6 @@
             } catch (error) {
                 hideLoading();
                 showNotification('Ошибка сети', 'error');
-            }
-        }
-        
-        async function cancelTask(taskId) {
-            if (!confirm('Вы уверены, что хотите отменить эту помощь?')) return;
-            
-            try {
-                const response = await fetch(`/api/tasks/${taskId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({ reason: 'Отменено клиентом' })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Помощь отменена', 'success');
-                    closeTaskDetailModal();
-                    loadUserTasks();
-                } else {
-                    showNotification(data.error || 'Ошибка отмены задачи', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            }
-        }
-        
-        async function reopenTask(taskId) {
-            if (!confirm('Вы уверены, что хотите возобновить запрос на помощь?')) return;
-            
-            try {
-                const response = await fetch(`/api/tasks/${taskId}/reopen`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Запрос возобновлен', 'success');
-                    closeTaskDetailModal();
-                    loadUserTasks();
-                } else {
-                    showNotification(data.error || 'Ошибка возобновления задачи', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            }
-        }
-        
-        async function completeTask(taskId) {
-            const rating = prompt('Оцените помощь от 1 до 5 звезд:', '5');
-            if (!rating || rating < 1 || rating > 5) {
-                showNotification('Укажите оценку от 1 до 5', 'warning');
-                return;
-            }
-            
-            const feedback = prompt('Оставьте отзыв (необязательно):', '');
-            
-            try {
-                const response = await fetch(`/api/tasks/${taskId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({ 
-                        rating: parseInt(rating),
-                        feedback: feedback || ''
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Помощь завершена! Спасибо за отзыв.', 'success');
-                    closeTaskDetailModal();
-                    loadUserTasks();
-                } else {
-                    showNotification(data.error || 'Ошибка завершения задачи', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            }
-        }
-        
-        async function markAllNotificationsAsRead() {
-            try {
-                // В реальном приложении здесь будет API запрос
-                // Пока что просто обновляем интерфейс
-                unreadNotifications = 0;
-                updateNotificationCount();
-                closeNotificationsModal();
-                showNotification('Все уведомления отмечены как прочитанные', 'success');
-            } catch (error) {
-                showNotification('Ошибка обновления уведомлений', 'error');
             }
         }
         
@@ -2327,8 +1965,8 @@
         function updateUserInfo() {
             if (currentUser) {
                 document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
-                document.getElementById('userRole').textContent = currentUser.role === 'client' ? 'Получаю помощь' : 
-                                                                 currentUser.role === 'performer' ? 'Оказываю помощь' : 
+                document.getElementById('userRole').textContent = currentUser.role === 'client' ? 'Клиент' : 
+                                                                 currentUser.role === 'performer' ? 'Исполнитель' : 
                                                                  currentUser.role;
                 document.getElementById('userAvatar').textContent = currentUser.firstName[0];
             }
@@ -2405,22 +2043,9 @@
                 'courses_and_education': '🎓',
                 'pets': '🐶',
                 'events_and_entertainment': '🎉',
-                'other': '🎀'
+                'other': '✨'
             };
-            return icons[category] || '🎀';
-        }
-        
-        function getCategoryName(category) {
-            const names = {
-                'home_and_household': 'Дом и быт',
-                'family_and_children': 'Дети и семья',
-                'beauty_and_health': 'Красота и здоровье',
-                'courses_and_education': 'Курсы и образование',
-                'pets': 'Питомцы',
-                'events_and_entertainment': 'Мероприятия',
-                'other': 'Другое'
-            };
-            return names[category] || category;
+            return icons[category] || '✨';
         }
         
         function getRatingStars(rating) {
@@ -2439,20 +2064,6 @@
             }
             
             return starsHtml;
-        }
-        
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-            
-            if (diffMins < 1) return 'только что';
-            if (diffMins < 60) return `${diffMins} мин. назад`;
-            if (diffHours < 24) return `${diffHours} ч. назад`;
-            if (diffDays < 7) return `${diffDays} дн. назад`;
-            return date.toLocaleDateString('ru-RU');
         }
         
         function prefillTaskForm(service) {
@@ -2492,20 +2103,20 @@
                     const timeEl = document.createElement('p');
                     timeEl.id = 'serverTime';
                     timeEl.style.marginTop = '10px';
-                    timeEl.style.fontSize = '0.8em';
+                    timeEl.style.fontSize = '0.875rem';
                     timeEl.style.opacity = '0.7';
-                    timeEl.textContent = `Серверное время: ${dateString} ${timeString}`;
+                    timeEl.textContent = `Время сервера: ${dateString} ${timeString}`;
                     copyright.appendChild(timeEl);
                 }
             } else {
-                serverTimeEl.textContent = `Серверное время: ${dateString} ${timeString}`;
+                serverTimeEl.textContent = `Время сервера: ${dateString} ${timeString}`;
             }
         }
         
         // Информационные функции
         
         function showServices() {
-            // Прокручиваем к категориям помощи
+            // Прокручиваем к категориям услуг
             document.querySelector('.section-title').scrollIntoView({ 
                 behavior: 'smooth',
                 block: 'start'
@@ -2521,19 +2132,19 @@
         }
         
         function showAbout() {
-            alert(`🎀 Помощь для женщин\n\nВерсия: 4.1.0\n\nСервис создан для решения бытовых задач и организации жизни. Мы помогаем женщинам освободить время для действительно важных вещей!\n\nМы не просто выполняем задачи - мы создаем комфорт и заботимся о вас.`);
+            alert(`🎀 Консьерж Сервис\n\nВерсия: 4.2.0\n\nСервис создан для решения бытовых задач и организации жизни. Мы помогаем освободить время для действительно важных вещей!\n\nМы не просто выполняем задачи - мы создаем комфорт и заботимся о наших клиентах.`);
         }
         
         function showContacts() {
-            alert(`📞 Контакты\n\nТелефон поддержки: +7 (999) 123-45-67\nEmail: help@women-concierge.ru\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
+            alert(`📞 Контакты\n\nТелефон поддержки: +7 (999) 123-45-67\nEmail: info@concierge-service.ru\n\nАдрес: Москва, ул. Примерная, д. 1\n\nВремя работы: ежедневно с 9:00 до 21:00`);
         }
         
         function showFAQ() {
-            alert(`❓ Частые вопросы\n\n1. Как получить помощь?\n- Нажмите "Нужна помощь", заполните форму и отправьте запрос.\n\n2. Сколько это стоит?\n- Цена зависит от задачи. Вы сами указываете бюджет.\n\n3. Как отменить запрос?\n- В деталях задачи нажмите "Отменить".\n\n4. Как оценить помощь?\n- После завершения задачи вам будет предложено поставить оценку.\n\n5. Как стать тем, кто помогает?\n- Зарегистрируйтесь с ролью "Оказываю помощь".`);
+            alert(`❓ Частые вопросы\n\n1. Как создать задачу?\n- Нажмите "Создать задачу", заполните форму и отправьте запрос.\n\n2. Сколько это стоит?\n- Цена зависит от задачи. Вы сами указываете бюджет.\n\n3. Как отменить задачу?\n- В деталях задачи нажмите "Отменить".\n\n4. Как оценить услугу?\n- После завершения задачи вам будет предложено поставить оценку.\n\n5. Как стать исполнителем?\n- Зарегистрируйтесь с ролью "Оказывать услуги".`);
         }
         
         function showPrivacy() {
-            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших данных:\n\n• Все данные шифруются\n• Не передаем информацию третьим лицам\n• Вы можете удалить аккаунт в любой момент\n• Используем безопасные методы оплаты\n\nПо вопросам защиты данных: privacy@women-concierge.ru`);
+            alert(`🔒 Конфиденциальность\n\nМы серьезно относимся к защите ваших данных:\n\n• Все данные шифруются\n• Не передаем информацию третьим лицам\n• Вы можете удалить аккаунт в любой момент\n• Используем безопасные методы оплаты\n\nПо вопросам защиты данных: privacy@concierge-service.ru`);
         }
         
         // Демо-функции для тестирования
