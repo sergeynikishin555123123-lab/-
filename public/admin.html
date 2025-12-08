@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎀 Админ-панель - Женский Консьерж</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-pink: #ff69b4;
+            --light-pink: #ffb6c1;
+            --dark-pink: #db7093;
+            --primary-purple: #9370db;
+            --white: #ffffff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --black: #212529;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.05);
+            --radius: 15px;
+            --radius-sm: 8px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fff5f7 0%, #f8f0ff 100%);
+            color: var(--black);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Шапка админ-панели */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%);
+            color: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+        
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+        }
+        
+        /* Навигация */
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 12px 25px;
+            background: white;
+            border: 2px solid var(--medium-gray);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark-gray);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--primary-pink);
+            color: white;
+            border-color: var(--primary-pink);
+        }
+        
+        /* Основной контент */
+        .admin-content {
+            display: none;
+        }
+        
+        .admin-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Карточки статистики */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-light);
+            transition: var(--transition);
+            border-left: 5px solid var(--primary-pink);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--primary-pink);
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            color: var(--dark-gray);
+            font-size: 0.9em;
+        }
+        
+        .stat-change {
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .stat-change.positive {
+            color: var(--success);
+        }
+        
+        .stat-change.negative {
+            color: var(--danger);
+        }
+        
+        /* Таблицы */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+            margin-bottom: 30px;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, var(--light-pink) 0%, var(--light-pink) 100%);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: var(--light-gray);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-gray);
+            border-bottom: 2px solid var(--medium-gray);
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background: #fff9fb;
+        }
+        
+        /* Статусы */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-new { background: #e3f2fd; color: #1976d2; }
+        .status-in_progress { background: #fff3e0; color: #f57c00; }
+        .status-completed { background: #e8f5e9; color: #388e3c; }
+        .status-cancelled { background: #ffebee; color: #d32f2f; }
+        .status-pending { background: #f3e5f5; color: #7b1fa2; }
+        
+        .role-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .role-client { background: #e8f5e9; color: #388e3c; }
+        .role-performer { background: #e3f2fd; color: #1976d2; }
+        .role-admin { background: #fff3e0; color: #f57c00; }
+        .role-superadmin { background: #f3e5f5; color: #7b1fa2; }
+        
+        /* Фильтры и поиск */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 0.9em;
+            color: var(--dark-gray);
+            font-weight: 600;
+        }
+        
+        .filter-select,
+        .filter-input {
+            padding: 10px 15px;
+            border: 2px solid var(--medium-gray);
+            border-radius: var(--radius-sm);
+            font-family: 'Nunito', sans-serif;
+            min-width: 200px;
+        }
+        
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-pink);
+        }
+        
+        /* Кнопки действий */
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+        
+        .action-btn.view {
+            background: var(--info);
+            color: white;
+        }
+        
+        .action-btn.edit {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .action-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .action-btn.export {
+            background: var(--success);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        /* Графики */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-light);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--dark-pink);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Уведомления */
+        .notification-badge {
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+        
+        /* Лоадер */
+        .loader {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-pink);
+            border-top: 4px solid var(--primary-pink);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .admin-nav {
+                justify-content: center;
+            }
+            
+            .nav-btn {
+                padding: 10px 15px;
+                font-size: 0.9em;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-select,
+            .filter-input {
+                min-width: 100%;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка админ-панели -->
+        <div class="admin-header">
+            <div class="admin-title">
+                <i class="fas fa-crown"></i>
+                <span>🎀 Админ-панель Женского Консьержа</span>
+            </div>
+            
+            <div class="admin-info">
+                <div class="user-info" id="currentUser">
+                    <i class="fas fa-user"></i>
+                    <span>Загрузка...</span>
+                </div>
+                <button class="action-btn logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            </div>
+        </div>
+        
+        <!-- Навигация -->
+        <div class="admin-nav">
+            <button class="nav-btn active" onclick="showTab('dashboard')">
+                <i class="fas fa-tachometer-alt"></i>
+                Дашборд
+            </button>
+            <button class="nav-btn" onclick="showTab('users')">
+                <i class="fas fa-users"></i>
+                Пользователи
+                <span class="notification-badge" id="usersBadge" style="display: none;">0</span>
+            </button>
+            <button class="nav-btn" onclick="showTab('tasks')">
+                <i class="fas fa-tasks"></i>
+                Задачи
+                <span class="notification-badge" id="tasksBadge" style="display: none;">0</span>
+            </button>
+            <button class="nav-btn" onclick="showTab('services')">
+                <i class="fas fa-hands-helping"></i>
+                Помощь
+            </button>
+            <button class="nav-btn" onclick="showTab('analytics')">
+                <i class="fas fa-chart-line"></i>
+                Аналитика
+            </button>
+            <button class="nav-btn" onclick="showTab('settings')">
+                <i class="fas fa-cog"></i>
+                Настройки
+            </button>
+        </div>
+        
+        <!-- Контент: Дашборд -->
+        <div id="dashboard" class="admin-content active">
+            <div class="stats-grid" id="dashboardStats">
+                <div class="loader"></div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Распределение задач по категориям
+                    </div>
+                    <canvas id="categoryChart" height="250"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Задачи по статусам
+                    </div>
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-line"></i>
+                        Новые пользователи (30 дней)
+                    </div>
+                    <canvas id="usersChart" height="250"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Выручка по месяцам
+                    </div>
+                    <canvas id="revenueChart" height="250"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-history"></i> Последние задачи</h3>
+                    <button class="action-btn export" onclick="exportData('tasks')">
+                        <i class="fas fa-file-export"></i>
+                        Экспорт
+                    </button>
+                </div>
+                <div id="recentTasks">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент: Пользователи -->
+        <div id="users" class="admin-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-label">Роль</div>
+                    <select class="filter-select" id="userRoleFilter" onchange="loadUsers()">
+                        <option value="all">Все роли</option>
+                        <option value="client">Клиенты</option>
+                        <option value="performer">Исполнители</option>
+                        <option value="admin">Администраторы</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Поиск</div>
+                    <input type="text" class="filter-input" id="userSearch" 
+                           placeholder="Имя, email или телефон" oninput="loadUsers()">
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Статус подписки</div>
+                    <select class="filter-select" id="subscriptionFilter" onchange="loadUsers()">
+                        <option value="all">Все</option>
+                        <option value="active">Активные</option>
+                        <option value="expired">Истекшие</option>
+                        <option value="cancelled">Отмененные</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;"></div>
+                
+                <button class="action-btn export" onclick="exportData('users')">
+                    <i class="fas fa-file-export"></i>
+                    Экспорт пользователей
+                </button>
+                
+                <button class="action-btn edit" onclick="showAddUserModal()">
+                    <i class="fas fa-user-plus"></i>
+                    Добавить пользователя
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-users"></i> Список пользователей</h3>
+                    <div>
+                        <span id="usersCount">0</span> пользователей
+                    </div>
+                </div>
+                <div id="usersTable">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент: Задачи -->
+        <div id="tasks" class="admin-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-label">Статус</div>
+                    <select class="filter-select" id="taskStatusFilter" onchange="loadTasks()">
+                        <option value="all">Все статусы</option>
+                        <option value="new">Новые</option>
+                        <option value="in_progress">В работе</option>
+                        <option value="completed">Завершенные</option>
+                        <option value="cancelled">Отмененные</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Категория</div>
+                    <select class="filter-select" id="taskCategoryFilter" onchange="loadTasks()">
+                        <option value="all">Все категории</option>
+                        <option value="home_and_household">Дом и быт</option>
+                        <option value="family_and_children">Дети и семья</option>
+                        <option value="beauty_and_health">Красота и здоровье</option>
+                        <option value="courses_and_education">Курсы и образование</option>
+                        <option value="pets">Питомцы</option>
+                        <option value="events_and_entertainment">Мероприятия</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Дата с</div>
+                    <input type="date" class="filter-input" id="dateFrom" onchange="loadTasks()">
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Дата по</div>
+                    <input type="date" class="filter-input" id="dateTo" onchange="loadTasks()">
+                </div>
+                
+                <div style="flex: 1;"></div>
+                
+                <button class="action-btn export" onclick="exportData('tasks')">
+                    <i class="fas fa-file-export"></i>
+                    Экспорт задач
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-tasks"></i> Список задач</h3>
+                    <div>
+                        <span id="tasksCount">0</span> задач
+                    </div>
+                </div>
+                <div id="tasksTable">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент: Помощь -->
+        <div id="services" class="admin-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-label">Категория</div>
+                    <select class="filter-select" id="serviceCategoryFilter" onchange="loadServices()">
+                        <option value="all">Все категории</option>
+                        <option value="home_and_household">Дом и быт</option>
+                        <option value="family_and_children">Дети и семья</option>
+                        <option value="beauty_and_health">Красота и здоровье</option>
+                        <option value="courses_and_education">Курсы и образование</option>
+                        <option value="pets">Питомцы</option>
+                        <option value="events_and_entertainment">Мероприятия</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <div class="filter-label">Статус</div>
+                    <select class="filter-select" id="serviceStatusFilter" onchange="loadServices()">
+                        <option value="all">Все</option>
+                        <option value="active">Активные</option>
+                        <option value="inactive">Неактивные</option>
+                    </select>
+                </div>
+                
+                <div style="flex: 1;"></div>
+                
+                <button class="action-btn edit" onclick="showAddServiceModal()">
+                    <i class="fas fa-plus"></i>
+                    Добавить помощь
+                </button>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-hands-helping"></i> Виды помощи</h3>
+                    <div>
+                        <span id="servicesCount">0</span> видов помощи
+                    </div>
+                </div>
+                <div id="servicesTable">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент: Аналитика -->
+        <div id="analytics" class="admin-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Конверсия клиентов</div>
+                    <div class="stat-value" id="conversionRate">0%</div>
+                    <div class="stat-change positive">+5.2% за месяц</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Средний чек</div>
+                    <div class="stat-value" id="avgOrderValue">0 ₽</div>
+                    <div class="stat-change positive">+12% за месяц</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Удовлетворенность</div>
+                    <div class="stat-value" id="satisfactionRate">0%</div>
+                    <div class="stat-change positive">+3.1% за месяц</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Повторные обращения</div>
+                    <div class="stat-value" id="repeatRate">0%</div>
+                    <div class="stat-change negative">-2.4% за месяц</div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-area"></i>
+                        Активность по часам
+                    </div>
+                    <canvas id="activityChart" height="250"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">
+                        <i class="fas fa-map-marked-alt"></i>
+                        География заказов
+                    </div>
+                    <canvas id="geoChart" height="250"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-star"></i> Топ исполнителей</h3>
+                </div>
+                <div id="topPerformers">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Контент: Настройки -->
+        <div id="settings" class="admin-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-cog"></i> Настройки системы</h3>
+                </div>
+                
+                <div style="padding: 30px;">
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Основные настройки</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Название сервиса</label>
+                                <input type="text" class="filter-input" value="Женский Консьерж Сервис" style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Контактный email</label>
+                                <input type="email" class="filter-input" value="info@concierge-service.ru" style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Телефон поддержки</label>
+                                <input type="tel" class="filter-input" value="+7 (999) 123-45-67" style="width: 100%;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Комиссия сервиса (%)</label>
+                                <input type="number" class="filter-input" value="15" min="0" max="50" style="width: 100%;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Уведомления</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" checked>
+                                <span>Email уведомления о новых задачах</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" checked>
+                                <span>SMS уведомления клиентам</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox">
+                                <span>Уведомления в Telegram</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" checked>
+                                <span>Ежедневные отчеты на email</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary-pink); margin-bottom: 15px;">Безопасность</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Требовать двухфакторную аутентификацию для админов</label>
+                                <select class="filter-select" style="width: 200px;">
+                                    <option value="true">Да</option>
+                                    <option value="false" selected>Нет</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Автоматическое разлогинивание через (минут)</label>
+                                <input type="number" class="filter-input" value="60" min="5" style="width: 200px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="action-btn edit" style="padding: 12px 30px;">
+                        <i class="fas fa-save"></i>
+                        Сохранить изменения
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальные окна -->
+    <div class="modal" id="addUserModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: var(--radius); padding: 30px; width: 90%; max-width: 500px;">
+            <h2 style="color: var(--primary-pink); margin-bottom: 20px;">Добавить пользователя</h2>
+            <form id="addUserForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Имя</label>
+                        <input type="text" class="filter-input" required style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Фамилия</label>
+                        <input type="text" class="filter-input" required style="width: 100%;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email</label>
+                    <input type="email" class="filter-input" required style="width: 100%;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Пароль</label>
+                    <input type="password" class="filter-input" required style="width: 100%;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Телефон</label>
+                        <input type="tel" class="filter-input" style="width: 100%;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Роль</label>
+                        <select class="filter-select" style="width: 100%;">
+                            <option value="client">Клиент</option>
+                            <option value="performer">Исполнитель</option>
+                            <option value="admin">Администратор</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="button" class="action-btn delete" onclick="hideAddUserModal()" style="flex: 1;">
+                        Отмена
+                    </button>
+                    <button type="submit" class="action-btn edit" style="flex: 1;">
+                        <i class="fas fa-save"></i>
+                        Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Глобальные переменные
+        let currentUser = null;
+        let currentToken = localStorage.getItem('adminToken');
+        let charts = {};
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async function() {
+            if (!currentToken) {
+                // Если нет токена, показываем форму входа
+                showLoginModal();
+            } else {
+                await verifyToken();
+            }
+            
+            // Настройка дат для фильтров
+            const today = new Date();
+            const monthAgo = new Date();
+            monthAgo.setMonth(today.getMonth() - 1);
+            
+            document.getElementById('dateFrom').value = monthAgo.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+            
+            // Запускаем обновление уведомлений
+            setInterval(updateNotificationCounts, 30000);
+        });
+        
+        // Функции аутентификации
+        function showLoginModal() {
+            const loginHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-pink) 0%, var(--primary-purple) 100%); display: flex; justify-content: center; align-items: center; z-index: 2000;">
+                    <div style="background: white; border-radius: var(--radius); padding: 40px; width: 90%; max-width: 400px; text-align: center;">
+                        <h2 style="color: var(--primary-pink); margin-bottom: 30px;">
+                            <i class="fas fa-crown"></i>
+                            Админ-панель
+                        </h2>
+                        <p style="color: var(--dark-gray); margin-bottom: 30px;">Войдите в систему</p>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <input type="email" id="loginEmail" class="filter-input" placeholder="Email" style="width: 100%; margin-bottom: 15px;">
+                            <input type="password" id="loginPassword" class="filter-input" placeholder="Пароль" style="width: 100%;">
+                        </div>
+                        
+                        <button class="action-btn edit" onclick="adminLogin()" style="width: 100%; padding: 12px;">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Войти
+                        </button>
+                        
+                        <p style="margin-top: 20px; color: var(--dark-gray); font-size: 0.9em;">
+                            Используйте тестовые данные:<br>
+                            superadmin@concierge.com / admin123
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', loginHTML);
+        }
+        
+        async function adminLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && (data.data.user.role === 'admin' || data.data.user.role === 'superadmin')) {
+                    currentToken = data.data.token;
+                    currentUser = data.data.user;
+                    localStorage.setItem('adminToken', currentToken);
+                    
+                    // Удаляем модальное окно
+                    document.querySelector('[style*="position: fixed; top: 0"]').remove();
+                    
+                    // Обновляем интерфейс
+                    updateUserInfo();
+                    loadDashboard();
+                } else {
+                    alert('Доступ только для администраторов');
+                }
+            } catch (error) {
+                alert('Ошибка входа');
+            }
+        }
+        
+        async function verifyToken() {
+            try {
+                const response = await fetch('/api/auth/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && (data.data.user.role === 'admin' || data.data.user.role === 'superadmin')) {
+                    currentUser = data.data.user;
+                    updateUserInfo();
+                    loadDashboard();
+                } else {
+                    localStorage.removeItem('adminToken');
+                    showLoginModal();
+                }
+            } catch (error) {
+                localStorage.removeItem('adminToken');
+                showLoginModal();
+            }
+        }
+        
+        function updateUserInfo() {
+            if (currentUser) {
+                document.getElementById('currentUser').innerHTML = `
+                    <i class="fas fa-user"></i>
+                    <span>${currentUser.firstName} (${currentUser.role})</span>
+                `;
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('adminToken');
+            currentToken = null;
+            currentUser = null;
+            location.reload();
+        }
+        
+        // Навигация по вкладкам
+        function showTab(tabId) {
+            // Скрыть все вкладки
+            document.querySelectorAll('.admin-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Убрать активный класс со всех кнопок
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показать выбранную вкладку
+            document.getElementById(tabId).classList.add('active');
+            
+            // Добавить активный класс к кнопке
+            event.target.classList.add('active');
+            
+            // Загрузить данные для вкладки
+            switch(tabId) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'tasks':
+                    loadTasks();
+                    break;
+                case 'services':
+                    loadServices();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+            }
+        }
+        
+        // Загрузка дашборда
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderDashboard(data.data);
+                    updateNotificationCounts();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки дашборда:', error);
+            }
+        }
+        
+        function renderDashboard(stats) {
+            // Общая статистика
+            document.getElementById('dashboardStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Всего пользователей</div>
+                    <div class="stat-value">${stats.summary.totalUsers}</div>
+                    <div class="stat-change positive">+${stats.summary.newUsersThisMonth} за месяц</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Всего задач</div>
+                    <div class="stat-value">${stats.summary.totalTasks}</div>
+                    <div class="stat-change positive">+${stats.summary.newTasksThisMonth} за месяц</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Общая выручка</div>
+                    <div class="stat-value">${formatNumber(stats.summary.totalRevenue)} ₽</div>
+                    <div class="stat-change positive">+${formatNumber(stats.summary.monthlyRevenue)} ₽ за месяц</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Завершенных задач</div>
+                    <div class="stat-value">${stats.summary.completedTasks}</div>
+                    <div class="stat-change positive">${Math.round(stats.summary.completedTasks / stats.summary.totalTasks * 100)}% от всех</div>
+                </div>
+            `;
+            
+            // График по категориям
+            if (charts.categoryChart) {
+                charts.categoryChart.destroy();
+            }
+            
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            charts.categoryChart = new Chart(categoryCtx, {
+                type: 'pie',
+                data: {
+                    labels: stats.categories.map(c => c.name),
+                    datasets: [{
+                        data: stats.categories.map(c => c.count),
+                        backgroundColor: [
+                            '#ff69b4', '#9370db', '#ffb6c1', '#d8bfd8', '#ff69b4', '#9370db'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            
+            // График по статусам
+            const statusCounts = {
+                'new': 0,
+                'in_progress': 0,
+                'completed': 0,
+                'cancelled': 0
+            };
+            
+            stats.recentTasks.forEach(task => {
+                if (statusCounts[task.status] !== undefined) {
+                    statusCounts[task.status]++;
+                }
+            });
+            
+            if (charts.statusChart) {
+                charts.statusChart.destroy();
+            }
+            
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            charts.statusChart = new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Новые', 'В работе', 'Завершены', 'Отменены'],
+                    datasets: [{
+                        label: 'Количество',
+                        data: [
+                            statusCounts.new,
+                            statusCounts.in_progress,
+                            statusCounts.completed,
+                            statusCounts.cancelled
+                        ],
+                        backgroundColor: [
+                            '#1976d2', '#f57c00', '#388e3c', '#d32f2f'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Последние задачи
+            let tasksHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Название</th>
+                            <th>Клиент</th>
+                            <th>Статус</th>
+                            <th>Дата</th>
+                            <th>Цена</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            stats.recentTasks.forEach(task => {
+                const statusText = {
+                    'new': 'Новая',
+                    'in_progress': 'В работе',
+                    'completed': 'Завершена',
+                    'cancelled': 'Отменена'
+                }[task.status] || task.status;
+                
+                tasksHtml += `
+                    <tr>
+                        <td>${task.taskNumber || '-'}</td>
+                        <td>${task.title}</td>
+                        <td>${task.client?.firstName || '-'}</td>
+                        <td><span class="status-badge status-${task.status}">${statusText}</span></td>
+                        <td>${new Date(task.createdAt).toLocaleDateString('ru-RU')}</td>
+                        <td>${formatNumber(task.price)} ₽</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewTask('${task._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tasksHtml += '</tbody></table>';
+            document.getElementById('recentTasks').innerHTML = tasksHtml;
+        }
+        
+        // Загрузка пользователей
+        async function loadUsers(page = 1) {
+            try {
+                const role = document.getElementById('userRoleFilter').value;
+                const search = document.getElementById('userSearch').value;
+                
+                let url = `/api/admin/users?page=${page}&limit=20`;
+                if (role !== 'all') url += `&role=${role}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderUsers(data.data);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+        
+        function renderUsers(data) {
+            document.getElementById('usersCount').textContent = data.pagination.total;
+            
+            let usersHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Роль</th>
+                            <th>Телефон</th>
+                            <th>Подписка</th>
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.users.forEach(user => {
+                const roleText = {
+                    'client': 'Клиент',
+                    'performer': 'Исполнитель',
+                    'admin': 'Админ',
+                    'superadmin': 'Суперадмин'
+                }[user.role] || user.role;
+                
+                usersHtml += `
+                    <tr>
+                        <td>${user._id.toString().slice(-6)}</td>
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge role-${user.role}">${roleText}</span></td>
+                        <td>${user.phone || '-'}</td>
+                        <td>${user.subscription?.plan || 'free'}</td>
+                        <td>${new Date(user.createdAt).toLocaleDateString('ru-RU')}</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewUser('${user._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn edit" onclick="editUser('${user._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${currentUser.role === 'superadmin' ? `
+                            <button class="action-btn delete" onclick="deleteUser('${user._id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            usersHtml += '</tbody></table>';
+            
+            // Добавляем пагинацию
+            if (data.pagination.pages > 1) {
+                usersHtml += `
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="display: inline-flex; gap: 5px;">
+                `;
+                
+                for (let i = 1; i <= data.pagination.pages; i++) {
+                    usersHtml += `
+                        <button onclick="loadUsers(${i})" 
+                                style="padding: 8px 12px; border: 1px solid var(--medium-gray); background: ${i === data.pagination.page ? 'var(--primary-pink)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--dark-gray)'}; border-radius: 4px; cursor: pointer;">
+                            ${i}
+                        </button>
+                    `;
+                }
+                
+                usersHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('usersTable').innerHTML = usersHtml;
+        }
+        
+        // Загрузка задач
+        async function loadTasks(page = 1) {
+            try {
+                const status = document.getElementById('taskStatusFilter').value;
+                const category = document.getElementById('taskCategoryFilter').value;
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
+                
+                let url = `/api/admin/tasks?page=${page}&limit=20`;
+                if (status !== 'all') url += `&status=${status}`;
+                if (category !== 'all') url += `&category=${category}`;
+                if (dateFrom) url += `&dateFrom=${dateFrom}`;
+                if (dateTo) url += `&dateTo=${dateTo}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderTasks(data.data);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки задач:', error);
+            }
+        }
+        
+        function renderTasks(data) {
+            document.getElementById('tasksCount').textContent = data.pagination.total;
+            
+            let tasksHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>№ задачи</th>
+                            <th>Название</th>
+                            <th>Клиент</th>
+                            <th>Исполнитель</th>
+                            <th>Статус</th>
+                            <th>Категория</th>
+                            <th>Срок</th>
+                            <th>Цена</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.tasks.forEach(task => {
+                const statusText = {
+                    'new': 'Новая',
+                    'in_progress': 'В работе',
+                    'completed': 'Завершена',
+                    'cancelled': 'Отменена'
+                }[task.status] || task.status;
+                
+                const categoryText = {
+                    'home_and_household': 'Дом и быт',
+                    'family_and_children': 'Дети и семья',
+                    'beauty_and_health': 'Красота и здоровье',
+                    'courses_and_education': 'Курсы и образование',
+                    'pets': 'Питомцы',
+                    'events_and_entertainment': 'Мероприятия'
+                }[task.category] || task.category;
+                
+                tasksHtml += `
+                    <tr>
+                        <td>${task.taskNumber || '-'}</td>
+                        <td>${task.title}</td>
+                        <td>${task.client?.firstName || '-'}</td>
+                        <td>${task.performer?.firstName || '-'}</td>
+                        <td><span class="status-badge status-${task.status}">${statusText}</span></td>
+                        <td>${categoryText}</td>
+                        <td>${new Date(task.deadline).toLocaleDateString('ru-RU')}</td>
+                        <td>${formatNumber(task.price)} ₽</td>
+                        <td>
+                            <button class="action-btn view" onclick="viewTask('${task._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="action-btn edit" onclick="editTask('${task._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tasksHtml += '</tbody></table>';
+            
+            // Пагинация
+            if (data.pagination.pages > 1) {
+                tasksHtml += `
+                    <div style="padding: 20px; text-align: center;">
+                        <div style="display: inline-flex; gap: 5px;">
+                `;
+                
+                for (let i = 1; i <= data.pagination.pages; i++) {
+                    tasksHtml += `
+                        <button onclick="loadTasks(${i})" 
+                                style="padding: 8px 12px; border: 1px solid var(--medium-gray); background: ${i === data.pagination.page ? 'var(--primary-pink)' : 'white'}; color: ${i === data.pagination.page ? 'white' : 'var(--dark-gray)'}; border-radius: 4px; cursor: pointer;">
+                            ${i}
+                        </button>
+                    `;
+                }
+                
+                tasksHtml += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('tasksTable').innerHTML = tasksHtml;
+        }
+        
+        // Загрузка видов помощи
+        async function loadServices() {
+            try {
+                const category = document.getElementById('serviceCategoryFilter').value;
+                const status = document.getElementById('serviceStatusFilter').value;
+                
+                let url = '/api/services?limit=50';
+                if (category !== 'all') url += `&category=${category}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderServices(data.data.services.filter(s => 
+                        status === 'all' || 
+                        (status === 'active' && s.isActive) || 
+                        (status === 'inactive' && !s.isActive)
+                    ));
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки услуг:', error);
+            }
+        }
+        
+        function renderServices(services) {
+            document.getElementById('servicesCount').textContent = services.length;
+            
+            let servicesHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Название</th>
+                            <th>Категория</th>
+                            <th>Описание</th>
+                            <th>Цена</th>
+                            <th>Рейтинг</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            services.forEach(service => {
+                const categoryText = {
+                    'home_and_household': 'Дом и быт',
+                    'family_and_children': 'Дети и семья',
+                    'beauty_and_health': 'Красота и здоровье',
+                    'courses_and_education': 'Курсы и образование',
+                    'pets': 'Питомцы',
+                    'events_and_entertainment': 'Мероприятия'
+                }[service.category] || service.category;
+                
+                servicesHtml += `
+                    <tr>
+                        <td>${service.name}</td>
+                        <td>${categoryText}</td>
+                        <td>${service.description.substring(0, 50)}...</td>
+                        <td>от ${formatNumber(service.priceOptions?.oneTime || service.priceOptions?.hourly || 0)} ₽</td>
+                        <td>${service.rating?.average || 0}/5 (${service.rating?.count || 0})</td>
+                        <td>${service.isActive ? 'Активна' : 'Неактивна'}</td>
+                        <td>
+                            <button class="action-btn edit" onclick="editService('${service._id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="toggleServiceStatus('${service._id}', ${!service.isActive})">
+                                <i class="fas fa-${service.isActive ? 'eye-slash' : 'eye'}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            servicesHtml += '</tbody></table>';
+            document.getElementById('servicesTable').innerHTML = servicesHtml;
+        }
+        
+        // Загрузка аналитики
+        async function loadAnalytics() {
+            try {
+                // Здесь можно добавить запросы к аналитике
+                // Пока что демо-данные
+                
+                document.getElementById('conversionRate').textContent = '42.5%';
+                document.getElementById('avgOrderValue').textContent = '2,450 ₽';
+                document.getElementById('satisfactionRate').textContent = '94.7%';
+                document.getElementById('repeatRate').textContent = '68.3%';
+                
+                // Загружаем топ исполнителей
+                const response = await fetch('/api/admin/users?role=performer&limit=10', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    let performersHtml = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Имя</th>
+                                    <th>Email</th>
+                                    <th>Рейтинг</th>
+                                    <th>Выполнено задач</th>
+                                    <th>Средняя цена</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.data.users.forEach(user => {
+                        performersHtml += `
+                            <tr>
+                                <td>${user.firstName} ${user.lastName}</td>
+                                <td>${user.email}</td>
+                                <td>${user.rating || 'Нет'}</td>
+                                <td>${Math.floor(Math.random() * 50) + 10}</td>
+                                <td>${formatNumber(Math.floor(Math.random() * 3000) + 1000)} ₽</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    performersHtml += '</tbody></table>';
+                    document.getElementById('topPerformers').innerHTML = performersHtml;
+                }
+                
+            } catch (error) {
+                console.error('Ошибка загрузки аналитики:', error);
+            }
+        }
+        
+        // Обновление счетчиков уведомлений
+        async function updateNotificationCounts() {
+            try {
+                // Запрос на получение непрочитанных уведомлений
+                // Пока что демо-данные
+                const newUsers = Math.floor(Math.random() * 5);
+                const newTasks = Math.floor(Math.random() * 10);
+                
+                const usersBadge = document.getElementById('usersBadge');
+                const tasksBadge = document.getElementById('tasksBadge');
+                
+                if (newUsers > 0) {
+                    usersBadge.textContent = newUsers;
+                    usersBadge.style.display = 'flex';
+                } else {
+                    usersBadge.style.display = 'none';
+                }
+                
+                if (newTasks > 0) {
+                    tasksBadge.textContent = newTasks;
+                    tasksBadge.style.display = 'flex';
+                } else {
+                    tasksBadge.style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Ошибка обновления уведомлений:', error);
+            }
+        }
+        
+        // Экспорт данных
+        async function exportData(type) {
+            try {
+                const response = await fetch(`/api/admin/export/${type}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${type}_export.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    alert(`Экспорт ${type} успешно завершен`);
+                } else {
+                    alert('Ошибка экспорта данных');
+                }
+            } catch (error) {
+                alert('Ошибка сети при экспорте');
+            }
+        }
+        
+        // Модальные окна
+        function showAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'flex';
+        }
+        
+        function hideAddUserModal() {
+            document.getElementById('addUserModal').style.display = 'none';
+        }
+        
+        function showAddServiceModal() {
+            alert('Функция добавления помощи будет реализована в следующей версии');
+        }
+        
+        // Вспомогательные функции
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        }
+        
+        function viewUser(userId) {
+            alert(`Просмотр пользователя ${userId} - функция будет реализована`);
+        }
+        
+        function editUser(userId) {
+            alert(`Редактирование пользователя ${userId} - функция будет реализована`);
+        }
+        
+        function deleteUser(userId) {
+            if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                alert(`Удаление пользователя ${userId} - функция будет реализована`);
+            }
+        }
+        
+        function viewTask(taskId) {
+            alert(`Просмотр задачи ${taskId} - функция будет реализована`);
+        }
+        
+        function editTask(taskId) {
+            alert(`Редактирование задачи ${taskId} - функция будет реализована`);
+        }
+        
+        function editService(serviceId) {
+            alert(`Редактирование услуги ${serviceId} - функция будет реализована`);
+        }
+        
+        function toggleServiceStatus(serviceId, newStatus) {
+            alert(`Изменение статуса услуги ${serviceId} - функция будет реализована`);
+        }
+    </script>
+</body>
+</html>
