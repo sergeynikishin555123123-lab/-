@@ -2657,39 +2657,58 @@ function renderEmptyHelp(category) {
             return { valid: false, message: 'Ошибка проверки подписки' };
         }
         
-        async function subscribeToPlan(planName) {
-            showLoading();
+       async function subscribeToPlan(planName) {
+    if (!currentUser) {
+        showNotification('Сначала войдите в систему', 'warning');
+        openLoginModal();
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/subscriptions/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                plan: planName,
+                period: 'monthly'
+            })
+        });
+        
+        const data = await response.json();
+        
+        hideLoading();
+        
+        if (data.success) {
+            const planNames = {
+                'free': 'Бесплатная',
+                'basic': 'Базовая',
+                'premium': 'Премиум',
+                'business': 'Бизнес'
+            };
             
-            try {
-                const response = await fetch('/api/subscriptions/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        plan: planName,
-                        period: 'monthly'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                hideLoading();
-                
-                if (data.success) {
-                    showNotification(`Подписка "${planName}" успешно оформлена!`, 'success');
-                    closeSubscribeModal();
-                    verifyToken(); // Обновляем информацию о пользователе
-                    loadSubscriptions(); // Обновляем отображение подписок
-                } else {
-                    showNotification(data.error || 'Ошибка оформления подписки', 'error');
-                }
-            } catch (error) {
-                hideLoading();
-                showNotification('Ошибка сети', 'error');
-            }
+            showNotification(`Подписка "${planNames[planName] || planName}" успешно оформлена!`, 'success');
+            closeSubscribeModal();
+            
+            // Обновляем информацию о пользователе
+            verifyToken();
+            
+            // Перезагружаем подписки
+            setTimeout(() => {
+                loadSubscriptions();
+            }, 500);
+        } else {
+            showNotification(data.error || 'Ошибка оформления подписки', 'error');
         }
+    } catch (error) {
+        hideLoading();
+        showNotification('Ошибка сети. Попробуйте позже.', 'error');
+    }
+}
         
         function logout() {
             localStorage.removeItem('token');
