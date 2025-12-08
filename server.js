@@ -14,7 +14,7 @@ let telegramBot = null;
 
 try {
     TelegramBot = require('node-telegram-bot-api');
-    console.log('✅ Telegram Bot модуль загружен');
+    console.log('✅ Telegram Bot модуль загружеан');
 } catch (error) {
     console.log('⚠️ Telegram Bot не установлен');
 }
@@ -1226,18 +1226,24 @@ app.get('/admin', (req, res) => {
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК КОНСЬЕРЖ СЕРВИСА v4.4.0');
+        console.log('🎀 ЗАПУСК КОНСЬЕРЖ СЕРВИСА v4.4.1');
         console.log('='.repeat(80));
-        console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
-        console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
         
         // Инициализируем базу данных
         await initDatabase();
         console.log('✅ База данных готова');
         
-        // Инициализируем Telegram бота
-        const botStarted = initTelegramBot();
-        console.log(`🤖 Telegram Bot: ${botStarted ? '✅ Активен' : '⚠️ Отключен'}`);
+        // Пытаемся запустить Telegram бота (но не блокируем запуск сервера при ошибке)
+        let telegramBot = null;
+        try {
+            telegramBot = initTelegramBot();
+            if (telegramBot) {
+                console.log('✅ Telegram Bot запущен');
+            }
+        } catch (botError) {
+            console.warn('⚠️ Telegram Bot не запущен:', botError.message);
+            console.log('ℹ️  Сервер продолжит работу без бота');
+        }
         
         const PORT = process.env.PORT || 3000;
         
@@ -1256,10 +1262,17 @@ const startServer = async () => {
             console.log('👩 Клиент: maria@example.com / client123');
             console.log('👨‍🏫 Исполнитель: elena@performer.com / performer123');
             console.log('🎯 Демо: test@example.com / test123');
+            console.log('\n📞 API Endpoints:');
+            console.log('  GET  /api/subscriptions          - Получить все подписки');
+            console.log('  POST /api/subscriptions/subscribe - Оформить подписку');
+            console.log('  GET  /api/services               - Получить все услуги');
+            console.log('  GET  /api/tasks                  - Получить задачи пользователя');
+            console.log('  POST /api/tasks                  - Создать задачу');
         });
         
     } catch (error) {
         console.error('❌ Не удалось запустить сервер:', error.message);
+        console.error('Stack trace:', error.stack);
         process.exit(1);
     }
 };
@@ -1268,14 +1281,28 @@ const startServer = async () => {
 process.on('SIGINT', async () => {
     console.log('\n🛑 Остановка сервера...');
     if (telegramBot) {
-        telegramBot.stopPolling();
-        console.log('🤖 Telegram Bot остановлен');
+        try {
+            telegramBot.stopPolling && telegramBot.stopPolling();
+            console.log('🤖 Telegram Bot остановлен');
+        } catch (e) {
+            console.log('⚠️ Ошибка остановки бота:', e.message);
+        }
     }
     if (db) {
         await db.close();
         console.log('🗃️ База данных закрыта');
     }
     process.exit(0);
+});
+
+// Обработка необработанных ошибок
+process.on('uncaughtException', (error) => {
+    console.error('⚠️ Необработанная ошибка:', error.message);
+    console.error(error.stack);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('⚠️ Необработанный промис:', reason);
 });
 
 // Запуск
