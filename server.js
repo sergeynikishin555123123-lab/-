@@ -296,365 +296,102 @@ console.log('🎯 Демо: test@example.com / test123 (free подписка)')
 // ==================== ИНИЦИАЛИЗАЦИЯ TELEGRAM BOT ====================
 const initTelegramBot = () => {
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-    const ADMIN_TELEGRAM_ID = '898508164'; // Ваш ID администратора
     
-    if (TelegramBot && TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN_HERE') {
+    // Проверяем, что токен установлен и не стандартный
+    if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') {
+        console.log('🤖 Telegram Bot: Токен не указан. Бот будет отключен.');
+        return null;
+    }
+    
+    if (TelegramBot) {
         try {
-            telegramBot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+            console.log('🤖 Пробуем запустить Telegram Bot...');
             
-            console.log('🤖 Telegram Bot запущен для пользователя:', ADMIN_TELEGRAM_ID);
+            // Используем webhook вместо polling для TimeWeb
+            const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
             
-            // Команда /start
-            telegramBot.onText(/\/start/, async (msg) => {
-                const chatId = msg.chat.id;
-                const userName = msg.from.first_name || 'пользователь';
-                
-                // Проверяем, админ ли это
-                const isAdmin = msg.from.id.toString() === ADMIN_TELEGRAM_ID;
-                
-                const welcomeMessage = `🎀 Привет, ${userName}! Добро пожаловать в Консьерж Сервис!\n\n` +
-                    `Я ваш персональный помощник в бытовых вопросах.\n\n` +
-                    `🛠️ Доступные команды:\n` +
-                    `/start - Начало работы\n` +
-                    `/help - Помощь и инструкции\n` +
-                    `/status - Статус системы\n` +
-                    `/admin - Админ-панель\n` +
-                    `/subscribe - Подписки и цены\n` +
-                    `/website - Перейти на сайт`;
-                
-                const options = {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ],
-                            [
-                                { text: '📱 Мобильная версия', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ]
-                        ]
-                    }
-                };
-                
-                // Если это администратор, добавляем кнопку админки
-                if (isAdmin) {
-                    options.reply_markup.inline_keyboard.unshift([
-                        { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' }
-                    ]);
-                }
-                
-                telegramBot.sendMessage(chatId, welcomeMessage, options);
-            });
+            // Останавливаем любой существующий polling
+            bot.stopPolling && bot.stopPolling().catch(() => {});
             
-            // Команда /admin
-            telegramBot.onText(/\/admin/, (msg) => {
-                const chatId = msg.chat.id;
-                
-                // Проверяем, является ли пользователь администратором
-                if (msg.from.id.toString() !== ADMIN_TELEGRAM_ID) {
-                    telegramBot.sendMessage(chatId, '⛔ У вас нет доступа к админ-панели.', {
-                        reply_markup: {
-                            inline_keyboard: [
-                                [
-                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
-                                    { text: '👑 Стать клиентом', callback_data: 'become_client' }
-                                ]
-                            ]
-                        }
-                    });
-                    return;
-                }
-                
-                const adminMessage = `⚙️ Панель администратора\n\n` +
-                    `Добро пожаловать, администратор!\n\n` +
-                    `🔧 Доступные действия:`;
-                
-                telegramBot.sendMessage(chatId, adminMessage, {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '🔧 Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' },
-                                { text: '📊 Статистика', callback_data: 'get_stats' }
-                            ],
-                            [
-                                { text: '👥 Пользователи', callback_data: 'manage_users' },
-                                { text: '📋 Задачи', callback_data: 'manage_tasks' }
-                            ],
-                            [
-                                { text: '🔄 Обновить систему', callback_data: 'refresh_system' }
-                            ],
-                            [
-                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ]
-                        ]
-                    }
-                });
-            });
+            // Устанавливаем обработчики команд
+            setupBotHandlers(bot);
             
-            // Команда /website
-            telegramBot.onText(/\/website/, (msg) => {
-                const chatId = msg.chat.id;
-                
-                telegramBot.sendMessage(chatId, '🌐 Перейдите на наш сайт:', {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
-                                { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' }
-                            ],
-                            [
-                                { text: '📱 Мобильная версия', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ]
-                        ]
-                    }
-                });
-            });
-            
-            // Команда /help
-            telegramBot.onText(/\/help/, (msg) => {
-                const chatId = msg.chat.id;
-                const helpMessage = `🆘 Помощь по Консьерж Сервису\n\n` +
-                    `📋 Как работает сервис:\n` +
-                    `1. Выбираете подписку\n` +
-                    `2. Создаете задачи\n` +
-                    `3. Исполнители помогают\n` +
-                    `4. Оцениваете результат\n\n` +
-                    `🎟️ Система подписок:\n` +
-                    `• Бесплатная: 1 задача/мес\n` +
-                    `• Базовая: 3 задачи/мес - 990₽\n` +
-                    `• Премиум: 10 задач/мес - 2 990₽\n` +
-                    `• Бизнес: неограниченно - 9 990₽\n\n` +
-                    `💖 Преимущества:\n` +
-                    `• Оплата по подписке, не за услугу\n` +
-                    `• Проверенные исполнители\n` +
-                    `• Гарантия качества\n` +
-                    `• Поддержка 24/7`;
-                
-                telegramBot.sendMessage(chatId, helpMessage, {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ],
-                            [
-                                { text: '💖 Оформить подписку', callback_data: 'subscribe' }
-                            ]
-                        ]
-                    }
-                });
-            });
-            
-            // Команда /status
-            telegramBot.onText(/\/status/, async (msg) => {
-                const chatId = msg.chat.id;
-                
-                try {
-                    const response = await fetch('http://localhost:3000/health');
-                    const data = await response.json();
-                    
-                    const statusMessage = `📊 Статус системы:\n\n` +
-                        `✅ Веб-сайт: ${data.success ? 'Работает' : 'Ошибка'}\n` +
-                        `✅ База данных: ${data.database || 'Активна'}\n` +
-                        `✅ Telegram Bot: ${telegramBot ? 'Активен' : 'Отключен'}\n` +
-                        `✅ API: ${data.success ? 'Доступен' : 'Недоступен'}\n` +
-                        `✅ Подписки: Активны\n\n` +
-                        `👥 Пользователей: ${data.users || 'N/A'}\n` +
-                        `📋 Активных задач: ${data.tasks || 'N/A'}\n\n` +
-                        `🔄 Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
-                    
-                    telegramBot.sendMessage(chatId, statusMessage, {
-                        reply_markup: {
-                            inline_keyboard: [
-                                [
-                                    { text: '🔄 Обновить статус', callback_data: 'refresh_status' },
-                                    { text: '📊 Подробная статистика', callback_data: 'detailed_stats' }
-                                ],
-                                [
-                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                                ]
-                            ]
-                        }
-                    });
-                } catch (error) {
-                    telegramBot.sendMessage(chatId, `⚠️ Ошибка получения статуса: ${error.message}`);
+            // Запускаем polling с параметрами
+            bot.startPolling({
+                polling: {
+                    timeout: 10,
+                    limit: 100,
+                    autoStart: true
                 }
             });
             
-            // Команда /subscribe
-            telegramBot.onText(/\/subscribe/, (msg) => {
-                const chatId = msg.chat.id;
-                const subscribeMessage = `💖 Подписки Консьерж Сервиса\n\n` +
-                    `🎗️ БЕСПЛАТНАЯ\n` +
-                    `• 1 задача в месяц\n` +
-                    `• Базовые категории\n` +
-                    `• Поддержка в чате\n` +
-                    `💰 Цена: 0₽\n\n` +
-                    `🎗️ БАЗОВАЯ - 990₽/мес\n` +
-                    `• 3 задачи в месяц\n` +
-                    `• Все категории\n` +
-                    `• Приоритет 48ч\n` +
-                    `• Поддержка 24/7\n\n` +
-                    `👑 ПРЕМИУМ - 2 990₽/мес\n` +
-                    `• 10 задач в месяц\n` +
-                    `• Все категории\n` +
-                    `• Приоритетное выполнение (24ч)\n` +
-                    `• Личный куратор\n` +
-                    `• Статистика и отчеты\n\n` +
-                    `🏢 БИЗНЕС - 9 990₽/мес\n` +
-                    `• Неограниченные задачи\n` +
-                    `• Все категории + эксклюзив\n` +
-                    `• Приоритет 12ч\n` +
-                    `• Личный менеджер\n` +
-                    `• Расширенная статистика\n` +
-                    `• API доступ\n\n` +
-                    `💡 Тестовая подписка:\n` +
-                    `Для тестирования системы используйте бесплатную подписку или аккаунт тестового пользователя.\n\n` +
-                    `Тестовый аккаунт:\n` +
-                    `📧 Email: test@example.com\n` +
-                    `🔑 Пароль: test123`;
-                
-                telegramBot.sendMessage(chatId, subscribeMessage, {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '🌐 Оформить на сайте', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
-                                { text: '👑 Выбрать план', callback_data: 'choose_plan' }
-                            ],
-                            [
-                                { text: '📞 Консультация', callback_data: 'consultation' }
-                            ]
-                        ]
-                    }
-                });
-            });
+            console.log('✅ Telegram Bot запущен успешно');
+            return bot;
             
-            // Обработка callback-запросов
-            telegramBot.on('callback_query', async (callbackQuery) => {
-                const chatId = callbackQuery.message.chat.id;
-                const data = callbackQuery.data;
-                const messageId = callbackQuery.message.message_id;
-                
-                try {
-                    switch(data) {
-                        case 'refresh_status':
-                            telegramBot.answerCallbackQuery(callbackQuery.id);
-                            telegramBot.deleteMessage(chatId, messageId);
-                            telegramBot.sendMessage(chatId, '🔄 Обновляю статус...');
-                            // Имитируем команду /status
-                            const fakeMsg = { chat: { id: chatId }, from: callbackQuery.from };
-                            telegramBot.onText(/\/status/, fakeMsg);
-                            break;
-                            
-                        case 'get_stats':
-                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Загружаю статистику...' });
-                            // Здесь можно добавить запрос к API для получения статистики
-                            const statsResponse = await fetch('http://localhost:3000/api/admin/stats');
-                            const statsData = await statsResponse.json();
-                            
-                            if (statsData.success) {
-                                const statsMessage = `📊 Статистика системы:\n\n` +
-                                    `👥 Пользователей: ${statsData.data.summary.totalUsers}\n` +
-                                    `📋 Всего задач: ${statsData.data.summary.totalTasks}\n` +
-                                    `✅ Активных подписок: ${statsData.data.summary.activeSubscriptions}\n` +
-                                    `💰 Выручка: ${statsData.data.summary.totalRevenue || 0}₽\n\n` +
-                                    `🕐 Обновлено: ${new Date().toLocaleString('ru-RU')}`;
-                                
-                                telegramBot.sendMessage(chatId, statsMessage);
-                            }
-                            break;
-                            
-                        case 'subscribe':
-                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Перенаправляю на страницу подписок...' });
-                            telegramBot.sendMessage(chatId, '💖 Для оформления подписки перейдите на наш сайт:', {
-                                reply_markup: {
-                                    inline_keyboard: [
-                                        [
-                                            { text: '🌐 Оформить подписку', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                                        ]
-                                    ]
-                                }
-                            });
-                            break;
-                            
-                        case 'become_client':
-                            telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Отлично! Регистрируйтесь на сайте!' });
-                            telegramBot.sendMessage(chatId, '🎉 Для регистрации перейдите по ссылке:', {
-                                reply_markup: {
-                                    inline_keyboard: [
-                                        [
-                                            { text: '🌐 Зарегистрироваться', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                                        ]
-                                    ]
-                                }
-                            });
-                            break;
-                            
-                        default:
-                            telegramBot.answerCallbackQuery(callbackQuery.id);
-                    }
-                } catch (error) {
-                    console.error('Ошибка обработки callback:', error);
-                    telegramBot.answerCallbackQuery(callbackQuery.id, { text: 'Произошла ошибка' });
-                }
-            });
-            
-            // Обработка текстовых сообщений
-            telegramBot.on('message', (msg) => {
-                // Игнорируем команды, которые уже обработаны
-                if (msg.text && msg.text.startsWith('/')) return;
-                
-                const chatId = msg.chat.id;
-                
-                // Простое эхо для демонстрации
-                if (msg.text) {
-                    telegramBot.sendMessage(chatId, `Вы написали: "${msg.text}"\n\nДля получения помощи используйте команду /help`, {
-                        reply_markup: {
-                            inline_keyboard: [
-                                [
-                                    { text: '🌐 Перейти на сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' },
-                                    { text: '🆘 Помощь', callback_data: 'help' }
-                                ]
-                            ]
-                        }
-                    });
-                }
-            });
-            
-            // Отправляем уведомление администратору при запуске
-            if (ADMIN_TELEGRAM_ID) {
-                const adminMessage = `🤖 Консьерж Сервис бот запущен!\n\n` +
-                    `✅ Сервер: Работает\n` +
-                    `✅ Telegram Bot: Активен\n` +
-                    `✅ База данных: Готова\n` +
-                    `✅ Тестовые данные: Созданы\n\n` +
-                    `🕐 Время запуска: ${new Date().toLocaleString('ru-RU')}\n\n` +
-                    `Для управления используйте команды:\n` +
-                    `/admin - Админ-панель\n` +
-                    `/status - Статус системы`;
-                
-                telegramBot.sendMessage(ADMIN_TELEGRAM_ID, adminMessage, {
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '⚙️ Админ-панель', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/admin' },
-                                { text: '🌐 Основной сайт', url: 'https://sergeynikishin555123123-lab--86fa.twc1.net/' }
-                            ]
-                        ]
-                    }
-                });
-            }
-            
-            console.log('🤖 Telegram Bot запущен с расширенным функционалом');
-            return true;
         } catch (error) {
             console.warn('⚠️ Telegram Bot не запущен:', error.message);
-            return false;
+            return null;
         }
-    } else {
-        console.log('🤖 Telegram Bot: Токен не указан или стандартный');
-        return false;
     }
+    
+    return null;
 };
 
+// Функция для настройки обработчиков бота
+const setupBotHandlers = (bot) => {
+    try {
+        // Команда /start
+        bot.onText(/\/start/, (msg) => {
+            const chatId = msg.chat.id;
+            const userName = msg.from.first_name || 'пользователь';
+            
+            const welcomeMessage = `🎀 Привет, ${userName}! Добро пожаловать в Консьерж Сервис!\n\n` +
+                `Я ваш персональный помощник в бытовых вопросах.\n\n` +
+                `🛠️ Доступные команды:\n` +
+                `/start - Начало работы\n` +
+                `/help - Помощь и инструкции\n` +
+                `/status - Статус системы\n` +
+                `/website - Перейти на сайт`;
+            
+            bot.sendMessage(chatId, welcomeMessage, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '🌐 Перейти на сайт', url: 'https://concierge-service.ru/' }
+                        ]
+                    ]
+                }
+            });
+        });
+        
+        // Простые команды для демонстрации
+        bot.onText(/\/help/, (msg) => {
+            const chatId = msg.chat.id;
+            bot.sendMessage(chatId, '🆘 Помощь: Для получения помощи перейдите на наш сайт или напишите в поддержку.');
+        });
+        
+        bot.onText(/\/status/, (msg) => {
+            const chatId = msg.chat.id;
+            bot.sendMessage(chatId, `📊 Статус: Система работает\n🕐 Время сервера: ${new Date().toLocaleString('ru-RU')}`);
+        });
+        
+        bot.onText(/\/website/, (msg) => {
+            const chatId = msg.chat.id;
+            bot.sendMessage(chatId, '🌐 Ссылка на сайт:', {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: '🌐 Консьерж Сервис', url: 'https://concierge-service.ru/' }
+                        ]
+                    ]
+                }
+            });
+        });
+        
+    } catch (error) {
+        console.error('Ошибка настройки обработчиков бота:', error);
+    }
+};
 // ==================== JWT МИДЛВАР ====================
 const authMiddleware = (roles = []) => {
     return async (req, res, next) => {
@@ -935,6 +672,153 @@ app.get('/api/services', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка получения услуг'
+        });
+    }
+});
+
+// ==================== ПОДПИСКИ ====================
+
+// Подписка на план
+app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { plan, period = 'monthly' } = req.body;
+        
+        if (!plan) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите план подписки'
+            });
+        }
+        
+        // Проверяем существование плана
+        const subscriptionPlan = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ?',
+            [plan]
+        );
+        
+        if (!subscriptionPlan) {
+            return res.status(404).json({
+                success: false,
+                error: 'План подписки не найден'
+            });
+        }
+        
+        // Обновляем подписку пользователя
+        const expiryDate = new Date();
+        if (period === 'monthly') {
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+        } else if (period === 'yearly') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        }
+        
+        await db.run(
+            `UPDATE users SET 
+                subscription_plan = ?,
+                subscription_status = 'active',
+                subscription_expires = ?
+             WHERE id = ?`,
+            [plan, expiryDate.toISOString().split('T')[0], req.user.id]
+        );
+        
+        // Создаем запись о платеже
+        const amount = period === 'monthly' ? subscriptionPlan.price_monthly : subscriptionPlan.price_yearly;
+        await db.run(
+            `INSERT INTO payments (user_id, amount, description, status, payment_method) 
+             VALUES (?, ?, ?, 'completed', 'subscription')`,
+            [req.user.id, amount, `Подписка ${subscriptionPlan.name} (${period})`]
+        );
+        
+        // Создаем уведомление
+        await db.run(
+            `INSERT INTO notifications (user_id, title, message, type) 
+             VALUES (?, ?, ?, 'success')`,
+            [req.user.id, 'Подписка оформлена', `Вы успешно оформили подписку ${subscriptionPlan.name}`, 'success']
+        );
+        
+        const user = await db.get(
+            'SELECT id, email, firstName, lastName, subscription_plan, subscription_status, subscription_expires FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            message: `Подписка "${subscriptionPlan.name}" успешно оформлена!`,
+            data: { user }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка оформления подписки:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка оформления подписки'
+        });
+    }
+});
+
+// Получение всех подписок
+app.get('/api/subscriptions', async (req, res) => {
+    try {
+        const subscriptions = await db.all(
+            'SELECT * FROM subscriptions ORDER BY price_monthly ASC'
+        );
+        
+        // Если нет подписок в базе, возвращаем демо-данные
+        if (!subscriptions || subscriptions.length === 0) {
+            const demoSubscriptions = [
+                {
+                    id: 1,
+                    name: 'free',
+                    description: 'Бесплатная подписка',
+                    price_monthly: 0,
+                    price_yearly: 0,
+                    tasks_limit: 1,
+                    features: JSON.stringify(["1 задача в месяц", "Базовые категории", "Поддержка в чате"]),
+                    is_popular: 0
+                },
+                {
+                    id: 2,
+                    name: 'basic',
+                    description: 'Для регулярных бытовых задач',
+                    price_monthly: 990,
+                    price_yearly: 9900,
+                    tasks_limit: 3,
+                    features: JSON.stringify(["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]),
+                    is_popular: 1
+                },
+                {
+                    id: 3,
+                    name: 'premium',
+                    description: 'Для максимального комфорта',
+                    price_monthly: 2990,
+                    price_yearly: 29900,
+                    tasks_limit: 10,
+                    features: JSON.stringify(["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]),
+                    is_popular: 0
+                }
+            ];
+            
+            return res.json({
+                success: true,
+                data: {
+                    subscriptions: demoSubscriptions,
+                    count: demoSubscriptions.length
+                }
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                subscriptions: subscriptions || [],
+                count: subscriptions ? subscriptions.length : 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения подписок:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения подписок'
         });
     }
 });
