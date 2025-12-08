@@ -28,10 +28,20 @@ let db;
 
 const initDatabase = async () => {
     try {
+        // Создаем директорию для базы данных если её нет
+        const dbDir = path.dirname('./concierge.db');
+        if (!fs.existsSync(dbDir)) {
+            fs.mkdirSync(dbDir, { recursive: true });
+        }
+        
+        // Открываем базу данных
         db = await open({
             filename: './concierge.db',
-            driver: sqlite3.Database
+            driver: sqlite3.Database,
+            mode: sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE
         });
+
+        console.log('✅ База данных SQLite подключена');
 
         // Создание таблиц
         await db.exec(`
@@ -167,49 +177,69 @@ const initDatabase = async () => {
         
         return db;
     } catch (error) {
-        console.error('❌ Ошибка инициализации базы данных:', error);
-        process.exit(1);
-    }
-};
-
-// ==================== JWT МИДЛВАР ====================
-const authMiddleware = (roles = []) => {
-    return async (req, res, next) => {
+        console.error('❌ Ошибка инициализации базы данных:', error.message);
+        
+        // Пробуем создать базу в памяти как fallback
         try {
-            const token = req.header('Authorization')?.replace('Bearer ', '');
-            
-            if (!token) {
-                return res.status(401).json({ 
-                    success: false, 
-                    error: 'Требуется авторизация' 
-                });
-            }
-            
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key');
-            req.user = decoded;
-            
-            if (roles.length > 0 && !roles.includes(decoded.role)) {
-                return res.status(403).json({ 
-                    success: false, 
-                    error: 'Недостаточно прав' 
-                });
-            }
-            
-            next();
-        } catch (error) {
-            res.status(401).json({ 
-                success: false, 
-                error: 'Неверный токен' 
+            console.log('⚠️  Пробуем создать базу в памяти...');
+            db = await open({
+                filename: ':memory:',
+                driver: sqlite3.Database
             });
+            
+            // Создаем базовые таблицы
+            await db.exec(`
+                CREATE TABLE users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    firstName TEXT NOT NULL,
+                    lastName TEXT NOT NULL,
+                    phone TEXT,
+                    role TEXT DEFAULT 'client'
+                );
+                
+                CREATE TABLE tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_number TEXT,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    client_id INTEGER NOT NULL,
+                    category TEXT NOT NULL,
+                    status TEXT DEFAULT 'new',
+                    price REAL NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                
+                CREATE TABLE services (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    price_one_time REAL
+                );
+            `);
+            
+            console.log('✅ Используется база данных в памяти');
+            await createTestData();
+            return db;
+        } catch (memoryError) {
+            console.error('❌ Ошибка создания базы в памяти:', memoryError.message);
+            process.exit(1);
         }
-    };
+    }
 };
 
 // ==================== СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ====================
 const createTestData = async () => {
     try {
         // Проверяем есть ли уже пользователи
-        const userCount = await db.get('SELECT COUNT(*) as count FROM users');
+        let userCount;
+        try {
+            userCount = await db.get('SELECT COUNT(*) as count FROM users');
+        } catch (error) {
+            userCount = { count: 0 };
+        }
         
         if (userCount.count === 0) {
             console.log('📝 Создание тестовых данных...');
@@ -384,83 +414,6 @@ const createTestData = async () => {
 
             console.log(`✅ Создано ${services.length} тестовых услуг`);
 
-            // Создаем тестовые задачи
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            const nextWeek = new Date();
-            nextWeek.setDate(nextWeek.getDate() + 7);
-            
-            const tasks = [
-                {
-                    title: 'Помогите с генеральной уборкой после ремонта',
-                    description: 'Нужно помыть окна, протереть пыль везде, помыть полы, разобрать коробки после переезда.',
-                    client_id: 3, // Мария
-                    performer_id: 5, // Елена
-                    category: 'home_and_household',
-                    subcategory: 'Уборка',
-                    status: 'completed',
-                    priority: 'high',
-                    deadline: new Date(Date.now() - 86400000).toISOString(), // Вчера
-                    price: 3500,
-                    address: 'Москва, ул. Примерная, д. 1',
-                    rating: 5,
-                    feedback_text: 'Елена прекрасно справилась! Квартира сияет, все разложено по местам. Очень рекомендую!'
-                },
-                {
-                    title: 'Нужна няня на субботу',
-                    description: 'Ребенку 4 года, нужно посидеть с ним с 10 до 18, погулять, покормить, поиграть.',
-                    client_id: 4, // Екатерина
-                    category: 'family_and_children',
-                    subcategory: 'Няня',
-                    status: 'in_progress',
-                    priority: 'medium',
-                    deadline: tomorrow.toISOString(),
-                    price: 2800,
-                    address: 'Москва, ул. Тестовая, д. 5'
-                },
-                {
-                    title: 'Сделать маникюр к празднику',
-                    description: 'Нужен классический маникюр с покрытием гель-лаком нежного розового цвета.',
-                    client_id: 3, // Мария
-                    performer_id: 6, // Анна
-                    category: 'beauty_and_health',
-                    subcategory: 'Маникюр',
-                    status: 'assigned',
-                    priority: 'low',
-                    deadline: nextWeek.toISOString(),
-                    price: 1800,
-                    address: 'Москва, ул. Примерная, д. 1'
-                }
-            ];
-
-            for (const task of tasks) {
-                // Генерируем номер задачи
-                const date = new Date();
-                const year = date.getFullYear().toString().slice(-2);
-                const month = (date.getMonth() + 1).toString().padStart(2, '0');
-                const day = date.getDate().toString().padStart(2, '0');
-                
-                const count = await db.get(
-                    'SELECT COUNT(*) as count FROM tasks WHERE DATE(created_at) = DATE(?)',
-                    [date.toISOString()]
-                );
-                
-                const taskNumber = `TASK-${year}${month}${day}-${(count.count + 1).toString().padStart(4, '0')}`;
-                
-                await db.run(
-                    `INSERT INTO tasks (task_number, title, description, client_id, performer_id, category, subcategory, 
-                     status, priority, deadline, price, address, rating, feedback_text) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [taskNumber, task.title, task.description, task.client_id, task.performer_id, 
-                     task.category, task.subcategory, task.status, task.priority, task.deadline, 
-                     task.price, task.address, task.rating, task.feedback_text]
-                );
-            }
-
-            console.log(`✅ Создано ${tasks.length} тестовых задач`);
-            console.log('🎉 Тестовые данные успешно созданы!');
-            
             console.log('\n🔑 Тестовые аккаунты для входа:');
             console.log('👑 Суперадмин: superadmin@concierge.com / admin123');
             console.log('👩‍💼 Админ: admin@concierge.com / admin123');
@@ -468,8 +421,42 @@ const createTestData = async () => {
             console.log('👨‍🏫 Исполнитель: elena@performer.com / performer123');
         }
     } catch (error) {
-        console.error('❌ Ошибка создания тестовых данных:', error);
+        console.error('⚠️  Ошибка создания тестовых данных:', error.message);
+        console.log('ℹ️  Продолжаем без тестовых данных...');
     }
+};
+
+// ==================== JWT МИДЛВАР ====================
+const authMiddleware = (roles = []) => {
+    return async (req, res, next) => {
+        try {
+            const token = req.header('Authorization')?.replace('Bearer ', '');
+            
+            if (!token) {
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Требуется авторизация' 
+                });
+            }
+            
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key');
+            req.user = decoded;
+            
+            if (roles.length > 0 && !roles.includes(decoded.role)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    error: 'Недостаточно прав' 
+                });
+            }
+            
+            next();
+        } catch (error) {
+            res.status(401).json({ 
+                success: false, 
+                error: 'Неверный токен' 
+            });
+        }
+    };
 };
 
 // ==================== API МАРШРУТЫ ====================
@@ -478,11 +465,11 @@ const createTestData = async () => {
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: '🎀 Добро пожаловать в Женский Консьерж Сервис',
-        version: '4.2.0',
+        message: '🎀 Добро пожаловать в Консьерж Сервис',
+        version: '4.2.1',
         status: '🟢 Работает',
-        description: 'Система помощи и заботы для женщин',
-        database: 'SQLite (встроенная)',
+        description: 'Система помощи и заботы',
+        database: 'SQLite',
         endpoints: {
             health: '/health',
             services: '/api/services',
@@ -505,7 +492,7 @@ app.get('/health', async (req, res) => {
             success: true,
             status: 'OK',
             service: 'concierge-service',
-            version: '4.2.0',
+            version: '4.2.1',
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
             database: 'connected',
@@ -800,12 +787,12 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
         
-        const count = await db.get(
+        const countResult = await db.get(
             'SELECT COUNT(*) as count FROM tasks WHERE DATE(created_at) = DATE(?)',
             [date.toISOString()]
         );
         
-        const taskNumber = `TASK-${year}${month}${day}-${(count.count + 1).toString().padStart(4, '0')}`;
+        const taskNumber = `TASK-${year}${month}${day}-${(countResult.count + 1).toString().padStart(4, '0')}`;
         
         // Создаем задачу
         const result = await db.run(
@@ -888,7 +875,7 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         
         // Получаем общее количество
         const countQuery = query.split('ORDER BY')[0].replace('SELECT *', 'SELECT COUNT(*) as count');
-        const countResult = await db.get(countQuery, params.slice(0, -2)); // Убираем LIMIT и OFFSET
+        const countResult = await db.get(countQuery, params.slice(0, -2));
         
         res.json({
             success: true,
@@ -897,8 +884,8 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    total: countResult.count,
-                    pages: Math.ceil(countResult.count / parseInt(limit))
+                    total: countResult ? countResult.count : 0,
+                    pages: Math.ceil((countResult ? countResult.count : 0) / parseInt(limit))
                 }
             }
         });
@@ -1014,7 +1001,7 @@ app.post('/api/tasks/:id/reopen', authMiddleware(['client', 'admin', 'superadmin
         if (task.client_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             return res.status(403).json({
                 success: false,
-                error: 'Нет прав на возобновление этой задачи'
+                error: 'Нет прав на возобновление этой задача'
             });
         }
         
@@ -1063,11 +1050,6 @@ app.post('/api/tasks/:id/complete', authMiddleware(['client', 'admin', 'superadm
             ['completed', rating, feedback, new Date().toISOString(), req.params.id]
         );
         
-        // Обновляем рейтинг исполнителя если есть
-        if (task.performer_id && rating) {
-            await updatePerformerRating(task.performer_id);
-        }
-        
         res.json({
             success: true,
             message: 'Задача завершена',
@@ -1102,7 +1084,7 @@ app.get('/api/notifications', authMiddleware(), async (req, res) => {
             success: true,
             data: {
                 notifications,
-                unreadCount: unreadCount.count
+                unreadCount: unreadCount ? unreadCount.count : 0
             }
         });
         
@@ -1192,22 +1174,22 @@ app.get('/api/admin/stats', authMiddleware(['admin', 'superadmin']), async (req,
             success: true,
             data: {
                 summary: {
-                    totalUsers: totalUsers.count,
-                    totalClients: totalClients.count,
-                    totalPerformers: totalPerformers.count,
-                    totalTasks: totalTasks.count,
-                    completedTasks: completedTasks.count,
-                    totalRevenue: totalRevenue.total || 0,
-                    newUsersThisMonth: newUsersThisMonth.count,
-                    newTasksThisMonth: newTasksThisMonth.count
+                    totalUsers: totalUsers ? totalUsers.count : 0,
+                    totalClients: totalClients ? totalClients.count : 0,
+                    totalPerformers: totalPerformers ? totalPerformers.count : 0,
+                    totalTasks: totalTasks ? totalTasks.count : 0,
+                    completedTasks: completedTasks ? completedTasks.count : 0,
+                    totalRevenue: totalRevenue ? totalRevenue.total || 0 : 0,
+                    newUsersThisMonth: newUsersThisMonth ? newUsersThisMonth.count : 0,
+                    newTasksThisMonth: newTasksThisMonth ? newTasksThisMonth.count : 0
                 },
-                categories: categoryStats.map(stat => ({
+                categories: (categoryStats || []).map(stat => ({
                     category: stat.category,
                     name: getCategoryName(stat.category),
                     count: stat.count,
                     revenue: stat.revenue || 0
                 })),
-                recentTasks
+                recentTasks: recentTasks || []
             }
         });
         
@@ -1259,8 +1241,8 @@ app.get('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req,
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    total: countResult.count,
-                    pages: Math.ceil(countResult.count / parseInt(limit))
+                    total: countResult ? countResult.count : 0,
+                    pages: Math.ceil((countResult ? countResult.count : 0) / parseInt(limit))
                 }
             }
         });
@@ -1321,8 +1303,8 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
                 pagination: {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    total: countResult.count,
-                    pages: Math.ceil(countResult.count / parseInt(limit))
+                    total: countResult ? countResult.count : 0,
+                    pages: Math.ceil((countResult ? countResult.count : 0) / parseInt(limit))
                 }
             }
         });
@@ -1343,26 +1325,6 @@ app.get('/admin', (req, res) => {
 
 // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
 
-async function updatePerformerRating(performerId) {
-    try {
-        const tasks = await db.all(
-            'SELECT rating FROM tasks WHERE performer_id = ? AND rating IS NOT NULL AND rating > 0',
-            [performerId]
-        );
-        
-        if (tasks.length > 0) {
-            const averageRating = tasks.reduce((sum, task) => sum + task.rating, 0) / tasks.length;
-            
-            await db.run(
-                'UPDATE users SET rating = ? WHERE id = ?',
-                [Math.round(averageRating * 10) / 10, performerId]
-            );
-        }
-    } catch (error) {
-        console.error('Ошибка обновления рейтинга исполнителя:', error);
-    }
-}
-
 function getCategoryName(categoryId) {
     const categories = {
         'home_and_household': 'Дом и быт',
@@ -1380,11 +1342,11 @@ function getCategoryName(categoryId) {
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖ СЕРВИСА v4.2.0');
+        console.log('🎀 ЗАПУСК КОНСЬЕРЖ СЕРВИСА v4.2.1');
         console.log('='.repeat(80));
         console.log(`🔧 Режим: ${process.env.NODE_ENV || 'development'}`);
         console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
-        console.log(`🗄️  База данных: SQLite (встроенная)`);
+        console.log(`🗄️  База данных: SQLite`);
         
         // Инициализируем базу данных
         await initDatabase();
@@ -1392,7 +1354,7 @@ const startServer = async () => {
         
         const PORT = process.env.PORT || 3000;
         
-        app.listen(PORT, '0.0.0.0', () => {
+        app.listen(PORT, () => {
             console.log(`✅ Сервер запущен на порту ${PORT}`);
             console.log(`🌐 http://localhost:${PORT}`);
             console.log(`🎛️  Админ-панель: http://localhost:${PORT}/admin`);
