@@ -199,24 +199,27 @@ const createTestData = async () => {
     try {
         console.log('📝 Создание тестовых данных...');
         
-        // Тестовые пользователи
-        const users = [
-            ['superadmin@concierge.com', await bcrypt.hash('admin123', 10), 'Супер', 'Администратор', '+79999999999', 'superadmin', 'business', 'active', '2025-12-31', null],
-            ['admin@concierge.com', await bcrypt.hash('admin123', 10), 'Анна', 'Администратор', '+79998887766', 'admin', 'premium', 'active', '2025-06-30', null],
-            ['maria@example.com', await bcrypt.hash('client123', 10), 'Мария', 'Иванова', '+79997776655', 'client', 'basic', 'active', '2025-03-31', null],
-            ['elena@performer.com', await bcrypt.hash('performer123', 10), 'Елена', 'Смирнова', '+79994443322', 'performer', 'premium', 'active', '2025-06-30', null],
-            ['test@example.com', await bcrypt.hash('test123', 10), 'Демо', 'Пользователь', '+79993332211', 'client', 'free', 'inactive', null, null]
-        ];
+        // Проверяем и создаем подписки
+        const subscriptionCount = await db.get('SELECT COUNT(*) as count FROM subscriptions');
+        if (!subscriptionCount || subscriptionCount.count === 0) {
+            console.log('📝 Создаем тестовые подписки...');
+            
+            const subscriptions = [
+                ['free', 'Бесплатная подписка', 'Попробуйте сервис бесплатно', 0, 0, 1, '["1 задача в месяц", "Базовые категории", "Поддержка в чате"]', 0],
+                ['basic', 'Базовая', 'Для регулярных бытовых задач', 990, 9900, 3, '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]', 1],
+                ['premium', 'Премиум', 'Для максимального комфорта', 2990, 29900, 10, '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]', 0],
+                ['business', 'Бизнес', 'Для бизнеса и семьи', 9990, 99900, 999, '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика", "API доступ"]', 0]
+            ];
 
-        for (const user of users) {
-            await db.run(
-                `INSERT OR IGNORE INTO users (email, password, firstName, lastName, phone, role, subscription_plan, subscription_status, subscription_expires, telegram_id) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                user
-            );
+            for (const subscription of subscriptions) {
+                await db.run(
+                    `INSERT OR IGNORE INTO subscriptions (name, description, price_monthly, price_yearly, tasks_limit, features, is_popular) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    subscription
+                );
+            }
+            console.log('✅ Тестовые подписки созданы');
         }
-
-        console.log('✅ Тестовые пользователи созданы');
 
         // Тестовые подписки
         const subscriptions = [
@@ -396,19 +399,27 @@ const setupBotHandlers = (bot) => {
 const authMiddleware = (roles = []) => {
     return async (req, res, next) => {
         try {
-            const token = req.header('Authorization')?.replace('Bearer ', '');
+            const authHeader = req.header('Authorization');
+            console.log('🔐 Auth header:', authHeader ? 'present' : 'missing');
             
-            if (!token) {
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                console.log('❌ Нет токена авторизации');
                 return res.status(401).json({ 
                     success: false, 
                     error: 'Требуется авторизация' 
                 });
             }
             
+            const token = authHeader.replace('Bearer ', '');
+            console.log('🔐 Токен получен, длина:', token.length);
+            
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-pink-secret-2024');
+            console.log('🔐 Токен расшифрован для пользователя:', decoded.email);
+            
             req.user = decoded;
             
             if (roles.length > 0 && !roles.includes(decoded.role)) {
+                console.log(`❌ Недостаточно прав. Роль: ${decoded.role}, требуемые: ${roles}`);
                 return res.status(403).json({ 
                     success: false, 
                     error: 'Недостаточно прав' 
@@ -417,9 +428,10 @@ const authMiddleware = (roles = []) => {
             
             next();
         } catch (error) {
+            console.error('❌ Ошибка проверки токена:', error.message);
             res.status(401).json({ 
                 success: false, 
-                error: 'Неверный токен' 
+                error: 'Неверный или просроченный токен' 
             });
         }
     };
@@ -628,30 +640,6 @@ app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
     }
 });
 
-// ==================== ПОДПИСКИ ====================
-
-// Получение всех подписок
-app.get('/api/subscriptions', async (req, res) => {
-    try {
-        const subscriptions = await db.all('SELECT * FROM subscriptions ORDER BY price_monthly ASC');
-        
-        res.json({
-            success: true,
-            data: {
-                subscriptions: subscriptions || [],
-                count: subscriptions ? subscriptions.length : 0
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения подписок:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения подписок'
-        });
-    }
-});
-
 // ==================== УСЛУГИ ====================
 
 // Получение всех услуг
@@ -678,9 +666,11 @@ app.get('/api/services', async (req, res) => {
 
 // ==================== ПОДПИСКИ ====================
 
-// Подписка на план
+// Подписка на план (этот маршрут должен быть ДО /api/subscriptions)
 app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
+        console.log('📝 Запрос на подписку:', req.body);
+        
         const { plan, period = 'monthly' } = req.body;
         
         if (!plan) {
@@ -699,7 +689,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'sup
         if (!subscriptionPlan) {
             return res.status(404).json({
                 success: false,
-                error: 'План подписки не найден'
+                error: `План подписки "${plan}" не найден`
             });
         }
         
@@ -720,37 +710,53 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client', 'admin', 'sup
             [plan, expiryDate.toISOString().split('T')[0], req.user.id]
         );
         
-        // Создаем запись о платеже
+        // Создаем запись о платеже (демо-режим)
         const amount = period === 'monthly' ? subscriptionPlan.price_monthly : subscriptionPlan.price_yearly;
-        await db.run(
-            `INSERT INTO payments (user_id, amount, description, status, payment_method) 
-             VALUES (?, ?, ?, 'completed', 'subscription')`,
-            [req.user.id, amount, `Подписка ${subscriptionPlan.name} (${period})`]
-        );
+        
+        // Проверяем существование таблицы payments
+        try {
+            await db.run(
+                `INSERT INTO payments (user_id, amount, description, status, payment_method) 
+                 VALUES (?, ?, ?, 'completed', 'subscription')`,
+                [req.user.id, amount, `Подписка ${subscriptionPlan.name} (${period})`]
+            );
+        } catch (paymentError) {
+            console.log('⚠️ Таблица payments не существует, пропускаем создание платежа');
+        }
         
         // Создаем уведомление
-        await db.run(
-            `INSERT INTO notifications (user_id, title, message, type) 
-             VALUES (?, ?, ?, 'success')`,
-            [req.user.id, 'Подписка оформлена', `Вы успешно оформили подписку ${subscriptionPlan.name}`, 'success']
-        );
+        try {
+            await db.run(
+                `INSERT INTO notifications (user_id, title, message, type) 
+                 VALUES (?, ?, ?, 'success')`,
+                [req.user.id, 'Подписка оформлена', `Вы успешно оформили подписку ${subscriptionPlan.name}`, 'success']
+            );
+        } catch (notificationError) {
+            console.log('⚠️ Таблица notifications не существует, пропускаем создание уведомления');
+        }
         
+        // Получаем обновленного пользователя
         const user = await db.get(
             'SELECT id, email, firstName, lastName, subscription_plan, subscription_status, subscription_expires FROM users WHERE id = ?',
             [req.user.id]
         );
         
+        console.log(`✅ Подписка "${plan}" оформлена для пользователя ${user.email}`);
+        
         res.json({
             success: true,
-            message: `Подписка "${subscriptionPlan.name}" успешно оформлена!`,
-            data: { user }
+            message: `Подписка успешно оформлена!`,
+            data: { 
+                user,
+                subscription: subscriptionPlan
+            }
         });
         
     } catch (error) {
-        console.error('Ошибка оформления подписки:', error);
+        console.error('❌ Ошибка оформления подписки:', error);
         res.status(500).json({
             success: false,
-            error: 'Ошибка оформления подписки'
+            error: 'Внутренняя ошибка сервера при оформлении подписки'
         });
     }
 });
@@ -762,17 +768,20 @@ app.get('/api/subscriptions', async (req, res) => {
             'SELECT * FROM subscriptions ORDER BY price_monthly ASC'
         );
         
+        console.log(`📊 Загружено подписок: ${subscriptions ? subscriptions.length : 0}`);
+        
         // Если нет подписок в базе, возвращаем демо-данные
         if (!subscriptions || subscriptions.length === 0) {
+            console.log('📝 Возвращаем демо-подписки');
             const demoSubscriptions = [
                 {
                     id: 1,
                     name: 'free',
-                    description: 'Бесплатная подписка',
+                    description: 'Бесплатная подписка для знакомства с сервисом',
                     price_monthly: 0,
                     price_yearly: 0,
                     tasks_limit: 1,
-                    features: JSON.stringify(["1 задача в месяц", "Базовые категории", "Поддержка в чате"]),
+                    features: '["1 задача в месяц", "Базовые категории", "Поддержка в чате"]',
                     is_popular: 0
                 },
                 {
@@ -782,7 +791,7 @@ app.get('/api/subscriptions', async (req, res) => {
                     price_monthly: 990,
                     price_yearly: 9900,
                     tasks_limit: 3,
-                    features: JSON.stringify(["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]),
+                    features: '["3 задачи в месяц", "Все категории", "Приоритет 48ч", "Поддержка 24/7"]',
                     is_popular: 1
                 },
                 {
@@ -792,7 +801,17 @@ app.get('/api/subscriptions', async (req, res) => {
                     price_monthly: 2990,
                     price_yearly: 29900,
                     tasks_limit: 10,
-                    features: JSON.stringify(["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]),
+                    features: '["10 задач в месяц", "Все категории", "Приоритет 24ч", "Личный куратор", "Статистика"]',
+                    is_popular: 0
+                },
+                {
+                    id: 4,
+                    name: 'business',
+                    description: 'Для бизнеса и семьи',
+                    price_monthly: 9990,
+                    price_yearly: 99900,
+                    tasks_limit: 999,
+                    features: '["Неограниченные задачи", "Все категории", "Приоритет 12ч", "Личный менеджер", "Расширенная статистика"]',
                     is_popular: 0
                 }
             ];
@@ -815,7 +834,7 @@ app.get('/api/subscriptions', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Ошибка получения подписок:', error);
+        console.error('❌ Ошибка получения подписок:', error);
         res.status(500).json({
             success: false,
             error: 'Ошибка получения подписок'
@@ -1226,30 +1245,35 @@ app.get('/admin', (req, res) => {
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК КОНСЬЕРЖ СЕРВИСА v4.4.1');
+        console.log('🎀 ЗАПУСК КОНСЬЕРЖ СЕРВИСА v4.4.2');
         console.log('='.repeat(80));
+        console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
+        console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`🤖 TELEGRAM_BOT: ${process.env.TELEGRAM_BOT_TOKEN ? 'configured' : 'not configured'}`);
+        console.log(`🔐 JWT_SECRET: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
         
         // Инициализируем базу данных
         await initDatabase();
         console.log('✅ База данных готова');
         
-        // Пытаемся запустить Telegram бота (но не блокируем запуск сервера при ошибке)
-        let telegramBot = null;
-        try {
-            telegramBot = initTelegramBot();
-            if (telegramBot) {
-                console.log('✅ Telegram Bot запущен');
-            }
-        } catch (botError) {
-            console.warn('⚠️ Telegram Bot не запущен:', botError.message);
-            console.log('ℹ️  Сервер продолжит работу без бота');
-        }
+        // Проверяем существующие маршруты
+        console.log('\n📡 Доступные API endpoints:');
+        console.log('  POST /api/subscriptions/subscribe - Оформление подписки');
+        console.log('  GET  /api/subscriptions          - Получить все подписки');
+        console.log('  POST /api/auth/register          - Регистрация');
+        console.log('  POST /api/auth/login             - Вход');
+        console.log('  GET  /api/auth/profile           - Профиль пользователя');
+        console.log('  POST /api/tasks                  - Создать задачу');
+        console.log('  GET  /api/tasks                  - Получить задачи');
+        console.log('  GET  /api/services               - Получить услуги');
         
         const PORT = process.env.PORT || 3000;
         
         app.listen(PORT, '0.0.0.0', () => {
+            console.log('\n' + '='.repeat(80));
             console.log(`✅ Сервер запущен на порту ${PORT}`);
             console.log(`🌐 http://localhost:${PORT}`);
+            console.log(`🌐 https://sergeynikishin555123123-lab--86fa.twc1.net/`);
             console.log(`🎛️  Админ-панель: http://localhost:${PORT}/admin`);
             console.log(`🏥 Health check: http://localhost:${PORT}/health`);
             console.log('='.repeat(80));
@@ -1262,12 +1286,6 @@ const startServer = async () => {
             console.log('👩 Клиент: maria@example.com / client123');
             console.log('👨‍🏫 Исполнитель: elena@performer.com / performer123');
             console.log('🎯 Демо: test@example.com / test123');
-            console.log('\n📞 API Endpoints:');
-            console.log('  GET  /api/subscriptions          - Получить все подписки');
-            console.log('  POST /api/subscriptions/subscribe - Оформить подписку');
-            console.log('  GET  /api/services               - Получить все услуги');
-            console.log('  GET  /api/tasks                  - Получить задачи пользователя');
-            console.log('  POST /api/tasks                  - Создать задачу');
         });
         
     } catch (error) {
@@ -1276,7 +1294,6 @@ const startServer = async () => {
         process.exit(1);
     }
 };
-
 // Обработка завершения работы
 process.on('SIGINT', async () => {
     console.log('\n🛑 Остановка сервера...');
