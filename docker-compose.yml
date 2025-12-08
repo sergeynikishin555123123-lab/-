@@ -1,34 +1,26 @@
 version: '3.8'
 
 services:
-  mongodb:
-    image: mongo:6
-    container_name: concierge-mongodb
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-
   app:
     build: .
     container_name: concierge-app
     restart: unless-stopped
-    depends_on:
-      - mongodb
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - MONGODB_URI=mongodb://mongodb:27017/concierge_db
-      - JWT_SECRET=${JWT_SECRET}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/concierge_db}
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_key_here}
       - BOT_TOKEN=${BOT_TOKEN}
       - SUPER_ADMIN_ID=${SUPER_ADMIN_ID}
       - WEBAPP_URL=${WEBAPP_URL}
     ports:
       - "3000:3000"
     volumes:
-      - ./uploads:/app/uploads
       - ./logs:/app/logs
-
-volumes:
-  mongodb_data:
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
