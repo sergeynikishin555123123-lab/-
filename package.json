@@ -1,7 +1,7 @@
 {
-  "name": "concierge-app",
-  "version": "4.0.0",
-  "description": "Полноценный женский консьерж-сервис",
+  "name": "concierge-service",
+  "version": "4.2.0",
+  "description": "Консьерж-сервис для помощи в бытовых задачах",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,47 +10,30 @@
     "audit:fix": "npm audit fix --force",
     "clean": "rm -rf node_modules package-lock.json",
     "reset": "npm run clean && npm install",
-    "docker:build": "docker build -t concierge-app .",
-    "docker:run": "docker run -p 3000:3000 --env-file .env concierge-app",
     "test": "echo \"No tests yet\""
   },
-  "keywords": ["concierge", "service", "tasks", "telegram", "admin"],
-  "author": "Concierge Service Team",
+  "keywords": ["concierge", "service", "help", "tasks"],
+  "author": "Консьерж Сервис",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.21.0",
-    "mongoose": "^8.5.0",
-    "dotenv": "^16.4.7",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "sqlite": "^5.0.1",
     "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.0",
     "cors": "^2.8.5",
-    "helmet": "^7.1.0",
+    "helmet": "^7.0.0",
     "morgan": "^1.10.0",
-    "winston": "^3.14.0",
-    "exceljs": "^4.4.0",
-    "joi": "^17.13.3",
+    "dotenv": "^16.0.3",
     "compression": "^1.7.4",
-    "express-rate-limit": "^7.4.0",
-    "express-mongo-sanitize": "^2.2.0",
-    "validator": "^13.12.0",
-    "moment": "^2.30.1",
+    "express-rate-limit": "^7.1.5",
     "uuid": "^10.0.0",
-    "node-telegram-bot-api": "^0.66.0",
-    "multer": "^1.4.5-lts.2",
-    "socket.io": "^4.8.0",
-    "nodemailer": "^6.9.15",
-    "axios": "^1.8.2",
-    "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1"
+    "multer": "^1.4.5-lts.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "overrides": {
-    "semver": "^7.6.3",
-    "qs": "^6.12.0"
+    "node": ">=16.0.0"
   }
 }
