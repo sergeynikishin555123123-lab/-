@@ -2298,6 +2298,7 @@ async function updateTaskStats() {
         
         // ==================== API ФУНКЦИИ ====================
         
+// Исправленная функция verifyToken - исправляем проблему с фигурными скобками
 async function verifyToken() {
     if (!currentToken) {
         console.log('🔐 Токен отсутствует');
@@ -2362,23 +2363,21 @@ async function verifyToken() {
         
     } catch (error) {
         console.error('🔐 Ошибка проверки токена:', error.message);
+        
+        // Токен невалиден или произошла ошибка
+        localStorage.removeItem('token');
+        currentToken = null;
+        currentUser = null;
+        updateUserMenu();
+        
+        // Если мы на странице, требующей авторизации, перенаправляем на главную
+        if (['tasks', 'profile', 'admin'].includes(currentPage)) {
+            navigate('home');
+            showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+        }
+        
         return false;
     }
-}
-    
-    // Токен невалиден или произошла ошибка
-    localStorage.removeItem('token');
-    currentToken = null;
-    currentUser = null;
-    updateUserMenu();
-    
-    // Если мы на странице, требующей авторизации, перенаправляем на главную
-    if (['tasks', 'profile', 'admin'].includes(currentPage)) {
-        navigate('home');
-        showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
-    }
-    
-    return false;
 }
         
         async function login() {
