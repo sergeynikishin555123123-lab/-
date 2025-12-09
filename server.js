@@ -408,7 +408,6 @@ if (!subscriptionCount || subscriptionCount.count === 0) {
     }
     console.log('✅ Подписки созданы (2 тарифа)');
 }
-
         // 3. Категории (линии задач)
         const categoriesCount = await db.get('SELECT COUNT(*) as count FROM categories');
         if (!categoriesCount || categoriesCount.count === 0) {
@@ -1157,7 +1156,7 @@ app.get('/health', async (req, res) => {
 // Регистрация с оплатой вступительного взноса
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { email, password, firstName, lastName, phone, role = 'client', subscription_plan = 'free' } = req.body;
+        const { email, password, firstName, lastName, phone, role = 'client' } = req.body;
         
         // Валидация
         if (!email || !password || !firstName || !lastName || !phone) {
@@ -1190,16 +1189,15 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
-        // Получаем информацию о выбранной подписке
+        // Берем первую доступную подписку (essential) по умолчанию
         const subscription = await db.get(
-            'SELECT * FROM subscriptions WHERE name = ? AND is_active = 1',
-            [subscription_plan]
+            'SELECT * FROM subscriptions WHERE is_active = 1 ORDER BY sort_order ASC LIMIT 1'
         );
         
         if (!subscription) {
             return res.status(400).json({
                 success: false,
-                error: 'Выбранная подписка не найдена'
+                error: 'Нет доступных подписок'
             });
         }
         
@@ -1207,7 +1205,8 @@ app.post('/api/auth/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 12);
         
         // Определяем, нужно ли оплачивать вступительный взнос
-        const initialFeePaid = subscription.initial_fee === 0 ? 1 : 0;
+        // Для теста ставим initial_fee_paid = 1 (оплачено)
+        const initialFeePaid = 1; // subscription.initial_fee === 0 ? 1 : 0;
         
         // Создание пользователя
         const result = await db.run(
@@ -1215,7 +1214,7 @@ app.post('/api/auth/register', async (req, res) => {
             (email, password, firstName, lastName, phone, role, 
              subscription_plan, subscription_status, subscription_expires,
              initial_fee_paid, initial_fee_amount, avatar_url, balance) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, 0)`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
             [
                 email,
                 hashedPassword,
@@ -1223,8 +1222,9 @@ app.post('/api/auth/register', async (req, res) => {
                 lastName,
                 phone,
                 role,
-                subscription_plan,
-                null, // subscription_expires - будет установлено после оплаты
+                subscription.name,
+                initialFeePaid ? 'active' : 'pending',
+                initialFeePaid ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : null,
                 initialFeePaid,
                 subscription.initial_fee,
                 `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName)}+${encodeURIComponent(lastName)}&background=FF6B8B&color=fff&bold=true`
@@ -1259,12 +1259,12 @@ app.post('/api/auth/register', async (req, res) => {
         await db.run(
             `INSERT INTO notifications (user_id, title, message, type) 
              VALUES (?, ?, ?, ?)`,
-            [user.id, 'Добро пожаловать!', 'Регистрация прошла успешно. Для активации подписки оплатите вступительный взнос.', 'info']
+            [user.id, 'Добро пожаловать!', 'Регистрация прошла успешно. Добро пожаловать в Женский Консьерж!', 'info']
         );
         
         res.status(201).json({
             success: true,
-            message: initialFeePaid ? 'Регистрация успешно завершена!' : 'Регистрация успешна. Требуется оплата вступительного взноса.',
+            message: 'Регистрация успешно завершена!',
             data: { 
                 user,
                 token,
@@ -1601,7 +1601,9 @@ app.get('/api/subscriptions', async (req, res) => {
         // Парсим features из JSON строки
         const subscriptionsWithParsedFeatures = subscriptions.map(sub => ({
             ...sub,
-            features: typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features
+            features: typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features,
+            // Добавляем цвет для фронтенда
+            color: sub.name === 'essential' ? '#FF6B8B' : '#9B59B6'
         }));
         
         res.json({
@@ -1620,7 +1622,6 @@ app.get('/api/subscriptions', async (req, res) => {
         });
     }
 });
-
 // Оформление подписки с оплатой вступительного взноса
 app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req, res) => {
     try {
