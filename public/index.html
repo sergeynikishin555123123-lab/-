@@ -1186,8 +1186,9 @@
                                     Отмена
                                 </button>
                                 <button class="btn btn-primary" id="btnNextStep" disabled>
-                                    Далее
-                                    <i class="fas fa-arrow-right"></i>
+    Далее
+    <i class="fas fa-arrow-right"></i>
+</button>
                                 </button>
                             </div>
                         </div>
@@ -2241,26 +2242,32 @@
             }
         }
         
-        function selectService(element) {
-            document.querySelectorAll('.service-button').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            element.classList.add('selected');
-            
-            const serviceId = element.getAttribute('data-id');
-            const serviceName = element.getAttribute('data-name');
-            const serviceDescription = element.getAttribute('data-description');
-            
-            app.currentServiceId = serviceId;
-            app.wizardOrderData.serviceId = serviceId;
-            app.wizardOrderData.serviceName = serviceName;
-            app.wizardOrderData.serviceDescription = serviceDescription;
-            
-            document.getElementById('nextStepBtn').disabled = false;
-            document.getElementById('selectedServiceTitle').textContent = serviceName;
-            document.getElementById('selectedServiceDescription').textContent = serviceDescription;
-        }
+function selectService(element) {
+    // Убираем выделение у всех кнопок
+    document.querySelectorAll('.service-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    // Выделяем выбранную кнопку
+    element.classList.add('selected');
+    
+    // Сохраняем данные
+    const serviceId = element.getAttribute('data-id');
+    const serviceName = element.getAttribute('data-name');
+    const serviceDescription = element.getAttribute('data-description');
+    
+    app.currentServiceId = serviceId;
+    app.wizardOrderData.serviceId = serviceId;
+    app.wizardOrderData.serviceName = serviceName;
+    app.wizardOrderData.serviceDescription = serviceDescription;
+    
+    // Включаем кнопку "Далее" - ИСПРАВЬТЕ ЭТУ СТРОКУ:
+    document.getElementById('btnNextStep').disabled = false;
+    
+    // Обновляем информацию о выбранной услуге
+    document.getElementById('selectedServiceTitle').textContent = serviceName;
+    document.getElementById('selectedServiceDescription').textContent = serviceDescription;
+}
         
         function showWizardStep(step) {
             document.querySelectorAll('.wizard-step').forEach(stepEl => {
@@ -3551,7 +3558,7 @@
             document.getElementById('btnBackToOrders').addEventListener('click', function() {
                 navigate('tasks');
             });
-            
+
             // Модальные окна
             document.getElementById('btnCloseRateModal').addEventListener('click', function() {
                 closeModal('rateOrderModal');
