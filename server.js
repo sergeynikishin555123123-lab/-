@@ -979,11 +979,18 @@ const authMiddleware = (roles = []) => {
             ];
             
             const currentRoute = `${req.method} ${req.path}`;
+            
+            // Логируем для отладки
+            console.log(`🔐 Проверка маршрута: ${currentRoute}`);
+            console.log(`🔐 Authorization header: ${authHeader ? 'present' : 'missing'}`);
+            
             if (publicRoutes.some(route => currentRoute.startsWith(route))) {
+                console.log(`🔐 Публичный маршрут, пропускаем авторизацию`);
                 return next();
             }
             
             if (!authHeader) {
+                console.log('🔐 Ошибка: отсутствует заголовок Authorization');
                 return res.status(401).json({ 
                     success: false, 
                     error: 'Требуется авторизация. Отсутствует заголовок Authorization.' 
@@ -991,6 +998,7 @@ const authMiddleware = (roles = []) => {
             }
             
             if (!authHeader.startsWith('Bearer ')) {
+                console.log('🔐 Ошибка: неверный формат токена');
                 return res.status(401).json({ 
                     success: false, 
                     error: 'Неверный формат токена. Используйте "Bearer <token>".' 
@@ -998,9 +1006,11 @@ const authMiddleware = (roles = []) => {
             }
             
             const token = authHeader.replace('Bearer ', '').trim();
+            console.log(`🔐 Токен получен: ${token.substring(0, 20)}...`);
             
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
+                console.log(`🔐 Токен декодирован:`, decoded);
                 
                 // Проверяем пользователя в БД
                 const user = await db.get(
@@ -1011,10 +1021,19 @@ const authMiddleware = (roles = []) => {
                     [decoded.id]
                 );
                 
-                if (!user || user.is_active !== 1) {
+                if (!user) {
+                    console.log(`🔐 Ошибка: пользователь с id ${decoded.id} не найден`);
                     return res.status(401).json({ 
                         success: false, 
-                        error: 'Пользователь не найден или аккаунт заблокирован' 
+                        error: 'Пользователь не найден' 
+                    });
+                }
+                
+                if (user.is_active !== 1) {
+                    console.log(`🔐 Ошибка: аккаунт пользователя ${user.email} заблокирован`);
+                    return res.status(401).json({ 
+                        success: false, 
+                        error: 'Аккаунт заблокирован' 
                     });
                 }
                 
@@ -1032,8 +1051,11 @@ const authMiddleware = (roles = []) => {
                     initial_fee_amount: user.initial_fee_amount
                 };
                 
+                console.log(`🔐 Пользователь авторизован: ${user.email} (${user.role})`);
+                
                 // Проверка ролей
                 if (roles.length > 0 && !roles.includes(user.role)) {
+                    console.log(`🔐 Ошибка прав: у пользователя роль ${user.role}, требуется ${roles.join(', ')}`);
                     return res.status(403).json({ 
                         success: false, 
                         error: 'Недостаточно прав для выполнения этого действия' 
@@ -1043,6 +1065,7 @@ const authMiddleware = (roles = []) => {
                 next();
                 
             } catch (jwtError) {
+                console.log(`🔐 Ошибка JWT: ${jwtError.message}`);
                 if (jwtError.name === 'TokenExpiredError') {
                     return res.status(401).json({ 
                         success: false, 
@@ -1057,7 +1080,7 @@ const authMiddleware = (roles = []) => {
             }
             
         } catch (error) {
-            console.error('Ошибка authMiddleware:', error);
+            console.error('🔐 Ошибка authMiddleware:', error);
             return res.status(500).json({ 
                 success: false, 
                 error: 'Внутренняя ошибка сервера при проверке авторизации' 
@@ -2042,6 +2065,14 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
 // Получение задач пользователя
 app.get('/api/tasks', authMiddleware(), async (req, res) => {
     try {
+        // Добавляем проверку пользователя
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                success: false,
+                error: 'Пользователь не авторизован'
+            });
+        }
+        
         const { status, category_id, limit = 50, offset = 0, sort = 'created_at', order = 'DESC' } = req.query;
         const userId = req.user.id;
         const userRole = req.user.role;
