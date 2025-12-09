@@ -1152,62 +1152,20 @@
         let currentPage = 'home';
         
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM загружен, инициализация приложения...');
-    
     initApp();
     loadHomePage();
     setupEventListeners();
     
-    // 6. ИСПРАВИТЬ НАЧАЛЬНУЮ ЗАГРУЗКУ (пятый пункт):
+    // Проверяем авторизацию
     if (currentToken) {
-        console.log('🔐 Найден токен, проверяем...');
-        verifyToken().then(isValid => {
-            console.log('🔐 Результат проверки токена:', isValid);
-            if (isValid) {
-                // Обновляем все страницы которые могут зависеть от пользователя
-                if (currentPage === 'profile' || currentPage === 'tasks' || currentPage === 'subscriptions') {
-                    setTimeout(() => {
-                        navigate(currentPage);
-                    }, 300);
-                }
-            }
-        }).catch(error => {
-            console.error('❌ Ошибка проверки токена:', error);
-        });
-    } else {
-        console.log('🔐 Токен не найден, пользователь не авторизован');
+        verifyToken();
     }
-    
-    // Обработка хэша в URL (дополнительное улучшение)
-    if (window.location.hash) {
-        const page = window.location.hash.replace('#', '');
-        console.log('📍 Хэш URL:', page);
-        if (page && page !== 'home' && page !== currentPage) {
-            setTimeout(() => {
-                navigate(page);
-            }, 500);
-        }
-    }
-    
-    // Обновляем хэш при навигации
-    window.addEventListener('hashchange', function() {
-        if (window.location.hash) {
-            const page = window.location.hash.replace('#', '');
-            console.log('📍 Изменен хэш URL:', page);
-            if (page && page !== currentPage) {
-                navigate(page);
-            }
-        }
-    });
     
     // Устанавливаем дату для дедлайна (завтра)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    document.getElementById('taskDeadline').min = tomorrowStr;
-    document.getElementById('taskDeadline').value = tomorrowStr;
-    
-    console.log('✅ Инициализация завершена');
+    document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
+    document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
 });
         
         // Инициализация приложения
