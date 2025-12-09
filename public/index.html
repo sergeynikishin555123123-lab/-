@@ -39,7 +39,11 @@
             --radius-lg: 20px;
             --radius-xl: 24px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+           --icon-size-sm: 24px;
+    --icon-size-md: 32px;
+    --icon-size-lg: 48px;
+    --icon-size-xl: 64px;
+}
         
         * {
             margin: 0;
@@ -537,6 +541,62 @@
                 width: 100%;
             }
         }
+        /* Оптимизация иконок для мобильных */
+@media (max-width: 768px) {
+    .card [style*="font-size: 2rem"] {
+        font-size: 1.8rem !important;
+        display: inline-block;
+        width: 1.5em;
+        height: 1.5em;
+        text-align: center;
+        line-height: 1.5em;
+        border-radius: 50%;
+        background: var(--light-bg);
+        padding: 0.25em;
+    }
+    
+    .card [style*="font-size: 2.5rem"] {
+        font-size: 2rem !important;
+        display: inline-block;
+        width: 2em;
+        height: 2em;
+        text-align: center;
+        line-height: 2em;
+        border-radius: 50%;
+        background: var(--light-bg);
+        padding: 0.5em;
+    }
+    
+    .hero-section h1 {
+        font-size: 2.2rem !important;
+    }
+    
+    .hero-section p {
+        font-size: 1.1rem !important;
+        padding: 0 15px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .card [style*="font-size: 2rem"] {
+        font-size: 1.5rem !important;
+        width: 1.2em;
+        height: 1.2em;
+        line-height: 1.2em;
+    }
+    
+    .card [style*="font-size: 2.5rem"] {
+        font-size: 1.8rem !important;
+        width: 1.8em;
+        height: 1.8em;
+        line-height: 1.8em;
+    }
+    
+    .stats-section .card div[style*="font-size: 2.5rem"] {
+        font-size: 2rem !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -1091,23 +1151,42 @@
         let currentToken = localStorage.getItem('token');
         let currentPage = 'home';
         
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            initApp();
-            loadHomePage();
-            setupEventListeners();
-            
-            // Проверяем авторизацию
-            if (currentToken) {
-                verifyToken();
+document.addEventListener('DOMContentLoaded', function() {
+    initApp();
+    loadHomePage();
+    setupEventListeners();
+    
+    // Обработка хэша в URL
+    if (window.location.hash) {
+        const page = window.location.hash.replace('#', '');
+        if (page && page !== 'home') {
+            setTimeout(() => {
+                navigate(page);
+            }, 100);
+        }
+    }
+    
+    // Проверяем авторизацию
+    if (currentToken) {
+        verifyToken();
+    }
+    
+    // Обновляем хэш при навигации
+    window.addEventListener('hashchange', function() {
+        if (window.location.hash) {
+            const page = window.location.hash.replace('#', '');
+            if (page && page !== currentPage) {
+                navigate(page);
             }
-            
-            // Устанавливаем дату для дедлайна (завтра)
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
-            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
-        });
+        }
+    });
+    
+    // Устанавливаем дату для дедлайна (завтра)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
+    document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
+});
         
         // Инициализация приложения
         function initApp() {
@@ -1204,13 +1283,26 @@
         }
         
         function openCreateTaskModal() {
-            if (!currentUser) {
-                showNotification('Сначала войдите в систему', 'error');
-                openAuthModal();
-                return;
-            }
-            showModal('createTaskModal');
-        }
+    if (!currentToken) {
+        showNotification('Сначала войдите в систему', 'error');
+        openAuthModal();
+        return;
+    }
+    
+    // Загружаем категории при открытии модалки
+    loadCategoriesForTaskModal();
+    
+    // Устанавливаем дату для дедлайна (завтра по умолчанию)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    
+    const deadlineInput = document.getElementById('taskDeadline');
+    deadlineInput.min = tomorrowStr;
+    deadlineInput.value = tomorrowStr;
+    
+    showModal('createTaskModal');
+}
         
         function openAuthModal() {
             showLoginForm();
@@ -1290,6 +1382,80 @@
                 `;
             }
         }
+
+// ДОБАВИТЬ эту функцию после функции openCreateTaskModal():
+
+async function loadCategoriesForTaskModal() {
+    try {
+        console.log('📋 Загрузка категорий для модалки...');
+        
+        // Попробуем сначала получить категории из API
+        const response = await fetch('/api/services/categories');
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.data.categories) {
+                const categorySelect = document.getElementById('taskCategory');
+                
+                // Сохраняем первую опцию
+                const firstOption = categorySelect.options[0];
+                
+                // Очищаем все опции
+                categorySelect.innerHTML = '';
+                
+                // Добавляем первую опцию обратно
+                categorySelect.appendChild(firstOption);
+                
+                // Добавляем категории из API
+                data.data.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.category;
+                    option.textContent = `${category.icon} ${category.display_name}`;
+                    categorySelect.appendChild(option);
+                });
+                
+                console.log('✅ Категории загружены из API');
+                return;
+            }
+        }
+        
+        // Если API не ответил, используем статические категории
+        loadStaticCategories();
+        
+    } catch (error) {
+        console.log('⚠️ Ошибка загрузки категорий из API, используем статические:', error);
+        loadStaticCategories();
+    }
+}
+
+function loadStaticCategories() {
+    const categories = [
+        { value: 'home_and_household', label: '🏠 Дом и быт' },
+        { value: 'family_and_children', label: '👨‍👩‍👧‍👦 Дети и семья' },
+        { value: 'beauty_and_health', label: '💅 Красота и здоровье' },
+        { value: 'courses_and_education', label: '🎓 Образование' },
+        { value: 'pets', label: '🐕 Питомцы' },
+        { value: 'events_and_entertainment', label: '🎉 Мероприятия' }
+    ];
+    
+    const categorySelect = document.getElementById('taskCategory');
+    
+    // Сохраняем первую опцию
+    const firstOption = categorySelect.options[0];
+    categorySelect.innerHTML = '';
+    categorySelect.appendChild(firstOption);
+    
+    // Добавляем статические категории
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.value;
+        option.textContent = category.label;
+        categorySelect.appendChild(option);
+    });
+    
+    console.log('✅ Загружены статические категории');
+}
         
         // ==================== СТРАНИЦЫ ====================
         
@@ -1307,7 +1473,7 @@
                     <div style="font-size: 2.5rem; font-weight: 700; color: var(--pink-primary);">12,563</div>
                 </div>
                 <div class="card">
-                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">Уровень довольства</h3>
+                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">Довольных пользователей</h3>
                     <div style="font-size: 2.5rem; font-weight: 700; color: var(--pink-primary);">98.7%</div>
                 </div>
                 <div class="card">
@@ -1320,13 +1486,13 @@
             const popularServices = document.getElementById('popularServices');
             popularServices.innerHTML = `
                 <div class="card">
-                    <div style="font-size: 2rem; margin-bottom: 15px;">🧹</div>
-                    <h3 style="margin-bottom: 10px;">Уборка квартиры</h3>
-                    <p style="color: var(--gray-600); margin-bottom: 15px;">Генеральная уборка, помощь в организации пространства</p>
-                    <button class="btn btn-secondary" onclick="navigate('services')">
-                        Подробнее
-                    </button>
-                </div>
+    <div style="font-size: var(--icon-size-lg); margin-bottom: 15px; text-align: center; line-height: 1;">🧹</div>
+    <h3 style="margin-bottom: 10px;">Уборка квартиры</h3>
+    <p style="color: var(--gray-600); margin-bottom: 15px;">Генеральная уборка, помощь в организации пространства</p>
+    <button class="btn btn-secondary" onclick="navigate('services')">
+        Подробнее
+    </button>
+</div>
                 <div class="card">
                     <div style="font-size: 2rem; margin-bottom: 15px;">👶</div>
                     <h3 style="margin-bottom: 10px;">Присмотр за детьми</h3>
@@ -1456,9 +1622,10 @@
                                 <span>Поддержка в чате</span>
                             </li>
                         </ul>
-                        <button class="btn ${currentUser ? 'btn-secondary' : 'btn-primary'}" onclick="${currentUser ? 'subscribeToPlan(\'free\')' : 'openAuthModal()'}" style="width: 100%;">
-                            ${currentUser ? 'Активировать' : 'Начать бесплатно'}
-                        </button>
+                        <button class="btn ${currentToken ? 'btn-secondary' : 'btn-primary'}" onclick="${currentToken ? 'subscribeToPlan(\'free\')' : 'openAuthModal()'}" style="width: 100%;">
+    ${currentToken ? 'Активировать' : 'Начать бесплатно'}
+</button>
+
                     </div>
                 </div>
                 
@@ -1489,9 +1656,9 @@
                                 <span>Поддержка 24/7</span>
                             </li>
                         </ul>
-                        <button class="btn ${currentUser ? 'btn-primary' : 'btn-secondary'}" onclick="${currentUser ? 'subscribeToPlan(\'basic\')' : 'openAuthModal()'}" style="width: 100%;">
-                            ${currentUser ? 'Выбрать' : 'Войти для выбора'}
-                        </button>
+                        <button class="btn ${currentToken ? 'btn-primary' : 'btn-secondary'}" onclick="${currentToken ? 'subscribeToPlan(\'basic\')' : 'openAuthModal()'}" style="width: 100%;">
+    ${currentToken ? 'Выбрать' : 'Войти для выбора'}
+</button>
                     </div>
                 </div>
                 
@@ -1523,9 +1690,10 @@
                                 <span>Статистика</span>
                             </li>
                         </ul>
-                        <button class="btn ${currentUser ? 'btn-secondary' : 'btn-secondary'}" onclick="${currentUser ? 'subscribeToPlan(\'premium\')' : 'openAuthModal()'}" style="width: 100%;">
-                            ${currentUser ? 'Выбрать' : 'Войти для выбора'}
-                        </button>
+                        // Для премиум:
+<button class="btn ${currentToken ? 'btn-primary' : 'btn-secondary'}" onclick="${currentToken ? 'subscribeToPlan(\'premium\')' : 'openAuthModal()'}" style="width: 100%;">
+    ${currentToken ? 'Выбрать' : 'Войти для выбора'}
+</button>
                     </div>
                 </div>
                 
@@ -1557,9 +1725,9 @@
                                 <span>Расширенная статистика</span>
                             </li>
                         </ul>
-                        <button class="btn ${currentUser ? 'btn-secondary' : 'btn-secondary'}" onclick="${currentUser ? 'subscribeToPlan(\'business\')' : 'openAuthModal()'}" style="width: 100%;">
-                            ${currentUser ? 'Выбрать' : 'Войти для выбора'}
-                        </button>
+                       <button class="btn ${currentToken ? 'btn-primary' : 'btn-secondary'}" onclick="${currentToken ? 'subscribeToPlan(\'business\')' : 'openAuthModal()'}" style="width: 100%;">
+    ${currentToken ? 'Выбрать' : 'Войти для выбора'}
+</button>
                     </div>
                 </div>
             `;
@@ -1668,22 +1836,22 @@
             ];
             
             servicesGrid.innerHTML = services.map(service => `
-                <div class="card" data-category="${service.category}">
-                    <div style="font-size: 2.5rem; margin-bottom: 15px;">${service.icon}</div>
-                    <h3 style="margin-bottom: 10px;">${service.name}</h3>
-                    ${service.is_popular ? '<span class="badge badge-success" style="margin-bottom: 10px;">Популярно</span>' : ''}
-                    <p style="color: var(--gray-600); margin-bottom: 20px;">${service.description}</p>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn btn-secondary" onclick="quickCreateTask('${service.name}', '${service.category}')">
-                            <i class="fas fa-plus"></i>
-                            Заказать
-                        </button>
-                        <button class="btn btn-primary" onclick="showServiceDetails(${service.id})">
-                            <i class="fas fa-info-circle"></i>
-                            Подробнее
-                        </button>
-                    </div>
-                </div>
+               <div class="card" data-category="${service.category}">
+    <div style="font-size: var(--icon-size-lg); margin-bottom: 15px; text-align: center; line-height: 1;">${service.icon}</div>
+    <h3 style="margin-bottom: 10px;">${service.name}</h3>
+    ${service.is_popular ? '<span class="badge badge-success" style="margin-bottom: 10px;">Популярно</span>' : ''}
+    <p style="color: var(--gray-600); margin-bottom: 20px;">${service.description}</p>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn btn-secondary" onclick="quickCreateTask('${service.name}', '${service.category}')">
+            <i class="fas fa-plus"></i>
+            Заказать
+        </button>
+        <button class="btn btn-primary" onclick="showServiceDetails(${service.id})">
+            <i class="fas fa-info-circle"></i>
+            Подробнее
+        </button>
+    </div>
+</div>
             `).join('');
         }
         
@@ -1945,30 +2113,69 @@
         
         // ==================== API ФУНКЦИИ ====================
         
-        async function verifyToken() {
-            try {
-                const response = await fetch('/api/auth/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    currentUser = data.data.user;
-                    updateUserMenu();
-                    return true;
+async function verifyToken() {
+    if (!currentToken) {
+        console.log('🔐 Токен отсутствует');
+        currentUser = null;
+        updateUserMenu();
+        return false;
+    }
+    
+    try {
+        console.log('🔐 Проверка токена...');
+        const response = await fetch('/api/auth/profile', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            },
+            method: 'GET'
+        });
+        
+        console.log('🔐 Статус ответа:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('🔐 Данные пользователя получены:', data.data.user.email);
+            currentUser = data.data.user;
+            updateUserMenu();
+            
+            // Проверяем, на какой мы странице
+            if (window.location.hash) {
+                const page = window.location.hash.replace('#', '');
+                if (page && page !== currentPage) {
+                    navigate(page);
                 }
-            } catch (error) {
-                console.error('Ошибка проверки токена:', error);
             }
             
-            localStorage.removeItem('token');
-            currentToken = null;
-            currentUser = null;
-            updateUserMenu();
-            return false;
+            return true;
+        } else {
+            console.log('🔐 Токен невалиден, статус:', response.status);
+            // Пробуем получить текст ошибки
+            try {
+                const errorData = await response.json();
+                console.log('🔐 Ошибка сервера:', errorData.error);
+            } catch (e) {
+                console.log('🔐 Не удалось получить детали ошибки');
+            }
         }
+    } catch (error) {
+        console.error('🔐 Ошибка проверки токена:', error.message);
+    }
+    
+    // Токен невалиден или произошла ошибка
+    localStorage.removeItem('token');
+    currentToken = null;
+    currentUser = null;
+    updateUserMenu();
+    
+    // Если мы на странице, требующей авторизации, перенаправляем на главную
+    if (['tasks', 'profile', 'admin'].includes(currentPage)) {
+        navigate('home');
+        showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+    }
+    
+    return false;
+}
         
         async function login() {
             const email = document.getElementById('loginEmail').value;
