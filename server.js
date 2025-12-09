@@ -1383,7 +1383,7 @@ app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
         // Получаем информацию о текущей подписке
         const subscription = await db.get(
             'SELECT * FROM subscriptions WHERE name = ?',
-            [user.subscription_plan || 'free']
+            [user.subscription_plan || 'essential']
         );
         
         // Статистика за текущий месяц
@@ -1422,11 +1422,11 @@ app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
         console.error('Ошибка получения профиля:', error);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения профиля'
+            error: 'Ошибка получения профиля',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
-
 // ==================== КАТЕГОРИИ (ЛИНИИ ЗАДАЧ) ====================
 
 // Получение всех активных категорий
@@ -2052,10 +2052,8 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
                    c.icon as category_icon,
                    u1.firstName as client_firstName, 
                    u1.lastName as client_lastName,
-                   u1.avatar_url as client_avatar,
                    u2.firstName as performer_firstName,
-                   u2.lastName as performer_lastName,
-                   u2.avatar_url as performer_avatar
+                   u2.lastName as performer_lastName
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u1 ON t.client_id = u1.id
@@ -2165,7 +2163,8 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         console.error('Ошибка получения задач:', error);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения задач'
+            error: 'Ошибка получения задач',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
