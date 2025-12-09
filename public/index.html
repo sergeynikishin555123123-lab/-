@@ -3270,51 +3270,64 @@
             }
         }
         
-        async function register() {
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const firstName = document.getElementById('registerFirstName').value;
-            const lastName = document.getElementById('registerLastName').value;
-            const phone = document.getElementById('registerPhone').value;
-            const role = document.getElementById('registerRole').value;
-            
-            if (!email || !password || !firstName || !lastName || !phone) {
-                showNotification('Заполните все обязательные поля', 'error');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        firstName,
-                        lastName,
-                        phone,
-                        role
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Регистрация успешна! Теперь войдите в систему.', 'success');
-                    showLoginForm();
-                } else {
-                    showNotification(data.error || 'Ошибка регистрации', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            } finally {
-                hideLoading();
-            }
+async function register() {
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const firstName = document.getElementById('registerFirstName').value;
+    const lastName = document.getElementById('registerLastName').value;
+    const phone = document.getElementById('registerPhone').value;
+    const role = document.getElementById('registerRole').value;
+    
+    if (!email || !password || !firstName || !lastName || !phone) {
+        showNotification('Заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    // Валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('Введите корректный email адрес', 'error');
+        return;
+    }
+    
+    // Валидация пароля
+    if (password.length < 6) {
+        showNotification('Пароль должен содержать не менее 6 символов', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                firstName,
+                lastName,
+                phone,
+                role
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Регистрация успешна! Теперь войдите в систему.', 'success');
+            showLoginForm();
+        } else {
+            showNotification(data.error || 'Ошибка регистрации', 'error');
         }
+    } catch (error) {
+        showNotification('Ошибка сети', 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         async function subscribeToPlan(plan) {
             if (!currentToken) {
