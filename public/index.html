@@ -2128,6 +2128,43 @@ async function loadTasksPage() {
         hideLoading();
     }
 }
+
+// Функция для обновления статистики задач
+async function updateTaskStats() {
+    if (currentToken && currentPage === 'home') {
+        try {
+            const response = await fetch('/api/tasks', {
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    const tasks = data.data.tasks || [];
+                    const totalTasks = tasks.length;
+                    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+                    
+                    // Обновляем статистику на главной
+                    const statsGrid = document.getElementById('statsGrid');
+                    if (statsGrid) {
+                        const taskElements = statsGrid.querySelectorAll('.card');
+                        if (taskElements[1]) {
+                            const taskCountElement = taskElements[1].querySelector('div[style*="font-size: 2.5rem"]');
+                            if (taskCountElement) {
+                                taskCountElement.textContent = totalTasks.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка обновления статистики задач:', error);
+        }
+    }
+}
         
         // Страница профиля
         async function loadProfilePage() {
@@ -2210,6 +2247,8 @@ async function loadTasksPage() {
                 </div>
             `;
         }
+
+
         
         // Админская страница
         async function loadAdminPage() {
