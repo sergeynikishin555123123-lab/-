@@ -1900,18 +1900,23 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
     }
 });
 
-// Получение задач пользователя
+// Получение задач пользователя - ИСПРАВЛЕННЫЙ ВАРИАНТ
 app.get('/api/tasks', authMiddleware(), async (req, res) => {
     try {
+        console.log('📋 API: Получение задач для пользователя:', req.user.id);
+        
         const { status, category, limit = 50, offset = 0, sort = 'created_at', order = 'DESC' } = req.query;
         const userId = req.user.id;
         
+        // Строим базовый запрос
         let query = `
             SELECT t.*, 
                    u1.firstName as client_firstName, 
                    u1.lastName as client_lastName,
+                   u1.avatar_url as client_avatar,
                    u2.firstName as performer_firstName,
-                   u2.lastName as performer_lastName
+                   u2.lastName as performer_lastName,
+                   u2.avatar_url as performer_avatar
             FROM tasks t
             LEFT JOIN users u1 ON t.client_id = u1.id
             LEFT JOIN users u2 ON t.performer_id = u2.id
@@ -1933,7 +1938,7 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         }
         
         // Сортировка
-        const validSortFields = ['created_at', 'deadline', 'price', 'priority'];
+        const validSortFields = ['created_at', 'deadline', 'price', 'priority', 'updated_at'];
         const validOrders = ['ASC', 'DESC'];
         const sortField = validSortFields.includes(sort) ? sort : 'created_at';
         const sortOrder = validOrders.includes(order.toUpperCase()) ? order.toUpperCase() : 'DESC';
@@ -1941,7 +1946,11 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         query += ` ORDER BY t.${sortField} ${sortOrder} LIMIT ? OFFSET ?`;
         params.push(parseInt(limit), parseInt(offset));
         
+        console.log('📋 Выполняем SQL запрос:', query);
+        console.log('📋 Параметры:', params);
+        
         const tasks = await db.all(query, params);
+        console.log('📋 Найдено задач:', tasks.length);
         
         // Получаем общее количество для пагинации
         let countQuery = 'SELECT COUNT(*) as total FROM tasks WHERE client_id = ?';
@@ -1958,7 +1967,7 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         }
         
         const countResult = await db.get(countQuery, countParams);
-        const total = countResult.total;
+        const total = countResult?.total || 0;
         
         // Обогащаем задачи дополнительной информацией
         const enrichedTasks = tasks.map(task => {
@@ -2001,15 +2010,17 @@ app.get('/api/tasks', authMiddleware(), async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Ошибка получения задач:', error);
+        console.error('❌ Ошибка получения задач:', error);
+        console.error('Stack trace:', error.stack);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения задач'
+            error: 'Ошибка получения задач',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
-// Получение конкретной задачи
+// Просмотр деталей задачи
 app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
     try {
         const taskId = parseInt(req.params.id);
@@ -2020,6 +2031,8 @@ app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
                 error: 'Неверный ID задачи'
             });
         }
+        
+        console.log('🔍 Получение задачи ID:', taskId, 'для пользователя:', req.user.id);
         
         const task = await db.get(
             `SELECT t.*, 
@@ -2102,10 +2115,27 @@ app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Ошибка получения задачи:', error);
+        console.error('❌ Ошибка получения задачи:', error);
         res.status(500).json({
             success: false,
             error: 'Ошибка получения задачи'
+        });
+    }
+});
+
+// Простой маршрут для проверки задач (для отладки)
+app.get('/api/debug/tasks', async (req, res) => {
+    try {
+        const tasks = await db.all('SELECT * FROM tasks LIMIT 10');
+        res.json({
+            success: true,
+            data: tasks,
+            count: tasks.length
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 });
