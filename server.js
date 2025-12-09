@@ -385,35 +385,29 @@ const createTestData = async () => {
             console.log('✅ Настройки созданы');
         }
 
-        // 2. Подписки
-        const subscriptionCount = await db.get('SELECT COUNT(*) as count FROM subscriptions');
-        if (!subscriptionCount || subscriptionCount.count === 0) {
-            console.log('📝 Создаем подписки...');
-            
-            const subscriptions = [
-                ['free', 'Бесплатная', 'Для знакомства с сервисом. 1 задача в месяц.', 0, 0, 0, 1, 
-                 '["До 1 задачи в месяц", "Базовые категории", "Поддержка по email", "Доступ к мобильному приложению"]', '#95A5A6', 1],
-                
-                ['basic', 'Базовая', 'Для регулярных бытовых задач. 3 задачи в месяц.', 990, 9900, 500, 3,
-                 '["До 3 задач в месяц", "Все категории услуг", "Приоритет 48 часов", "Поддержка 24/7 в чате", "Push-уведомления"]', '#3498DB', 2],
-                
-                ['premium', 'Премиум', 'Для максимального комфорта. 10 задач в месяц.', 2990, 29900, 1000, 10,
-                 '["До 10 задач в месяц", "Все категории услуг", "Приоритет 24 часа", "Личный куратор", "Расширенная статистика", "Бесплатная отмена"]', '#9B59B6', 3],
-                
-                ['business', 'Бизнес', 'Для бизнеса и семьи. Неограниченные задачи.', 9990, 99900, 2000, 9999,
-                 '["Неограниченные задачи", "Все категории услуг", "Приоритет 12 часов", "Личный менеджер", "Расширенная статистика", "API доступ", "Бесплатная отмена", "Приоритетная поддержка"]', '#E74C3C', 4]
-            ];
+// 2. Подписки (всего 2 тарифа с вступительным взносом)
+const subscriptionCount = await db.get('SELECT COUNT(*) as count FROM subscriptions');
+if (!subscriptionCount || subscriptionCount.count === 0) {
+    console.log('📝 Создаем подписки...');
+    
+    const subscriptions = [
+        ['essential', 'Эссеншл', 'Для эпизодических бытовых задач. Идеально для разовых обращений.', 0, 0, 500, 1, 
+         '["1 задача в месяц", "Все основные услуги", "Поддержка в чате", "Базовые гарантии"]', '#FF6B8B', 1],
+        
+        ['premium', 'Премиум', 'Для регулярной помощи и комфорта. Неограниченный доступ к помощникам.', 1990, 19900, 1000, 9999,
+         '["Неограниченные задачи", "Все услуги премиум-класса", "Приоритет 24 часа", "Личный помощник", "Расширенная гарантия", "Гибкая отмена"]', '#9B59B6', 2]
+    ];
 
-            for (const sub of subscriptions) {
-                await db.run(
-                    `INSERT OR IGNORE INTO subscriptions 
-                    (name, display_name, description, price_monthly, price_yearly, initial_fee, tasks_limit, features, color_theme, sort_order) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    sub
-                );
-            }
-            console.log('✅ Подписки созданы');
-        }
+    for (const sub of subscriptions) {
+        await db.run(
+            `INSERT OR IGNORE INTO subscriptions 
+            (name, display_name, description, price_monthly, price_yearly, initial_fee, tasks_limit, features, color_theme, sort_order) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            sub
+        );
+    }
+    console.log('✅ Подписки созданы (2 тарифа)');
+}
 
         // 3. Категории (линии задач)
         const categoriesCount = await db.get('SELECT COUNT(*) as count FROM categories');
@@ -523,80 +517,80 @@ const createTestData = async () => {
         if (!usersCount || usersCount.count === 0) {
             console.log('📝 Создаем тестовых пользователей...');
             
-            const users = [
-                {
-                    email: 'superadmin@concierge.ru',
-                    password: 'admin123',
-                    firstName: 'Супер',
-                    lastName: 'Администратор',
-                    phone: '+79991112233',
-                    role: 'superadmin',
-                    subscription: 'business',
-                    telegram: '@concierge_admin',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 2000
-                },
-                {
-                    email: 'admin@concierge.ru',
-                    password: 'admin123',
-                    firstName: 'Администратор',
-                    lastName: 'Системы',
-                    phone: '+79992223344',
-                    role: 'admin',
-                    subscription: 'premium',
-                    telegram: '@concierge_manager',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 1000
-                },
-                {
-                    email: 'manager@concierge.ru',
-                    password: 'manager123',
-                    firstName: 'Менеджер',
-                    lastName: 'Поддержки',
-                    phone: '+79993334455',
-                    role: 'manager',
-                    subscription: 'premium',
-                    telegram: '@concierge_support',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 1000
-                },
-                {
-                    email: 'performer@concierge.ru',
-                    password: 'performer123',
-                    firstName: 'Исполнитель',
-                    lastName: 'Тестовый',
-                    phone: '+79994445566',
-                    role: 'performer',
-                    subscription: 'basic',
-                    telegram: '@concierge_performer',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 500
-                },
-                {
-                    email: 'client1@example.com',
-                    password: 'client123',
-                    firstName: 'Мария',
-                    lastName: 'Иванова',
-                    phone: '+79995556677',
-                    role: 'client',
-                    subscription: 'premium',
-                    telegram: '@maria_ivanova',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 1000
-                },
-                {
-                    email: 'client2@example.com',
-                    password: 'client123',
-                    firstName: 'Алексей',
-                    lastName: 'Петров',
-                    phone: '+79996667788',
-                    role: 'client',
-                    subscription: 'basic',
-                    telegram: '@alexey_petrov',
-                    initial_fee_paid: 1,
-                    initial_fee_amount: 500
-                }
-            ];
+const users = [
+    {
+        email: 'superadmin@concierge.ru',
+        password: 'admin123',
+        firstName: 'Супер',
+        lastName: 'Администратор',
+        phone: '+79991112233',
+        role: 'superadmin',
+        subscription: 'premium',
+        telegram: '@concierge_admin',
+        initial_fee_paid: 1,
+        initial_fee_amount: 1000
+    },
+    {
+        email: 'admin@concierge.ru',
+        password: 'admin123',
+        firstName: 'Администратор',
+        lastName: 'Системы',
+        phone: '+79992223344',
+        role: 'admin',
+        subscription: 'premium',
+        telegram: '@concierge_manager',
+        initial_fee_paid: 1,
+        initial_fee_amount: 1000
+    },
+    {
+        email: 'manager@concierge.ru',
+        password: 'manager123',
+        firstName: 'Менеджер',
+        lastName: 'Поддержки',
+        phone: '+79993334455',
+        role: 'manager',
+        subscription: 'premium',
+        telegram: '@concierge_support',
+        initial_fee_paid: 1,
+        initial_fee_amount: 1000
+    },
+    {
+        email: 'assistant@concierge.ru',
+        password: 'assistant123',
+        firstName: 'Помощник',
+        lastName: 'Профи',
+        phone: '+79994445566',
+        role: 'performer',
+        subscription: 'essential',
+        telegram: '@concierge_assistant',
+        initial_fee_paid: 1,
+        initial_fee_amount: 500
+    },
+    {
+        email: 'client@example.com',
+        password: 'client123',
+        firstName: 'Анна',
+        lastName: 'Иванова',
+        phone: '+79995556677',
+        role: 'client',
+        subscription: 'premium',
+        telegram: '@anna_ivanova',
+        initial_fee_paid: 1,
+        initial_fee_amount: 1000
+    },
+    {
+        email: 'client2@example.com',
+        password: 'client123',
+        firstName: 'Мария',
+        lastName: 'Петрова',
+        phone: '+79996667788',
+        role: 'client',
+        subscription: 'essential',
+        telegram: '@maria_petrova',
+        initial_fee_paid: 1,
+        initial_fee_amount: 500
+    }
+];
 
             for (const user of users) {
                 const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -749,13 +743,13 @@ const createTestData = async () => {
         console.log('🎉 Все тестовые данные успешно созданы!');
         
         // Выводим информацию для тестирования
-        console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
-        console.log('👑 Суперадмин: superadmin@concierge.ru / admin123');
-        console.log('👨‍💼 Админ: admin@concierge.ru / admin123');
-        console.log('👨‍💼 Менеджер: manager@concierge.ru / manager123');
-        console.log('👨‍🏫 Исполнитель: performer@concierge.ru / performer123');
-        console.log('👩 Клиент Premium: client1@example.com / client123');
-        console.log('👨 Клиент Basic: client2@example.com / client123');
+console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
+console.log('👑 Суперадмин: superadmin@concierge.ru / admin123');
+console.log('👩‍💼 Админ: admin@concierge.ru / admin123');
+console.log('👩‍💼 Менеджер: manager@concierge.ru / manager123');
+console.log('👩‍🏫 Помощник: assistant@concierge.ru / assistant123');
+console.log('👩 Клиент Премиум: client@example.com / client123');
+console.log('👩 Клиент Эссеншл: client2@example.com / client123');
         
     } catch (error) {
         console.error('⚠️ Ошибка создания тестовых данных:', error.message);
@@ -1079,10 +1073,10 @@ const authMiddleware = (roles = []) => {
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: '🎀 Добро пожаловать в Консьерж Сервис API',
-        version: '5.0.0',
+        message: '🌸 Добро пожаловать в Женский Консьерж API',
+        version: '5.1.0',
         status: '🟢 Работает',
-        features: ['Линии задач', 'Подписки с вступительным взносом', 'Telegram Bot', 'Задачи', 'Админ-панель', 'Управление контентом'],
+        features: ['Услуги помощи', 'Два простых тарифа', 'Telegram Bot', 'Заказы услуг', 'Админ-панель', 'Простой процесс заказа'],
         endpoints: {
             auth: [
                 'POST /api/auth/register - Регистрация с оплатой вступительного взноса',
