@@ -1152,29 +1152,48 @@
         let currentPage = 'home';
         
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM загружен, инициализация приложения...');
+    
     initApp();
     loadHomePage();
     setupEventListeners();
     
-    // Обработка хэша в URL
-    if (window.location.hash) {
-        const page = window.location.hash.replace('#', '');
-        if (page && page !== 'home') {
-            setTimeout(() => {
-                navigate(page);
-            }, 100);
-        }
+    // 6. ИСПРАВИТЬ НАЧАЛЬНУЮ ЗАГРУЗКУ (пятый пункт):
+    if (currentToken) {
+        console.log('🔐 Найден токен, проверяем...');
+        verifyToken().then(isValid => {
+            console.log('🔐 Результат проверки токена:', isValid);
+            if (isValid) {
+                // Обновляем все страницы которые могут зависеть от пользователя
+                if (currentPage === 'profile' || currentPage === 'tasks' || currentPage === 'subscriptions') {
+                    setTimeout(() => {
+                        navigate(currentPage);
+                    }, 300);
+                }
+            }
+        }).catch(error => {
+            console.error('❌ Ошибка проверки токена:', error);
+        });
+    } else {
+        console.log('🔐 Токен не найден, пользователь не авторизован');
     }
     
-    // Проверяем авторизацию
-    if (currentToken) {
-        verifyToken();
+    // Обработка хэша в URL (дополнительное улучшение)
+    if (window.location.hash) {
+        const page = window.location.hash.replace('#', '');
+        console.log('📍 Хэш URL:', page);
+        if (page && page !== 'home' && page !== currentPage) {
+            setTimeout(() => {
+                navigate(page);
+            }, 500);
+        }
     }
     
     // Обновляем хэш при навигации
     window.addEventListener('hashchange', function() {
         if (window.location.hash) {
             const page = window.location.hash.replace('#', '');
+            console.log('📍 Изменен хэш URL:', page);
             if (page && page !== currentPage) {
                 navigate(page);
             }
@@ -1184,8 +1203,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Устанавливаем дату для дедлайна (завтра)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
-    document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('taskDeadline').min = tomorrowStr;
+    document.getElementById('taskDeadline').value = tomorrowStr;
+    
+    console.log('✅ Инициализация завершена');
 });
         
         // Инициализация приложения
@@ -1887,59 +1909,225 @@ function loadStaticCategories() {
             openCreateTaskModal();
         }
         
-        // Страница задач
-        async function loadTasksPage() {
-            if (!currentUser) {
-                const tasksContainer = document.getElementById('tasksContainer');
-                tasksContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-tasks"></i>
-                        <h3 style="margin-bottom: 15px;">У вас пока нет задач</h3>
-                        <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать задачи</p>
-                        <button class="btn btn-primary" onclick="openAuthModal()">
-                            <i class="fas fa-sign-in-alt"></i>
-                            Войти в систему
-                        </button>
+async function loadTasksPage() {
+    console.log('📋 Загрузка страницы задач...');
+    
+    // Проверяем авторизацию
+    if (!currentToken) {
+        const tasksContainer = document.getElementById('tasksContainer');
+        tasksContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <h3 style="margin-bottom: 15px;">У вас пока нет задач</h3>
+                <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать задачи</p>
+                <button class="btn btn-primary" onclick="openAuthModal()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в систему
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        console.log('🔐 Загружаем задачи для пользователя...');
+        
+        // Загружаем задачи с сервера
+        const response = await fetch('/api/tasks', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        console.log('📡 Статус ответа задач:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('📡 Данные задач:', data);
+            
+            if (data.success) {
+                const tasks = data.data.tasks || [];
+                const pagination = data.data.pagination || { total: 0 };
+                
+                // Обновляем статистику
+                const taskStats = document.getElementById('taskStats');
+                const completedTasks = tasks.filter(t => t.status === 'completed').length;
+                const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+                
+                // Получаем информацию о подписке для лимита
+                let tasksLimit = 3; // По умолчанию
+                if (currentUser && currentUser.subscription_plan) {
+                    const limits = {
+                        'free': 1,
+                        'basic': 3,
+                        'premium': 10,
+                        'business': 9999
+                    };
+                    tasksLimit = limits[currentUser.subscription_plan] || 3;
+                }
+                
+                const tasksUsed = tasks.filter(t => {
+                    const taskDate = new Date(t.created_at);
+                    const now = new Date();
+                    return taskDate.getMonth() === now.getMonth() && 
+                           taskDate.getFullYear() === now.getFullYear();
+                }).length;
+                
+                const tasksRemaining = Math.max(0, tasksLimit - tasksUsed);
+                
+                taskStats.innerHTML = `
+                    <div class="card">
+                        <h3 style="color: var(--gray-500); margin-bottom: 10px;">Всего задач</h3>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--pink-primary);">${pagination.total}</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: var(--gray-500); margin-bottom: 10px;">В работе</h3>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--warning);">${inProgressTasks}</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: var(--gray-500); margin-bottom: 10px;">Завершено</h3>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);">${completedTasks}</div>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: var(--gray-500); margin-bottom: 10px;">Осталось в этом месяце</h3>
+                        <div style="font-size: 2rem; font-weight: 700; color: ${tasksRemaining > 0 ? 'var(--info)' : 'var(--danger)'};">${tasksRemaining}</div>
                     </div>
                 `;
-                return;
+                
+                // Отображаем список задач
+                const tasksContainer = document.getElementById('tasksContainer');
+                
+                if (tasks.length === 0) {
+                    tasksContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <h3 style="margin-bottom: 15px;">У вас пока нет задач</h3>
+                            <p style="margin-bottom: 25px;">Создайте первую задачу, и мы найдем исполнителя!</p>
+                            <button class="btn btn-primary" onclick="openCreateTaskModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                Создать первую задачу
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    let tasksHtml = '<div class="grid" style="gap: 20px;">';
+                    
+                    tasks.forEach(task => {
+                        const statusColors = {
+                            'new': { bg: '#FF6B8B', text: 'Новая', icon: '🆕' },
+                            'assigned': { bg: '#3498DB', text: 'Назначена', icon: '👤' },
+                            'in_progress': { bg: '#F39C12', text: 'В работе', icon: '🔄' },
+                            'completed': { bg: '#2ECC71', text: 'Завершена', icon: '✅' },
+                            'cancelled': { bg: '#95A5A6', text: 'Отменена', icon: '❌' }
+                        };
+                        
+                        const status = statusColors[task.status] || { bg: '#95A5A6', text: task.status, icon: '📝' };
+                        
+                        const priorityColors = {
+                            'low': '#2ECC71',
+                            'medium': '#F39C12',
+                            'high': '#E74C3C',
+                            'urgent': '#C0392B'
+                        };
+                        
+                        const priorityColor = priorityColors[task.priority] || '#95A5A6';
+                        
+                        const deadlineDate = new Date(task.deadline);
+                        const now = new Date();
+                        const daysDiff = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+                        
+                        let deadlineText = '';
+                        if (daysDiff < 0) {
+                            deadlineText = `<span style="color: var(--danger);">Просрочено на ${Math.abs(daysDiff)} дн.</span>`;
+                        } else if (daysDiff === 0) {
+                            deadlineText = '<span style="color: var(--warning);">Сегодня</span>';
+                        } else if (daysDiff === 1) {
+                            deadlineText = '<span style="color: var(--warning);">Завтра</span>';
+                        } else {
+                            deadlineText = `Осталось ${daysDiff} дн.`;
+                        }
+                        
+                        tasksHtml += `
+                            <div class="card" style="border-left: 4px solid ${status.bg};">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                    <div>
+                                        <h3 style="margin-bottom: 5px;">${status.icon} ${task.title}</h3>
+                                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                            <span class="badge" style="background: ${status.bg}; color: white;">${status.text}</span>
+                                            <span class="badge" style="background: ${priorityColor}; color: white;">${task.priority || 'medium'}</span>
+                                        </div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-weight: 600; color: var(--pink-primary);">${task.price || 0}₽</div>
+                                        <div style="font-size: 0.9rem; color: var(--gray-500);">${task.task_number || ''}</div>
+                                    </div>
+                                </div>
+                                
+                                <p style="color: var(--gray-600); margin-bottom: 15px;">${task.description || ''}</p>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-size: 0.9rem; color: var(--gray-500); margin-bottom: 5px;">
+                                            <i class="fas fa-calendar"></i> Срок: ${new Date(task.deadline).toLocaleDateString('ru-RU')}
+                                        </div>
+                                        <div style="font-size: 0.9rem; color: var(--gray-500);">
+                                            ${deadlineText}
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: var(--gray-500);">
+                                        <i class="fas fa-tag"></i> ${task.category || ''}
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                                    <button class="btn btn-secondary" onclick="viewTaskDetails(${task.id})" style="padding: 8px 16px;">
+                                        <i class="fas fa-eye"></i> Подробнее
+                                    </button>
+                                    ${task.status === 'new' ? `
+                                        <button class="btn btn-primary" onclick="editTask(${task.id})" style="padding: 8px 16px;">
+                                            <i class="fas fa-edit"></i> Редактировать
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    tasksHtml += '</div>';
+                    tasksContainer.innerHTML = tasksHtml;
+                }
+                
+            } else {
+                console.error('❌ Ошибка загрузки задач:', data.error);
+                showNotification('Ошибка загрузки задач: ' + data.error, 'error');
             }
             
-            // Статистика задач
-            const taskStats = document.getElementById('taskStats');
-            taskStats.innerHTML = `
-                <div class="card">
-                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">Всего задач</h3>
-                    <div style="font-size: 2rem; font-weight: 700; color: var(--pink-primary);">0</div>
-                </div>
-                <div class="card">
-                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">В работе</h3>
-                    <div style="font-size: 2rem; font-weight: 700; color: var(--warning);">0</div>
-                </div>
-                <div class="card">
-                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">Завершено</h3>
-                    <div style="font-size: 2rem; font-weight: 700; color: var(--success);">0</div>
-                </div>
-                <div class="card">
-                    <h3 style="color: var(--gray-500); margin-bottom: 10px;">Осталось в этом месяце</h3>
-                    <div style="font-size: 2rem; font-weight: 700; color: var(--info);">3</div>
-                </div>
-            `;
+        } else {
+            console.error('❌ Ошибка HTTP:', response.status);
             
-            // Список задач
-            const tasksContainer = document.getElementById('tasksContainer');
-            tasksContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-tasks"></i>
-                    <h3 style="margin-bottom: 15px;">У вас пока нет задач</h3>
-                    <p style="margin-bottom: 25px;">Создайте первую задачу, и мы найдем исполнителя!</p>
-                    <button class="btn btn-primary" onclick="openCreateTaskModal()">
-                        <i class="fas fa-plus-circle"></i>
-                        Создать первую задачу
-                    </button>
-                </div>
-            `;
+            // Проверяем, не истек ли токен
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                currentToken = null;
+                currentUser = null;
+                updateUserMenu();
+                showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+                navigate('home');
+            } else {
+                showNotification('Ошибка загрузки задач. Код: ' + response.status, 'error');
+            }
         }
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки задач:', error);
+        showNotification('Ошибка сети: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // Страница профиля
         async function loadProfilePage() {
@@ -2135,32 +2323,51 @@ async function verifyToken() {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('🔐 Данные пользователя получены:', data.data.user.email);
-            currentUser = data.data.user;
+            console.log('🔐 Данные пользователя получены:', data.data.user);
+            
+            // Сохраняем ВСЕ данные пользователя
+            currentUser = {
+                ...data.data.user,
+                ...data.data.stats
+            };
+            
+            console.log('👤 Полный объект пользователя:', currentUser);
+            
             updateUserMenu();
             
-            // Проверяем, на какой мы странице
-            if (window.location.hash) {
-                const page = window.location.hash.replace('#', '');
-                if (page && page !== currentPage) {
-                    navigate(page);
-                }
+            // Обновляем текущую страницу если нужно
+            if (currentPage === 'profile') {
+                setTimeout(() => loadProfilePage(), 100);
+            } else if (currentPage === 'subscriptions') {
+                setTimeout(() => loadSubscriptionsPage(), 100);
+            } else if (currentPage === 'tasks') {
+                setTimeout(() => loadTasksPage(), 100);
             }
             
             return true;
+            
         } else {
             console.log('🔐 Токен невалиден, статус:', response.status);
-            // Пробуем получить текст ошибки
-            try {
-                const errorData = await response.json();
-                console.log('🔐 Ошибка сервера:', errorData.error);
-            } catch (e) {
-                console.log('🔐 Не удалось получить детали ошибки');
+            // Очищаем данные
+            localStorage.removeItem('token');
+            currentToken = null;
+            currentUser = null;
+            updateUserMenu();
+            
+            // Перенаправляем если нужно
+            if (['tasks', 'profile', 'admin'].includes(currentPage)) {
+                navigate('home');
+                showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
             }
+            
+            return false;
         }
+        
     } catch (error) {
         console.error('🔐 Ошибка проверки токена:', error.message);
+        return false;
     }
+}
     
     // Токен невалиден или произошла ошибка
     localStorage.removeItem('token');
@@ -2268,97 +2475,238 @@ async function verifyToken() {
             }
         }
         
-        async function createTask(event) {
-            if (event) event.preventDefault();
+async function createTask(event) {
+    if (event) event.preventDefault();
+    
+    const title = document.getElementById('taskTitle').value;
+    const description = document.getElementById('taskDescription').value;
+    const category = document.getElementById('taskCategory').value;
+    const priority = document.getElementById('taskPriority').value;
+    const deadline = document.getElementById('taskDeadline').value;
+    const address = document.getElementById('taskAddress').value;
+    
+    console.log('📝 Данные задачи:', { title, description, category, priority, deadline, address });
+    console.log('🔐 Токен:', currentToken ? 'есть' : 'нет');
+    
+    if (!title || !description || !category || !deadline) {
+        showNotification('Заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    // Проверяем авторизацию
+    if (!currentToken) {
+        showNotification('Сначала войдите в систему', 'error');
+        openAuthModal();
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                title,
+                description,
+                category,
+                priority,
+                deadline,
+                address
+            })
+        });
+        
+        console.log('📡 Ответ сервера:', response.status);
+        
+        const data = await response.json();
+        console.log('📡 Данные ответа:', data);
+        
+        if (data.success) {
+            showNotification('Задача успешно создана!', 'success');
+            closeModal('createTaskModal');
+            document.getElementById('createTaskForm').reset();
             
-            const title = document.getElementById('taskTitle').value;
-            const description = document.getElementById('taskDescription').value;
-            const category = document.getElementById('taskCategory').value;
-            const priority = document.getElementById('taskPriority').value;
-            const deadline = document.getElementById('taskDeadline').value;
-            const address = document.getElementById('taskAddress').value;
+            // Сбрасываем дату дедлайна на завтра
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('taskDeadline').min = tomorrow.toISOString().split('T')[0];
+            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
             
-            if (!title || !description || !category || !deadline) {
-                showNotification('Заполните все обязательные поля', 'error');
-                return;
+            // Перезагружаем страницу задач
+            if (currentPage === 'tasks') {
+                await loadTasksPage();
             }
             
-            showLoading();
+            // Обновляем статистику на главной если нужно
+            if (currentPage === 'home') {
+                updateTaskStats();
+            }
             
-            try {
-                const response = await fetch('/api/tasks', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        title,
-                        description,
-                        category,
-                        priority,
-                        deadline,
-                        address
-                    })
-                });
+        } else {
+            showNotification(data.error || 'Ошибка создания задачи', 'error');
+            console.error('❌ Ошибка создания задачи:', data);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка сети:', error);
+        showNotification('Ошибка сети: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+        
+async function subscribeToPlan(plan) {
+    console.log('📝 Оформление подписки:', plan);
+    console.log('🔐 Токен:', currentToken ? 'есть' : 'нет');
+    
+    if (!currentToken) {
+        showNotification('Сначала войдите в систему', 'error');
+        openAuthModal();
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch('/api/subscriptions/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                plan: plan,
+                period: 'monthly'
+            })
+        });
+        
+        console.log('📡 Ответ сервера:', response.status);
+        
+        const data = await response.json();
+        console.log('📡 Данные ответа:', data);
+        
+        if (data.success) {
+            showNotification('Подписка успешно оформлена!', 'success');
+            
+            // Обновляем данные пользователя
+            if (data.data.user) {
+                currentUser = data.data.user;
+                console.log('👤 Обновленный пользователь:', currentUser);
                 
-                const data = await response.json();
+                // Обновляем меню пользователя
+                updateUserMenu();
                 
-                if (data.success) {
-                    showNotification('Задача успешно создана!', 'success');
-                    closeModal('createTaskModal');
-                    document.getElementById('createTaskForm').reset();
-                    
-                    // Перезагружаем страницу задач
-                    if (currentPage === 'tasks') {
-                        loadTasksPage();
-                    }
-                } else {
-                    showNotification(data.error || 'Ошибка создания задачи', 'error');
+                // Обновляем профиль если открыт
+                if (currentPage === 'profile') {
+                    await loadProfilePage();
                 }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            } finally {
-                hideLoading();
+                
+                // Обновляем страницу подписок если открыта
+                if (currentPage === 'subscriptions') {
+                    await loadSubscriptionsPage();
+                }
+                
+                // Обновляем статистику на главной
+                if (currentPage === 'home') {
+                    updateStatsAfterSubscription();
+                }
+                
+            }
+        } else {
+            showNotification(data.error || 'Ошибка оформления подписки', 'error');
+            console.error('❌ Ошибка оформления подписки:', data);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка сети:', error);
+        showNotification('Ошибка сети: ' + error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ДОБАВИТЬ эту функцию для обновления статистики
+async function updateStatsAfterSubscription() {
+    try {
+        // Обновляем статистику на главной
+        const statsGrid = document.getElementById('statsGrid');
+        if (statsGrid) {
+            // Можно обновить счетчик пользователей или другую статистику
+            const userCountElement = statsGrid.querySelector('.card:nth-child(1) div[style*="font-size: 2.5rem"]');
+            if (userCountElement) {
+                // Инкрементируем счетчик пользователей
+                const currentCount = parseInt(userCountElement.textContent.replace(/\D/g, '')) || 0;
+                userCountElement.textContent = (currentCount + 1).toLocaleString();
             }
         }
         
-        async function subscribeToPlan(plan) {
-            showLoading();
-            
-            try {
-                const response = await fetch('/api/subscriptions/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        plan: plan,
-                        period: 'monthly'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Подписка успешно оформлена!', 'success');
-                    currentUser = data.data.user;
-                    updateUserMenu();
-                    
-                    // Перезагружаем профиль
-                    if (currentPage === 'profile') {
-                        loadProfilePage();
-                    }
-                } else {
-                    showNotification(data.error || 'Ошибка оформления подписки', 'error');
-                }
-            } catch (error) {
-                showNotification('Ошибка сети', 'error');
-            } finally {
-                hideLoading();
-            }
+        // Обновляем блок популярных подписок
+        const popularSubscriptions = document.getElementById('popularSubscriptions');
+        if (popularSubscriptions) {
+            // Перезагружаем блок подписок
+            await loadHomePageSubscriptions();
         }
+        
+    } catch (error) {
+        console.error('Ошибка обновления статистики:', error);
+    }
+}
+
+// ДОБАВИТЬ эту функцию для обновления подписок на главной
+async function loadHomePageSubscriptions() {
+    const popularSubscriptions = document.getElementById('popularSubscriptions');
+    if (!popularSubscriptions) return;
+    
+    try {
+        const response = await fetch('/api/subscriptions');
+        const data = await response.json();
+        
+        if (data.success && data.data.subscriptions) {
+            const subscriptions = data.data.subscriptions;
+            
+            // Берем три самые популярные подписки
+            const popularSubs = subscriptions
+                .filter(sub => sub.is_popular)
+                .slice(0, 3);
+            
+            let html = '';
+            
+            popularSubs.forEach((sub, index) => {
+                const isPopular = index === 0;
+                const features = typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features;
+                
+                html += `
+                    <div class="card" ${isPopular ? 'style="border: 3px solid var(--pink-primary);"' : ''}>
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            ${isPopular ? '<span class="badge badge-success" style="margin-bottom: 10px;">Популярно</span>' : ''}
+                            <h3 style="color: ${isPopular ? 'var(--pink-primary)' : 'var(--gray-900)'};">${sub.display_name}</h3>
+                        </div>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <div style="font-size: 3rem; font-weight: 800; color: var(--gray-900);">${sub.price_monthly}₽</div>
+                            <div style="color: var(--gray-500);">в месяц</div>
+                        </div>
+                        <ul style="list-style: none; margin-bottom: 25px;">
+                            ${features.slice(0, 3).map(feature => `
+                                <li style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-check" style="color: var(--success);"></i>
+                                    <span>${feature}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                        <button class="btn ${isPopular ? 'btn-primary' : 'btn-secondary'}" onclick="navigate('subscriptions')" style="width: 100%;">
+                            ${currentToken ? 'Выбрать' : 'Подробнее'}
+                        </button>
+                    </div>
+                `;
+            });
+            
+            popularSubscriptions.innerHTML = html;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки подписок для главной:', error);
+    }
+}
         
         function logout() {
             localStorage.removeItem('token');
@@ -2400,14 +2748,62 @@ async function verifyToken() {
             showNotification('Редактирование профиля будет доступно в следующем обновлении', 'info');
         }
         
-        // Демо данные для тестирования
-        window.demoLogin = function() {
-            document.getElementById('loginEmail').value = 'client1@example.com';
-            document.getElementById('loginPassword').value = 'client123';
-            login();
-        };
-        
-        console.log('🎀 Консьерж Сервис загружен! Для быстрого входа используйте demoLogin()');
-    </script>
+        // Функция для обновления статистики задач
+async function updateTaskStats() {
+    if (currentToken && currentPage === 'home') {
+        try {
+            const response = await fetch('/api/tasks', {
+                headers: {
+                    'Authorization': `Bearer ${currentToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    const tasks = data.data.tasks || [];
+                    const totalTasks = tasks.length;
+                    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+                    
+                    // Обновляем статистику на главной
+                    const statsGrid = document.getElementById('statsGrid');
+                    if (statsGrid) {
+                        const taskElements = statsGrid.querySelectorAll('.card');
+                        if (taskElements[1]) {
+                            const taskCountElement = taskElements[1].querySelector('div[style*="font-size: 2.5rem"]');
+                            if (taskCountElement) {
+                                taskCountElement.textContent = totalTasks.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка обновления статистики задач:', error);
+        }
+    }
+}
+
+// ДОБАВИТЬ эти функции для управления задачами
+function viewTaskDetails(taskId) {
+    console.log('👀 Просмотр задачи:', taskId);
+    showNotification('Детальный просмотр задачи будет в следующем обновлении', 'info');
+}
+
+function editTask(taskId) {
+    console.log('✏️ Редактирование задачи:', taskId);
+    showNotification('Редактирование задачи будет в следующем обновлении', 'info');
+}
+
+// Демо данные для тестирования
+window.demoLogin = function() {
+    document.getElementById('loginEmail').value = 'client1@example.com';
+    document.getElementById('loginPassword').value = 'client123';
+    login();
+};
+
+console.log('🎀 Консьерж Сервис загружен! Для быстрого входа используйте demoLogin()');
+</script>
 </body>
 </html>
