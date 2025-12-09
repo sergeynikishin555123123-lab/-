@@ -2486,41 +2486,67 @@
             }
         }
         
-        // Страница заказов пользователя
-        async function loadOrdersPage() {
-            if (!currentToken) {
-                const ordersContainer = document.getElementById('ordersContainer');
-                ordersContainer.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-shopping-bag"></i>
-                        <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
-                        <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать заказы</p>
-                        <button class="btn btn-primary" onclick="openAuthModal()">
-                            <i class="fas fa-sign-in-alt"></i>
-                            Войти в систему
-                        </button>
-                    </div>
-                `;
-                return;
+async function loadOrdersPage() {
+    console.log('🔄 Загрузка заказов...');
+    console.log('🔐 Токен:', currentToken ? 'присутствует' : 'отсутствует');
+    console.log('👤 Пользователь:', currentUser);
+    
+    if (!currentToken) {
+        const ordersContainer = document.getElementById('ordersContainer');
+        ordersContainer.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-shopping-bag"></i>
+                <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
+                <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать заказы</p>
+                <button class="btn btn-primary" onclick="openAuthModal()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Войти в систему
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const filter = document.getElementById('orderFilter').value;
+        const sort = document.getElementById('orderSort').value;
+        
+        let url = `/api/tasks?limit=50`;
+        if (filter !== 'all') url += `&status=${filter}`;
+        
+        if (sort === 'oldest') url += `&sort=created_at&order=ASC`;
+        else if (sort === 'deadline') url += `&sort=deadline&order=ASC`;
+        
+        console.log('🌐 Запрос к API:', url);
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`,
+                'Content-Type': 'application/json'
             }
-            
-            showLoading();
-            
-            try {
-                const filter = document.getElementById('orderFilter').value;
-                const sort = document.getElementById('orderSort').value;
-                
-                let url = `/api/tasks?limit=50`;
-                if (filter !== 'all') url += `&status=${filter}`;
-                
-                if (sort === 'oldest') url += `&sort=created_at&order=ASC`;
-                else if (sort === 'deadline') url += `&sort=deadline&order=ASC`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
+        });
+        
+        console.log('🌐 Ответ сервера:', response.status, response.statusText);
+        
+        if (response.status === 401) {
+            // Токен недействителен
+            localStorage.removeItem('token');
+            currentToken = null;
+            currentUser = null;
+            updateUserMenu();
+            showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+            loadOrdersPage(); // Перезагрузим страницу
+            return;
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📦 Данные от сервера:', data);
                 
                 const data = await response.json();
                 
