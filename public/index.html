@@ -1400,7 +1400,7 @@
                     
                     <!-- Фильтры заказов -->
                     <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
-                        <select class="btn btn-secondary" id="orderFilter" onchange="loadUserOrders()" style="padding: 12px 24px;">
+                        <select class="btn btn-secondary" id="orderFilter" onchange="loadOrdersPage()" style="padding: 12px 24px;">
                             <option value="all">Все заказы</option>
                             <option value="new">Новые</option>
                             <option value="in_progress">В работе</option>
@@ -1408,7 +1408,7 @@
                             <option value="cancelled">Отмененные</option>
                         </select>
                         
-                        <select class="btn btn-secondary" id="orderSort" onchange="loadUserOrders()" style="padding: 12px 24px;">
+                        <select class="btn btn-secondary" id="orderSort" onchange="loadOrdersPage()" style="padding: 12px 24px;">
                             <option value="newest">Сначала новые</option>
                             <option value="oldest">Сначала старые</option>
                             <option value="deadline">По сроку</option>
