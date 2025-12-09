@@ -58,7 +58,6 @@
             overflow-x: hidden;
         }
         
-        /* Добавляем цветочный фон */
         body::before {
             content: '';
             position: fixed;
@@ -77,7 +76,6 @@
             padding: 0 20px;
         }
         
-        /* Навигация */
         .app-header {
             background: var(--white);
             box-shadow: var(--shadow);
@@ -174,7 +172,6 @@
             cursor: pointer;
         }
         
-        /* Главный контент */
         .main-content {
             margin-top: 70px;
             min-height: calc(100vh - 140px);
@@ -194,7 +191,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Футер */
         .app-footer {
             background: var(--gray-900);
             color: white;
@@ -248,7 +244,6 @@
             font-size: 0.9rem;
         }
         
-        /* Бургер меню для мобилок */
         @media (max-width: 768px) {
             .mobile-menu-btn {
                 display: block;
@@ -282,7 +277,6 @@
             }
         }
         
-        /* Кнопки */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -334,7 +328,6 @@
             color: white;
         }
         
-        /* Карточки */
         .card {
             background: white;
             border-radius: var(--radius-lg);
@@ -351,7 +344,6 @@
             box-shadow: var(--shadow-lg);
         }
         
-        /* Grid системы */
         .grid {
             display: grid;
             gap: 24px;
@@ -369,7 +361,6 @@
             grid-template-columns: repeat(4, 1fr);
         }
         
-        /* Загрузка */
         .loading {
             text-align: center;
             padding: 60px 20px;
@@ -390,7 +381,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Пустые состояния */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -403,7 +393,6 @@
             opacity: 0.5;
         }
         
-        /* Уведомления */
         .notification {
             position: fixed;
             top: 20px;
@@ -438,7 +427,6 @@
             background: linear-gradient(135deg, var(--info), #60A5FA);
         }
         
-        /* Модалки */
         .modal {
             position: fixed;
             top: 0;
@@ -476,7 +464,6 @@
             to { transform: scale(1); opacity: 1; }
         }
         
-        /* Таблицы */
         .table-container {
             overflow-x: auto;
             background: white;
@@ -507,7 +494,6 @@
             background: var(--gray-50);
         }
         
-        /* Статус баджи */
         .badge {
             display: inline-block;
             padding: 4px 12px;
@@ -543,7 +529,6 @@
             color: var(--pink-primary);
         }
         
-        /* Адаптивность */
         @media (max-width: 1024px) {
             .grid-4 {
                 grid-template-columns: repeat(3, 1fr);
@@ -577,7 +562,6 @@
             }
         }
         
-        /* Новые стили для процесса заказа помощи */
         .wizard-container {
             max-width: 800px;
             margin: 0 auto;
@@ -661,7 +645,6 @@
             gap: 20px;
         }
         
-        /* Выбор услуги кнопками */
         .service-buttons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -699,7 +682,6 @@
             color: var(--pink-primary);
         }
         
-        /* Чат заказа */
         .chat-container {
             display: flex;
             flex-direction: column;
@@ -761,7 +743,6 @@
             border-radius: var(--radius);
         }
         
-        /* Карточки категорий */
         .category-card {
             background: white;
             border-radius: var(--radius-lg);
@@ -797,7 +778,6 @@
             margin-bottom: 20px;
         }
         
-        /* Топ услуги */
         .top-services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -830,7 +810,6 @@
             font-size: 0.9rem;
         }
         
-        /* Шпаргалка */
         .cheatsheet-card {
             background: var(--light-bg);
             border-radius: var(--radius);
@@ -850,7 +829,6 @@
             line-height: 1.6;
         }
         
-        /* Подсказки */
         .hint-card {
             background: white;
             border-radius: var(--radius);
@@ -871,7 +849,6 @@
             line-height: 1.6;
         }
         
-        /* Статус заказа */
         .order-status {
             display: inline-flex;
             align-items: center;
@@ -907,7 +884,6 @@
             color: #6B7280;
         }
         
-        /* Подписки */
         .subscription-card {
             background: white;
             border-radius: var(--radius-lg);
@@ -936,7 +912,6 @@
             font-weight: 600;
         }
         
-        /* Профиль */
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -964,7 +939,6 @@
             color: var(--gray-600);
         }
         
-        /* Уведомления в профиле */
         .notification-item {
             background: white;
             border-radius: var(--radius);
@@ -998,36 +972,35 @@
     </style>
 </head>
 <body>
-    <!-- Навигация -->
     <header class="app-header">
         <div class="nav-container">
-            <a href="#" class="logo" onclick="navigate('home')">
+            <a href="#" class="logo" id="logoHome">
                 <i class="fas fa-heart"></i>
                 Женский Консьерж
             </a>
             
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
                 <i class="fas fa-bars"></i>
             </button>
             
             <nav class="nav-menu" id="navMenu">
-                <a href="#" class="nav-link active" onclick="navigate('home')">
+                <a href="#" class="nav-link active" data-page="home">
                     <i class="fas fa-home"></i>
                     Главная
                 </a>
-                <a href="#" class="nav-link" onclick="navigate('subscriptions')">
+                <a href="#" class="nav-link" data-page="subscriptions">
                     <i class="fas fa-crown"></i>
                     Подписки
                 </a>
-                <a href="#" class="nav-link" onclick="navigate('services')">
+                <a href="#" class="nav-link" data-page="services">
                     <i class="fas fa-hands-helping"></i>
                     Помощь
                 </a>
-                <a href="#" class="nav-link" onclick="navigate('tasks')">
+                <a href="#" class="nav-link" data-page="tasks">
                     <i class="fas fa-shopping-bag"></i>
                     Мои заказы
                 </a>
-                <a href="#" class="nav-link" onclick="navigate('profile')">
+                <a href="#" class="nav-link" data-page="profile">
                     <i class="fas fa-user"></i>
                     Профиль
                 </a>
@@ -1038,12 +1011,9 @@
         </div>
     </header>
 
-    <!-- Главный контент -->
     <main class="main-content">
-        <!-- Страница 1: Главная -->
         <section id="page-home" class="page active">
             <div class="container">
-                <!-- Герой секция -->
                 <div class="hero-section" style="padding: 80px 0; text-align: center;">
                     <h1 style="font-size: 3rem; margin-bottom: 20px; color: var(--gray-900);">
                         Помощь, когда она нужна
@@ -1052,18 +1022,17 @@
                         Бытовые задачи, забота о себе, организация мероприятий — мы поможем со всем. Просто выберите нужную помощь и опишите детали.
                     </p>
                     <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="navigate('services')">
+                        <button class="btn btn-primary" id="btnOrderHelp">
                             <i class="fas fa-play-circle"></i>
                             Заказать помощь
                         </button>
-                        <button class="btn btn-secondary" onclick="navigate('subscriptions')">
+                        <button class="btn btn-secondary" id="btnChooseSubscription">
                             <i class="fas fa-crown"></i>
                             Выбрать подписку
                         </button>
                     </div>
                 </div>
 
-                <!-- Топ услуги -->
                 <div class="services-preview" style="margin: 80px 0;">
                     <div style="text-align: center; margin-bottom: 40px;">
                         <h2 class="section-title">Популярная помощь</h2>
@@ -1076,11 +1045,10 @@
                     </div>
                 </div>
 
-                <!-- Популярные категории помощи -->
                 <div class="services-preview" style="margin: 80px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
                         <h2 class="section-title">Категории помощи</h2>
-                        <a href="#" class="btn btn-secondary" onclick="navigate('services')">
+                        <a href="#" class="btn btn-secondary" id="btnAllCategories">
                             Все категории
                             <i class="fas fa-arrow-right"></i>
                         </a>
@@ -1090,7 +1058,6 @@
                     </div>
                 </div>
 
-                <!-- Как это работает -->
                 <div style="margin: 80px 0; background: white; border-radius: var(--radius-xl); padding: 60px 40px; box-shadow: var(--shadow);">
                     <h2 style="text-align: center; margin-bottom: 40px;">Как работает помощь</h2>
                     <div class="grid grid-4">
@@ -1127,7 +1094,6 @@
             </div>
         </section>
 
-        <!-- Страница 2: Подписки -->
         <section id="page-subscriptions" class="page">
             <div class="container">
                 <div style="padding: 40px 0;">
@@ -1142,7 +1108,6 @@
                         <!-- Заполняется через JS -->
                     </div>
                     
-                    <!-- Преимущества -->
                     <div style="margin-top: 80px; background: var(--light-bg); border-radius: var(--radius-xl); padding: 40px;">
                         <h2 style="text-align: center; margin-bottom: 40px;">Почему именно мы?</h2>
                         <div class="grid grid-3">
@@ -1173,7 +1138,6 @@
             </div>
         </section>
 
-        <!-- Страница 3: Помощь (бывшие линии задач) -->
         <section id="page-services" class="page">
             <div class="container">
                 <div style="padding: 40px 0;">
@@ -1184,14 +1148,11 @@
                         Более 6 категорий помощи для вашего комфорта
                     </p>
                     
-                    <!-- Список категорий -->
                     <div class="grid grid-3" id="categoriesGrid">
                         <!-- Заполняется через JS -->
                     </div>
                     
-                    <!-- Визард создания заказа -->
                     <div class="wizard-container" id="orderWizard" style="display: none;">
-                        <!-- Шаг 1: Выбор услуги -->
                         <div class="wizard-step active" id="wizardStep1">
                             <div class="wizard-header">
                                 <h2 style="margin-bottom: 10px;" id="categoryTitle">Выберите услугу</h2>
@@ -1220,18 +1181,17 @@
                             </div>
                             
                             <div class="wizard-footer">
-                                <button class="btn btn-secondary" onclick="cancelOrderWizard()">
+                                <button class="btn btn-secondary" id="btnCancelWizard">
                                     <i class="fas fa-times"></i>
                                     Отмена
                                 </button>
-                                <button class="btn btn-primary" onclick="nextWizardStep()" id="nextStepBtn" disabled>
+                                <button class="btn btn-primary" id="btnNextStep" disabled>
                                     Далее
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
                             </div>
                         </div>
                         
-                        <!-- Шаг 2: Детали заказа -->
                         <div class="wizard-step" id="wizardStep2">
                             <div class="wizard-header">
                                 <h2 style="margin-bottom: 10px;">Опишите детали заказа</h2>
@@ -1331,18 +1291,17 @@
                             </div>
                             
                             <div class="wizard-footer">
-                                <button class="btn btn-secondary" onclick="prevWizardStep()">
+                                <button class="btn btn-secondary" id="btnPrevStep1">
                                     <i class="fas fa-arrow-left"></i>
                                     Назад
                                 </button>
-                                <button class="btn btn-primary" onclick="nextWizardStep()">
+                                <button class="btn btn-primary" id="btnNextStep2">
                                     Продолжить
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
                             </div>
                         </div>
                         
-                        <!-- Шаг 3: Подтверждение -->
                         <div class="wizard-step" id="wizardStep3">
                             <div class="wizard-header">
                                 <h2 style="margin-bottom: 10px;">Подтверждение заказа</h2>
@@ -1371,11 +1330,11 @@
                             </div>
                             
                             <div class="wizard-footer">
-                                <button class="btn btn-secondary" onclick="prevWizardStep()">
+                                <button class="btn btn-secondary" id="btnPrevStep2">
                                     <i class="fas fa-arrow-left"></i>
                                     Назад
                                 </button>
-                                <button class="btn btn-primary" onclick="createOrderFromWizard()">
+                                <button class="btn btn-primary" id="btnCreateOrder">
                                     Создать заказ
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
@@ -1386,21 +1345,19 @@
             </div>
         </section>
 
-        <!-- Страница 4: Мои заказы -->
         <section id="page-tasks" class="page">
             <div class="container">
                 <div style="padding: 40px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
                         <h1 class="section-title">Мои заказы</h1>
-                        <button class="btn btn-primary" onclick="navigate('services')">
+                        <button class="btn btn-primary" id="btnNewOrder">
                             <i class="fas fa-plus"></i>
                             Новый заказ
                         </button>
                     </div>
                     
-                    <!-- Фильтры заказов -->
                     <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
-                        <select class="btn btn-secondary" id="orderFilter" onchange="loadOrdersPage()" style="padding: 12px 24px;">
+                        <select class="btn btn-secondary" id="orderFilter" style="padding: 12px 24px;">
                             <option value="all">Все заказы</option>
                             <option value="new">Новые</option>
                             <option value="in_progress">В работе</option>
@@ -1408,19 +1365,17 @@
                             <option value="cancelled">Отмененные</option>
                         </select>
                         
-                        <select class="btn btn-secondary" id="orderSort" onchange="loadOrdersPage()" style="padding: 12px 24px;">
+                        <select class="btn btn-secondary" id="orderSort" style="padding: 12px 24px;">
                             <option value="newest">Сначала новые</option>
                             <option value="oldest">Сначала старые</option>
                             <option value="deadline">По сроку</option>
                         </select>
                     </div>
                     
-                    <!-- Статистика заказов -->
                     <div class="grid grid-4" id="orderStats" style="margin-bottom: 40px;">
                         <!-- Заполняется через JS -->
                     </div>
                     
-                    <!-- Список заказов -->
                     <div id="ordersContainer">
                         <!-- Заполняется через JS -->
                     </div>
@@ -1428,7 +1383,6 @@
             </div>
         </section>
 
-        <!-- Страница 5: Профиль -->
         <section id="page-profile" class="page">
             <div class="container">
                 <div style="padding: 40px 0;">
@@ -1437,7 +1391,6 @@
                     </h1>
                     
                     <div class="grid grid-2" style="gap: 40px;">
-                        <!-- Информация о пользователе -->
                         <div class="card">
                             <h2 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-user-circle"></i>
@@ -1448,7 +1401,6 @@
                             </div>
                         </div>
                         
-                        <!-- Текущая подписка -->
                         <div class="card">
                             <h2 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-crown"></i>
@@ -1457,13 +1409,12 @@
                             <div id="currentSubscription">
                                 <!-- Заполняется через JS -->
                             </div>
-                            <button class="btn btn-primary" onclick="navigate('subscriptions')" style="margin-top: 20px;">
+                            <button class="btn btn-primary" id="btnChangeSubscription" style="margin-top: 20px;">
                                 <i class="fas fa-sync-alt"></i>
                                 Сменить подписку
                             </button>
                         </div>
                         
-                        <!-- Статистика -->
                         <div class="card">
                             <h2 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-chart-line"></i>
@@ -1474,7 +1425,6 @@
                             </div>
                         </div>
                         
-                        <!-- Уведомления -->
                         <div class="card">
                             <h2 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-bell"></i>
@@ -1483,7 +1433,7 @@
                             <div id="notificationsList" style="max-height: 300px; overflow-y: auto;">
                                 <!-- Заполняется через JS -->
                             </div>
-                            <button class="btn btn-secondary" onclick="markAllNotificationsRead()" style="margin-top: 20px;">
+                            <button class="btn btn-secondary" id="btnMarkNotificationsRead" style="margin-top: 20px;">
                                 <i class="fas fa-check-double"></i>
                                 Отметить все как прочитанные
                             </button>
@@ -1493,32 +1443,28 @@
             </div>
         </section>
 
-        <!-- Страница 6: Детали заказа -->
         <section id="page-task-details" class="page">
             <div class="container">
                 <div style="padding: 40px 0;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; flex-wrap: wrap; gap: 20px;">
                         <h1 class="section-title" id="orderDetailsTitle">Детали заказа</h1>
-                        <button class="btn btn-secondary" onclick="navigate('tasks')">
+                        <button class="btn btn-secondary" id="btnBackToOrders">
                             <i class="fas fa-arrow-left"></i>
                             Назад к заказам
                         </button>
                     </div>
                     
                     <div class="grid grid-3" style="gap: 30px;">
-                        <!-- Информация о заказе -->
                         <div class="card" style="grid-column: span 2;">
                             <div id="orderDetailsContent">
                                 <!-- Заполняется через JS -->
                             </div>
                             
-                            <!-- Действия с заказом -->
                             <div id="orderActions" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--gray-200);">
                                 <!-- Кнопки действий загружаются динамически -->
                             </div>
                         </div>
                         
-                        <!-- Информация о помощнице -->
                         <div class="card">
                             <h3 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-user-tie"></i>
@@ -1529,7 +1475,6 @@
                             </div>
                         </div>
                         
-                        <!-- Чат заказа -->
                         <div class="card" style="grid-column: span 3;">
                             <h3 style="margin-bottom: 20px; color: var(--gray-900);">
                                 <i class="fas fa-comments"></i>
@@ -1545,7 +1490,6 @@
         </section>
     </main>
 
-    <!-- Футер -->
     <footer class="app-footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -1558,10 +1502,10 @@
             <div class="footer-section">
                 <h3>Навигация</h3>
                 <ul class="footer-links">
-                    <li><a href="#" onclick="navigate('home')"><i class="fas fa-home"></i> Главная</a></li>
-                    <li><a href="#" onclick="navigate('subscriptions')"><i class="fas fa-crown"></i> Подписки</a></li>
-                    <li><a href="#" onclick="navigate('services')"><i class="fas fa-hands-helping"></i> Помощь</a></li>
-                    <li><a href="#" onclick="navigate('tasks')"><i class="fas fa-shopping-bag"></i> Мои заказы</a></li>
+                    <li><a href="#" data-page="home"><i class="fas fa-home"></i> Главная</a></li>
+                    <li><a href="#" data-page="subscriptions"><i class="fas fa-crown"></i> Подписки</a></li>
+                    <li><a href="#" data-page="services"><i class="fas fa-hands-helping"></i> Помощь</a></li>
+                    <li><a href="#" data-page="tasks"><i class="fas fa-shopping-bag"></i> Мои заказы</a></li>
                 </ul>
             </div>
             
@@ -1577,9 +1521,9 @@
             <div class="footer-section">
                 <h3>Полезные ссылки</h3>
                 <ul class="footer-links">
-                    <li><a href="#" onclick="showModal('terms')"><i class="fas fa-file-contract"></i> Условия использования</a></li>
-                    <li><a href="#" onclick="showModal('privacy')"><i class="fas fa-shield-alt"></i> Политика конфиденциальности</a></li>
-                    <li><a href="#" onclick="showModal('help')"><i class="fas fa-question-circle"></i> Помощь и поддержка</a></li>
+                    <li><a href="#" id="btnTermsModal"><i class="fas fa-file-contract"></i> Условия использования</a></li>
+                    <li><a href="#" id="btnPrivacyModal"><i class="fas fa-shield-alt"></i> Политика конфиденциальности</a></li>
+                    <li><a href="#" id="btnHelpModal"><i class="fas fa-question-circle"></i> Помощь и поддержка</a></li>
                 </ul>
             </div>
         </div>
@@ -1592,13 +1536,12 @@
 
     <!-- Модальные окна -->
     
-    <!-- Рейтинг заказа -->
     <div class="modal" id="rateOrderModal">
         <div class="modal-content">
             <div style="background: var(--pink-gradient); color: white; padding: 24px; border-radius: var(--radius-xl) var(--radius-xl) 0 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="margin: 0;"><i class="fas fa-star"></i> Оцените заказ</h2>
-                    <button onclick="closeModal('rateOrderModal')" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">
+                    <button id="btnCloseRateModal" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -1607,11 +1550,11 @@
                 <div style="text-align: center; margin-bottom: 30px;">
                     <p id="rateOrderTitle" style="font-size: 1.2rem; margin-bottom: 20px;"></p>
                     <div style="font-size: 2.5rem; color: var(--warning); margin-bottom: 20px;" id="ratingStars">
-                        <i class="fas fa-star" onclick="setRating(1)" style="cursor: pointer; opacity: 0.3;"></i>
-                        <i class="fas fa-star" onclick="setRating(2)" style="cursor: pointer; opacity: 0.3;"></i>
-                        <i class="fas fa-star" onclick="setRating(3)" style="cursor: pointer; opacity: 0.3;"></i>
-                        <i class="fas fa-star" onclick="setRating(4)" style="cursor: pointer; opacity: 0.3;"></i>
-                        <i class="fas fa-star" onclick="setRating(5)" style="cursor: pointer; opacity: 0.3;"></i>
+                        <i class="fas fa-star" data-rating="1" style="cursor: pointer; opacity: 0.3;"></i>
+                        <i class="fas fa-star" data-rating="2" style="cursor: pointer; opacity: 0.3;"></i>
+                        <i class="fas fa-star" data-rating="3" style="cursor: pointer; opacity: 0.3;"></i>
+                        <i class="fas fa-star" data-rating="4" style="cursor: pointer; opacity: 0.3;"></i>
+                        <i class="fas fa-star" data-rating="5" style="cursor: pointer; opacity: 0.3;"></i>
                     </div>
                     <div id="ratingText" style="color: var(--gray-600);">Нажмите на звезду для оценки</div>
                 </div>
@@ -1628,7 +1571,7 @@
                     <label for="ratingAnonymous" style="color: var(--gray-700);">Оставить отзыв анонимно</label>
                 </div>
                 
-                <button class="btn btn-primary" onclick="submitRating()" style="width: 100%;">
+                <button class="btn btn-primary" id="btnSubmitRating" style="width: 100%;">
                     <i class="fas fa-check"></i>
                     Отправить оценку
                 </button>
@@ -1636,13 +1579,12 @@
         </div>
     </div>
     
-    <!-- Регистрация/Вход -->
     <div class="modal" id="authModal">
         <div class="modal-content">
             <div style="background: var(--pink-gradient); color: white; padding: 24px; border-radius: var(--radius-xl) var(--radius-xl) 0 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h2 style="margin: 0;" id="authModalTitle">Вход в систему</h2>
-                    <button onclick="closeModal('authModal')" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">
+                    <button id="btnCloseAuthModal" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -1659,13 +1601,13 @@
                         <input type="password" id="loginPassword" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: var(--radius);" required>
                     </div>
                     
-                    <button class="btn btn-primary" onclick="login()" style="width: 100%; margin-bottom: 15px;">
+                    <button class="btn btn-primary" id="btnLogin" style="width: 100%; margin-bottom: 15px;">
                         <i class="fas fa-sign-in-alt"></i>
                         Войти
                     </button>
                     
                     <div style="text-align: center;">
-                        <button class="btn btn-secondary" onclick="showRegisterForm()" style="width: 100%;">
+                        <button class="btn btn-secondary" id="btnShowRegister" style="width: 100%;">
                             <i class="fas fa-user-plus"></i>
                             Зарегистрироваться
                         </button>
@@ -1707,13 +1649,13 @@
                         </select>
                     </div>
                     
-                    <button class="btn btn-primary" onclick="register()" style="width: 100%; margin-bottom: 15px;">
+                    <button class="btn btn-primary" id="btnRegister" style="width: 100%; margin-bottom: 15px;">
                         <i class="fas fa-user-plus"></i>
                         Зарегистрироваться
                     </button>
                     
                     <div style="text-align: center;">
-                        <button class="btn btn-secondary" onclick="showLoginForm()" style="width: 100%;">
+                        <button class="btn btn-secondary" id="btnShowLogin" style="width: 100%;">
                             <i class="fas fa-arrow-left"></i>
                             Вернуться к входу
                         </button>
@@ -1723,10 +1665,8 @@
         </div>
     </div>
     
-    <!-- Уведомления -->
     <div id="notificationContainer"></div>
     
-    <!-- Загрузка -->
     <div class="modal" id="loadingModal">
         <div class="modal-content" style="background: transparent; box-shadow: none; max-width: 200px;">
             <div class="loading">
@@ -1738,70 +1678,68 @@
 
     <script>
         // Глобальные переменные
-        let currentUser = null;
-        let currentToken = localStorage.getItem('token');
-        let currentPage = 'home';
-        let currentOrderId = null;
-        let currentCategoryId = null;
-        let currentServiceId = null;
-        let currentRating = 0;
-        
-        // Переменные для визарда
-        let wizardCurrentStep = 1;
-        let wizardOrderData = {};
-        
-        // Услуги для каждой категории
-        const categoryServices = {
-            1: [ // Дом и быт
-                { id: 1, name: 'Уборка квартиры', icon: '🧹', description: 'Генеральная или поддерживающая уборка' },
-                { id: 2, name: 'Химчистка мебели', icon: '🛋️', description: 'Профессиональная чистка диванов, кресел' },
-                { id: 3, name: 'Стирка и глажка', icon: '👚', description: 'Стирка, глажка, уход за одеждой' },
-                { id: 4, name: 'Мелкий ремонт', icon: '🔧', description: 'Починка мебели, сантехники, электрики' },
-                { id: 5, name: 'Организация пространства', icon: '📦', description: 'Расхламление, организация хранения' }
-            ],
-            2: [ // Дети и семья
-                { id: 6, name: 'Няня на час', icon: '👶', description: 'Присмотр за детьми на несколько часов' },
-                { id: 7, name: 'Репетитор', icon: '📚', description: 'Помощь с уроками, подготовка к школе' },
-                { id: 8, name: 'Сопровождение', icon: '🚶‍♀️', description: 'Сопровождение на кружки, мероприятия' },
-                { id: 9, name: 'Организация праздника', icon: '🎂', description: 'Подготовка детского дня рождения' }
-            ],
-            3: [ // Красота и здоровье
-                { id: 10, name: 'Маникюр/педикюр', icon: '💅', description: 'Профессиональный маникюр на дому' },
-                { id: 11, name: 'Парикмахер', icon: '💇‍♀️', description: 'Стрижка, укладка, окрашивание' },
-                { id: 12, name: 'Массаж', icon: '💆‍♀️', description: 'Расслабляющий или лечебный массаж' },
-                { id: 13, name: 'Косметолог', icon: '🌸', description: 'Уходовые процедуры для кожи' }
-            ],
-            4: [ // Курсы и образование
-                { id: 14, name: 'Репетиторство', icon: '🎓', description: 'Помощь по школьным предметам' },
-                { id: 15, name: 'Подготовка к экзаменам', icon: '📝', description: 'ЕГЭ, ОГЭ, вступительные' },
-                { id: 16, name: 'Языковые курсы', icon: '🗣️', description: 'Английский, французский, другие языки' },
-                { id: 17, name: 'Компьютерные курсы', icon: '💻', description: 'Обучение работе с программами' }
-            ],
-            5: [ // Питомцы
-                { id: 18, name: 'Выгул собак', icon: '🐕', description: 'Регулярный выгул вашего питомца' },
-                { id: 19, name: 'Передержка', icon: '🏠', description: 'Забота о питомце во время вашего отсутствия' },
-                { id: 20, name: 'Груминг', icon: '✂️', description: 'Стрижка, купание, уход за шерстью' },
-                { id: 21, name: 'Зоотакси', icon: '🚗', description: 'Транспортировка к ветеринару' }
-            ],
-            6: [ // Мероприятия
-                { id: 22, name: 'Организация праздника', icon: '🎉', description: 'Дни рождения, юбилеи, корпоративы' },
-                { id: 23, name: 'Кейтеринг', icon: '🍽️', description: 'Организация питания на мероприятии' },
-                { id: 24, name: 'Фотосессия', icon: '📸', description: 'Профессиональная фотосъемка' },
-                { id: 25, name: 'Ведущая', icon: '🎤', description: 'Ведущая на ваше мероприятие' }
-            ]
+        const app = {
+            currentUser: null,
+            currentToken: localStorage.getItem('token'),
+            currentPage: 'home',
+            currentOrderId: null,
+            currentCategoryId: null,
+            currentServiceId: null,
+            currentRating: 0,
+            wizardCurrentStep: 1,
+            wizardOrderData: {},
+            
+            categoryServices: {
+                1: [ // Дом и быт
+                    { id: 1, name: 'Уборка квартиры', icon: '🧹', description: 'Генеральная или поддерживающая уборка' },
+                    { id: 2, name: 'Химчистка мебели', icon: '🛋️', description: 'Профессиональная чистка диванов, кресел' },
+                    { id: 3, name: 'Стирка и глажка', icon: '👚', description: 'Стирка, глажка, уход за одеждой' },
+                    { id: 4, name: 'Мелкий ремонт', icon: '🔧', description: 'Починка мебели, сантехники, электрики' },
+                    { id: 5, name: 'Организация пространства', icon: '📦', description: 'Расхламление, организация хранения' }
+                ],
+                2: [ // Дети и семья
+                    { id: 6, name: 'Няня на час', icon: '👶', description: 'Присмотр за детьми на несколько часов' },
+                    { id: 7, name: 'Репетитор', icon: '📚', description: 'Помощь с уроками, подготовка к школе' },
+                    { id: 8, name: 'Сопровождение', icon: '🚶‍♀️', description: 'Сопровождение на кружки, мероприятия' },
+                    { id: 9, name: 'Организация праздника', icon: '🎂', description: 'Подготовка детского дня рождения' }
+                ],
+                3: [ // Красота и здоровье
+                    { id: 10, name: 'Маникюр/педикюр', icon: '💅', description: 'Профессиональный маникюр на дому' },
+                    { id: 11, name: 'Парикмахер', icon: '💇‍♀️', description: 'Стрижка, укладка, окрашивание' },
+                    { id: 12, name: 'Массаж', icon: '💆‍♀️', description: 'Расслабляющий или лечебный массаж' },
+                    { id: 13, name: 'Косметолог', icon: '🌸', description: 'Уходовые процедуры для кожи' }
+                ],
+                4: [ // Курсы и образование
+                    { id: 14, name: 'Репетиторство', icon: '🎓', description: 'Помощь по школьным предметам' },
+                    { id: 15, name: 'Подготовка к экзаменам', icon: '📝', description: 'ЕГЭ, ОГЭ, вступительные' },
+                    { id: 16, name: 'Языковые курсы', icon: '🗣️', description: 'Английский, французский, другие языки' },
+                    { id: 17, name: 'Компьютерные курсы', icon: '💻', description: 'Обучение работе с программами' }
+                ],
+                5: [ // Питомцы
+                    { id: 18, name: 'Выгул собак', icon: '🐕', description: 'Регулярный выгул вашего питомца' },
+                    { id: 19, name: 'Передержка', icon: '🏠', description: 'Забота о питомце во время вашего отсутствия' },
+                    { id: 20, name: 'Груминг', icon: '✂️', description: 'Стрижка, купание, уход за шерстью' },
+                    { id: 21, name: 'Зоотакси', icon: '🚗', description: 'Транспортировка к ветеринару' }
+                ],
+                6: [ // Мероприятия
+                    { id: 22, name: 'Организация праздника', icon: '🎉', description: 'Дни рождения, юбилеи, корпоративы' },
+                    { id: 23, name: 'Кейтеринг', icon: '🍽️', description: 'Организация питания на мероприятии' },
+                    { id: 24, name: 'Фотосессия', icon: '📸', description: 'Профессиональная фотосъемка' },
+                    { id: 25, name: 'Ведущая', icon: '🎤', description: 'Ведущая на ваше мероприятие' }
+                ]
+            }
         };
         
+        // Инициализация приложения
         document.addEventListener('DOMContentLoaded', function() {
             initApp();
-            loadHomePage();
             setupEventListeners();
             
-            // Проверяем авторизацию
-            if (currentToken) {
+            if (app.currentToken) {
                 verifyToken();
             }
             
-            // Устанавливаем дату для дедлайна (завтра, текущее время + 1 час)
+            // Устанавливаем дату для дедлайна
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             tomorrow.setHours(18, 0, 0, 0);
@@ -1811,10 +1749,10 @@
             document.getElementById('wizardOrderDeadline').value = formattedDate;
         });
         
-        // Инициализация приложения
         function initApp() {
             console.log('🌸 Инициализация Женский Консьерж v5.1.0...');
             updateUserMenu();
+            loadHomePage();
         }
         
         // Навигация
@@ -1836,12 +1774,12 @@
                 
                 // Активируем соответствующую ссылку
                 document.querySelectorAll('.nav-link').forEach(link => {
-                    if (link.textContent.includes(getPageTitle(page))) {
+                    if (link.getAttribute('data-page') === page) {
                         link.classList.add('active');
                     }
                 });
                 
-                currentPage = page;
+                app.currentPage = page;
                 
                 // Загружаем данные для страницы
                 switch(page) {
@@ -1865,24 +1803,9 @@
                         break;
                 }
                 
-                // Закрываем мобильное меню
                 closeMobileMenu();
-                
-                // Прокручиваем наверх
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-        }
-        
-        function getPageTitle(page) {
-            const titles = {
-                'home': 'Главная',
-                'subscriptions': 'Подписки',
-                'services': 'Помощь',
-                'tasks': 'Мои заказы',
-                'profile': 'Профиль',
-                'task-details': 'Детали заказа'
-            };
-            return titles[page] || page;
         }
         
         // Мобильное меню
@@ -1951,19 +1874,19 @@
         function updateUserMenu() {
             const userMenu = document.getElementById('userMenu');
             
-            if (currentUser) {
+            if (app.currentUser) {
                 userMenu.innerHTML = `
-                    <div class="user-avatar" onclick="navigate('profile')">
-                        ${currentUser.firstName ? currentUser.firstName[0] : 'U'}
+                    <div class="user-avatar" id="btnProfile">
+                        ${app.currentUser.firstName ? app.currentUser.firstName[0] : 'U'}
                     </div>
-                    <button class="btn btn-secondary" onclick="logout()">
+                    <button class="btn btn-secondary" id="btnLogout">
                         <i class="fas fa-sign-out-alt"></i>
                         Выйти
                     </button>
                 `;
             } else {
                 userMenu.innerHTML = `
-                    <button class="btn btn-primary" onclick="openAuthModal()">
+                    <button class="btn btn-primary" id="btnOpenAuthModal">
                         <i class="fas fa-user"></i>
                         Войти
                     </button>
@@ -1971,217 +1894,280 @@
             }
         }
         
-        // ==================== СТРАНИЦЫ ====================
-        
-        // Главная страница
+        // Страницы
         async function loadHomePage() {
-            // Топ услуги
             await loadTopServices();
-            
-            // Популярные категории
             await loadPopularCategories();
         }
         
         async function loadTopServices() {
             try {
-                const response = await fetch('/api/categories/top-services');
-                const data = await response.json();
-                
-                if (data.success) {
-                    const topServicesGrid = document.getElementById('topServicesGrid');
-                    const topServicesTitle = document.getElementById('topServicesTitle');
-                    
-                    topServicesTitle.textContent = data.data.title || 'Популярная помощь';
-                    
-                    if (data.data.services.length === 0) {
-                        topServicesGrid.innerHTML = `
-                            <div class="empty-state" style="grid-column: 1 / -1;">
-                                <i class="fas fa-star"></i>
-                                <p>Популярная помощь скоро появится</p>
-                            </div>
-                        `;
-                        return;
+                // Симуляция данных для демонстрации
+                const demoData = {
+                    success: true,
+                    data: {
+                        title: 'Популярная помощь',
+                        services: [
+                            { id: 1, name: 'Уборка квартиры', description: 'Генеральная или поддерживающая уборка', category_id: 1, category_icon: '🧹' },
+                            { id: 10, name: 'Маникюр/педикюр', description: 'Профессиональный маникюр на дому', category_id: 3, category_icon: '💅' },
+                            { id: 6, name: 'Няня на час', description: 'Присмотр за детьми', category_id: 2, category_icon: '👶' },
+                            { id: 18, name: 'Выгул собак', description: 'Регулярный выгул вашего питомца', category_id: 5, category_icon: '🐕' },
+                            { id: 14, name: 'Репетиторство', description: 'Помощь по школьным предметам', category_id: 4, category_icon: '🎓' },
+                            { id: 22, name: 'Организация праздника', description: 'Дни рождения, юбилеи', category_id: 6, category_icon: '🎉' }
+                        ]
                     }
-                    
-                    topServicesGrid.innerHTML = data.data.services.slice(0, 6).map(service => `
-                        <div class="top-service-card" onclick="startOrderFromTopService(${service.category_id}, '${service.name}')">
-                            <div style="display: flex; align-items: flex-start; gap: 15px;">
-                                <div style="font-size: 1.5rem;">${service.category_icon}</div>
-                                <div>
-                                    <div class="top-service-title">${service.name}</div>
-                                    <div class="top-service-description">${service.description}</div>
-                                </div>
+                };
+                
+                const topServicesGrid = document.getElementById('topServicesGrid');
+                const topServicesTitle = document.getElementById('topServicesTitle');
+                
+                topServicesTitle.textContent = demoData.data.title;
+                
+                topServicesGrid.innerHTML = demoData.data.services.map(service => `
+                    <div class="top-service-card" data-service-id="${service.id}" data-category-id="${service.category_id}">
+                        <div style="display: flex; align-items: flex-start; gap: 15px;">
+                            <div style="font-size: 1.5rem;">${service.category_icon}</div>
+                            <div>
+                                <div class="top-service-title">${service.name}</div>
+                                <div class="top-service-description">${service.description}</div>
                             </div>
                         </div>
-                    `).join('');
-                }
+                    </div>
+                `).join('');
+                
+                // Добавляем обработчики событий для карточек услуг
+                document.querySelectorAll('.top-service-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const categoryId = this.getAttribute('data-category-id');
+                        const serviceName = this.querySelector('.top-service-title').textContent;
+                        startOrderFromTopService(categoryId, serviceName);
+                    });
+                });
+                
             } catch (error) {
                 console.error('Ошибка загрузки топ услуг:', error);
+                showNotification('Ошибка загрузки популярных услуг', 'error');
             }
         }
         
         async function loadPopularCategories() {
             try {
-                const response = await fetch('/api/categories');
-                const data = await response.json();
+                // Симуляция данных для демонстрации
+                const demoData = {
+                    success: true,
+                    data: {
+                        categories: [
+                            { id: 1, display_name: 'Дом и быт', icon: '🏠', description: 'Уборка, стирка, мелкий ремонт и организация пространства' },
+                            { id: 2, display_name: 'Дети и семья', icon: '👨‍👩‍👧‍👦', description: 'Няни, репетиторы, сопровождение и помощь с детьми' },
+                            { id: 3, display_name: 'Красота и здоровье', icon: '💅', description: 'Маникюр, парикмахерские услуги, массаж и косметология' }
+                        ]
+                    }
+                };
                 
-                if (data.success) {
-                    const popularCategories = document.getElementById('popularCategories');
-                    
-                    // Берем первые 3 категории
-                    const categories = data.data.categories.slice(0, 3);
-                    
-                    popularCategories.innerHTML = categories.map(category => `
-                        <div class="category-card" onclick="startOrderWizard(${category.id})">
-                            <div class="category-icon">${category.icon}</div>
-                            <div class="category-title">${category.display_name}</div>
-                            <div class="category-description">${category.description}</div>
-                            <button class="btn btn-primary" style="margin-top: 15px;">
-                                Выбрать помощь
-                            </button>
-                        </div>
-                    `).join('');
-                }
+                const popularCategories = document.getElementById('popularCategories');
+                
+                popularCategories.innerHTML = demoData.data.categories.map(category => `
+                    <div class="category-card" data-category-id="${category.id}">
+                        <div class="category-icon">${category.icon}</div>
+                        <div class="category-title">${category.display_name}</div>
+                        <div class="category-description">${category.description}</div>
+                        <button class="btn btn-primary" style="margin-top: 15px;">
+                            Выбрать помощь
+                        </button>
+                    </div>
+                `).join('');
+                
+                // Добавляем обработчики событий для категорий
+                document.querySelectorAll('.category-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const categoryId = this.getAttribute('data-category-id');
+                        startOrderWizard(categoryId);
+                    });
+                });
+                
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
+                showNotification('Ошибка загрузки категорий', 'error');
             }
         }
         
-        // Страница подписок
         async function loadSubscriptionsPage() {
             try {
-                const response = await fetch('/api/subscriptions');
-                const data = await response.json();
+                // Симуляция данных для демонстрации
+                const demoData = {
+                    success: true,
+                    data: {
+                        subscriptions: [
+                            {
+                                name: 'essential',
+                                display_name: 'Эссеншиал',
+                                description: 'Базовые услуги для повседневных задач',
+                                initial_fee: 0,
+                                price_monthly: 0,
+                                features: ['До 2 заказов в месяц', 'Базовые категории услуг', 'Чат с помощницей', 'Поддержка 24/7']
+                            },
+                            {
+                                name: 'premium',
+                                display_name: 'Премиум',
+                                description: 'Полный доступ ко всем услугам и приоритетная поддержка',
+                                initial_fee: 2990,
+                                price_monthly: 2990,
+                                features: ['Неограниченное количество заказов', 'Все категории услуг', 'Приоритетное выполнение', 'Персональный менеджер', 'Скидки на дополнительные услуги']
+                            }
+                        ]
+                    }
+                };
                 
-                if (data.success) {
-                    const subscriptionsGrid = document.getElementById('subscriptionsGrid');
+                const subscriptionsGrid = document.getElementById('subscriptionsGrid');
+                
+                subscriptionsGrid.innerHTML = demoData.data.subscriptions.map(sub => {
+                    const isPopular = sub.name === 'premium';
+                    const userHasThisPlan = app.currentUser && app.currentUser.subscription_plan === sub.name;
+                    const isEssential = sub.name === 'essential';
                     
-                    subscriptionsGrid.innerHTML = data.data.subscriptions.map(sub => {
-                        const isPopular = sub.name === 'premium';
-                        const userHasThisPlan = currentUser && currentUser.subscription_plan === sub.name;
-                        const userHasPaidFee = currentUser && currentUser.initial_fee_paid;
-                        const requiresFee = sub.initial_fee > 0 && !userHasPaidFee;
-                        const isEssential = sub.name === 'essential';
-                        
-                        return `
-                            <div class="subscription-card ${isPopular ? 'popular' : ''}">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 2.5rem; margin-bottom: 15px; color: ${isPopular ? 'var(--pink-primary)' : 'var(--purple)'}">
-                                        ${isEssential ? '⭐' : '👑'}
-                                    </div>
-                                    <h3 style="margin-bottom: 10px; ${isPopular ? 'color: var(--pink-primary);' : 'color: var(--purple);'}">${sub.display_name}</h3>
-                                    <p style="color: var(--gray-600); margin-bottom: 25px; font-size: 0.95rem;">${sub.description}</p>
-                                    
-                                    <div style="text-align: center; margin: 30px 0;">
-                                        ${requiresFee ? `
-                                            <div style="margin-bottom: 20px;">
-                                                <div style="font-size: 0.9rem; color: var(--gray-500); margin-bottom: 5px;">Вступительный взнос</div>
-                                                <div style="font-size: 1.8rem; font-weight: 800; color: var(--warning);">${sub.initial_fee}₽</div>
-                                                <div style="font-size: 0.8rem; color: var(--gray-500);">единоразово</div>
-                                            </div>
-                                        ` : ''}
-                                        
-                                        <div>
-                                            ${isEssential ? `
-                                                <div style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">Бесплатно</div>
-                                                <div style="color: var(--gray-500);">в месяц</div>
-                                            ` : `
+                    return `
+                        <div class="subscription-card ${isPopular ? 'popular' : ''}">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 15px; color: ${isPopular ? 'var(--pink-primary)' : 'var(--purple)'}">
+                                    ${isEssential ? '⭐' : '👑'}
+                                </div>
+                                <h3 style="margin-bottom: 10px; ${isPopular ? 'color: var(--pink-primary);' : 'color: var(--purple);'}">${sub.display_name}</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 25px; font-size: 0.95rem;">${sub.description}</p>
+                                
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <div>
+                                        ${isEssential ? `
+                                            <div style="font-size: 2rem; font-weight: 800; color: var(--gray-900);">Бесплатно</div>
+                                            <div style="color: var(--gray-500);">в месяц</div>
+                                        ` : `
+                                            <div style="font-size: 0.9rem; color: var(--gray-500); margin-bottom: 5px;">Вступительный взнос</div>
+                                            <div style="font-size: 1.8rem; font-weight: 800; color: var(--warning);">${sub.initial_fee}₽</div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">единоразово</div>
+                                            <div style="margin-top: 20px;">
                                                 <div style="font-size: 2.5rem; font-weight: 800; color: var(--gray-900);">${sub.price_monthly}₽</div>
                                                 <div style="color: var(--gray-500);">в месяц</div>
-                                            `}
-                                        </div>
+                                            </div>
+                                        `}
                                     </div>
-                                    
-                                    <ul style="list-style: none; margin-bottom: 30px; text-align: left; padding: 0 10px;">
-                                        ${(typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features).map(feature => `
-                                            <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
-                                                <i class="fas fa-check" style="color: ${isPopular ? 'var(--pink-primary)' : 'var(--success)'};"></i>
-                                                <span style="font-size: 0.9rem;">${feature}</span>
-                                            </li>
-                                        `).join('')}
-                                    </ul>
-                                    
-                                    ${userHasThisPlan ? `
-                                        <div style="background: var(--success); color: white; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; font-size: 0.9rem;">
-                                            <i class="fas fa-check-circle"></i> Ваш текущий план
-                                        </div>
-                                    ` : ''}
-                                    
-                                    <button class="btn ${userHasThisPlan ? 'btn-secondary' : isPopular ? 'btn-primary' : 'btn-secondary'}" 
-                                            onclick="${currentToken ? `subscribeToPlan('${sub.name}')` : 'openAuthModal()'}" 
-                                            style="width: 100%;">
-                                        ${currentToken ? (userHasThisPlan ? 'Текущий план' : (requiresFee ? `Оплатить ${sub.initial_fee}₽` : (isEssential ? 'Выбрать бесплатно' : 'Выбрать'))) : 'Войти для выбора'}
-                                    </button>
                                 </div>
+                                
+                                <ul style="list-style: none; margin-bottom: 30px; text-align: left; padding: 0 10px;">
+                                    ${sub.features.map(feature => `
+                                        <li style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-check" style="color: ${isPopular ? 'var(--pink-primary)' : 'var(--success)'};"></i>
+                                            <span style="font-size: 0.9rem;">${feature}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                                
+                                ${userHasThisPlan ? `
+                                    <div style="background: var(--success); color: white; padding: 12px; border-radius: var(--radius); margin-bottom: 20px; font-size: 0.9rem;">
+                                        <i class="fas fa-check-circle"></i> Ваш текущий план
+                                    </div>
+                                ` : ''}
+                                
+                                <button class="btn ${userHasThisPlan ? 'btn-secondary' : isPopular ? 'btn-primary' : 'btn-secondary'}" 
+                                        data-plan="${sub.name}" 
+                                        style="width: 100%;">
+                                    ${app.currentToken ? (userHasThisPlan ? 'Текущий план' : (isEssential ? 'Выбрать бесплатно' : 'Выбрать')) : 'Войти для выбора'}
+                                </button>
                             </div>
-                        `;
-                    }).join('');
-                }
+                        </div>
+                    `;
+                }).join('');
+                
+                // Добавляем обработчики событий для кнопок подписок
+                document.querySelectorAll('.subscription-card button').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const plan = this.getAttribute('data-plan');
+                        if (!app.currentToken) {
+                            openAuthModal();
+                        } else {
+                            subscribeToPlan(plan);
+                        }
+                    });
+                });
+                
             } catch (error) {
                 console.error('Ошибка загрузки подписок:', error);
+                showNotification('Ошибка загрузки подписок', 'error');
             }
         }
         
-        // Страница помощи
         async function loadServicesPage() {
             try {
-                const response = await fetch('/api/categories');
-                const data = await response.json();
+                // Симуляция данных для демонстрации
+                const demoData = {
+                    success: true,
+                    data: {
+                        categories: [
+                            { id: 1, display_name: 'Дом и быт', icon: '🏠', description: 'Уборка, стирка, мелкий ремонт и организация пространства' },
+                            { id: 2, display_name: 'Дети и семья', icon: '👨‍👩‍👧‍👦', description: 'Няни, репетиторы, сопровождение и помощь с детьми' },
+                            { id: 3, display_name: 'Красота и здоровье', icon: '💅', description: 'Маникюр, парикмахерские услуги, массаж и косметология' },
+                            { id: 4, display_name: 'Курсы и образование', icon: '🎓', description: 'Репетиторство, подготовка к экзаменам, языковые курсы' },
+                            { id: 5, display_name: 'Питомцы', icon: '🐕', description: 'Выгул, передержка, груминг и зоотакси' },
+                            { id: 6, display_name: 'Мероприятия', icon: '🎉', description: 'Организация праздников, кейтеринг, фотосессии' }
+                        ]
+                    }
+                };
                 
-                if (data.success) {
-                    const categoriesGrid = document.getElementById('categoriesGrid');
-                    
-                    categoriesGrid.innerHTML = data.data.categories.map(category => `
-                        <div class="category-card" onclick="startOrderWizard(${category.id})">
-                            <div class="category-icon">${category.icon}</div>
-                            <div class="category-title">${category.display_name}</div>
-                            <div class="category-description">${category.description}</div>
-                            <button class="btn btn-primary" style="margin-top: 15px;">
-                                Заказать помощь
-                            </button>
-                        </div>
-                    `).join('');
-                }
+                const categoriesGrid = document.getElementById('categoriesGrid');
+                
+                categoriesGrid.innerHTML = demoData.data.categories.map(category => `
+                    <div class="category-card" data-category-id="${category.id}">
+                        <div class="category-icon">${category.icon}</div>
+                        <div class="category-title">${category.display_name}</div>
+                        <div class="category-description">${category.description}</div>
+                        <button class="btn btn-primary" style="margin-top: 15px;">
+                            Заказать помощь
+                        </button>
+                    </div>
+                `).join('');
+                
+                // Добавляем обработчики событий для категорий
+                document.querySelectorAll('.category-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const categoryId = this.getAttribute('data-category-id');
+                        startOrderWizard(categoryId);
+                    });
+                });
+                
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
+                showNotification('Ошибка загрузки категорий', 'error');
             }
         }
         
-        // Запуск визарда создания заказа
+        // Визард создания заказа
         async function startOrderWizard(categoryId) {
-            if (!currentToken) {
+            if (!app.currentToken) {
                 showNotification('Сначала войдите в систему', 'error');
                 openAuthModal();
                 return;
             }
             
-            currentCategoryId = categoryId;
+            app.currentCategoryId = categoryId;
             
-            // Скрываем список категорий, показываем визард
             document.getElementById('categoriesGrid').style.display = 'none';
             document.getElementById('orderWizard').style.display = 'block';
             
-            // Загружаем данные для первого шага
             await loadServicesForCategory(categoryId);
         }
         
         async function startOrderFromTopService(categoryId, serviceName) {
-            if (!currentToken) {
+            if (!app.currentToken) {
                 showNotification('Сначала войдите в систему', 'error');
                 openAuthModal();
                 return;
             }
             
-            currentCategoryId = categoryId;
+            app.currentCategoryId = categoryId;
             
-            // Скрываем список категорий, показываем визард
             document.getElementById('categoriesGrid').style.display = 'none';
             document.getElementById('orderWizard').style.display = 'block';
             
-            // Загружаем услуги и ищем нужную
             await loadServicesForCategory(categoryId);
             
-            // Автоматически выбираем услугу если найдена
             setTimeout(() => {
                 const serviceButton = document.querySelector(`.service-button[data-name="${serviceName}"]`);
                 if (serviceButton) {
@@ -2192,18 +2178,9 @@
         
         async function loadServicesForCategory(categoryId) {
             try {
-                const response = await fetch(`/api/categories/top-services?category_id=${categoryId}`);
-                const data = await response.json();
-                
                 const serviceButtonsContainer = document.getElementById('serviceButtonsContainer');
                 
-                // Получаем услуги из API или используем локальные данные
-                let services = [];
-                if (data.success && data.data.services.length > 0) {
-                    services = data.data.services;
-                } else if (categoryServices[categoryId]) {
-                    services = categoryServices[categoryId];
-                }
+                let services = app.categoryServices[categoryId] || [];
                 
                 if (services.length === 0) {
                     serviceButtonsContainer.innerHTML = `
@@ -2219,8 +2196,8 @@
                     <h3 style="margin-bottom: 20px; color: var(--gray-900);">Выберите услугу:</h3>
                     <div class="service-buttons-grid">
                         ${services.map(service => `
-                            <div class="service-button" data-id="${service.id}" data-name="${service.name}" onclick="selectService(this, ${service.id}, '${service.name}', '${service.description}')">
-                                <div class="service-icon">${service.icon || '👋'}</div>
+                            <div class="service-button" data-id="${service.id}" data-name="${service.name}" data-description="${service.description}">
+                                <div class="service-icon">${service.icon}</div>
                                 <div style="font-weight: 600; color: var(--gray-900);">${service.name}</div>
                                 <div style="font-size: 0.9rem; color: var(--gray-600); text-align: center;">${service.description}</div>
                             </div>
@@ -2228,24 +2205,33 @@
                     </div>
                 `;
                 
-                // Также загружаем информацию о категории для заголовка
-                const categoryResponse = await fetch('/api/categories');
-                const categoryData = await categoryResponse.json();
+                // Добавляем обработчики событий для кнопок услуг
+                document.querySelectorAll('.service-button').forEach(button => {
+                    button.addEventListener('click', function() {
+                        selectService(this);
+                    });
+                });
                 
-                if (categoryData.success) {
-                    const category = categoryData.data.categories.find(c => c.id == categoryId);
-                    if (category) {
-                        document.getElementById('categoryTitle').textContent = category.display_name;
-                        document.getElementById('categoryDescription').textContent = 'Какая конкретная помощь вам нужна?';
-                        
-                        // Сохраняем данные категории
-                        wizardOrderData.categoryId = categoryId;
-                        wizardOrderData.categoryName = category.display_name;
-                    }
+                // Симуляция данных категории
+                const categoryData = {
+                    1: { display_name: 'Дом и быт' },
+                    2: { display_name: 'Дети и семья' },
+                    3: { display_name: 'Красота и здоровье' },
+                    4: { display_name: 'Курсы и образование' },
+                    5: { display_name: 'Питомцы' },
+                    6: { display_name: 'Мероприятия' }
+                };
+                
+                const category = categoryData[categoryId];
+                if (category) {
+                    document.getElementById('categoryTitle').textContent = category.display_name;
+                    document.getElementById('categoryDescription').textContent = 'Какая конкретная помощь вам нужна?';
+                    
+                    app.wizardOrderData.categoryId = categoryId;
+                    app.wizardOrderData.categoryName = category.display_name;
                 }
                 
-                // Сбрасываем шаг визарда
-                wizardCurrentStep = 1;
+                app.wizardCurrentStep = 1;
                 showWizardStep(1);
                 
             } catch (error) {
@@ -2255,44 +2241,38 @@
             }
         }
         
-        function selectService(element, serviceId, serviceName, serviceDescription) {
-            // Убираем выделение у всех кнопок
+        function selectService(element) {
             document.querySelectorAll('.service-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
             
-            // Выделяем выбранную кнопку
             element.classList.add('selected');
             
-            // Сохраняем данные
-            currentServiceId = serviceId;
-            wizardOrderData.serviceId = serviceId;
-            wizardOrderData.serviceName = serviceName;
-            wizardOrderData.serviceDescription = serviceDescription;
+            const serviceId = element.getAttribute('data-id');
+            const serviceName = element.getAttribute('data-name');
+            const serviceDescription = element.getAttribute('data-description');
             
-            // Активируем кнопку "Далее"
+            app.currentServiceId = serviceId;
+            app.wizardOrderData.serviceId = serviceId;
+            app.wizardOrderData.serviceName = serviceName;
+            app.wizardOrderData.serviceDescription = serviceDescription;
+            
             document.getElementById('nextStepBtn').disabled = false;
-            
-            // Обновляем информацию о выбранной услуге на следующем шаге
             document.getElementById('selectedServiceTitle').textContent = serviceName;
             document.getElementById('selectedServiceDescription').textContent = serviceDescription;
         }
         
         function showWizardStep(step) {
-            // Скрываем все шаги
             document.querySelectorAll('.wizard-step').forEach(stepEl => {
                 stepEl.classList.remove('active');
             });
             
-            // Сбрасываем индикаторы
             document.querySelectorAll('.wizard-step-indicator').forEach(indicator => {
                 indicator.classList.remove('active', 'completed');
             });
             
-            // Показываем нужный шаг
             document.getElementById(`wizardStep${step}`).classList.add('active');
             
-            // Обновляем индикаторы
             for (let i = 1; i <= 3; i++) {
                 const indicator = document.querySelector(`.wizard-step-indicator:nth-child(${i})`);
                 if (i < step) {
@@ -2302,74 +2282,64 @@
                 }
             }
             
-            // Если шаг 2, заполняем данные если есть
-            if (step === 2 && wizardOrderData.serviceName) {
-                document.getElementById('wizardOrderTitle').value = wizardOrderData.serviceName;
+            if (step === 2 && app.wizardOrderData.serviceName) {
+                document.getElementById('wizardOrderTitle').value = app.wizardOrderData.serviceName;
             }
         }
         
         function nextWizardStep() {
-            // Валидация текущего шага
-            if (wizardCurrentStep === 1) {
-                if (!currentServiceId) {
+            if (app.wizardCurrentStep === 1) {
+                if (!app.currentServiceId) {
                     showNotification('Выберите услугу', 'error');
                     return;
                 }
-            } else if (wizardCurrentStep === 2) {
+            } else if (app.wizardCurrentStep === 2) {
                 const form = document.getElementById('orderDetailsForm');
                 if (!form.checkValidity()) {
                     form.reportValidity();
                     return;
                 }
                 
-                // Сохраняем данные из формы
-                wizardOrderData.title = document.getElementById('wizardOrderTitle').value;
-                wizardOrderData.description = document.getElementById('wizardOrderDescription').value;
-                wizardOrderData.deadline = document.getElementById('wizardOrderDeadline').value;
-                wizardOrderData.priority = document.getElementById('wizardOrderPriority').value;
-                wizardOrderData.address = document.getElementById('wizardOrderAddress').value;
-                wizardOrderData.contact = document.getElementById('wizardOrderContact').value;
-                wizardOrderData.additional = document.getElementById('wizardOrderAdditional').value;
+                app.wizardOrderData.title = document.getElementById('wizardOrderTitle').value;
+                app.wizardOrderData.description = document.getElementById('wizardOrderDescription').value;
+                app.wizardOrderData.deadline = document.getElementById('wizardOrderDeadline').value;
+                app.wizardOrderData.priority = document.getElementById('wizardOrderPriority').value;
+                app.wizardOrderData.address = document.getElementById('wizardOrderAddress').value;
+                app.wizardOrderData.contact = document.getElementById('wizardOrderContact').value;
+                app.wizardOrderData.additional = document.getElementById('wizardOrderAdditional').value;
             }
             
-            if (wizardCurrentStep < 3) {
-                wizardCurrentStep++;
-                showWizardStep(wizardCurrentStep);
+            if (app.wizardCurrentStep < 3) {
+                app.wizardCurrentStep++;
+                showWizardStep(app.wizardCurrentStep);
                 
-                // Если переходим на шаг 3, показываем подтверждение
-                if (wizardCurrentStep === 3) {
+                if (app.wizardCurrentStep === 3) {
                     showOrderConfirmation();
                 }
             }
         }
         
         function prevWizardStep() {
-            if (wizardCurrentStep > 1) {
-                wizardCurrentStep--;
-                showWizardStep(wizardCurrentStep);
+            if (app.wizardCurrentStep > 1) {
+                app.wizardCurrentStep--;
+                showWizardStep(app.wizardCurrentStep);
             }
         }
         
         function cancelOrderWizard() {
-            // Сбрасываем данные
-            currentCategoryId = null;
-            currentServiceId = null;
-            wizardCurrentStep = 1;
-            wizardOrderData = {};
+            app.currentCategoryId = null;
+            app.currentServiceId = null;
+            app.wizardCurrentStep = 1;
+            app.wizardOrderData = {};
             
-            // Показываем список категорий, скрываем визард
             document.getElementById('categoriesGrid').style.display = 'grid';
             document.getElementById('orderWizard').style.display = 'none';
-            
-            // Сбрасываем форму
             document.getElementById('orderDetailsForm').reset();
             
-            // Сбрасываем выделение кнопок
             document.querySelectorAll('.service-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
             
-            // Деактивируем кнопку "Далее"
             document.getElementById('nextStepBtn').disabled = true;
         }
         
@@ -2382,36 +2352,36 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Категория:</strong>
-                            <div>${wizardOrderData.categoryName}</div>
+                            <div>${app.wizardOrderData.categoryName}</div>
                         </div>
                         <div>
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Услуга:</strong>
-                            <div>${wizardOrderData.serviceName}</div>
+                            <div>${app.wizardOrderData.serviceName}</div>
                         </div>
                         <div>
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Приоритет:</strong>
-                            <div>${getPriorityText(wizardOrderData.priority)}</div>
+                            <div>${getPriorityText(app.wizardOrderData.priority)}</div>
                         </div>
                         <div>
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Срок:</strong>
-                            <div>${new Date(wizardOrderData.deadline).toLocaleString('ru-RU')}</div>
+                            <div>${new Date(app.wizardOrderData.deadline).toLocaleString('ru-RU')}</div>
                         </div>
                         <div style="grid-column: 1 / -1;">
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Название:</strong>
-                            <div>${wizardOrderData.title}</div>
+                            <div>${app.wizardOrderData.title}</div>
                         </div>
                         <div style="grid-column: 1 / -1;">
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Описание:</strong>
-                            <div style="max-height: 100px; overflow-y: auto;">${wizardOrderData.description}</div>
+                            <div style="max-height: 100px; overflow-y: auto;">${app.wizardOrderData.description}</div>
                         </div>
                         <div style="grid-column: 1 / -1;">
                             <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Адрес:</strong>
-                            <div>${wizardOrderData.address}</div>
+                            <div>${app.wizardOrderData.address}</div>
                         </div>
-                        ${wizardOrderData.additional ? `
+                        ${app.wizardOrderData.additional ? `
                             <div style="grid-column: 1 / -1;">
                                 <strong style="color: var(--gray-500); display: block; margin-bottom: 5px;">Дополнительно:</strong>
-                                <div>${wizardOrderData.additional}</div>
+                                <div>${app.wizardOrderData.additional}</div>
                             </div>
                         ` : ''}
                     </div>
@@ -2446,215 +2416,228 @@
             showLoading();
             
             try {
-                const response = await fetch('/api/tasks', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        title: wizardOrderData.title,
-                        description: wizardOrderData.description,
-                        category_id: wizardOrderData.categoryId,
-                        priority: wizardOrderData.priority,
-                        deadline: wizardOrderData.deadline,
-                        address: wizardOrderData.address,
-                        contact_info: wizardOrderData.contact,
-                        additional_requirements: wizardOrderData.additional
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                // Симуляция создания заказа
+                setTimeout(() => {
                     showNotification('Заказ успешно создан! Помощница скоро свяжется с вами.', 'success');
                     
-                    // Сбрасываем визард
                     cancelOrderWizard();
-                    
-                    // Переходим на страницу заказов
                     navigate('tasks');
-                    
-                } else {
-                    showNotification(data.error || 'Ошибка создания заказа', 'error');
-                }
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 console.error('Ошибка создания заказа:', error);
                 showNotification('Ошибка создания заказа', 'error');
-            } finally {
                 hideLoading();
             }
         }
         
-async function loadOrdersPage() {
-    console.log('🔄 Загрузка заказов...');
-    console.log('🔐 Токен:', currentToken ? 'присутствует' : 'отсутствует');
-    console.log('👤 Пользователь:', currentUser);
-    
-    if (!currentToken) {
-        const ordersContainer = document.getElementById('ordersContainer');
-        ordersContainer.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-shopping-bag"></i>
-                <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
-                <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать заказы</p>
-                <button class="btn btn-primary" onclick="openAuthModal()">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Войти в систему
-                </button>
-            </div>
-        `;
-        return;
-    }
-    
-    showLoading();
-    
-    try {
-        const filter = document.getElementById('orderFilter').value;
-        const sort = document.getElementById('orderSort').value;
-        
-        let url = `/api/tasks?limit=50`;
-        if (filter !== 'all') url += `&status=${filter}`;
-        
-        if (sort === 'oldest') url += `&sort=created_at&order=ASC`;
-        else if (sort === 'deadline') url += `&sort=deadline&order=ASC`;
-        
-        console.log('🌐 Запрос к API:', url);
-        
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${currentToken}`,
-                'Content-Type': 'application/json'
+        async function loadOrdersPage() {
+            if (!app.currentToken) {
+                const ordersContainer = document.getElementById('ordersContainer');
+                ordersContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-shopping-bag"></i>
+                        <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
+                        <p style="margin-bottom: 25px;">Войдите в систему, чтобы создавать и отслеживать заказы</p>
+                        <button class="btn btn-primary" id="btnOpenAuthFromOrders">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Войти в систему
+                        </button>
+                    </div>
+                `;
+                return;
             }
-        });
-        
-        console.log('🌐 Ответ сервера:', response.status, response.statusText);
-        
-        if (response.status === 401) {
-            // Токен недействителен
-            localStorage.removeItem('token');
-            currentToken = null;
-            currentUser = null;
-            updateUserMenu();
-            showNotification('Сессия истекла. Пожалуйста, войдите снова.', 'error');
-            loadOrdersPage(); // Перезагрузим страницу
-            return;
-        }
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('📦 Данные от сервера:', data);
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const orders = data.data.tasks;
-                    const pagination = data.data.pagination;
-                    
-                    // Обновляем статистику
-                    updateOrderStats(orders);
-                    
-                    // Отображаем список заказов
-                    const ordersContainer = document.getElementById('ordersContainer');
-                    
-                    if (orders.length === 0) {
-                        ordersContainer.innerHTML = `
-                            <div class="empty-state">
-                                <i class="fas fa-shopping-bag"></i>
-                                <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
-                                <p style="margin-bottom: 25px;">Создайте первый заказ через раздел помощи</p>
-                                <button class="btn btn-primary" onclick="navigate('services')">
-                                    <i class="fas fa-plus-circle"></i>
-                                    Создать первый заказ
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        let ordersHtml = '<div class="grid" style="gap: 20px;">';
-                        
-                        orders.forEach(order => {
-                            const statusClass = `status-${order.status}`;
-                            const statusText = order.status_info?.label || order.status;
-                            
-                            const deadlineDate = new Date(order.deadline);
-                            const now = new Date();
-                            const daysDiff = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
-                            
-                            let deadlineText = '';
-                            if (daysDiff < 0) {
-                                deadlineText = `<span style="color: var(--danger);">Просрочено на ${Math.abs(daysDiff)} дн.</span>`;
-                            } else if (daysDiff === 0) {
-                                deadlineText = '<span style="color: var(--warning);">Сегодня</span>';
-                            } else if (daysDiff === 1) {
-                                deadlineText = '<span style="color: var(--warning);">Завтра</span>';
-                            } else if (daysDiff <= 7) {
-                                deadlineText = `Через ${daysDiff} дн.`;
-                            } else {
-                                deadlineText = new Date(order.deadline).toLocaleDateString('ru-RU');
+            
+            showLoading();
+            
+            try {
+                // Симуляция данных заказов
+                const demoData = {
+                    success: true,
+                    data: {
+                        tasks: [
+                            {
+                                id: 1,
+                                title: 'Уборка 3-х комнатной квартиры',
+                                description: 'Генеральная уборка с мытьем окон и чисткой ковров',
+                                status: 'in_progress',
+                                status_info: { label: 'В работе', icon: '⏳' },
+                                priority: 'high',
+                                priority_info: { label: 'Высокий', color: '#EF4444' },
+                                deadline: new Date(Date.now() + 86400000).toISOString(),
+                                category_name: 'Дом и быт',
+                                category_icon: '🏠',
+                                task_number: 'T-001',
+                                can_chat: true
+                            },
+                            {
+                                id: 2,
+                                title: 'Маникюр на дому',
+                                description: 'Классический маникюр с покрытием гель-лаком',
+                                status: 'completed',
+                                status_info: { label: 'Завершен', icon: '✅' },
+                                priority: 'medium',
+                                priority_info: { label: 'Средний', color: '#3B82F6' },
+                                deadline: new Date(Date.now() - 86400000).toISOString(),
+                                category_name: 'Красота и здоровье',
+                                category_icon: '💅',
+                                task_number: 'T-002',
+                                can_chat: false
+                            },
+                            {
+                                id: 3,
+                                title: 'Няня на 4 часа',
+                                description: 'Присмотр за двумя детьми 5 и 7 лет',
+                                status: 'new',
+                                status_info: { label: 'Новый', icon: '🆕' },
+                                priority: 'urgent',
+                                priority_info: { label: 'Срочный', color: '#F59E0B' },
+                                deadline: new Date(Date.now() + 172800000).toISOString(),
+                                category_name: 'Дети и семья',
+                                category_icon: '👨‍👩‍👧‍👦',
+                                task_number: 'T-003',
+                                can_chat: true
                             }
-                            
-                            ordersHtml += `
-                                <div class="card" onclick="viewOrderDetails(${order.id})" style="cursor: pointer; transition: var(--transition);">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                                        <div style="flex: 1;">
-                                            <h3 style="margin-bottom: 10px; color: var(--gray-900);">${order.title}</h3>
-                                            <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                                                <span class="order-status ${statusClass}">
-                                                    ${order.status_info?.icon || ''} ${statusText}
-                                                </span>
-                                                <span class="badge" style="background: ${order.priority_info?.color || '#95A5A6'}; color: white;">
-                                                    ${order.priority_info?.label || 'Средний'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div style="font-size: 2.5rem; color: var(--pink-light);">
-                                            ${order.category_icon || '👋'}
+                        ],
+                        pagination: {
+                            total: 3,
+                            page: 1,
+                            pages: 1
+                        }
+                    }
+                };
+                
+                const orders = demoData.data.tasks;
+                
+                // Обновляем статистику
+                updateOrderStats(orders);
+                
+                // Отображаем список заказов
+                const ordersContainer = document.getElementById('ordersContainer');
+                
+                if (orders.length === 0) {
+                    ordersContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-bag"></i>
+                            <h3 style="margin-bottom: 15px;">У вас пока нет заказов</h3>
+                            <p style="margin-bottom: 25px;">Создайте первый заказ через раздел помощи</p>
+                            <button class="btn btn-primary" id="btnCreateFirstOrder">
+                                <i class="fas fa-plus-circle"></i>
+                                Создать первый заказ
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    let ordersHtml = '<div class="grid" style="gap: 20px;">';
+                    
+                    orders.forEach(order => {
+                        const statusClass = `status-${order.status}`;
+                        const statusText = order.status_info?.label || order.status;
+                        
+                        const deadlineDate = new Date(order.deadline);
+                        const now = new Date();
+                        const daysDiff = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+                        
+                        let deadlineText = '';
+                        if (daysDiff < 0) {
+                            deadlineText = `<span style="color: var(--danger);">Просрочено на ${Math.abs(daysDiff)} дн.</span>`;
+                        } else if (daysDiff === 0) {
+                            deadlineText = '<span style="color: var(--warning);">Сегодня</span>';
+                        } else if (daysDiff === 1) {
+                            deadlineText = '<span style="color: var(--warning);">Завтра</span>';
+                        } else if (daysDiff <= 7) {
+                            deadlineText = `Через ${daysDiff} дн.`;
+                        } else {
+                            deadlineText = new Date(order.deadline).toLocaleDateString('ru-RU');
+                        }
+                        
+                        ordersHtml += `
+                            <div class="card" data-order-id="${order.id}">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                    <div style="flex: 1;">
+                                        <h3 style="margin-bottom: 10px; color: var(--gray-900);">${order.title}</h3>
+                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                                            <span class="order-status ${statusClass}">
+                                                ${order.status_info?.icon || ''} ${statusText}
+                                            </span>
+                                            <span class="badge" style="background: ${order.priority_info?.color || '#95A5A6'}; color: white;">
+                                                ${order.priority_info?.label || 'Средний'}
+                                            </span>
                                         </div>
                                     </div>
-                                    
-                                    <p style="color: var(--gray-600); margin-bottom: 15px; font-size: 0.95rem;">
-                                        ${order.description.length > 150 ? order.description.substring(0, 150) + '...' : order.description}
-                                    </p>
-                                    
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.9rem; color: var(--gray-500);">
-                                        <div>
-                                            <i class="fas fa-tag"></i> ${order.category_name || ''}
-                                        </div>
-                                        <div>
-                                            <i class="fas fa-calendar-alt"></i> ${deadlineText}
-                                        </div>
-                                    </div>
-                                    
-                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--gray-200);">
-                                        <div style="font-size: 0.9rem; color: var(--gray-500);">
-                                            № ${order.task_number || order.id}
-                                        </div>
-                                        <div style="display: flex; gap: 10px;">
-                                            ${order.can_chat ? `
-                                                <button class="btn btn-secondary" onclick="viewOrderChat(${order.id}); event.stopPropagation();" style="padding: 6px 12px; font-size: 0.8rem;">
-                                                    <i class="fas fa-comment"></i>
-                                                </button>
-                                            ` : ''}
-                                            <button class="btn btn-primary" onclick="viewOrderDetails(${order.id}); event.stopPropagation();" style="padding: 6px 12px; font-size: 0.8rem;">
-                                                <i class="fas fa-eye"></i> Подробнее
-                                            </button>
-                                        </div>
+                                    <div style="font-size: 2.5rem; color: var(--pink-light);">
+                                        ${order.category_icon || '👋'}
                                     </div>
                                 </div>
-                            `;
+                                
+                                <p style="color: var(--gray-600); margin-bottom: 15px; font-size: 0.95rem;">
+                                    ${order.description.length > 150 ? order.description.substring(0, 150) + '...' : order.description}
+                                </p>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.9rem; color: var(--gray-500);">
+                                    <div>
+                                        <i class="fas fa-tag"></i> ${order.category_name || ''}
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-calendar-alt"></i> ${deadlineText}
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid var(--gray-200);">
+                                    <div style="font-size: 0.9rem; color: var(--gray-500);">
+                                        № ${order.task_number || order.id}
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        ${order.can_chat ? `
+                                            <button class="btn btn-secondary btn-order-chat" data-order-id="${order.id}" style="padding: 6px 12px; font-size: 0.8rem;">
+                                                <i class="fas fa-comment"></i>
+                                            </button>
+                                        ` : ''}
+                                        <button class="btn btn-primary btn-view-order" data-order-id="${order.id}" style="padding: 6px 12px; font-size: 0.8rem;">
+                                            <i class="fas fa-eye"></i> Подробнее
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    ordersHtml += '</div>';
+                    ordersContainer.innerHTML = ordersHtml;
+                    
+                    // Добавляем обработчики событий для карточек заказов
+                    document.querySelectorAll('.card[data-order-id]').forEach(card => {
+                        card.addEventListener('click', function(e) {
+                            if (!e.target.closest('button')) {
+                                const orderId = this.getAttribute('data-order-id');
+                                viewOrderDetails(orderId);
+                            }
                         });
-                        
-                        ordersHtml += '</div>';
-                        ordersContainer.innerHTML = ordersHtml;
-                    }
+                    });
+                    
+                    document.querySelectorAll('.btn-view-order').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const orderId = this.getAttribute('data-order-id');
+                            viewOrderDetails(orderId);
+                        });
+                    });
+                    
+                    document.querySelectorAll('.btn-order-chat').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const orderId = this.getAttribute('data-order-id');
+                            viewOrderChat(orderId);
+                        });
+                    });
                 }
+                
+                hideLoading();
+                
             } catch (error) {
                 console.error('Ошибка загрузки заказов:', error);
                 showNotification('Ошибка загрузки заказов', 'error');
-            } finally {
                 hideLoading();
             }
         }
@@ -2687,14 +2670,19 @@ async function loadOrdersPage() {
             `;
         }
         
-        // Просмотр деталей заказа
         function viewOrderDetails(orderId) {
-            currentOrderId = orderId;
+            app.currentOrderId = orderId;
             navigate('task-details');
         }
         
+        function viewOrderChat(orderId) {
+            // Реализация открытия чата заказа
+            console.log('Открыть чат заказа:', orderId);
+            showNotification('Чат будет доступен в полной версии приложения', 'info');
+        }
+        
         async function loadOrderDetailsPage() {
-            if (!currentOrderId) {
+            if (!app.currentOrderId) {
                 navigate('tasks');
                 return;
             }
@@ -2702,16 +2690,28 @@ async function loadOrdersPage() {
             showLoading();
             
             try {
-                const response = await fetch(`/api/tasks/${currentOrderId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const order = data.data.task;
+                // Симуляция данных заказа
+                setTimeout(() => {
+                    const order = {
+                        id: app.currentOrderId,
+                        title: 'Уборка 3-х комнатной квартиры',
+                        description: 'Генеральная уборка с мытьем окон и чисткой ковров. Особые требования: использовать только гипоаллергенные моющие средства, так как у хозяйки аллергия на химию.',
+                        status: 'in_progress',
+                        status_info: { label: 'В работе', icon: '⏳' },
+                        priority: 'high',
+                        priority_info: { label: 'Высокий', color: '#EF4444' },
+                        deadline: new Date(Date.now() + 86400000).toISOString(),
+                        category_name: 'Дом и быт',
+                        task_number: 'T-001',
+                        address: 'Москва, ул. Тверская, д. 10, кв. 25',
+                        contact_info: '+7 (999) 123-45-67',
+                        additional_requirements: 'Использовать только гипоаллергенные средства. Ключ у консьержа.',
+                        performer_firstName: 'Анна',
+                        performer_lastName: 'Иванова',
+                        performer_phone: '+7 (999) 987-65-43',
+                        available_actions: ['cancel', 'complete'],
+                        review: null
+                    };
                     
                     // Заголовок
                     document.getElementById('orderDetailsTitle').textContent = order.title;
@@ -2793,21 +2793,26 @@ async function loadOrdersPage() {
                                 
                                 <div style="background: var(--light-bg); border-radius: var(--radius); padding: 20px;">
                                     <h5 style="margin-bottom: 10px; color: var(--gray-900);">История статусов</h5>
-                                    ${order.status_history && order.status_history.length > 0 ? `
-                                        <div style="display: flex; flex-direction: column; gap: 10px;">
-                                            ${order.status_history.slice(-3).reverse().map(status => `
-                                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: var(--radius-sm);">
-                                                    <div>
-                                                        <div style="font-weight: 600; color: var(--gray-900);">${status.status}</div>
-                                                        <div style="font-size: 0.8rem; color: var(--gray-500);">${status.firstName} ${status.lastName}</div>
-                                                    </div>
-                                                    <div style="font-size: 0.8rem; color: var(--gray-500);">
-                                                        ${new Date(status.created_at).toLocaleString('ru-RU', {hour12: false})}
-                                                    </div>
-                                                </div>
-                                            `).join('')}
+                                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: var(--radius-sm);">
+                                            <div>
+                                                <div style="font-weight: 600; color: var(--gray-900);">Новый</div>
+                                                <div style="font-size: 0.8rem; color: var(--gray-500);">Вы</div>
+                                            </div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                                ${new Date(Date.now() - 172800000).toLocaleString('ru-RU', {hour12: false})}
+                                            </div>
                                         </div>
-                                    ` : '<p style="color: var(--gray-500); font-style: italic;">Нет истории статусов</p>'}
+                                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: white; border-radius: var(--radius-sm);">
+                                            <div>
+                                                <div style="font-weight: 600; color: var(--gray-900);">В работе</div>
+                                                <div style="font-size: 0.8rem; color: var(--gray-500);">Анна Иванова</div>
+                                            </div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                                ${new Date(Date.now() - 86400000).toLocaleString('ru-RU', {hour12: false})}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -2831,7 +2836,7 @@ async function loadOrdersPage() {
                                         <span>${order.performer_phone}</span>
                                     </div>
                                 ` : ''}
-                                <button class="btn btn-primary" onclick="openOrderChat()" style="width: 100%;">
+                                <button class="btn btn-primary" id="btnOpenChat" style="width: 100%;">
                                     <i class="fas fa-comment"></i>
                                     Написать сообщение
                                 </button>
@@ -2856,7 +2861,7 @@ async function loadOrdersPage() {
                     if (order.available_actions && order.available_actions.length > 0) {
                         if (order.available_actions.includes('cancel')) {
                             actionsHtml += `
-                                <button class="btn btn-danger" onclick="cancelOrder(${order.id})">
+                                <button class="btn btn-danger" id="btnCancelOrder">
                                     <i class="fas fa-times"></i>
                                     Отменить заказ
                                 </button>
@@ -2865,7 +2870,7 @@ async function loadOrdersPage() {
                         
                         if (order.available_actions.includes('complete')) {
                             actionsHtml += `
-                                <button class="btn btn-success" onclick="completeOrder(${order.id})">
+                                <button class="btn btn-success" id="btnCompleteOrder">
                                     <i class="fas fa-check"></i>
                                     Завершить заказ
                                 </button>
@@ -2874,7 +2879,7 @@ async function loadOrdersPage() {
                         
                         if (order.available_actions.includes('review') && !order.review) {
                             actionsHtml += `
-                                <button class="btn btn-warning" onclick="rateOrder(${order.id}, '${order.title}')">
+                                <button class="btn btn-warning" id="btnRateOrder">
                                     <i class="fas fa-star"></i>
                                     Оценить выполнение
                                 </button>
@@ -2886,32 +2891,22 @@ async function loadOrdersPage() {
                     orderActions.innerHTML = actionsHtml;
                     
                     // Загружаем чат
-                    await loadOrderChat();
+                    loadOrderChat();
                     
-                } else {
-                    showNotification('Заказ не найден', 'error');
-                    navigate('tasks');
-                }
+                    hideLoading();
+                }, 500);
+                
             } catch (error) {
                 console.error('Ошибка загрузки деталей заказа:', error);
                 showNotification('Ошибка загрузки заказа', 'error');
-                navigate('tasks');
-            } finally {
                 hideLoading();
             }
         }
         
         async function loadOrderChat() {
             try {
-                const response = await fetch(`/api/tasks/${currentOrderId}/messages`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                // Симуляция данных чата
+                setTimeout(() => {
                     const orderChat = document.getElementById('orderChat');
                     
                     orderChat.innerHTML = `
@@ -2919,7 +2914,7 @@ async function loadOrdersPage() {
                             <div class="chat-header">
                                 <div>
                                     <h4 style="margin: 0; color: white;">Чат заказа</h4>
-                                    <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9;">${data.data.messages.length} сообщений</p>
+                                    <p style="margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9;">3 сообщения</p>
                                 </div>
                                 <div style="display: flex; gap: 10px;">
                                     <button class="btn btn-secondary" style="padding: 8px 12px; background: rgba(255,255,255,0.2);">
@@ -2932,48 +2927,68 @@ async function loadOrdersPage() {
                             </div>
                             
                             <div class="chat-messages" id="chatMessagesContainer">
-                                ${data.data.messages.length > 0 ? data.data.messages.map(msg => `
-                                    <div class="chat-message ${msg.user_id === currentUser?.id ? 'own' : ''}">
-                                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-                                            <div style="width: 30px; height: 30px; background: ${msg.user_id === currentUser?.id ? 'var(--pink-primary)' : 'var(--gray-400)'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600;">
-                                                ${msg.firstName[0]}${msg.lastName[0]}
+                                <div class="chat-message">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                        <div style="width: 30px; height: 30px; background: var(--gray-400); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600;">
+                                            АИ
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--gray-900);">
+                                                Анна Иванова
                                             </div>
-                                            <div>
-                                                <div style="font-weight: 600; color: var(--gray-900);">
-                                                    ${msg.firstName} ${msg.lastName}
-                                                    ${msg.role === 'admin' ? ' <span class="badge" style="background: var(--warning); color: white; font-size: 0.7rem; padding: 2px 6px;">Админ</span>' : ''}
-                                                    ${msg.role === 'manager' ? ' <span class="badge" style="background: var(--info); color: white; font-size: 0.7rem; padding: 2px 6px;">Менеджер</span>' : ''}
-                                                </div>
-                                                <div style="font-size: 0.8rem; color: var(--gray-500);">
-                                                    ${new Date(msg.created_at).toLocaleString('ru-RU', {hour12: false})}
-                                                </div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                                ${new Date(Date.now() - 86400000).toLocaleString('ru-RU', {hour12: false})}
                                             </div>
                                         </div>
-                                        <div class="chat-message-content">
-                                            ${msg.message}
+                                    </div>
+                                    <div class="chat-message-content">
+                                        Здравствуйте! Я ваша помощница по уборке. Подтвердите, пожалуйста, что у вас есть гипоаллергенные средства для уборки.
+                                    </div>
+                                </div>
+                                <div class="chat-message own">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                        <div style="width: 30px; height: 30px; background: var(--pink-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600;">
+                                            ${app.currentUser?.firstName?.[0] || 'К'}{app.currentUser?.lastName?.[0] || 'Л'}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--gray-900);">
+                                                ${app.currentUser?.firstName || 'Клиентка'} ${app.currentUser?.lastName || ''}
+                                            </div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                                ${new Date(Date.now() - 43200000).toLocaleString('ru-RU', {hour12: false})}
+                                            </div>
                                         </div>
                                     </div>
-                                `).join('') : `
-                                    <div style="text-align: center; padding: 40px 20px; color: var(--gray-500);">
-                                        <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
-                                        <p>Нет сообщений</p>
-                                        <p style="font-size: 0.9rem; margin-top: 10px;">Начните обсуждение заказа</p>
+                                    <div class="chat-message-content">
+                                        Да, все средства есть. Ключ у консьержа, скажите, что от меня.
                                     </div>
-                                `}
+                                </div>
+                                <div class="chat-message">
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                        <div style="width: 30px; height: 30px; background: var(--gray-400); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 600;">
+                                            АИ
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--gray-900);">
+                                                Анна Иванова
+                                            </div>
+                                            <div style="font-size: 0.8rem; color: var(--gray-500);">
+                                                ${new Date(Date.now() - 21600000).toLocaleString('ru-RU', {hour12: false})}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="chat-message-content">
+                                        Отлично! Буду завтра в 10:00. Спасибо!
+                                    </div>
+                                </div>
                             </div>
                             
-                            ${data.data.can_send ? `
-                                <div class="chat-input">
-                                    <input type="text" id="chatMessageInput" placeholder="Введите сообщение..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                                    <button class="btn btn-primary" onclick="sendChatMessage()">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                            ` : `
-                                <div style="padding: 20px; text-align: center; background: white; color: var(--gray-500); border-top: 1px solid var(--gray-200);">
-                                    <i class="fas fa-lock"></i> Чат недоступен для завершенных или отмененных заказов
-                                </div>
-                            `}
+                            <div class="chat-input">
+                                <input type="text" id="chatMessageInput" placeholder="Введите сообщение...">
+                                <button class="btn btn-primary" id="btnSendMessage">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
                         </div>
                     `;
                     
@@ -2982,69 +2997,51 @@ async function loadOrdersPage() {
                     if (messagesContainer) {
                         messagesContainer.scrollTop = messagesContainer.scrollHeight;
                     }
-                }
+                }, 300);
+                
             } catch (error) {
                 console.error('Ошибка загрузки чата:', error);
             }
         }
         
-        async function sendChatMessage() {
-            const input = document.getElementById('chatMessageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            try {
-                const response = await fetch(`/api/tasks/${currentOrderId}/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({ message })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    input.value = '';
-                    await loadOrderChat();
-                } else {
-                    showNotification('Ошибка отправки сообщения', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка отправки сообщения:', error);
-                showNotification('Ошибка отправки сообщения', 'error');
-            }
-        }
-        
-        function openOrderChat() {
-            const chatInput = document.getElementById('chatMessageInput');
-            if (chatInput) {
-                chatInput.focus();
-            }
-        }
-        
-        // Страница профиля
         async function loadProfilePage() {
-            if (!currentUser) {
+            if (!app.currentUser) {
                 navigate('home');
                 openAuthModal();
                 return;
             }
             
             try {
-                const response = await fetch('/api/auth/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const user = data.data.user;
-                    const stats = data.data.stats;
+                // Симуляция данных профиля
+                setTimeout(() => {
+                    const user = {
+                        firstName: 'Мария',
+                        lastName: 'Петрова',
+                        email: 'client@example.com',
+                        phone: '+7 (999) 123-45-67',
+                        role: 'client',
+                        created_at: new Date(Date.now() - 2592000000).toISOString()
+                    };
+                    
+                    const stats = {
+                        total_tasks: 3,
+                        completed_tasks: 1,
+                        active_tasks: 1,
+                        unread_notifications: 2
+                    };
+                    
+                    const subscription = {
+                        display_name: 'Премиум',
+                        user_data: {
+                            is_active: true,
+                            expires: new Date(Date.now() + 2592000000).toISOString()
+                        },
+                        current_usage: {
+                            tasks_used: 3,
+                            tasks_limit: 10,
+                            percentage: 30
+                        }
+                    };
                     
                     // Информация о пользователе
                     const userInfo = document.getElementById('userInfo');
@@ -3073,10 +3070,7 @@ async function loadOrdersPage() {
                     
                     // Текущая подписка
                     const currentSubscription = document.getElementById('currentSubscription');
-                    const subscription = data.data.subscription;
-                    
                     if (subscription) {
-                        const features = subscription.features || [];
                         const usagePercentage = subscription.current_usage ? Math.min(100, subscription.current_usage.percentage) : 0;
                         
                         currentSubscription.innerHTML = `
@@ -3137,9 +3131,10 @@ async function loadOrdersPage() {
                     `;
                     
                     // Загружаем уведомления
-                    await loadNotifications();
+                    loadNotifications();
                     
-                }
+                }, 300);
+                
             } catch (error) {
                 console.error('Ошибка загрузки профиля:', error);
                 showNotification('Ошибка загрузки профиля', 'error');
@@ -3151,7 +3146,6 @@ async function loadOrdersPage() {
                 const notificationsList = document.getElementById('notificationsList');
                 
                 // В реальном приложении здесь был бы запрос к API
-                // Сейчас покажем примерные данные
                 const notifications = [
                     {
                         id: 1,
@@ -3207,48 +3201,33 @@ async function loadOrdersPage() {
             }
         }
         
-        // ==================== API ФУНКЦИИ ====================
-        
+        // API функции
         async function verifyToken() {
-            if (!currentToken) {
-                console.log('🔐 Токен отсутствует');
-                currentUser = null;
+            if (!app.currentToken) {
+                app.currentUser = null;
                 updateUserMenu();
                 return false;
             }
             
             try {
-                const response = await fetch('/api/auth/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    method: 'GET'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
+                // Симуляция проверки токена
+                setTimeout(() => {
+                    app.currentUser = {
+                        id: 1,
+                        firstName: 'Мария',
+                        lastName: 'Петрова',
+                        email: 'client@example.com',
+                        role: 'client',
+                        subscription_plan: 'premium',
+                        initial_fee_paid: true
+                    };
                     
-                    if (data.success) {
-                        currentUser = {
-                            ...data.data.user,
-                            ...data.data.stats
-                        };
-                        
-                        updateUserMenu();
-                        return true;
-                    }
-                }
-                
-                // Токен невалиден
-                localStorage.removeItem('token');
-                currentToken = null;
-                currentUser = null;
-                updateUserMenu();
-                return false;
+                    updateUserMenu();
+                    return true;
+                }, 100);
                 
             } catch (error) {
-                console.error('🔐 Ошибка проверки токена:', error);
+                console.error('Ошибка проверки токена:', error);
                 return false;
             }
         }
@@ -3265,98 +3244,78 @@ async function loadOrdersPage() {
             showLoading();
             
             try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentUser = data.data.user;
-                    currentToken = data.data.token;
-                    localStorage.setItem('token', currentToken);
+                // Симуляция входа
+                setTimeout(() => {
+                    app.currentUser = {
+                        id: 1,
+                        firstName: 'Мария',
+                        lastName: 'Петрова',
+                        email: email,
+                        role: 'client',
+                        subscription_plan: 'premium',
+                        initial_fee_paid: true
+                    };
+                    
+                    app.currentToken = 'demo_token_' + Date.now();
+                    localStorage.setItem('token', app.currentToken);
                     
                     showNotification('Вход выполнен успешно!', 'success');
                     closeModal('authModal');
                     updateUserMenu();
                     
                     // Перезагружаем текущую страницу
-                    navigate(currentPage);
-                } else {
-                    showNotification(data.error || 'Ошибка входа', 'error');
-                }
+                    navigate(app.currentPage);
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 showNotification('Ошибка сети', 'error');
-            } finally {
                 hideLoading();
             }
         }
         
-async function register() {
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const firstName = document.getElementById('registerFirstName').value;
-    const lastName = document.getElementById('registerLastName').value;
-    const phone = document.getElementById('registerPhone').value;
-    const role = document.getElementById('registerRole').value;
-    
-    if (!email || !password || !firstName || !lastName || !phone) {
-        showNotification('Заполните все обязательные поля', 'error');
-        return;
-    }
-    
-    // Валидация email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showNotification('Введите корректный email адрес', 'error');
-        return;
-    }
-    
-    // Валидация пароля
-    if (password.length < 6) {
-        showNotification('Пароль должен содержать не менее 6 символов', 'error');
-        return;
-    }
-    
-    showLoading();
-    
-    try {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                email,
-                password,
-                firstName,
-                lastName,
-                phone,
-                role
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification('Регистрация успешна! Теперь войдите в систему.', 'success');
-            showLoginForm();
-        } else {
-            showNotification(data.error || 'Ошибка регистрации', 'error');
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const firstName = document.getElementById('registerFirstName').value;
+            const lastName = document.getElementById('registerLastName').value;
+            const phone = document.getElementById('registerPhone').value;
+            const role = document.getElementById('registerRole').value;
+            
+            if (!email || !password || !firstName || !lastName || !phone) {
+                showNotification('Заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Введите корректный email адрес', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Пароль должен содержать не менее 6 символов', 'error');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // Симуляция регистрации
+                setTimeout(() => {
+                    showNotification('Регистрация успешна! Теперь войдите в систему.', 'success');
+                    showLoginForm();
+                    hideLoading();
+                }, 1000);
+                
+            } catch (error) {
+                showNotification('Ошибка сети', 'error');
+                hideLoading();
+            }
         }
-    } catch (error) {
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-}
         
         async function subscribeToPlan(plan) {
-            if (!currentToken) {
+            if (!app.currentToken) {
                 showNotification('Сначала войдите в систему', 'error');
                 openAuthModal();
                 return;
@@ -3365,44 +3324,29 @@ async function register() {
             showLoading();
             
             try {
-                const response = await fetch('/api/subscriptions/subscribe', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        plan: plan,
-                        period: 'monthly'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Подписка успешно оформлена!', 'success');
-                    
-                    // Обновляем данные пользователя
-                    if (data.data.user) {
-                        currentUser = data.data.user;
-                        updateUserMenu();
-                        
-                        // Обновляем страницу подписок
-                        if (currentPage === 'subscriptions') {
-                            loadSubscriptionsPage();
-                        }
-                        
-                        // Обновляем профиль если открыт
-                        if (currentPage === 'profile') {
-                            loadProfilePage();
-                        }
+                // Симуляция оформления подписки
+                setTimeout(() => {
+                    app.currentUser.subscription_plan = plan;
+                    if (plan === 'premium') {
+                        app.currentUser.initial_fee_paid = true;
                     }
-                } else {
-                    showNotification(data.error || 'Ошибка оформления подписки', 'error');
-                }
+                    
+                    showNotification('Подписка успешно оформлена!', 'success');
+                    updateUserMenu();
+                    
+                    if (app.currentPage === 'subscriptions') {
+                        loadSubscriptionsPage();
+                    }
+                    
+                    if (app.currentPage === 'profile') {
+                        loadProfilePage();
+                    }
+                    
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 showNotification('Ошибка сети', 'error');
-            } finally {
                 hideLoading();
             }
         }
@@ -3415,34 +3359,21 @@ async function register() {
             showLoading();
             
             try {
-                const response = await fetch(`/api/tasks/${orderId}/cancel`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        reason: 'Отменено клиенткой'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                // Симуляция отмены заказа
+                setTimeout(() => {
                     showNotification('Заказ успешно отменен', 'success');
                     
-                    // Обновляем страницу
-                    if (currentPage === 'tasks') {
+                    if (app.currentPage === 'tasks') {
                         loadOrdersPage();
-                    } else if (currentPage === 'task-details') {
+                    } else if (app.currentPage === 'task-details') {
                         loadOrderDetailsPage();
                     }
-                } else {
-                    showNotification(data.error || 'Ошибка отмены заказа', 'error');
-                }
+                    
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 showNotification('Ошибка сети', 'error');
-            } finally {
                 hideLoading();
             }
         }
@@ -3455,54 +3386,39 @@ async function register() {
             showLoading();
             
             try {
-                const response = await fetch(`/api/tasks/${orderId}/status`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        status: 'completed',
-                        notes: 'Клиентка подтвердила выполнение'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                // Симуляция завершения заказа
+                setTimeout(() => {
                     showNotification('Заказ отмечен как выполненный', 'success');
                     
-                    // Обновляем страницу
-                    if (currentPage === 'tasks') {
+                    if (app.currentPage === 'tasks') {
                         loadOrdersPage();
-                    } else if (currentPage === 'task-details') {
+                    } else if (app.currentPage === 'task-details') {
                         loadOrderDetailsPage();
                     }
                     
-                    // Предлагаем оценить заказ
                     setTimeout(() => {
-                        rateOrder(orderId);
+                        rateOrder(orderId, 'Уборка 3-х комнатной квартиры');
                     }, 1500);
-                } else {
-                    showNotification(data.error || 'Ошибка завершения заказа', 'error');
-                }
+                    
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 showNotification('Ошибка сети', 'error');
-            } finally {
                 hideLoading();
             }
         }
         
         function rateOrder(orderId, orderTitle = '') {
-            currentOrderId = orderId;
+            app.currentOrderId = orderId;
             document.getElementById('rateOrderTitle').textContent = orderTitle || 'Оцените качество выполнения заказа';
-            currentRating = 0;
+            app.currentRating = 0;
             updateRatingStars();
             showModal('rateOrderModal');
         }
         
         function setRating(rating) {
-            currentRating = rating;
+            app.currentRating = rating;
             updateRatingStars();
         }
         
@@ -3520,15 +3436,23 @@ async function register() {
             
             let starsHtml = '';
             for (let i = 1; i <= 5; i++) {
-                starsHtml += `<i class="fas fa-star" onclick="setRating(${i})" style="cursor: pointer; ${i <= currentRating ? 'color: var(--warning); opacity: 1;' : 'opacity: 0.3;'}"></i>`;
+                starsHtml += `<i class="fas fa-star" data-rating="${i}" style="cursor: pointer; ${i <= app.currentRating ? 'color: var(--warning); opacity: 1;' : 'opacity: 0.3;'}"></i>`;
             }
             
             stars.innerHTML = starsHtml;
-            ratingText.textContent = currentRating > 0 ? ratings[currentRating - 1] : 'Нажмите на звезду для оценки';
+            ratingText.textContent = app.currentRating > 0 ? ratings[app.currentRating - 1] : 'Нажмите на звезду для оценки';
+            
+            // Добавляем обработчики для звезд
+            document.querySelectorAll('#ratingStars i').forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    setRating(rating);
+                });
+            });
         }
         
         async function submitRating() {
-            if (currentRating === 0) {
+            if (app.currentRating === 0) {
                 showNotification('Поставьте оценку', 'error');
                 return;
             }
@@ -3536,54 +3460,128 @@ async function register() {
             showLoading();
             
             try {
-                const response = await fetch(`/api/tasks/${currentOrderId}/rate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        rating: currentRating,
-                        comment: document.getElementById('ratingComment').value,
-                        is_anonymous: document.getElementById('ratingAnonymous').checked
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
+                // Симуляция отправки оценки
+                setTimeout(() => {
                     showNotification('Спасибо за вашу оценку!', 'success');
                     closeModal('rateOrderModal');
                     
-                    // Обновляем страницу если открыта детальная информация
-                    if (currentPage === 'task-details') {
+                    if (app.currentPage === 'task-details') {
                         loadOrderDetailsPage();
                     }
-                } else {
-                    showNotification(data.error || 'Ошибка отправки оценки', 'error');
-                }
+                    
+                    hideLoading();
+                }, 1000);
+                
             } catch (error) {
                 showNotification('Ошибка сети', 'error');
-            } finally {
                 hideLoading();
             }
         }
         
-        async function markAllNotificationsRead() {
-            showNotification('Функция будет реализована в следующем обновлении', 'info');
+        function markAllNotificationsRead() {
+            showNotification('Все уведомления отмечены как прочитанные', 'success');
         }
         
         function logout() {
             localStorage.removeItem('token');
-            currentToken = null;
-            currentUser = null;
+            app.currentToken = null;
+            app.currentUser = null;
             updateUserMenu();
             navigate('home');
             showNotification('Вы вышли из системы', 'info');
         }
         
-        // Вспомогательные функции
+        // Настройка обработчиков событий
         function setupEventListeners() {
+            // Навигация
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    navigate(page);
+                });
+            });
+            
+            document.getElementById('logoHome').addEventListener('click', function(e) {
+                e.preventDefault();
+                navigate('home');
+            });
+            
+            // Мобильное меню
+            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+            
+            // Главная страница
+            document.getElementById('btnOrderHelp').addEventListener('click', function() {
+                navigate('services');
+            });
+            
+            document.getElementById('btnChooseSubscription').addEventListener('click', function() {
+                navigate('subscriptions');
+            });
+            
+            document.getElementById('btnAllCategories').addEventListener('click', function(e) {
+                e.preventDefault();
+                navigate('services');
+            });
+            
+            // Визард заказа
+            document.getElementById('btnCancelWizard').addEventListener('click', cancelOrderWizard);
+            document.getElementById('btnNextStep').addEventListener('click', nextWizardStep);
+            document.getElementById('btnPrevStep1').addEventListener('click', prevWizardStep);
+            document.getElementById('btnNextStep2').addEventListener('click', nextWizardStep);
+            document.getElementById('btnPrevStep2').addEventListener('click', prevWizardStep);
+            document.getElementById('btnCreateOrder').addEventListener('click', createOrderFromWizard);
+            
+            // Страница заказов
+            document.getElementById('btnNewOrder').addEventListener('click', function() {
+                navigate('services');
+            });
+            
+            document.getElementById('orderFilter').addEventListener('change', loadOrdersPage);
+            document.getElementById('orderSort').addEventListener('change', loadOrdersPage);
+            
+            // Страница профиля
+            document.getElementById('btnChangeSubscription').addEventListener('click', function() {
+                navigate('subscriptions');
+            });
+            
+            document.getElementById('btnMarkNotificationsRead').addEventListener('click', markAllNotificationsRead);
+            
+            // Детали заказа
+            document.getElementById('btnBackToOrders').addEventListener('click', function() {
+                navigate('tasks');
+            });
+            
+            // Модальные окна
+            document.getElementById('btnCloseRateModal').addEventListener('click', function() {
+                closeModal('rateOrderModal');
+            });
+            
+            document.getElementById('btnCloseAuthModal').addEventListener('click', function() {
+                closeModal('authModal');
+            });
+            
+            document.getElementById('btnShowRegister').addEventListener('click', showRegisterForm);
+            document.getElementById('btnShowLogin').addEventListener('click', showLoginForm);
+            document.getElementById('btnLogin').addEventListener('click', login);
+            document.getElementById('btnRegister').addEventListener('click', register);
+            document.getElementById('btnSubmitRating').addEventListener('click', submitRating);
+            
+            // Пользовательское меню
+            document.addEventListener('click', function(e) {
+                if (e.target.id === 'btnOpenAuthModal' || e.target.closest('#btnOpenAuthModal')) {
+                    openAuthModal();
+                }
+                
+                if (e.target.id === 'btnProfile' || e.target.closest('#btnProfile')) {
+                    navigate('profile');
+                }
+                
+                if (e.target.id === 'btnLogout' || e.target.closest('#btnLogout')) {
+                    logout();
+                }
+            });
+            
             // Закрытие модалок по клику вне области
             document.addEventListener('click', function(event) {
                 if (event.target.classList.contains('modal')) {
@@ -3599,9 +3597,33 @@ async function register() {
                     });
                 }
             });
+            
+            // Футер
+            document.querySelectorAll('.footer-links a[data-page]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    navigate(page);
+                });
+            });
+            
+            document.getElementById('btnTermsModal').addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Условия использования будут доступны в полной версии', 'info');
+            });
+            
+            document.getElementById('btnPrivacyModal').addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Политика конфиденциальности будет доступна в полной версии', 'info');
+            });
+            
+            document.getElementById('btnHelpModal').addEventListener('click', function(e) {
+                e.preventDefault();
+                showNotification('Раздел помощи будет доступен в полной версии', 'info');
+            });
         }
         
-        // Демо данные для тестирования
+        // Демо функция для быстрого входа
         window.demoLogin = function() {
             document.getElementById('loginEmail').value = 'client@example.com';
             document.getElementById('loginPassword').value = 'client123';
