@@ -1938,12 +1938,20 @@
                 
                 // Добавляем обработчики событий для карточек услуг
                 document.querySelectorAll('.top-service-card').forEach(card => {
-                    card.addEventListener('click', function() {
-                        const categoryId = this.getAttribute('data-category-id');
-                        const serviceName = this.querySelector('.top-service-title').textContent;
-                        startOrderFromTopService(categoryId, serviceName);
-                    });
-                });
+    card.addEventListener('click', function() {
+        const categoryId = this.getAttribute('data-category-id');
+        const serviceName = this.querySelector('.top-service-title').textContent;
+        // Сначала переходим на страницу услуг
+        navigate('services');
+        // Затем запускаем визард
+        setTimeout(() => {
+            startOrderFromTopService(categoryId, serviceName);
+        }, 300);
+    });
+    
+    // Добавляем курсор pointer
+    card.style.cursor = 'pointer';
+});
                 
             } catch (error) {
                 console.error('Ошибка загрузки топ услуг:', error);
@@ -2334,21 +2342,37 @@ function selectService(element) {
         }
         
         function cancelOrderWizard() {
-            app.currentCategoryId = null;
-            app.currentServiceId = null;
-            app.wizardCurrentStep = 1;
-            app.wizardOrderData = {};
-            
-            document.getElementById('categoriesGrid').style.display = 'grid';
-            document.getElementById('orderWizard').style.display = 'none';
-            document.getElementById('orderDetailsForm').reset();
-            
-            document.querySelectorAll('.service-button').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            document.getElementById('nextStepBtn').disabled = true;
-        }
+    app.currentCategoryId = null;
+    app.currentServiceId = null;
+    app.wizardCurrentStep = 1;
+    app.wizardOrderData = {};
+    
+    // Показываем категории, скрываем визард
+    if (document.getElementById('categoriesGrid')) {
+        document.getElementById('categoriesGrid').style.display = 'grid';
+    }
+    
+    if (document.getElementById('orderWizard')) {
+        document.getElementById('orderWizard').style.display = 'none';
+    }
+    
+    // Сбрасываем форму
+    const form = document.getElementById('orderDetailsForm');
+    if (form) {
+        form.reset();
+    }
+    
+    // Снимаем выделение с кнопок услуг
+    document.querySelectorAll('.service-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
+    
+    // АКТУАЛЬНАЯ КНОПКА: используем btnNextStep
+    const nextBtn = document.getElementById('btnNextStep');
+    if (nextBtn) {
+        nextBtn.disabled = true;
+    }
+}
         
         function showOrderConfirmation() {
             const confirmationDiv = document.getElementById('orderConfirmation');
