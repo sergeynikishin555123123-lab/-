@@ -1662,21 +1662,24 @@
     </div>
 
     <script>
-        // Глобальные переменные
-        const app = {
-            currentUser: null,
-            token: localStorage.getItem('token'),
-            currentPage: 'home',
-            currentOrderId: null,
-            currentCategoryId: null,
-            currentServiceId: null,
-            currentRating: 0,
-            wizardData: {},
-            categories: [],
-            services: [],
-            subscriptions: [],
-            API_URL: window.location.origin
-        };
+       // Замените весь блок глобальных переменных в начале script:
+const app = {
+    currentUser: null,
+    token: localStorage.getItem('token'),
+    currentPage: 'home',
+    currentOrderId: null,
+    currentCategoryId: null,
+    currentServiceId: null,
+    currentRating: 0,
+    wizardData: {},
+    categories: [],
+    services: [],
+    subscriptions: [],
+    // Используем относительные пути или определяем URL динамически
+    API_URL: window.location.origin.includes('localhost:5500') 
+        ? 'http://localhost:3000' 
+        : window.location.origin
+};
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', async () => {
