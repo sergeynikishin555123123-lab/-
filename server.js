@@ -1828,23 +1828,20 @@ const authMiddleware = (roles = []) => {
         const currentRoute = `${req.method} ${req.path}`;
         
         // Публичные маршруты - БОЛЕЕ ТОЧНЫЙ СПИСОК
-        const publicRoutes = [
-            'GET /',
-            'GET /health',
-            'GET /api/system/info',
-            'GET /api/subscriptions',
-            'GET /api/categories',
-            'GET /api/categories/',
-            'GET /api/services',
-            'GET /api/services/',
-            'POST /api/auth/register',
-            'POST /api/auth/login',
-            'POST /api/auth/refresh',
-            'GET /api/auth/refresh', // Добавим для безопасности
-            'OPTIONS /',
-            'OPTIONS /api/',
-            'OPTIONS /api/auth/'
-        ];
+       const publicRoutes = [
+    'GET /',
+    'GET /health',
+    'GET /api/system/info',
+    'GET /api/subscriptions',
+    'GET /api/categories',
+    'GET /api/categories/',
+    'GET /api/services',
+    'GET /api/services/',
+    'POST /api/auth/register',
+    'POST /api/auth/login',
+    'POST /api/auth/refresh',
+    'OPTIONS'
+];
         
         console.log(`🔐 [${requestId}] Проверка авторизации для маршрута: ${currentRoute}`);
         
