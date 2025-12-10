@@ -1823,33 +1823,54 @@ const getTimeToDeadline = (deadline) => {
 // ==================== JWT МИДЛВАР ====================
 const authMiddleware = (roles = []) => {
     return async (req, res, next) => {
-        try {
-            const authHeader = req.headers.authorization;
-            const requestId = req.requestId;
-            
-            // Публичные маршруты
-            const publicRoutes = [
-                'GET /',
-                'GET /health',
-                'GET /api/system/info',
-                'GET /api/subscriptions',
-                'GET /api/categories',
-                'GET /api/services',
-                'POST /api/auth/register',
-                'POST /api/auth/login',
-                'POST /api/auth/refresh',
-                'OPTIONS'
-            ];
-            
-            const currentRoute = `${req.method} ${req.path}`;
-            
-            // Логируем для отладки
-            console.log(`🔐 [${requestId}] Проверка авторизации для маршрута: ${currentRoute}`);
-            
-            if (publicRoutes.some(route => currentRoute.startsWith(route))) {
-                console.log(`🔐 [${requestId}] Публичный маршрут, пропускаем авторизацию`);
-                return next();
+        const requestId = req.requestId;
+        const authHeader = req.headers.authorization;
+        const currentRoute = `${req.method} ${req.path}`;
+        
+        // Публичные маршруты - БОЛЕЕ ТОЧНЫЙ СПИСОК
+        const publicRoutes = [
+            'GET /',
+            'GET /health',
+            'GET /api/system/info',
+            'GET /api/subscriptions',
+            'GET /api/categories',
+            'GET /api/categories/',
+            'GET /api/services',
+            'GET /api/services/',
+            'POST /api/auth/register',
+            'POST /api/auth/login',
+            'POST /api/auth/refresh',
+            'GET /api/auth/refresh', // Добавим для безопасности
+            'OPTIONS /',
+            'OPTIONS /api/',
+            'OPTIONS /api/auth/'
+        ];
+        
+        console.log(`🔐 [${requestId}] Проверка авторизации для маршрута: ${currentRoute}`);
+        
+        // Более строгая проверка публичных маршрутов
+        const isPublicRoute = publicRoutes.some(route => {
+            if (route.endsWith('/')) {
+                return currentRoute.startsWith(route);
             }
+            return currentRoute === route;
+        });
+        
+        if (isPublicRoute) {
+            console.log(`🔐 [${requestId}] Публичный маршрут, пропускаем авторизацию`);
+            return next();
+        }
+        
+        // Проверяем авторизацию только для защищенных маршрутов
+        try {
+            if (!authHeader) {
+                console.log(`🔐 [${requestId}] Ошибка: отсутствует заголовок Authorization`);
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Требуется авторизация' 
+                });
+            }
+            
             
             if (!authHeader) {
                 console.log(`🔐 [${requestId}] Ошибка: отсутствует заголовок Authorization`);
@@ -2596,6 +2617,16 @@ app.post('/api/auth/refresh', async (req, res) => {
 // Профиль пользователя
 app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
     const requestId = req.requestId;
+    
+    // Проверяем что пользователь существует
+    if (!req.user || !req.user.email) {
+        console.log(`❌ [${requestId}] Пользователь не найден в запросе`);
+        return res.status(401).json({
+            success: false,
+            error: 'Пользователь не авторизован'
+        });
+    }
+    
     console.log(`👤 [${requestId}] Получение профиля пользователя ${req.user.email}`);
     
     try {
@@ -2864,13 +2895,24 @@ app.get('/api/categories', async (req, res) => {
 // Получение услуг категории
 app.get('/api/categories/:id/services', async (req, res) => {
     const requestId = req.requestId;
-    const categoryId = parseInt(req.params.id);
+    const categoryId = req.params.id;
     
     console.log(`🔧 [${requestId}] Получение услуг категории ${categoryId}`);
     
     try {
-        if (isNaN(categoryId)) {
-            console.log(`❌ [${requestId}] Неверный ID категории: ${req.params.id}`);
+        // Проверяем что id есть
+        if (!categoryId) {
+            console.log(`❌ [${requestId}] Не указан ID категории`);
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан ID категории'
+            });
+        }
+        
+        const categoryIdNum = parseInt(categoryId);
+        
+        if (isNaN(categoryIdNum)) {
+            console.log(`❌ [${requestId}] Неверный ID категории: ${categoryId}`);
             return res.status(400).json({
                 success: false,
                 error: 'Неверный ID категории'
@@ -2880,7 +2922,7 @@ app.get('/api/categories/:id/services', async (req, res) => {
         // Проверяем существование категории
         const category = await db.get(
             'SELECT * FROM categories WHERE id = ? AND is_active = 1',
-            [categoryId]
+            [categoryIdNum]
         );
         
         if (!category) {
@@ -5699,67 +5741,45 @@ app.get('/api/system/info', async (req, res) => {
     }
 });
 
-// ==================== СТАТИЧЕСКИЕ ФАЙЛЫ ====================
-
 // ==================== ОБСЛУЖИВАНИЕ СТАТИЧЕСКИХ ФАЙЛОВ ====================
 
-// Главная страница приложения
-app.get('/app', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// API документация
-app.get('/api-docs', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
-});
-
-// Обслуживание статических файлов
+// Обслуживание статических файлов из папки public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Для всех остальных маршрутов возвращаем index.html
-app.get('*', (req, res) => {
+// API маршруты должны обрабатываться раньше
+// Для SPA - отправляем index.html для всех не-API маршрутов
+app.get('*', (req, res, next) => {
+    // Если это API маршрут - пропускаем
     if (req.path.startsWith('/api/')) {
-        res.status(404).json({ success: false, error: 'API маршрут не найден' });
-    } else {
-        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        return res.status(404).json({
+            success: false,
+            error: 'API маршрут не найден'
+        });
     }
-});
-
-// Админ панель
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+    
+    // Для всех остальных маршрутов отправляем index.html
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ==================== ОБРАБОТКА ОШИБОК ====================
 
-// Обработка 404
-app.use((req, res) => {
-    const requestId = req.requestId;
-    console.log(`❌ [${requestId}] Маршрут не найден: ${req.method} ${req.path}`);
-    
-    res.status(404).json({
-        success: false,
-        error: 'Маршрут не найден',
-        path: req.path,
-        method: req.method,
-        request_id: requestId
-    });
+// Обработка 404 для API
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            error: 'API маршрут не найден',
+            path: req.path,
+            method: req.method
+        });
+    }
+    next();
 });
 
 // Глобальный обработчик ошибок
 app.use((err, req, res, next) => {
     const requestId = req.requestId;
     console.error(`❌ [${requestId}] Необработанная ошибка:`, err);
-    
-    // Логируем ошибку
-    logAudit(req.user?.id || null, 'unhandled_error', 'system', null, {
-        error: err.message,
-        stack: err.stack,
-        path: req.path,
-        method: req.method
-    }).catch(logError => {
-        console.error('Ошибка при логировании ошибки:', logError);
-    });
     
     res.status(500).json({
         success: false,
