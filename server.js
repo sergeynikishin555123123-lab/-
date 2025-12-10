@@ -5701,9 +5701,28 @@ app.get('/api/system/info', async (req, res) => {
 
 // ==================== СТАТИЧЕСКИЕ ФАЙЛЫ ====================
 
-// Главная страница
+// ==================== ОБСЛУЖИВАНИЕ СТАТИЧЕСКИХ ФАЙЛОВ ====================
+
+// Главная страница приложения
 app.get('/app', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// API документация
+app.get('/api-docs', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'api-docs.html'));
+});
+
+// Обслуживание статических файлов
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Для всех остальных маршрутов возвращаем index.html
+app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+        res.status(404).json({ success: false, error: 'API маршрут не найден' });
+    } else {
+        res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
 });
 
 // Админ панель
