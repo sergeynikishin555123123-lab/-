@@ -22,24 +22,28 @@ try {
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
 
-// CORS настройки
+// CORS настройки - УПРОЩЕННАЯ ВЕРСИЯ ДЛЯ РАЗРАБОТКИ
 const corsOptions = {
     origin: function (origin, callback) {
-        const allowedOrigins = [
-            'https://sergeynikishin555123123-lab--86fa.twc1.net',
-            'http://localhost:3000',
-            'http://localhost:8080',
-            'http://localhost:5500',
-            'http://127.0.0.1:5500',
-            'https://concierge-service.ru',
-            'http://concierge-service.ru',
-            'https://your-domain.com'
-        ];
-        
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        // Разрешаем все источники в режиме разработки
+        if (!origin || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
-            callback(new Error('CORS политика не разрешает доступ с этого источника'));
+            // В продакшене можно настроить строгие правила
+            const allowedOrigins = [
+                'http://localhost:3000',
+                'http://localhost:5500',
+                'http://127.0.0.1:5500',
+                'http://localhost:8080',
+                'https://concierge-service.ru',
+                'http://concierge-service.ru'
+            ];
+            
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error('CORS политика не разрешает доступ с этого источника'));
+            }
         }
     },
     credentials: true,
@@ -65,7 +69,10 @@ app.use((req, res, next) => {
     console.log(`🌐 [${requestId}] ${req.method} ${req.path} - ${req.ip} - ${new Date().toISOString()}`);
     
     if (req.method === 'POST' && req.path.includes('/api/')) {
-        console.log(`📦 [${requestId}] Body:`, JSON.stringify(req.body).substring(0, 200));
+        const logBody = { ...req.body };
+        if (logBody.password) logBody.password = '***';
+        if (logBody.token) logBody.token = '***';
+        console.log(`📦 [${requestId}] Body:`, JSON.stringify(logBody).substring(0, 200));
     }
     
     res.on('finish', () => {
@@ -1166,8 +1173,8 @@ const initTelegramBot = async () => {
                     parse_mode: 'Markdown',
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: '🌐 Открыть сайт', url: 'https://concierge-service.ru/tasks' }],
-                            [{ text: '➕ Создать задачу', url: 'https://concierge-service.ru/services' }],
+                            [{ text: '🌐 Открыть сайт', url: 'http://localhost:3000/tasks' }],
+                            [{ text: '➕ Создать задачу', url: 'http://localhost:3000/services' }],
                             [{ text: '🔄 Обновить', callback_data: 'refresh_tasks' }]
                         ]
                     }
@@ -1235,8 +1242,8 @@ const initTelegramBot = async () => {
                     parse_mode: 'Markdown',
                     reply_markup: {
                         inline_keyboard: [
-                            [{ text: '💳 Пополнить баланс', url: 'https://concierge-service.ru/profile' }],
-                            [{ text: '📊 Подробная история', url: 'https://concierge-service.ru/profile#payments' }]
+                            [{ text: '💳 Пополнить баланс', url: 'http://localhost:3000/profile' }],
+                            [{ text: '📊 Подробная история', url: 'http://localhost:3000/profile#payments' }]
                         ]
                     }
                 });
@@ -1281,8 +1288,8 @@ const initTelegramBot = async () => {
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: '🌐 Открыть сайт', url: 'https://concierge-service.ru' }],
-                        [{ text: '📞 Связаться с поддержкой', url: 'https://concierge-service.ru/contact' }]
+                        [{ text: '🌐 Открыть сайт', url: 'http://localhost:3000' }],
+                        [{ text: '📞 Связаться с поддержкой', url: 'http://localhost:3000/contact' }]
                     ]
                 }
             });
@@ -1295,7 +1302,7 @@ const initTelegramBot = async () => {
             await bot.sendMessage(chatId, 
                 `🌐 *Женский Консьерж*\n\n` +
                 `Перейдите на наш сайт для полного доступа ко всем функциям:\n\n` +
-                `🔗 [concierge-service.ru](https://concierge-service.ru)\n\n` +
+                `🔗 [concierge-service.ru](http://localhost:3000)\n\n` +
                 `На сайте вы можете:\n` +
                 `• Создавать и управлять задачами\n` +
                 `• Выбирать помощников\n` +
@@ -1306,7 +1313,7 @@ const initTelegramBot = async () => {
                     parse_mode: 'Markdown',
                     disable_web_page_preview: false,
                     reply_markup: {
-                        inline_keyboard: [[{ text: '🌐 Открыть сайт', url: 'https://concierge-service.ru' }]]
+                        inline_keyboard: [[{ text: '🌐 Открыть сайт', url: 'http://localhost:3000' }]]
                     }
                 }
             );
@@ -1340,7 +1347,7 @@ const initTelegramBot = async () => {
                     'Открываю сайт...',
                     {
                         reply_markup: {
-                            inline_keyboard: [[{ text: '🌐 Перейти на сайт', url: 'https://concierge-service.ru' }]]
+                            inline_keyboard: [[{ text: '🌐 Перейти на сайт', url: 'http://localhost:3000' }]]
                         }
                     }
                 );
@@ -1420,7 +1427,7 @@ const initTelegramBot = async () => {
                         'Для изменения данных профиля перейдите на сайт в раздел "Настройки".',
                         {
                             reply_markup: {
-                                inline_keyboard: [[{ text: '🌐 Перейти к настройкам', url: 'https://concierge-service.ru/profile/settings' }]]
+                                inline_keyboard: [[{ text: '🌐 Перейти к настройкам', url: 'http://localhost:3000/profile/settings' }]]
                             }
                         }
                     );
@@ -1433,7 +1440,7 @@ const initTelegramBot = async () => {
                         'Для пополнения баланса перейдите на сайт:',
                         {
                             reply_markup: {
-                                inline_keyboard: [[{ text: '💳 Пополнить баланс', url: 'https://concierge-service.ru/profile/balance' }]]
+                                inline_keyboard: [[{ text: '💳 Пополнить баланс', url: 'http://localhost:3000/profile/balance' }]]
                             }
                         }
                     );
@@ -1446,7 +1453,7 @@ const initTelegramBot = async () => {
                         'Для изменения подписки перейдите на сайт:',
                         {
                             reply_markup: {
-                                inline_keyboard: [[{ text: '📋 Управление подпиской', url: 'https://concierge-service.ru/subscriptions' }]]
+                                inline_keyboard: [[{ text: '📋 Управление подпиской', url: 'http://localhost:3000/subscriptions' }]]
                             }
                         }
                     );
@@ -1519,8 +1526,8 @@ const initTelegramBot = async () => {
                                 disable_web_page_preview: true,
                                 reply_markup: {
                                     inline_keyboard: [[
-                                        { text: '👁️ Просмотреть задачу', url: `https://concierge-service.ru/admin/tasks/${taskId}` },
-                                        { text: '📋 Назначить исполнителя', url: `https://concierge-service.ru/admin/tasks/${taskId}/assign` }
+                                        { text: '👁️ Просмотреть задачу', url: `http://localhost:3000/admin/tasks/${taskId}` },
+                                        { text: '📋 Назначить исполнителя', url: `http://localhost:3000/admin/tasks/${taskId}/assign` }
                                     ]]
                                 }
                             }
@@ -1575,7 +1582,7 @@ const initTelegramBot = async () => {
                         parse_mode: 'Markdown',
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: '💬 Открыть чат', url: `https://concierge-service.ru/tasks/${taskId}/chat` }
+                                { text: '💬 Открыть чат', url: `http://localhost:3000/tasks/${taskId}/chat` }
                             ]]
                         }
                     }
@@ -1648,7 +1655,7 @@ const initTelegramBot = async () => {
                         parse_mode: 'Markdown',
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: '👁️ Просмотреть задачу', url: `https://concierge-service.ru/tasks/${taskId}` }
+                                { text: '👁️ Просмотреть задачу', url: `http://localhost:3000/tasks/${taskId}` }
                             ]]
                         }
                     }
@@ -1702,7 +1709,7 @@ const initTelegramBot = async () => {
                         parse_mode: 'Markdown',
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: '👁️ Просмотреть отзыв', url: `https://concierge-service.ru/tasks/${taskId}/review` }
+                                { text: '👁️ Просмотреть отзыв', url: `http://localhost:3000/tasks/${taskId}/review` }
                             ]]
                         }
                     }
@@ -1827,28 +1834,29 @@ const authMiddleware = (roles = []) => {
         const authHeader = req.headers.authorization;
         const currentRoute = `${req.method} ${req.path}`;
         
-        // Публичные маршруты - БОЛЕЕ ТОЧНЫЙ СПИСОК
-       const publicRoutes = [
-    'GET /',
-    'GET /health',
-    'GET /api/system/info',
-    'GET /api/subscriptions',
-    'GET /api/categories',
-    'GET /api/categories/',
-    'GET /api/services',
-    'GET /api/services/',
-    'POST /api/auth/register',
-    'POST /api/auth/login',
-    'POST /api/auth/refresh',
-    'OPTIONS'
-];
+        // Публичные маршруты
+        const publicRoutes = [
+            'GET /',
+            'GET /health',
+            'GET /api/system/info',
+            'GET /api/subscriptions',
+            'GET /api/categories',
+            'GET /api/categories/*',
+            'GET /api/services',
+            'GET /api/services/*',
+            'POST /api/auth/register',
+            'POST /api/auth/login',
+            'POST /api/auth/refresh',
+            'OPTIONS /*'
+        ];
         
         console.log(`🔐 [${requestId}] Проверка авторизации для маршрута: ${currentRoute}`);
         
         // Более строгая проверка публичных маршрутов
         const isPublicRoute = publicRoutes.some(route => {
-            if (route.endsWith('/')) {
-                return currentRoute.startsWith(route);
+            if (route.includes('*')) {
+                const pattern = route.replace('*', '.*');
+                return new RegExp(`^${pattern}$`).test(currentRoute);
             }
             return currentRoute === route;
         });
@@ -1860,15 +1868,6 @@ const authMiddleware = (roles = []) => {
         
         // Проверяем авторизацию только для защищенных маршрутов
         try {
-            if (!authHeader) {
-                console.log(`🔐 [${requestId}] Ошибка: отсутствует заголовок Authorization`);
-                return res.status(401).json({ 
-                    success: false, 
-                    error: 'Требуется авторизация' 
-                });
-            }
-            
-            
             if (!authHeader) {
                 console.log(`🔐 [${requestId}] Ошибка: отсутствует заголовок Authorization`);
                 return res.status(401).json({ 
@@ -1896,23 +1895,15 @@ const authMiddleware = (roles = []) => {
                             subscription_plan, subscription_status, subscription_expires,
                             initial_fee_paid, initial_fee_amount, is_active, avatar_url,
                             balance, rating, completed_tasks
-                     FROM users WHERE id = ?`,
+                     FROM users WHERE id = ? AND is_active = 1`,
                     [decoded.id]
                 );
                 
                 if (!user) {
-                    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден`);
+                    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден или заблокирован`);
                     return res.status(401).json({ 
                         success: false, 
-                        error: 'Пользователь не найден' 
-                    });
-                }
-                
-                if (user.is_active !== 1) {
-                    console.log(`🔐 [${requestId}] Ошибка: аккаунт пользователя ${user.email} заблокирован`);
-                    return res.status(401).json({ 
-                        success: false, 
-                        error: 'Аккаунт заблокирован' 
+                        error: 'Пользователь не найден или заблокирован' 
                     });
                 }
                 
@@ -2543,8 +2534,7 @@ app.post('/api/auth/refresh', async (req, res) => {
             });
         }
         
-        // Проверяем refresh token (в реальном приложении нужно хранить refresh tokens в БД)
-        // Для упрощения будем использовать JWT
+        // Проверяем refresh token
         try {
             const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
             
@@ -4173,7 +4163,7 @@ app.post('/api/tasks/:id/status', authMiddleware(), async (req, res) => {
         
         const { status, notes, performer_id } = req.body;
         
-        if (!status) {
+                if (!status) {
             console.log(`❌ [${requestId}] Не указан новый статус`);
             return res.status(400).json({
                 success: false,
