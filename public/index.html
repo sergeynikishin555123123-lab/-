@@ -3715,15 +3715,27 @@ async function checkNotifications() {
             localStorage.removeItem('token');
             updateUserMenu();
             navigate('home');
-            showNotification('Вы вышли из системы', 'info');
-        };
+    showNotification('Вы вышли из системы', 'info');
+};
 
-        // Показать форму регистрации
-        window.showRegisterForm = function() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('registerForm').classList.remove('hidden');
-            document.getElementById('authModalTitle').textContent = 'Регистрация';
-        };
+// Обновление цены при выборе тарифа в регистрации
+window.updateRegistrationPrice = function() {
+    const plan = document.getElementById('registerSubscription').value;
+    const priceInfo = document.getElementById('registrationPriceInfo');
+    
+    if (plan === 'essential') {
+        priceInfo.innerHTML = 'Общая сумма для активации: 1000₽ (вступительный 500₽ + первый месяц 500₽)';
+    } else if (plan === 'premium') {
+        priceInfo.innerHTML = 'Общая сумма для активации: 2990₽ (вступительный 1000₽ + первый месяц 1990₽)';
+    }
+};
+
+// Показать форму регистрации
+window.showRegisterForm = function() {
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('registerForm').classList.remove('hidden');
+    document.getElementById('authModalTitle').textContent = 'Регистрация';
+};
 
         // Показать форму входа
         window.showLoginForm = function() {
