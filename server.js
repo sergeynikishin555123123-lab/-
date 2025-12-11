@@ -2053,6 +2053,53 @@ app.post('/api/tasks/:id/cancel', authMiddleware(), async (req, res) => {
     }
 });
 
+// server.js - добавить новый маршрут
+// Получение статистики использования подписки
+app.get('/api/tasks/usage', authMiddleware(['client']), async (req, res) => {
+    try {
+        const user = await db.get(
+            `SELECT u.*, s.tasks_limit 
+             FROM users u
+             LEFT JOIN subscriptions s ON u.subscription_plan = s.name
+             WHERE u.id = ?`,
+            [req.user.id]
+        );
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        const tasksUsed = await db.get(
+            `SELECT COUNT(*) as count FROM tasks 
+             WHERE client_id = ? 
+             AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+             AND status != 'cancelled'`,
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                tasks_limit: user.tasks_limit,
+                tasks_used: tasksUsed.count || 0,
+                tasks_remaining: user.tasks_limit === 999 ? '∞' : Math.max(0, user.tasks_limit - tasksUsed.count),
+                is_unlimited: user.tasks_limit === 999,
+                subscription_plan: user.subscription_plan
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения статистики:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
+        });
+    }
+});
+
 // Принятие задачи исполнителем
 app.post('/api/tasks/:id/take', authMiddleware(['performer']), async (req, res) => {
     const taskId = req.params.id;
