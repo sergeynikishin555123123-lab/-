@@ -661,6 +661,8 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            text-decoration: none;
+            color: inherit;
         }
         
         .category-card:hover {
@@ -1224,6 +1226,20 @@
         .table tr:hover {
             background: rgba(249, 247, 243, 0.5);
         }
+        
+        /* Общий прогресс-бар */
+        .progress {
+            height: 8px;
+            background: rgba(61, 61, 61, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-metallic);
+            transition: width 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1243,7 +1259,7 @@
                 <a href="#" class="nav-link active" data-page="home">Главная</a>
                 <a href="#" class="nav-link" data-page="services">Услуги</a>
                 <a href="#" class="nav-link" data-page="subscriptions">Подписки</a>
-                <a href="#" class="nav-link" data-page="tasks">Мои заказы</a>
+                <a href="#" class="nav-link" data-page="tasks">Мои задачи</a>
                 <a href="#" class="nav-link" data-page="profile">Профиль</a>
                 
                 <!-- Динамические ссылки для разных ролей -->
@@ -1279,7 +1295,7 @@
                     </div>
                 </div>
 
-                <!-- Категории -->
+                <!-- Категории (кликабельные) -->
                 <div class="mb-8">
                     <h2 class="section-title text-center">Категории помощи</h2>
                     <p class="section-subtitle text-center">
@@ -1434,18 +1450,6 @@
                                     <textarea class="form-input form-textarea" id="orderAdditional"
                                               placeholder="Особые пожелания, аллергии, предпочтения..." rows="3"></textarea>
                                 </div>
-                                
-                                <!-- Для помощников - предложение цены -->
-                                <div id="priceForPerformer" class="hidden">
-                                    <div class="form-group">
-                                        <label class="form-label">Предлагаемая стоимость (₽)</label>
-                                        <input type="number" class="form-input" id="orderPrice" min="0" max="50000"
-                                               placeholder="Укажите примерную стоимость (необязательно)">
-                                        <div class="text-sm text-gray-500 mt-1">
-                                            Для информации. Клиенты не платят за услуги отдельно.
-                                        </div>
-                                    </div>
-                                </div>
                             </form>
                             
                             <div class="flex justify-between items-center mt-8">
@@ -1529,18 +1533,18 @@
             </div>
         </section>
 
-        <!-- Заказы -->
+        <!-- Задачи -->
         <section id="page-tasks" class="page">
             <div class="container">
                 <div class="page-header">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 class="section-title" id="tasksPageTitle">Мои заказы</h1>
-                            <p class="section-subtitle" id="tasksPageSubtitle">Все ваши заказы в одном месте</p>
+                            <h1 class="section-title" id="tasksPageTitle">Мои задачи</h1>
+                            <p class="section-subtitle" id="tasksPageSubtitle">Все ваши задачи в одном месте</p>
                         </div>
-                        <button class="btn btn-primary" id="btnNewOrder">
+                        <button class="btn btn-primary" id="btnNewTask">
                             <i class="fas fa-plus"></i>
-                            Новый заказ
+                            Новая задача
                         </button>
                     </div>
                 </div>
@@ -1590,9 +1594,9 @@
                     </div>
                 </div>
 
-                <!-- Список заказов -->
+                <!-- Список задач -->
                 <div class="mb-8">
-                    <div class="orders-grid" id="ordersList">
+                    <div class="orders-grid" id="tasksList">
                         <!-- Динамически заполняется -->
                     </div>
                 </div>
@@ -1647,7 +1651,7 @@
                     </div>
 
                     <!-- Для помощников: специализации -->
-                    <div id="performerSpecializations" class="card hidden md:col-span-2">
+                    <div id="performerSpecializations" class="card md:col-span-2">
                         <h2 class="category-title mb-4">
                             <i class="fas fa-tags"></i>
                             Мои специализации
@@ -1673,99 +1677,25 @@
                             <!-- Динамически заполняется -->
                         </div>
                     </div>
-
-                    <!-- Баланс и история -->
-                    <div class="card md:col-span-2">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-                            <h2 class="category-title">
-                                <i class="fas fa-wallet"></i>
-                                Баланс и история
-                            </h2>
-                            <div class="flex items-center gap-4">
-                                <span class="stat-value" id="currentBalance">0 ₽</span>
-                                <button class="btn btn-primary" id="btnAddBalance">
-                                    <i class="fas fa-plus"></i>
-                                    Пополнить
-                                </button>
-                            </div>
-                        </div>
-                        <div id="paymentsHistory" style="max-height: 300px; overflow-y: auto;">
-                            <!-- Динамически заполняется -->
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- Админ панель -->
-        <section id="page-admin" class="page">
-            <div class="container">
-                <div class="page-header">
-                    <h1 class="section-title">Панель управления</h1>
-                    <p class="section-subtitle">Управление системой, пользователями и задачами</p>
-                </div>
-
-                <!-- Статистика -->
-                <div class="admin-stats-grid" id="adminStats">
-                    <!-- Динамически заполняется -->
-                </div>
-
-                <!-- Быстрые действия -->
-                <div class="grid grid-1 md:grid-3 gap-6 mb-8">
-                    <div class="card text-center">
-                        <i class="fas fa-users category-icon mb-4"></i>
-                        <h3 class="category-title mb-4">Пользователи</h3>
-                        <p class="category-desc mb-6">Управление всеми пользователями системы</p>
-                        <button class="btn btn-primary w-100" onclick="loadAdminSection('users')">
-                            Управление
-                        </button>
-                    </div>
-                    <div class="card text-center">
-                        <i class="fas fa-tasks category-icon mb-4"></i>
-                        <h3 class="category-title mb-4">Задачи</h3>
-                        <p class="category-desc mb-6">Просмотр и управление всеми задачами</p>
-                        <button class="btn btn-primary w-100" onclick="loadAdminSection('tasks')">
-                            Управление
-                        </button>
-                    </div>
-                    <div class="card text-center">
-                        <i class="fas fa-chart-pie category-icon mb-4"></i>
-                        <h3 class="category-title mb-4">Статистика</h3>
-                        <p class="category-desc mb-6">Детальная статистика и аналитика</p>
-                        <button class="btn btn-primary w-100" onclick="loadAdminSection('analytics')">
-                            Просмотр
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Контент админ панели -->
-                <div id="adminContent">
-                    <div class="card">
-                        <div class="text-center p-8">
-                            <i class="fas fa-tachometer-alt" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
-                            <h3 class="category-title mb-4">Панель управления</h3>
-                            <p class="category-desc">Выберите раздел для управления</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Детали заказа -->
-        <section id="page-order-details" class="page">
+        <!-- Детали задачи -->
+        <section id="page-task-details" class="page">
             <div class="container">
                 <div class="page-header">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 class="section-title" id="orderDetailTitle">Детали заказа</h1>
-                            <p class="section-subtitle" id="orderDetailNumber"></p>
+                            <h1 class="section-title" id="taskDetailTitle">Детали задачи</h1>
+                            <p class="section-subtitle" id="taskDetailNumber"></p>
                         </div>
                         <div class="flex gap-4 flex-wrap">
-                            <button class="btn btn-secondary" id="btnBackToOrders">
+                            <button class="btn btn-secondary" id="btnBackToTasks">
                                 <i class="fas fa-arrow-left"></i>
-                                Назад к заказам
+                                Назад к задачам
                             </button>
-                            <button class="btn btn-primary" id="btnRefreshOrder">
+                            <button class="btn btn-primary" id="btnRefreshTask">
                                 <i class="fas fa-sync-alt"></i>
                                 Обновить
                             </button>
@@ -1776,17 +1706,17 @@
                 <div class="grid grid-1 md:grid-3 gap-8">
                     <!-- Основная информация -->
                     <div class="card md:col-span-2">
-                        <div id="orderDetailContent">
+                        <div id="taskDetailContent">
                             <!-- Динамически заполняется -->
                         </div>
-                        <div id="orderActions" class="mt-8">
+                        <div id="taskActions" class="mt-8">
                             <!-- Динамически заполняется -->
                         </div>
                     </div>
 
                     <!-- Исполнитель/Клиент -->
                     <div class="card">
-                        <h2 class="category-title mb-4" id="orderParticipantTitle">
+                        <h2 class="category-title mb-4" id="taskParticipantTitle">
                             <i class="fas fa-user"></i>
                             Участник
                         </h2>
@@ -1800,13 +1730,13 @@
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                             <h2 class="category-title">
                                 <i class="fas fa-comments"></i>
-                                Чат заказа
+                                Чат задачи
                             </h2>
                             <div class="flex gap-2">
                                 <span class="status-badge" id="chatStatusBadge"></span>
                             </div>
                         </div>
-                        <div id="orderChat">
+                        <div id="taskChat">
                             <!-- Динамически заполняется -->
                         </div>
                     </div>
@@ -1840,7 +1770,7 @@
                     <li><a href="#" data-page="home"><i class="fas fa-home"></i> Главная</a></li>
                     <li><a href="#" data-page="services"><i class="fas fa-hands-helping"></i> Услуги</a></li>
                     <li><a href="#" data-page="subscriptions"><i class="fas fa-crown"></i> Подписки</a></li>
-                    <li><a href="#" data-page="tasks"><i class="fas fa-shopping-bag"></i> Заказы</a></li>
+                    <li><a href="#" data-page="tasks"><i class="fas fa-shopping-bag"></i> Задачи</a></li>
                 </ul>
             </div>
             
@@ -1849,7 +1779,6 @@
                 <ul class="footer-links">
                     <li><a href="tel:+79991234567"><i class="fas fa-phone"></i> +7 (999) 123-45-67</a></li>
                     <li><a href="mailto:info@concierge-service.ru"><i class="fas fa-envelope"></i> info@concierge-service.ru</a></li>
-                    <li><a href="https://t.me/concierge_service" target="_blank"><i class="fab fa-telegram"></i> Telegram</a></li>
                 </ul>
             </div>
             
@@ -1858,7 +1787,6 @@
                 <ul class="footer-links">
                     <li><a href="#" id="btnTerms"><i class="fas fa-file-contract"></i> Условия</a></li>
                     <li><a href="#" id="btnPrivacy"><i class="fas fa-shield-alt"></i> Конфиденциальность</a></li>
-                    <li><a href="#" id="btnHelp"><i class="fas fa-question-circle"></i> Помощь</a></li>
                 </ul>
             </div>
         </div>
@@ -1946,14 +1874,14 @@
     <div class="modal" id="rateModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Оцените заказ</h3>
+                <h3 class="modal-title">Оцените задачу</h3>
                 <button class="close-btn" id="btnCloseRate">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="text-center mb-6">
-                    <p id="rateOrderTitle" class="mb-6 text-lg"></p>
+                    <p id="rateTaskTitle" class="mb-6 text-lg"></p>
                     <div class="mb-6" id="ratingStars" style="font-size: 2rem; color: var(--graphite-light);">
                         <i class="far fa-star" data-rating="1" style="cursor: pointer; margin: 0 5px;"></i>
                         <i class="far fa-star" data-rating="2" style="cursor: pointer; margin: 0 5px;"></i>
@@ -2006,16 +1934,6 @@
                         <label class="form-label">Телефон *</label>
                         <input type="tel" class="form-input" id="editPhone" required>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Telegram username</label>
-                        <input type="text" class="form-input" id="editTelegram" 
-                               placeholder="@username (необязательно)">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ссылка на аватар</label>
-                        <input type="url" class="form-input" id="editAvatar" 
-                               placeholder="https://... (необязательно)">
-                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -2045,36 +1963,6 @@
         </div>
     </div>
 
-    <!-- Модалка пополнения баланса -->
-    <div class="modal" id="addBalanceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Пополнение баланса</h3>
-                <button class="close-btn" id="btnCloseAddBalance">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Сумма пополнения (₽)</label>
-                    <input type="number" class="form-input" id="addBalanceAmount" min="100" max="50000" value="1000">
-                    <div class="text-sm text-gray-500 mt-1">Минимум: 100₽, Максимум: 50,000₽</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Способ оплаты</label>
-                    <select class="form-input" id="addBalanceMethod">
-                        <option value="card">Банковская карта</option>
-                        <option value="yoomoney">ЮMoney</option>
-                        <option value="sbp">Система быстрых платежей (СБП)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" id="btnSubmitAddBalance">Перейти к оплате</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Контейнер для уведомлений -->
     <div id="notificationContainer"></div>
 
@@ -2093,7 +1981,7 @@
             currentUser: null,
             token: localStorage.getItem('token'),
             currentPage: 'home',
-            currentOrderId: null,
+            currentTaskId: null,
             currentCategoryId: null,
             currentServiceId: null,
             currentRating: 0,
@@ -2297,11 +2185,8 @@
                 case 'profile':
                     loadProfilePage();
                     break;
-                case 'admin':
-                    loadAdminPage();
-                    break;
-                case 'order-details':
-                    loadOrderDetailsPage();
+                case 'task-details':
+                    loadTaskDetailsPage();
                     break;
             }
         }
@@ -2373,13 +2258,12 @@
                         `;
                         container.classList.remove('hidden');
                     } else if (user.role === 'performer') {
-                        const performerStats = stats.performer_stats || {};
                         container.innerHTML = `
                             <div class="card">
                                 <h2 class="category-title mb-4">Ваша статистика</h2>
                                 <div class="grid grid-2 md:grid-4 gap-4">
                                     <div class="text-center">
-                                        <div class="stat-value">${performerStats.tasks_taken || 0}</div>
+                                        <div class="stat-value">${stats?.performer_stats?.tasks_taken || 0}</div>
                                         <div class="stat-label">Принято задач</div>
                                     </div>
                                     <div class="text-center">
@@ -2387,7 +2271,7 @@
                                         <div class="stat-label">В работе</div>
                                     </div>
                                     <div class="text-center">
-                                        <div class="stat-value">${performerStats.avg_rating ? performerStats.avg_rating.toFixed(1) : '0.0'}</div>
+                                        <div class="stat-value">${user.rating || '0.0'}</div>
                                         <div class="stat-label">Рейтинг</div>
                                     </div>
                                     <div class="text-center">
@@ -2415,7 +2299,7 @@
                 if (data.success) {
                     app.categories = data.data.categories;
                     
-                    // Обновляем фильтр категорий в заказах
+                    // Обновляем фильтр категорий в задачах
                     const filterCategory = document.getElementById('filterCategory');
                     if (filterCategory) {
                         const options = app.categories.map(cat => 
@@ -2446,7 +2330,7 @@
             }
         }
 
-        // Рендер категорий на главной
+        // Рендер категорий на главной (кликабельные)
         function renderHomeCategories() {
             const container = document.getElementById('categoriesHome');
             
@@ -2465,7 +2349,7 @@
             const displayCategories = app.categories.slice(0, 6);
             
             container.innerHTML = displayCategories.map(category => `
-                <div class="category-card" onclick="startOrderWizard(${category.id})">
+                <a href="#" class="category-card" onclick="startOrderWizard(${category.id}); return false;">
                     <div class="category-icon">${category.icon}</div>
                     <h3 class="category-title">${category.display_name}</h3>
                     <p class="category-desc">${category.description}</p>
@@ -2473,7 +2357,7 @@
                         <i class="fas fa-bolt"></i>
                         Заказать помощь
                     </button>
-                </div>
+                </a>
             `).join('');
         }
 
@@ -2486,7 +2370,7 @@
             }
             
             container.innerHTML = app.categories.map(category => `
-                <div class="category-card" onclick="startOrderWizard(${category.id})">
+                <a href="#" class="category-card" onclick="startOrderWizard(${category.id}); return false;">
                     <div class="category-icon">${category.icon}</div>
                     <h3 class="category-title">${category.display_name}</h3>
                     <p class="category-desc">${category.description}</p>
@@ -2494,7 +2378,7 @@
                         <i class="fas fa-bolt"></i>
                         Заказать помощь
                     </button>
-                </div>
+                </a>
             `).join('');
         }
 
@@ -2550,11 +2434,6 @@
             
             // Загружаем услуги для категории
             loadServicesForCategory(categoryId);
-            
-            // Для помощников показываем поле для цены
-            if (app.currentUser.role === 'performer') {
-                document.getElementById('priceForPerformer').classList.remove('hidden');
-            }
         };
 
         // Загрузка услуг для категории
@@ -2710,13 +2589,6 @@
             app.wizardData.contact = document.getElementById('orderContact').value;
             app.wizardData.additional = document.getElementById('orderAdditional').value;
             
-            // Для помощников сохраняем цену
-            if (app.currentUser.role === 'performer') {
-                app.wizardData.price = document.getElementById('orderPrice').value || 0;
-            } else {
-                app.wizardData.price = 0; // Для клиентов всегда 0
-            }
-            
             // Показываем подтверждение
             showOrderReview();
             showWizardStep(3);
@@ -2729,7 +2601,7 @@
             
             container.innerHTML = `
                 <div class="card mb-6">
-                    <h3 class="category-title mb-4">Информация о заказе</h3>
+                    <h3 class="category-title mb-4">Информация о задаче</h3>
                     <div class="grid grid-1 md:grid-2 gap-4">
                         <div>
                             <div class="text-sm text-gray-500">Категория:</div>
@@ -2747,20 +2619,12 @@
                             <div class="text-sm text-gray-500">Срок:</div>
                             <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
                         </div>
-                        ${app.currentUser.role === 'client' ? `
-                            <div class="md:col-span-2">
-                                <div class="text-sm text-gray-500">Стоимость:</div>
-                                <div class="text-xl font-bold text-gold">
-                                    <i class="fas fa-check-circle text-green-500"></i> Бесплатно (включено в подписку)
-                                </div>
+                        <div class="md:col-span-2">
+                            <div class="text-sm text-gray-500">Стоимость:</div>
+                            <div class="text-xl font-bold text-gold">
+                                <i class="fas fa-check-circle text-green-500"></i> Бесплатно (включено в подписку)
                             </div>
-                        ` : ''}
-                        ${app.currentUser.role === 'performer' && app.wizardData.price > 0 ? `
-                            <div class="md:col-span-2">
-                                <div class="text-sm text-gray-500">Предложенная стоимость:</div>
-                                <div class="text-xl font-bold text-gold">${app.wizardData.price}₽</div>
-                            </div>
-                        ` : ''}
+                        </div>
                         <div class="md:col-span-2">
                             <div class="text-sm text-gray-500">Название:</div>
                             <div class="font-medium">${app.wizardData.title}</div>
@@ -2785,18 +2649,11 @@
                 <div class="card">
                     <h4 class="font-bold mb-3">Что будет дальше?</h4>
                     <ol class="space-y-2 pl-5 list-decimal">
-                        ${app.currentUser.role === 'client' ? `
-                            <li>Задача будет создана и отправлена доступным помощникам</li>
-                            <li>Помощница свяжется с вами для уточнения деталей</li>
-                            <li>Обсудит сроки и особенности выполнения</li>
-                            <li>Вы сможете общаться в чате задачи</li>
-                            <li>После выполнения оцените качество работы</li>
-                        ` : `
-                            <li>Задача будет создана и отправлена менеджеру на проверку</li>
-                            <li>После одобрения она станет доступна для клиентов</li>
-                            <li>Клиенты смогут выбирать вашу услугу</li>
-                            <li>Вы получите уведомление о новых задачах</li>
-                        `}
+                        <li>Задача будет создана и отправлена доступным помощникам</li>
+                        <li>Помощница свяжется с вами для уточнения деталей</li>
+                        <li>Обсудит сроки и особенности выполнения</li>
+                        <li>Вы сможете общаться в чате задачи</li>
+                        <li>После выполнения оцените качество работы</li>
                     </ol>
                 </div>
             `;
@@ -2838,8 +2695,7 @@
                         deadline: app.wizardData.deadline,
                         address: app.wizardData.address,
                         contact_info: app.wizardData.contact,
-                        additional_requirements: app.wizardData.additional,
-                        price: app.wizardData.price
+                        additional_requirements: app.wizardData.additional
                     })
                 });
                 
@@ -2851,7 +2707,7 @@
                     // Сбрасываем визард
                     cancelOrderWizard();
                     
-                    // Переходим к заказам
+                    // Переходим к задачам
                     navigate('tasks');
                 } else {
                     showNotification(data.error || 'Ошибка создания задачи', 'error');
@@ -2875,9 +2731,6 @@
             // Скрываем визард, показываем категории
             document.getElementById('orderWizard').classList.add('hidden');
             document.getElementById('categoriesGrid').style.display = 'grid';
-            
-            // Скрываем поле цены
-            document.getElementById('priceForPerformer').classList.add('hidden');
             
             // Сбрасываем форму
             document.getElementById('orderForm').reset();
@@ -2944,7 +2797,7 @@
             const requiresInitialFee = app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0;
             
             if (requiresInitialFee) {
-                const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. У вас на балансе: ${app.currentUser.balance}₽. Продолжить?`);
+                const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. Продолжить?`);
                 if (!confirmPayment) return;
             }
             
@@ -2983,10 +2836,9 @@
                     }
                 } else {
                     if (data.requires_initial_fee) {
-                        showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽, доступно: ${data.current_balance}₽`, 'error');
-                        navigate('profile');
+                        showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽`, 'error');
                     } else {
-                        showNotification(data.error || 'Ошибка оформления подписки', 'error');
+                        showNotification(data.error || 'Ошибка оформления подписка', 'error');
                     }
                 }
             } catch (error) {
@@ -2997,7 +2849,7 @@
             }
         };
 
-        // Загрузка страницы заказов
+        // Загрузка страницы задач
         async function loadTasksPage() {
             if (!app.currentUser) {
                 navigate('home');
@@ -3020,14 +2872,10 @@
                 title.textContent = 'Мои заказы';
                 subtitle.textContent = 'Все ваши заказы в одном месте';
                 document.getElementById('availableTasksSection').classList.add('hidden');
-            } else {
-                title.textContent = 'Все задачи';
-                subtitle.textContent = 'Управление задачами системы';
-                document.getElementById('availableTasksSection').classList.add('hidden');
             }
             
             await loadOrderStats();
-            await loadOrders();
+            await loadTasks();
         }
 
         // Загрузка доступных задач для помощников
@@ -3067,7 +2915,7 @@
                 const category = app.categories.find(c => c.id == task.category_id);
                 
                 return `
-                    <div class="order-card">
+                    <div class="order-card" onclick="viewTaskDetails(${task.id})">
                         <div class="order-header">
                             <div class="flex-1">
                                 <h3 class="order-title">${task.title}</h3>
@@ -3093,7 +2941,7 @@
                             </div>
                             <div>
                                 ${task.can_take ? `
-                                    <button class="btn btn-primary" onclick="takeTask(${task.id})">
+                                    <button class="btn btn-primary" onclick="takeTask(${task.id}); event.stopPropagation();">
                                         <i class="fas fa-hand-paper"></i>
                                         Принять задачу
                                     </button>
@@ -3140,7 +2988,7 @@
             }
         };
 
-        // Загрузка статистики заказов
+        // Загрузка статистики задач
         async function loadOrderStats() {
             try {
                 const response = await fetch(`${app.API_URL}/api/auth/profile`, {
@@ -3191,28 +3039,8 @@
                                 <div class="stat-label">В работе</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-value">${performerStats.avg_rating ? performerStats.avg_rating.toFixed(1) : '0.0'}</div>
+                                <div class="stat-value">${user.rating || '0.0'}</div>
                                 <div class="stat-label">Рейтинг</div>
-                            </div>
-                        `;
-                    } else {
-                        // Для админов/менеджеров
-                        container.innerHTML = `
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.total_tasks || 0}</div>
-                                <div class="stat-label">Всего задач</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
-                                <div class="stat-label">Завершено</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.active_tasks || 0}</div>
-                                <div class="stat-label">В работе</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.unread_notifications || 0}</div>
-                                <div class="stat-label">Уведомления</div>
                             </div>
                         `;
                     }
@@ -3222,8 +3050,8 @@
             }
         }
 
-        // Загрузка заказов
-        async function loadOrders() {
+        // Загрузка задач
+        async function loadTasks() {
             showLoading();
             
             try {
@@ -3248,33 +3076,32 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderOrders(data.data.tasks);
-                    renderPagination(data.data.pagination);
+                    renderTasks(data.data.tasks);
                 } else {
-                    showNotification('Не удалось загрузить заказы', 'error');
+                    showNotification('Не удалось загрузить задачи', 'error');
                 }
             } catch (error) {
-                console.error('Ошибка загрузки заказов:', error);
+                console.error('Ошибка загрузки задач:', error);
                 showNotification('Ошибка сети', 'error');
             } finally {
                 hideLoading();
             }
         }
 
-        // Рендер заказов
-        function renderOrders(orders) {
-            const container = document.getElementById('ordersList');
+        // Рендер задач
+        function renderTasks(tasks) {
+            const container = document.getElementById('tasksList');
             
-            if (!orders || orders.length === 0) {
+            if (!tasks || tasks.length === 0) {
                 container.innerHTML = `
                     <div class="card text-center p-8">
                         <i class="fas fa-shopping-bag" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
-                        <h3 class="category-title mb-4">Заказов пока нет</h3>
-                        <p class="category-desc mb-8">${app.currentUser.role === 'client' ? 'Создайте свой первый заказ' : 'Нет задач для отображения'}</p>
+                        <h3 class="category-title mb-4">Задач пока нет</h3>
+                        <p class="category-desc mb-8">${app.currentUser.role === 'client' ? 'Создайте свою первую задачу' : 'Нет задач для отображения'}</p>
                         ${app.currentUser.role === 'client' ? `
                             <button class="btn btn-primary" onclick="navigate('services')">
                                 <i class="fas fa-plus"></i>
-                                Создать заказ
+                                Создать задачу
                             </button>
                         ` : ''}
                     </div>
@@ -3282,11 +3109,11 @@
                 return;
             }
             
-            container.innerHTML = orders.map(order => {
-                const statusClass = `status-${order.status}`;
-                const statusText = getStatusText(order.status);
+            container.innerHTML = tasks.map(task => {
+                const statusClass = `status-${task.status}`;
+                const statusText = getStatusText(task.status);
                 
-                const deadline = new Date(order.deadline);
+                const deadline = new Date(task.deadline);
                 const now = new Date();
                 const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
                 
@@ -3301,15 +3128,13 @@
                     deadlineText = `${daysDiff} дн.`;
                 }
                 
-                const priceHtml = order.price > 0 ? 
-                    `<div style="font-size: 1.1rem; font-weight: 600; color: var(--gold-metallic);">${order.price}₽</div>` :
-                    `<div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);"><i class="fas fa-check-circle"></i> Бесплатно</div>`;
+                const priceHtml = `<div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);"><i class="fas fa-check-circle"></i> Бесплатно</div>`;
                 
                 return `
-                    <div class="order-card" onclick="viewOrderDetails(${order.id})">
+                    <div class="order-card" onclick="viewTaskDetails(${task.id})">
                         <div class="order-header">
                             <div class="flex-1">
-                                <h3 class="order-title">${order.title}</h3>
+                                <h3 class="order-title">${task.title}</h3>
                                 <div class="mt-2">
                                     <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
@@ -3317,11 +3142,11 @@
                             <div class="text-right">
                                 ${priceHtml}
                                 <div class="order-date">
-                                    ${new Date(order.created_at).toLocaleDateString('ru-RU')}
+                                    ${new Date(task.created_at).toLocaleDateString('ru-RU')}
                                 </div>
                             </div>
                         </div>
-                        <p class="order-description">${order.description}</p>
+                        <p class="order-description">${task.description}</p>
                         <div class="order-footer">
                             <div>
                                 <span class="order-date">
@@ -3330,7 +3155,7 @@
                             </div>
                             <div>
                                 <span class="order-date">
-                                    <i class="fas fa-tag"></i> ${order.category_name}
+                                    <i class="fas fa-tag"></i> ${task.category_name}
                                 </span>
                             </div>
                         </div>
@@ -3347,65 +3172,20 @@
                 'assigned': 'Назначена',
                 'in_progress': 'В работе',
                 'completed': 'Завершена',
-                'cancelled': 'Отменена',
-                'rejected': 'Отклонена',
-                'expired': 'Просрочена'
+                'cancelled': 'Отменена'
             };
             return statuses[status] || status;
         }
 
-        // Рендер пагинации
-        function renderPagination(pagination) {
-            const container = document.getElementById('paginationContainer');
-            
-            if (!pagination || pagination.total <= pagination.limit) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
-            const totalPages = Math.ceil(pagination.total / pagination.limit);
-            
-            let html = '';
-            
-            if (currentPage > 1) {
-                html += `
-                    <button class="btn btn-secondary" onclick="loadOrdersPage(${currentPage - 1})">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                `;
-            }
-            
-            html += `<span style="display: flex; align-items: center; padding: 0 12px; font-size: 0.9rem;">Страница ${currentPage} из ${totalPages}</span>`;
-            
-            if (pagination.has_more) {
-                html += `
-                    <button class="btn btn-secondary" onclick="loadOrdersPage(${currentPage + 1})">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                `;
-            }
-            
-            container.innerHTML = html;
-        }
-
-        // Загрузка страницы заказов
-        window.loadOrdersPage = function(page) {
-            const limit = 10;
-            const offset = (page - 1) * limit;
-            
-            loadOrders();
+        // Просмотр деталей задачи
+        window.viewTaskDetails = function(taskId) {
+            app.currentTaskId = taskId;
+            navigate('task-details');
         };
 
-        // Просмотр деталей заказа
-        window.viewOrderDetails = function(orderId) {
-            app.currentOrderId = orderId;
-            navigate('order-details');
-        };
-
-        // Загрузка деталей заказа
-        async function loadOrderDetailsPage() {
-            if (!app.currentOrderId) {
+        // Загрузка деталей задачи
+        async function loadTaskDetailsPage() {
+            if (!app.currentTaskId) {
                 navigate('tasks');
                 return;
             }
@@ -3413,7 +3193,7 @@
             showLoading();
             
             try {
-                const response = await fetch(`${app.API_URL}/api/tasks/${app.currentOrderId}`, {
+                const response = await fetch(`${app.API_URL}/api/tasks/${app.currentTaskId}`, {
                     headers: {
                         'Authorization': `Bearer ${app.token}`
                     }
@@ -3421,15 +3201,15 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderOrderDetails(data.data.task);
-                    loadOrderChat(app.currentOrderId);
-                    loadStatusHistory(app.currentOrderId);
+                    renderTaskDetails(data.data.task);
+                    loadTaskChat(app.currentTaskId);
+                    loadStatusHistory(app.currentTaskId);
                 } else {
-                    showNotification('Не удалось загрузить заказ', 'error');
+                    showNotification('Не удалось загрузить задачу', 'error');
                     navigate('tasks');
                 }
             } catch (error) {
-                console.error('Ошибка загрузки деталей заказа:', error);
+                console.error('Ошибка загрузки деталей задачи:', error);
                 showNotification('Ошибка сети', 'error');
                 navigate('tasks');
             } finally {
@@ -3437,13 +3217,13 @@
             }
         }
 
-        // Рендер деталей заказа
-        function renderOrderDetails(task) {
-            document.getElementById('orderDetailTitle').textContent = task.title;
-            document.getElementById('orderDetailNumber').textContent = `Номер: ${task.task_number || task.id}`;
+        // Рендер деталей задачи
+        function renderTaskDetails(task) {
+            document.getElementById('taskDetailTitle').textContent = task.title;
+            document.getElementById('taskDetailNumber').textContent = `Номер: ${task.task_number || task.id}`;
             
             // Обновляем заголовок участника
-            const participantTitle = document.getElementById('orderParticipantTitle');
+            const participantTitle = document.getElementById('taskParticipantTitle');
             if (app.currentUser.role === 'client' && task.performer_id) {
                 participantTitle.innerHTML = '<i class="fas fa-user-tie"></i> Помощница';
             } else if (app.currentUser.role === 'performer') {
@@ -3451,7 +3231,7 @@
             }
             
             // Основная информация
-            document.getElementById('orderDetailContent').innerHTML = `
+            document.getElementById('taskDetailContent').innerHTML = `
                 <div class="mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
                         <div class="flex-1">
@@ -3463,12 +3243,11 @@
                                 <span class="status-badge" style="background: ${task.priority === 'high' ? '#FFE6E6' : task.priority === 'urgent' ? '#FFF0E6' : '#E6F7FF'}; color: ${task.priority === 'high' ? '#D32F2F' : task.priority === 'urgent' ? '#F57C00' : '#1976D2'};">
                                     ${getPriorityText(task.priority)}
                                 </span>
-                                ${task.is_urgent ? '<span class="status-badge" style="background: #FFE6E6; color: #D32F2F;">Срочный</span>' : ''}
                             </div>
                         </div>
                         <div class="text-right">
-                            <div style="font-size: 1.3rem; font-weight: 600; color: ${task.price > 0 ? 'var(--gold-metallic)' : 'var(--aquamarine)'};">
-                                ${task.price > 0 ? `${task.price}₽` : '<i class="fas fa-check-circle"></i> Бесплатно'}
+                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--aquamarine);">
+                                <i class="fas fa-check-circle"></i> Бесплатно
                             </div>
                             <div style="color: var(--graphite-light); font-size: 0.9rem;">
                                 <i class="fas fa-tag"></i> ${task.category_name}
@@ -3510,22 +3289,16 @@
                             <h4 class="mb-2" style="color: var(--graphite-dark); font-weight: 600;">Даты</h4>
                             <div class="card">
                                 <div class="mb-4">
-                                    <div class="text-sm text-gray-500">Создан:</div>
+                                    <div class="text-sm text-gray-500">Создана:</div>
                                     <div>${new Date(task.created_at).toLocaleString('ru-RU')}</div>
                                 </div>
                                 <div class="mb-4">
-                                    <div class="text-sm text-gray-500">Обновлён:</div>
+                                    <div class="text-sm text-gray-500">Обновлена:</div>
                                     <div>${new Date(task.updated_at).toLocaleString('ru-RU')}</div>
                                 </div>
-                                ${task.start_time ? `
-                                    <div class="mb-4">
-                                        <div class="text-sm text-gray-500">Начат:</div>
-                                        <div>${new Date(task.start_time).toLocaleString('ru-RU')}</div>
-                                    </div>
-                                ` : ''}
                                 ${task.completed_at ? `
                                     <div>
-                                        <div class="text-sm text-gray-500">Завершён:</div>
+                                        <div class="text-sm text-gray-500">Завершена:</div>
                                         <div>${new Date(task.completed_at).toLocaleString('ru-RU')}</div>
                                     </div>
                                 ` : ''}
@@ -3536,31 +3309,31 @@
             `;
             
             // Действия
-            const actionsContainer = document.getElementById('orderActions');
+            const actionsContainer = document.getElementById('taskActions');
             let actionsHtml = '<div class="flex gap-4 flex-wrap">';
             
             if (app.currentUser.role === 'client') {
                 if (['new', 'searching', 'assigned'].includes(task.status)) {
                     actionsHtml += `
-                        <button class="btn btn-danger" onclick="cancelOrder(${task.id}, '${task.title}')">
+                        <button class="btn btn-danger" onclick="cancelTask(${task.id}, '${task.title}')">
                             <i class="fas fa-times"></i>
-                            Отменить заказ
+                            Отменить задачу
                         </button>
                     `;
                 }
                 
                 if (task.status === 'in_progress') {
                     actionsHtml += `
-                        <button class="btn btn-primary" onclick="completeOrder(${task.id}, '${task.title}')">
+                        <button class="btn btn-primary" onclick="completeTask(${task.id}, '${task.title}')">
                             <i class="fas fa-check"></i>
-                            Завершить заказ
+                            Завершить задачу
                         </button>
                     `;
                 }
                 
                 if (task.status === 'completed' && !task.rating) {
                     actionsHtml += `
-                        <button class="btn btn-pink" onclick="rateOrder(${task.id}, '${task.title}')">
+                        <button class="btn btn-pink" onclick="rateTask(${task.id}, '${task.title}')">
                             <i class="fas fa-star"></i>
                             Оценить
                         </button>
@@ -3569,7 +3342,7 @@
             } else if (app.currentUser.role === 'performer') {
                 if (task.status === 'assigned' && task.performer_id === app.currentUser.id) {
                     actionsHtml += `
-                        <button class="btn btn-primary" onclick="updateOrderStatus(${task.id}, 'in_progress')">
+                        <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'in_progress')">
                             <i class="fas fa-play"></i>
                             Начать выполнение
                         </button>
@@ -3578,7 +3351,7 @@
                 
                 if (task.status === 'in_progress' && task.performer_id === app.currentUser.id) {
                     actionsHtml += `
-                        <button class="btn btn-primary" onclick="updateOrderStatus(${task.id}, 'completed')">
+                        <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'completed')">
                             <i class="fas fa-check"></i>
                             Завершить задачу
                         </button>
@@ -3642,7 +3415,7 @@
         }
 
         // Обновление статуса задачи
-        window.updateOrderStatus = async function(orderId, status) {
+        window.updateTaskStatus = async function(taskId, status) {
             let confirmMessage = '';
             let notes = '';
             
@@ -3665,7 +3438,7 @@
             showLoading();
             
             try {
-                const response = await fetch(`${app.API_URL}/api/tasks/${orderId}/status`, {
+                const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3681,7 +3454,7 @@
                 
                 if (response.ok) {
                     showNotification(data.message || 'Статус задачи изменен', 'success');
-                    loadOrderDetailsPage();
+                    loadTaskDetailsPage();
                 } else {
                     showNotification(data.error || 'Ошибка изменения статуса', 'error');
                 }
@@ -3693,8 +3466,8 @@
             }
         };
 
-        // Загрузка чата заказа
-        async function loadOrderChat(taskId) {
+        // Загрузка чата задачи
+        async function loadTaskChat(taskId) {
             try {
                 const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/messages`, {
                     headers: {
@@ -3704,7 +3477,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderOrderChat(data.data.messages, data.data.can_send);
+                    renderTaskChat(data.data.messages, data.data.can_send);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки чата:', error);
@@ -3712,8 +3485,8 @@
         }
 
         // Рендер чата
-        function renderOrderChat(messages, canSend) {
-            const container = document.getElementById('orderChat');
+        function renderTaskChat(messages, canSend) {
+            const container = document.getElementById('taskChat');
             const chatStatusBadge = document.getElementById('chatStatusBadge');
             
             // Обновляем статус чата
@@ -3721,7 +3494,7 @@
             chatStatusBadge.className = `status-badge ${canSend ? 'status-in-progress' : 'status-completed'}`;
             
             let messagesHtml = '<div class="chat-container">';
-            messagesHtml += '<div class="chat-header"><h3>Чат заказа</h3></div>';
+            messagesHtml += '<div class="chat-header"><h3>Чат задачи</h3></div>';
             messagesHtml += '<div class="chat-messages" id="chatMessages">';
             
             if (!messages || messages.length === 0) {
@@ -3755,8 +3528,8 @@
             if (canSend) {
                 messagesHtml += `
                     <div class="chat-input-container">
-                        <input type="text" class="chat-input" id="chatMessageInput" placeholder="Введите сообщение..." onkeypress="if(event.key === 'Enter') sendMessage(${app.currentOrderId})">
-                        <button class="btn btn-primary" onclick="sendMessage(${app.currentOrderId})">
+                        <input type="text" class="chat-input" id="chatMessageInput" placeholder="Введите сообщение..." onkeypress="if(event.key === 'Enter') sendMessage(${app.currentTaskId})">
+                        <button class="btn btn-primary" onclick="sendMessage(${app.currentTaskId})">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -3764,7 +3537,7 @@
             } else {
                 messagesHtml += `
                     <div class="chat-input-container" style="justify-content: center;">
-                        <p style="color: var(--graphite-light);">Чат недоступен для этого статуса заказа</p>
+                        <p style="color: var(--graphite-light);">Чат недоступен для этого статуса задачи</p>
                     </div>
                 `;
             }
@@ -3798,7 +3571,7 @@
                 
                 if (response.ok) {
                     input.value = '';
-                    loadOrderChat(taskId);
+                    loadTaskChat(taskId);
                 } else {
                     showNotification('Не удалось отправить сообщение', 'error');
                 }
@@ -3811,7 +3584,6 @@
         // Загрузка истории статусов
         async function loadStatusHistory(taskId) {
             try {
-                // Используем данные из загруженной задачи
                 const response = await fetch(`${app.API_URL}/api/tasks/${taskId}`, {
                     headers: {
                         'Authorization': `Bearer ${app.token}`
@@ -3851,14 +3623,14 @@
             }
         }
 
-        // Отмена заказа
-        window.cancelOrder = async function(orderId, orderTitle) {
-            if (!confirm(`Вы уверены, что хотите отменить заказ "${orderTitle}"?`)) return;
+        // Отмена задачи
+        window.cancelTask = async function(taskId, taskTitle) {
+            if (!confirm(`Вы уверены, что хотите отменить задачу "${taskTitle}"?`)) return;
             
             showLoading();
             
             try {
-                const response = await fetch(`${app.API_URL}/api/tasks/${orderId}/cancel`, {
+                const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3872,27 +3644,27 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification(data.message || 'Заказ успешно отменён', 'success');
+                    showNotification(data.message || 'Задача успешно отменена', 'success');
                     navigate('tasks');
                 } else {
-                    showNotification(data.error || 'Ошибка отмены заказа', 'error');
+                    showNotification(data.error || 'Ошибка отмены задачи', 'error');
                 }
             } catch (error) {
-                console.error('Ошибка отмены заказа:', error);
+                console.error('Ошибка отмены задачи:', error);
                 showNotification('Ошибка сети', 'error');
             } finally {
                 hideLoading();
             }
         };
 
-        // Завершение заказа
-        window.completeOrder = async function(orderId, orderTitle) {
-            if (!confirm(`Вы подтверждаете, что заказ "${orderTitle}" выполнен?`)) return;
+        // Завершение задачи
+        window.completeTask = async function(taskId, taskTitle) {
+            if (!confirm(`Вы подтверждаете, что задача "${taskTitle}" выполнена?`)) return;
             
             showLoading();
             
             try {
-                const response = await fetch(`${app.API_URL}/api/tasks/${orderId}/status`, {
+                const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/status`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3900,30 +3672,30 @@
                     },
                     body: JSON.stringify({ 
                         status: 'completed',
-                        notes: 'Клиент подтвердил выполнение заказа'
+                        notes: 'Клиент подтвердил выполнение задачи'
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification(data.message || 'Заказ успешно завершён', 'success');
-                    loadOrderDetailsPage();
+                    showNotification(data.message || 'Задача успешно завершена', 'success');
+                    loadTaskDetailsPage();
                 } else {
-                    showNotification(data.error || 'Ошибка завершения заказа', 'error');
+                    showNotification(data.error || 'Ошибка завершения задачи', 'error');
                 }
             } catch (error) {
-                console.error('Ошибка завершения заказа:', error);
+                console.error('Ошибка завершения задачи:', error);
                 showNotification('Ошибка сети', 'error');
             } finally {
                 hideLoading();
             }
         };
 
-        // Оценка заказа
-        window.rateOrder = function(orderId, orderTitle) {
-            app.currentOrderId = orderId;
-            document.getElementById('rateOrderTitle').textContent = `Оцените выполнение заказа: "${orderTitle}"`;
+        // Оценка задачи
+        window.rateTask = function(taskId, taskTitle) {
+            app.currentTaskId = taskId;
+            document.getElementById('rateTaskTitle').textContent = `Оцените выполнение задачи: "${taskTitle}"`;
             
             // Сброс рейтинга
             const stars = document.querySelectorAll('#ratingStars i');
@@ -3973,7 +3745,7 @@
             showLoading();
             
             try {
-                const response = await fetch(`${app.API_URL}/api/tasks/${app.currentOrderId}/reviews`, {
+                const response = await fetch(`${app.API_URL}/api/tasks/${app.currentTaskId}/reviews`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3991,7 +3763,7 @@
                 if (response.ok) {
                     showNotification(data.message || 'Спасибо за вашу оценку!', 'success');
                     closeModal('rateModal');
-                    loadOrderDetailsPage();
+                    loadTaskDetailsPage();
                 } else {
                     showNotification(data.error || 'Ошибка отправки оценки', 'error');
                 }
@@ -4039,10 +3811,6 @@
                         <div class="mb-4">
                             <div class="text-sm text-gray-500">Телефон:</div>
                             <div class="font-medium">${user.phone || 'Не указан'}</div>
-                        </div>
-                        <div class="mb-4">
-                            <div class="text-sm text-gray-500">Telegram:</div>
-                            <div class="font-medium">${user.telegram_username || 'Не указан'}</div>
                         </div>
                         <div class="mb-4">
                             <div class="text-sm text-gray-500">Роль:</div>
@@ -4143,33 +3911,9 @@
                                 <div class="stat-label">Выполнено</div>
                             </div>
                         `;
-                    } else {
-                        statsHtml = `
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.total_tasks || 0}</div>
-                                <div class="stat-label">Всего задач</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
-                                <div class="stat-label">Завершено</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${stats?.active_tasks || 0}</div>
-                                <div class="stat-label">В работе</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-value">${user.balance || 0}₽</div>
-                                <div class="stat-label">Баланс</div>
-                            </div>
-                        `;
                     }
                     
                     document.getElementById('userStats').innerHTML = statsHtml;
-                    
-                    // Обновляем баланс
-                    if (user.balance !== undefined) {
-                        document.getElementById('currentBalance').textContent = `${user.balance}₽`;
-                    }
                     
                     // Для помощников загружаем специализации
                     if (user.role === 'performer') {
@@ -4178,9 +3922,6 @@
                     } else {
                         document.getElementById('performerSpecializations').classList.add('hidden');
                     }
-                    
-                    // Загружаем историю платежей
-                    await loadPaymentsHistory();
                 }
             } catch (error) {
                 console.error('Ошибка загрузки профиля:', error);
@@ -4299,303 +4040,6 @@
                 hideLoading();
             }
         });
-
-        // Загрузка истории платежей
-        async function loadPaymentsHistory() {
-            try {
-                // В реальном приложении здесь будет запрос к API платежей
-                const container = document.getElementById('paymentsHistory');
-                container.innerHTML = `
-                    <div class="text-center p-6">
-                        <i class="fas fa-history" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
-                        <p class="category-desc text-sm">История платежей будет доступна в полной версии</p>
-                    </div>
-                `;
-            } catch (error) {
-                console.error('Ошибка загрузки истории платежей:', error);
-            }
-        }
-
-        // Загрузка админ панели
-        async function loadAdminPage() {
-            if (!app.currentUser || !['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
-                navigate('home');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch(`${app.API_URL}/api/admin/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    renderAdminDashboard(data.data);
-                } else {
-                    showNotification('Не удалось загрузить админ панель', 'error');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки админ панели:', error);
-                showNotification('Ошибка сети', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // Рендер админ дашборда
-        function renderAdminDashboard(data) {
-            const container = document.getElementById('adminStats');
-            
-            container.innerHTML = `
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">${data.summary.total_users}</div>
-                    <div class="admin-stat-label">Пользователей</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">${data.summary.total_tasks}</div>
-                    <div class="admin-stat-label">Задач</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">${data.summary.total_revenue}₽</div>
-                    <div class="admin-stat-label">Доход</div>
-                </div>
-                <div class="admin-stat-card">
-                    <div class="admin-stat-value">${data.summary.completed_tasks}</div>
-                    <div class="admin-stat-label">Завершено</div>
-                </div>
-            `;
-            
-            // Основной контент
-            const adminContent = document.getElementById('adminContent');
-            adminContent.innerHTML = `
-                <div class="grid grid-1 md:grid-2 gap-6 mb-8">
-                    <div class="card">
-                        <h3 class="category-title mb-4">Последние задачи</h3>
-                        <div class="space-y-3">
-                            ${data.recent_tasks.slice(0, 5).map(task => `
-                                <div class="flex items-center justify-between p-3 border rounded-lg border-gray-100">
-                                    <div>
-                                        <div class="font-medium">${task.title}</div>
-                                        <div class="text-xs text-gray-500">${task.category_name}</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-sm font-medium">${getStatusText(task.status)}</div>
-                                        <div class="text-xs text-gray-500">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <h3 class="category-title mb-4">Лучшие исполнители</h3>
-                        <div class="space-y-3">
-                            ${data.top_performers.slice(0, 5).map(performer => `
-                                <div class="flex items-center justify-between p-3 border rounded-lg border-gray-100">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                            ${performer.first_name ? performer.first_name[0] : ''}${performer.last_name ? performer.last_name[0] : ''}
-                                        </div>
-                                        <div>
-                                            <div class="font-medium">${performer.first_name} ${performer.last_name}</div>
-                                            <div class="text-xs text-gray-500">${performer.tasks_completed || 0} задач</div>
-                                        </div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="text-sm font-medium text-gold">${performer.avg_rating ? performer.avg_rating.toFixed(1) : '0.0'}</div>
-                                        <div class="text-xs text-gray-500">Рейтинг</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h3 class="category-title mb-4">Статистика по категориям</h3>
-                    <div class="grid grid-2 md:grid-3 gap-4">
-                        ${data.categories.map(cat => `
-                            <div class="text-center p-4 border rounded-lg border-gray-100">
-                                <div class="text-2xl font-bold mb-2">${cat.icon}</div>
-                                <div class="font-medium">${cat.display_name}</div>
-                                <div class="text-sm text-gray-500">${cat.task_count} задач</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Загрузка раздела админ панели
-        window.loadAdminSection = async function(section) {
-            showLoading();
-            
-            try {
-                let url = '';
-                let title = '';
-                
-                switch(section) {
-                    case 'users':
-                        url = `${app.API_URL}/api/admin/users`;
-                        title = 'Управление пользователями';
-                        break;
-                    case 'tasks':
-                        url = `${app.API_URL}/api/admin/tasks`;
-                        title = 'Управление задачами';
-                        break;
-                    case 'analytics':
-                        // Здесь будет загрузка аналитики
-                        break;
-                }
-                
-                if (url) {
-                    const response = await fetch(url, {
-                        headers: {
-                            'Authorization': `Bearer ${app.token}`
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        renderAdminSection(section, title, data.data);
-                    }
-                }
-            } catch (error) {
-                console.error(`Ошибка загрузки раздела ${section}:`, error);
-                showNotification('Ошибка загрузки данных', 'error');
-            } finally {
-                hideLoading();
-            }
-        };
-
-        // Рендер раздела админ панели
-        function renderAdminSection(section, title, data) {
-            const container = document.getElementById('adminContent');
-            
-            if (section === 'users') {
-                container.innerHTML = `
-                    <div class="mb-6">
-                        <h2 class="section-title">${title}</h2>
-                        <p class="section-subtitle">Всего пользователей: ${data.total}</p>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Имя</th>
-                                    <th>Email</th>
-                                    <th>Роль</th>
-                                    <th>Подписка</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.users.map(user => `
-                                    <tr>
-                                        <td>${user.id}</td>
-                                        <td>${user.first_name} ${user.last_name}</td>
-                                        <td>${user.email}</td>
-                                        <td><span class="role-badge role-${user.role}">${getRoleDisplayName(user.role)}</span></td>
-                                        <td>${user.subscription_plan}</td>
-                                        <td>
-                                            <span class="status-badge ${user.subscription_status === 'active' ? 'status-completed' : 'status-cancelled'}">
-                                                ${user.subscription_status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-secondary btn-sm" onclick="editUser(${user.id})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            } else if (section === 'tasks') {
-                container.innerHTML = `
-                    <div class="mb-6">
-                        <h2 class="section-title">${title}</h2>
-                        <p class="section-subtitle">Всего задач: ${data.total}</p>
-                    </div>
-                    
-                    <div class="table-container">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Задача</th>
-                                    <th>Категория</th>
-                                    <th>Клиент</th>
-                                    <th>Исполнитель</th>
-                                    <th>Статус</th>
-                                    <th>Создана</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.tasks.map(task => `
-                                    <tr>
-                                        <td>${task.id}</td>
-                                        <td>${task.title}</td>
-                                        <td>${task.category_name}</td>
-                                        <td>${task.client_first_name} ${task.client_last_name}</td>
-                                        <td>${task.performer_first_name ? task.performer_first_name + ' ' + task.performer_last_name : '-'}</td>
-                                        <td><span class="status-badge status-${task.status}">${getStatusText(task.status)}</span></td>
-                                        <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-            }
-        }
-
-        // Редактирование пользователя (админ)
-        window.editUser = function(userId) {
-            // Реализация редактирования пользователя
-            showNotification('Функция редактирования пользователя в разработке', 'info');
-        };
-
-        // Проверка уведомлений
-        async function checkNotifications() {
-            try {
-                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const unreadCount = data.data.unread_count || 0;
-                    
-                    // Обновляем счетчик в статистике
-                    if (app.currentPage === 'tasks' || app.currentPage === 'home') {
-                        await loadOrderStats();
-                    }
-                    
-                    // Показываем уведомление о новых сообщениях
-                    if (unreadCount > 0 && document.hidden) {
-                        showNotification(`У вас ${unreadCount} непрочитанных уведомлений`, 'info');
-                    }
-                } else if (response.status === 401) {
-                    // Токен невалиден, выходим
-                    logout();
-                }
-            } catch (error) {
-                console.error('Ошибка проверки уведомлений:', error);
-            }
-        }
 
         // Авторизация
         document.getElementById('btnLogin').addEventListener('click', async () => {
@@ -4726,8 +4170,6 @@
             document.getElementById('editFirstName').value = app.currentUser.first_name || '';
             document.getElementById('editLastName').value = app.currentUser.last_name || '';
             document.getElementById('editPhone').value = app.currentUser.phone || '';
-            document.getElementById('editTelegram').value = app.currentUser.telegram_username || '';
-            document.getElementById('editAvatar').value = app.currentUser.avatar_url || '';
             
             openModal('editProfileModal');
         });
@@ -4737,8 +4179,6 @@
             const firstName = document.getElementById('editFirstName').value;
             const lastName = document.getElementById('editLastName').value;
             const phone = document.getElementById('editPhone').value;
-            const telegram = document.getElementById('editTelegram').value;
-            const avatar = document.getElementById('editAvatar').value;
             
             if (!firstName || !lastName || !phone) {
                 showNotification('Заполните обязательные поля', 'error');
@@ -4757,9 +4197,7 @@
                     body: JSON.stringify({
                         first_name: firstName,
                         last_name: lastName,
-                        phone: phone,
-                        telegram_username: telegram || null,
-                        avatar_url: avatar || null
+                        phone: phone
                     })
                 });
                 
@@ -4881,6 +4319,38 @@
             document.getElementById('mobileMenuBtn').innerHTML = '<i class="fas fa-bars"></i>';
         }
 
+        // Проверка уведомлений
+        async function checkNotifications() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const unreadCount = data.data.unread_count || 0;
+                    
+                    // Обновляем счетчик в статистике
+                    if (app.currentPage === 'tasks' || app.currentPage === 'home') {
+                        await loadOrderStats();
+                    }
+                    
+                    // Показываем уведомление о новых сообщениях
+                    if (unreadCount > 0 && document.hidden) {
+                        showNotification(`У вас ${unreadCount} непрочитанных уведомлений`, 'info');
+                    }
+                } else if (response.status === 401) {
+                    // Токен невалиден, выходим
+                    logout();
+                }
+            } catch (error) {
+                console.error('Ошибка проверки уведомлений:', error);
+            }
+        }
+
         // Настройка обработчиков событий
         function setupEventListeners() {
             // Навигация
@@ -4907,29 +4377,29 @@
                 navigate('subscriptions');
             });
             
-            // Заказы
-            document.getElementById('btnNewOrder').addEventListener('click', () => {
+            // Задачи
+            document.getElementById('btnNewTask').addEventListener('click', () => {
                 navigate('services');
             });
             
-            document.getElementById('btnBackToOrders').addEventListener('click', () => {
+            document.getElementById('btnBackToTasks').addEventListener('click', () => {
                 navigate('tasks');
             });
             
             document.getElementById('btnRefreshTasks').addEventListener('click', () => {
-                loadOrders();
+                loadTasks();
             });
             
-            document.getElementById('btnRefreshOrder').addEventListener('click', () => {
-                loadOrderDetailsPage();
+            document.getElementById('btnRefreshTask').addEventListener('click', () => {
+                loadTaskDetailsPage();
             });
             
             document.getElementById('filterStatus').addEventListener('change', () => {
-                loadOrders();
+                loadTasks();
             });
             
             document.getElementById('filterCategory').addEventListener('change', () => {
-                loadOrders();
+                loadTasks();
             });
             
             // Мобильное меню
@@ -4950,10 +4420,6 @@
             
             document.getElementById('btnCloseSpecializations').addEventListener('click', () => {
                 closeModal('specializationsModal');
-            });
-            
-            document.getElementById('btnCloseAddBalance').addEventListener('click', () => {
-                closeModal('addBalanceModal');
             });
             
             // Переключение форм авторизации
@@ -4989,11 +4455,6 @@
                 showNotification('Политика конфиденциальности будет доступна в полной версии', 'info');
             });
             
-            document.getElementById('btnHelp').addEventListener('click', (e) => {
-                e.preventDefault();
-                showNotification('Раздел помощи будет доступен в полной версии', 'info');
-            });
-            
             // Динамические обработчики пользовательского меню
             document.addEventListener('click', function(e) {
                 if (e.target.id === 'btnOpenAuth' || e.target.closest('#btnOpenAuth')) {
@@ -5012,16 +4473,6 @@
             // Управление подпиской
             document.getElementById('btnManageSubscription').addEventListener('click', () => {
                 navigate('subscriptions');
-            });
-            
-            // Пополнение баланса
-            document.getElementById('btnAddBalance').addEventListener('click', () => {
-                openModal('addBalanceModal');
-            });
-            
-            document.getElementById('btnSubmitAddBalance').addEventListener('click', () => {
-                showNotification('Функция пополнения баланса будет доступна в полной версии', 'info');
-                closeModal('addBalanceModal');
             });
             
             // Отправка формы по Enter
@@ -5063,10 +4514,6 @@
                     email = 'superadmin@concierge.ru';
                     password = 'admin123';
                     break;
-                case 'admin':
-                    email = 'admin@concierge.ru';
-                    password = 'admin123';
-                    break;
                 case 'performer':
                     email = 'performer1@concierge.ru';
                     password = 'performer123';
@@ -5089,7 +4536,7 @@
 
         console.log('🌸 Женский Консьерж v5.4.0 успешно загружен!');
         console.log('🔧 API URL:', app.API_URL);
-        console.log('🔧 Демо аккаунты: demoLogin("client"), demoLogin("performer"), demoLogin("admin")');
+        console.log('🔧 Демо аккаунты: demoLogin("client"), demoLogin("performer")');
         console.log('⚡ Все услуги бесплатны для клиентов с активной подпиской!');
     </script>
 </body>
