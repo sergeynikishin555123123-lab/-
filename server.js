@@ -1889,23 +1889,37 @@ const authMiddleware = (roles = []) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
                 
-                // Проверяем пользователя в БД
-                const user = await db.get(
-                    `SELECT id, email, first_name, last_name, phone, role, 
-                            subscription_plan, subscription_status, subscription_expires,
-                            initial_fee_paid, initial_fee_amount, is_active, avatar_url,
-                            balance, rating, completed_tasks
-                     FROM users WHERE id = ? AND is_active = 1`,
-                    [decoded.id]
-                );
-                
-                if (!user) {
-                    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден или заблокирован`);
-                    return res.status(401).json({ 
-                        success: false, 
-                        error: 'Пользователь не найден или заблокирован' 
-                    });
-                }
+// Проверяем пользователя в БД
+const user = await db.get(
+    `SELECT id, email, first_name, last_name, phone, role, 
+            subscription_plan, subscription_status, subscription_expires,
+            initial_fee_paid, initial_fee_amount, is_active, avatar_url,
+            balance, rating, completed_tasks
+     FROM users WHERE id = ?`,
+    [decoded.id]
+);
+
+if (!user) {
+    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден или заблокирован`);
+    
+    // Отправляем специальный код для клиента
+    return res.status(401).json({ 
+        success: false, 
+        error: 'Пользователь не найден или удален',
+        code: 'USER_NOT_FOUND',
+        user_id: decoded.id
+    });
+}
+
+// Проверяем активен ли пользователь
+if (user.is_active !== 1) {
+    console.log(`🔐 [${requestId}] Ошибка: пользователь ${user.email} заблокирован`);
+    return res.status(403).json({ 
+        success: false, 
+        error: 'Аккаунт заблокирован',
+        code: 'USER_BLOCKED'
+    });
+}
                 
                 req.user = {
                     id: user.id,
