@@ -4168,62 +4168,6 @@ async function safeFetch(url, options = {}) {
         console.log('🌸 Женский Консьерж v5.2.0 успешно загружен!');
         console.log('🔧 API URL:', app.API_URL);
         console.log('🔧 Демо аккаунты: demoLogin("client"), demoLogin("performer"), demoLogin("admin")');
-    // ==================== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ====================
-
-// Инициализация приложения
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🌸 Инициализация Женский Консьерж v5.2.0...');
-    console.log('📍 Текущий URL:', window.location.href);
-    console.log('🌐 Определен API URL:', app.API_URL);
-    
-    // Показываем загрузку
-    showLoading();
-    
-    try {
-        // Сначала проверяем API
-        const apiConnected = await checkApiConnection();
-        if (!apiConnected) {
-            hideLoading();
-            return;
-        }
-        
-        // Проверяем и чистим токен
-        clearInvalidToken();
-        
-        // Загружаем базовые данные
-        await loadCategories();
-        await loadSubscriptions();
-        
-        // Проверяем токен если есть
-        if (app.token) {
-            const isValid = await verifyToken();
-            if (!isValid) {
-                console.log('❌ Токен невалиден');
-            }
-        }
-        
-        updateUserMenu();
-        setupEventListeners();
-        loadCurrentPage();
-        
-        // Запускаем периодическую проверку уведомлений
-        if (app.currentUser) {
-            setInterval(async () => {
-                await checkNotifications();
-            }, 60000);
-        }
-        
-        console.log('✅ Приложение успешно инициализировано');
-        
-    } catch (error) {
-        console.error('❌ Ошибка инициализации:', error);
-        showNotification('Ошибка загрузки приложения: ' + error.message, 'error');
-    } finally {
-        hideLoading();
-    }
-});
-
-// Закрывающий тег скрипта
 </script>
 </body>
 </html>
