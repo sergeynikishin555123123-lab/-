@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+public/index.html - <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -1876,7 +1876,7 @@
                     <p class="section-subtitle">Управление задачами и общение с клиентами</p>
                 </div>
                 <div class="flex gap-4">
-                    <button class="btn btn-primary" onclick="loadAvailableTasks()">
+                    <button class="btn btn-primary" id="btnRefreshPerformerTasks">
                         <i class="fas fa-sync-alt"></i>
                         Обновить
                     </button>
@@ -1904,16 +1904,16 @@
         <div class="card">
             <h2 class="category-title mb-4">Мои задачи</h2>
             <div class="flex flex-wrap gap-4 mb-6">
-                <button class="btn btn-secondary active" data-status="all" onclick="filterPerformerTasks('all')">
+                <button class="btn btn-secondary active" data-status="all" id="btnFilterAll">
                     Все
                 </button>
-                <button class="btn btn-secondary" data-status="assigned" onclick="filterPerformerTasks('assigned')">
+                <button class="btn btn-secondary" data-status="assigned" id="btnFilterAssigned">
                     Назначенные
                 </button>
-                <button class="btn btn-secondary" data-status="in_progress" onclick="filterPerformerTasks('in_progress')">
+                <button class="btn btn-secondary" data-status="in_progress" id="btnFilterInProgress">
                     В работе
                 </button>
-                <button class="btn btn-secondary" data-status="completed" onclick="filterPerformerTasks('completed')">
+                <button class="btn btn-secondary" data-status="completed" id="btnFilterCompleted">
                     Завершенные
                 </button>
             </div>
@@ -2494,27 +2494,27 @@
         }
 
         // Обновление ссылок для разных ролей
-function updateRoleSpecificLinks() {
-    const container = document.getElementById('roleSpecificLinks');
-    
-    if (!app.currentUser) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    const role = app.currentUser.role;
-    let links = '';
-    
-    if (['admin', 'manager', 'superadmin'].includes(role)) {
-        links += `<a href="#" class="nav-link" data-page="admin">Админ</a>`;
-    }
-    
-    if (role === 'performer') {
-        links += `<a href="#" class="nav-link" data-page="performer">Исполнитель</a>`;
-    }
-    
-    container.innerHTML = links;
-}
+        function updateRoleSpecificLinks() {
+            const container = document.getElementById('roleSpecificLinks');
+            
+            if (!app.currentUser) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const role = app.currentUser.role;
+            let links = '';
+            
+            if (['admin', 'manager', 'superadmin'].includes(role)) {
+                links += `<a href="#" class="nav-link" data-page="admin">Админ</a>`;
+            }
+            
+            if (role === 'performer') {
+                links += `<a href="#" class="nav-link" data-page="performer">Исполнитель</a>`;
+            }
+            
+            container.innerHTML = links;
+        }
 
         // Получить отображаемое имя роли
         function getRoleDisplayName(role) {
@@ -2528,76 +2528,77 @@ function updateRoleSpecificLinks() {
             return roles[role] || role;
         }
 
-function navigate(page) {
-    // Сохраняем текущую страницу
-    localStorage.setItem('lastPage', page);
-    
-    // Скрываем все страницы
-    document.querySelectorAll('.page').forEach(p => {
-        p.classList.remove('active');
-    });
-    
-    // Обновляем активные ссылки в навигации
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-page') === page) {
-            link.classList.add('active');
+        // Навигация
+        function navigate(page) {
+            // Сохраняем текущую страницу
+            localStorage.setItem('lastPage', page);
+            
+            // Скрываем все страницы
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Обновляем активные ссылки в навигации
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === page) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // Показываем нужную страницу
+            const targetPage = document.getElementById(`page-${page}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                app.currentPage = page;
+                
+                // Загружаем данные для страницы
+                loadCurrentPage();
+                
+                closeMobileMenu();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
-    });
-    
-    // Показываем нужную страницу
-    const targetPage = document.getElementById(`page-${page}`);
-    if (targetPage) {
-        targetPage.classList.add('active');
-        app.currentPage = page;
-        
-        // Загружаем данные для страницы
-        loadCurrentPage();
-        
-        closeMobileMenu();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-}
 
-// Обновите loadCurrentPage
-function loadCurrentPage() {
-    switch(app.currentPage) {
-        case 'home':
-            loadHomePage();
-            break;
-        case 'services':
-            loadServicesPage();
-            break;
-        case 'subscriptions':
-            loadSubscriptionsPage();
-            break;
-        case 'tasks':
-            loadTasksPage();
-            break;
-        case 'profile':
-            loadProfilePage();
-            break;
-        case 'task-details':
-            loadTaskDetailsPage();
-            break;
-        case 'admin':
-            if (app.currentUser && ['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
-                loadAdminPage();
-            } else {
-                navigate('home');
-                showNotification('Нет доступа к админ панели', 'error');
+        // Загрузка текущей страницы
+        function loadCurrentPage() {
+            switch(app.currentPage) {
+                case 'home':
+                    loadHomePage();
+                    break;
+                case 'services':
+                    loadServicesPage();
+                    break;
+                case 'subscriptions':
+                    loadSubscriptionsPage();
+                    break;
+                case 'tasks':
+                    loadTasksPage();
+                    break;
+                case 'profile':
+                    loadProfilePage();
+                    break;
+                case 'task-details':
+                    loadTaskDetailsPage();
+                    break;
+                case 'admin':
+                    if (app.currentUser && ['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+                        loadAdminPage();
+                    } else {
+                        navigate('home');
+                        showNotification('Нет доступа к админ панели', 'error');
+                    }
+                    break;
+                case 'performer':
+                    if (app.currentUser && app.currentUser.role === 'performer') {
+                        loadPerformerPage();
+                    } else {
+                        navigate('home');
+                        showNotification('Эта страница только для исполнителей', 'error');
+                    }
+                    break;
             }
-            break;
-        case 'performer':
-            if (app.currentUser && app.currentUser.role === 'performer') {
-                loadPerformerPage();
-            } else {
-                navigate('home');
-                showNotification('Эта страница только для исполнителей', 'error');
-            }
-            break;
-    }
-}
+        }
 
         // Загрузка главной страницы
         async function loadHomePage() {
@@ -2712,35 +2713,35 @@ function loadCurrentPage() {
             });
         }
 
-// Загрузка админ панели
-async function loadAdminPage() {
-    if (!app.currentUser || !['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
-        navigate('home');
-        showNotification('Нет доступа к админ панели', 'error');
-        return;
-    }
-    
-    try {
-        // Загружаем статистику
-        const statsResponse = await fetch(`${app.API_URL}/api/admin/stats`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`
+        // Загрузка админ панели
+        async function loadAdminPage() {
+            if (!app.currentUser || !['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+                navigate('home');
+                showNotification('Нет доступа к админ панели', 'error');
+                return;
             }
-        });
-        
-        if (statsResponse.ok) {
-            const statsData = await statsResponse.json();
-            renderAdminStats(statsData.data);
+            
+            try {
+                // Загружаем статистику
+                const statsResponse = await fetch(`${app.API_URL}/api/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    renderAdminStats(statsData.data);
+                }
+                
+                // Загружаем пользователей по умолчанию
+                await loadAdminUsers();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки админ панели:', error);
+                showNotification('Ошибка загрузки админ панели', 'error');
+            }
         }
-        
-        // Загружаем пользователей по умолчанию
-        await loadAdminUsers();
-        
-    } catch (error) {
-        console.error('Ошибка загрузки админ панели:', error);
-        showNotification('Ошибка загрузки админ панели', 'error');
-    }
-}
 
         // Рендер статистики админ панели
         function renderAdminStats(stats) {
@@ -2791,7 +2792,7 @@ async function loadAdminPage() {
             container.innerHTML = `
                 <div id="adminUsersTab" class="tab-content active">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">Управление пользователями</h3>
+                        <h3 class="text-lg font-semibold">Управление пользователей</h3>
                         <button class="btn btn-primary" id="btnAddAdmin">
                             <i class="fas fa-plus"></i>
                             Добавить администратора
@@ -2924,7 +2925,6 @@ async function loadAdminPage() {
                     const user = data.data.user;
                     
                     // Открываем модалку редактирования
-                    // (нужно добавить модалку в HTML)
                     showNotification(`Редактирование пользователя: ${user.email}`, 'info');
                 }
             } catch (error) {
@@ -3376,7 +3376,6 @@ async function loadAdminPage() {
                     const task = data.data.task;
                     
                     // Открываем модалку редактирования задачи
-                    // (нужно добавить модалку в HTML)
                     showNotification(`Редактирование задачи: ${task.title}`, 'info');
                 }
             } catch (error) {
@@ -4114,367 +4113,497 @@ async function loadAdminPage() {
         };
 
         // Загрузка страницы задач
-async function loadTasksPage() {
-    if (!app.currentUser) {
-        navigate('home');
-        openAuthModal();
-        return;
-    }
-    
-    // Обновляем заголовок страницы в зависимости от роли
-    const title = document.getElementById('tasksPageTitle');
-    const subtitle = document.getElementById('tasksPageSubtitle');
-
-    
-    if (app.currentUser.role === 'performer') {
-        title.textContent = 'Мои задачи';
-        subtitle.textContent = 'Задачи, которые вы выполняете или можете принять';
-        
-        // Показываем доступные задачи
-        document.getElementById('availableTasksSection').classList.remove('hidden');
-        await loadAvailableTasks();
-        
-        // Скрываем кнопку "Новая задача" для исполнителей
-        document.getElementById('btnNewTask').style.display = 'none';
-    } else if (app.currentUser.role === 'client') {
-        title.textContent = 'Мои заказы';
-        subtitle.textContent = 'Все ваши заказы в одном месте';
-        document.getElementById('availableTasksSection').classList.add('hidden');
-        
-        // Показываем кнопку "Новая задача" для клиентов
-        document.getElementById('btnNewTask').style.display = 'flex';
-    } else if (['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
-        title.textContent = 'Все задачи';
-        subtitle.textContent = 'Управление задачами системы';
-        document.getElementById('availableTasksSection').classList.add('hidden');
-        document.getElementById('btnNewTask').style.display = 'none';
-    }
-    
-    await loadOrderStats();
-    await loadTasks();
-}
-
-// Загрузка страницы исполнителя
-async function loadPerformerPage() {
-    if (!app.currentUser || app.currentUser.role !== 'performer') {
-        navigate('home');
-        return;
-    }
-    
-    await loadPerformerAvailableTasks();
-    await loadPerformerMyTasks('all');
-}
-
-// Загрузка доступных задач для исполнителя
-async function loadPerformerAvailableTasks() {
-    showLoading();
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/tasks/available?limit=20`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`
+        async function loadTasksPage() {
+            if (!app.currentUser) {
+                navigate('home');
+                openAuthModal();
+                return;
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            renderPerformerAvailableTasks(data.data.tasks);
-        } else {
-            showNotification('Не удалось загрузить доступные задачи', 'error');
+            
+            // Обновляем заголовок страницы в зависимости от роли
+            const title = document.getElementById('tasksPageTitle');
+            const subtitle = document.getElementById('tasksPageSubtitle');
+            
+            if (app.currentUser.role === 'performer') {
+                title.textContent = 'Мои задачи';
+                subtitle.textContent = 'Задачи, которые вы выполняете или можете принять';
+                
+                // Показываем доступные задачи
+                document.getElementById('availableTasksSection').classList.remove('hidden');
+                await loadAvailableTasks();
+                
+                // Скрываем кнопку "Новая задача" для исполнителей
+                document.getElementById('btnNewTask').style.display = 'none';
+            } else if (app.currentUser.role === 'client') {
+                title.textContent = 'Мои заказы';
+                subtitle.textContent = 'Все ваши заказы в одном месте';
+                document.getElementById('availableTasksSection').classList.add('hidden');
+                
+                // Показываем кнопку "Новая задача" для клиентов
+                document.getElementById('btnNewTask').style.display = 'flex';
+            } else if (['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+                title.textContent = 'Все задачи';
+                subtitle.textContent = 'Управление задачами системы';
+                document.getElementById('availableTasksSection').classList.add('hidden');
+                document.getElementById('btnNewTask').style.display = 'none';
+            }
+            
+            await loadOrderStats();
+            await loadTasks();
         }
-    } catch (error) {
-        console.error('Ошибка загрузки доступных задач:', error);
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-}
 
-// Рендер доступных задач для исполнителя
-function renderPerformerAvailableTasks(tasks) {
-    const container = document.getElementById('performerAvailableTasks');
-    const noTasksElement = document.getElementById('noAvailableTasks');
-    
-    if (!tasks || tasks.length === 0) {
-        container.innerHTML = '';
-        noTasksElement.style.display = 'block';
-        return;
-    }
-    
-    noTasksElement.style.display = 'none';
-    
-    container.innerHTML = tasks.map(task => {
-        const deadline = new Date(task.deadline);
-        const now = new Date();
-        const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-        
-        let deadlineText = '';
-        let deadlineClass = '';
-        
-        if (daysDiff < 0) {
-            deadlineText = `Просрочено ${Math.abs(daysDiff)} дн.`;
-            deadlineClass = 'text-red-500';
-        } else if (daysDiff === 0) {
-            deadlineText = 'Сегодня';
-            deadlineClass = 'text-orange-500';
-        } else if (daysDiff === 1) {
-            deadlineText = 'Завтра';
-            deadlineClass = 'text-orange-500';
-        } else if (daysDiff <= 3) {
-            deadlineText = `${daysDiff} дн.`;
-            deadlineClass = 'text-yellow-500';
-        } else {
-            deadlineText = `${daysDiff} дн.`;
-            deadlineClass = 'text-green-500';
+        // Загрузка доступных задач для исполнителя на странице задач
+        async function loadAvailableTasks() {
+            if (!app.currentUser || app.currentUser.role !== 'performer') {
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks/available?limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAvailableTasks(data.data.tasks);
+                } else {
+                    showNotification('Не удалось загрузить доступные задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки доступных задач:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
         }
-        
-        let priorityBadge = '';
-        switch(task.priority) {
-            case 'urgent':
-                priorityBadge = '<span class="status-badge" style="background: #FFE6E6; color: #D32F2F;">Срочный</span>';
-                break;
-            case 'high':
-                priorityBadge = '<span class="status-badge" style="background: #FFF0E6; color: #F57C00;">Высокий</span>';
-                break;
-            case 'low':
-                priorityBadge = '<span class="status-badge" style="background: #E6F7FF; color: #1976D2;">Низкий</span>';
-                break;
-            default:
-                priorityBadge = '<span class="status-badge" style="background: #F5F5F5; color: #757575;">Средний</span>';
+
+        // Рендер доступных задач для исполнителя на странице задач
+        function renderAvailableTasks(tasks) {
+            const container = document.getElementById('availableTasksList');
+            
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center p-8">
+                        <i class="fas fa-search" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
+                        <h3 class="category-title mb-4">Нет доступных задач</h3>
+                        <p class="category-desc">Новых задач в ваших специализациях пока нет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => {
+                const deadline = new Date(task.deadline);
+                const now = new Date();
+                const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                
+                let deadlineText = '';
+                let deadlineClass = '';
+                
+                if (daysDiff < 0) {
+                    deadlineText = `Просрочено ${Math.abs(daysDiff)} дн.`;
+                    deadlineClass = 'text-red-500';
+                } else if (daysDiff === 0) {
+                    deadlineText = 'Сегодня';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff === 1) {
+                    deadlineText = 'Завтра';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff <= 3) {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-yellow-500';
+                } else {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-green-500';
+                }
+                
+                let priorityBadge = '';
+                switch(task.priority) {
+                    case 'urgent':
+                        priorityBadge = '<span class="status-badge" style="background: #FFE6E6; color: #D32F2F;">Срочный</span>';
+                        break;
+                    case 'high':
+                        priorityBadge = '<span class="status-badge" style="background: #FFF0E6; color: #F57C00;">Высокий</span>';
+                        break;
+                    case 'low':
+                        priorityBadge = '<span class="status-badge" style="background: #E6F7FF; color: #1976D2;">Низкий</span>';
+                        break;
+                    default:
+                        priorityBadge = '<span class="status-badge" style="background: #F5F5F5; color: #757575;">Средний</span>';
+                }
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="flex-1">
+                                <h3 class="order-title">${task.title}</h3>
+                                <div class="mt-2 flex gap-2 flex-wrap">
+                                    <span class="status-badge status-searching">В поиске</span>
+                                    ${priorityBadge}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
+                                    <i class="fas fa-check-circle"></i> Бесплатно для клиента
+                                </div>
+                                <div class="order-date">
+                                    ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="order-description">${task.description}</p>
+                        <div class="order-footer">
+                            <div class="flex-1">
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="order-date">
+                                        <i class="fas fa-tag"></i> ${task.category_name}
+                                    </span>
+                                    <span class="order-date ${deadlineClass}">
+                                        <i class="fas fa-calendar"></i> ${deadlineText}
+                                    </span>
+                                    <span class="order-date">
+                                        <i class="fas fa-user"></i> ${task.client_first_name} ${task.client_last_name}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="performerTakeTask(${task.id}, '${task.title}')">
+                                    <i class="fas fa-hand-paper"></i>
+                                    Принять задачу
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
-        
-        return `
-            <div class="order-card">
-                <div class="order-header">
-                    <div class="flex-1">
-                        <h3 class="order-title">${task.title}</h3>
-                        <div class="mt-2 flex gap-2 flex-wrap">
-                            <span class="status-badge status-searching">В поиске</span>
-                            ${priorityBadge}
+
+        // Загрузка страницы исполнителя
+        async function loadPerformerPage() {
+            if (!app.currentUser || app.currentUser.role !== 'performer') {
+                navigate('home');
+                return;
+            }
+            
+            await loadPerformerAvailableTasks();
+            await loadPerformerMyTasks('all');
+        }
+
+        // Загрузка доступных задач для исполнителя на отдельной странице
+        async function loadPerformerAvailableTasks() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks/available?limit=20`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderPerformerAvailableTasks(data.data.tasks);
+                } else {
+                    showNotification('Не удалось загрузить доступные задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки доступных задач:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Рендер доступных задач для исполнителя на отдельной странице
+        function renderPerformerAvailableTasks(tasks) {
+            const container = document.getElementById('performerAvailableTasks');
+            const noTasksElement = document.getElementById('noAvailableTasks');
+            
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = '';
+                noTasksElement.style.display = 'block';
+                return;
+            }
+            
+            noTasksElement.style.display = 'none';
+            
+            container.innerHTML = tasks.map(task => {
+                const deadline = new Date(task.deadline);
+                const now = new Date();
+                const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                
+                let deadlineText = '';
+                let deadlineClass = '';
+                
+                if (daysDiff < 0) {
+                    deadlineText = `Просрочено ${Math.abs(daysDiff)} дн.`;
+                    deadlineClass = 'text-red-500';
+                } else if (daysDiff === 0) {
+                    deadlineText = 'Сегодня';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff === 1) {
+                    deadlineText = 'Завтра';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff <= 3) {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-yellow-500';
+                } else {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-green-500';
+                }
+                
+                let priorityBadge = '';
+                switch(task.priority) {
+                    case 'urgent':
+                        priorityBadge = '<span class="status-badge" style="background: #FFE6E6; color: #D32F2F;">Срочный</span>';
+                        break;
+                    case 'high':
+                        priorityBadge = '<span class="status-badge" style="background: #FFF0E6; color: #F57C00;">Высокий</span>';
+                        break;
+                    case 'low':
+                        priorityBadge = '<span class="status-badge" style="background: #E6F7FF; color: #1976D2;">Низкий</span>';
+                        break;
+                    default:
+                        priorityBadge = '<span class="status-badge" style="background: #F5F5F5; color: #757575;">Средний</span>';
+                }
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="flex-1">
+                                <h3 class="order-title">${task.title}</h3>
+                                <div class="mt-2 flex gap-2 flex-wrap">
+                                    <span class="status-badge status-searching">В поиске</span>
+                                    ${priorityBadge}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
+                                    <i class="fas fa-check-circle"></i> Бесплатно для клиента
+                                </div>
+                                <div class="order-date">
+                                    ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="order-description">${task.description}</p>
+                        <div class="order-footer">
+                            <div class="flex-1">
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="order-date">
+                                        <i class="fas fa-tag"></i> ${task.category_name}
+                                    </span>
+                                    <span class="order-date ${deadlineClass}">
+                                        <i class="fas fa-calendar"></i> ${deadlineText}
+                                    </span>
+                                    <span class="order-date">
+                                        <i class="fas fa-user"></i> ${task.client_first_name} ${task.client_last_name}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-primary" onclick="performerTakeTask(${task.id}, '${task.title}')">
+                                    <i class="fas fa-hand-paper"></i>
+                                    Принять задачу
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
-                            <i class="fas fa-check-circle"></i> Бесплатно для клиента
-                        </div>
-                        <div class="order-date">
-                            ${new Date(task.created_at).toLocaleDateString('ru-RU')}
-                        </div>
-                    </div>
-                </div>
-                <p class="order-description">${task.description}</p>
-                <div class="order-footer">
-                    <div class="flex-1">
-                        <div class="flex flex-wrap gap-3">
-                            <span class="order-date">
-                                <i class="fas fa-tag"></i> ${task.category_name}
-                            </span>
-                            <span class="order-date ${deadlineClass}">
-                                <i class="fas fa-calendar"></i> ${deadlineText}
-                            </span>
-                            <span class="order-date">
-                                <i class="fas fa-user"></i> ${task.client_first_name} ${task.client_last_name}
-                            </span>
-                        </div>
-                    </div>
-                    <div>
-                        <button class="btn btn-primary" onclick="performerTakeTask(${task.id}, '${task.title}')">
-                            <i class="fas fa-hand-paper"></i>
-                            Принять задачу
+                `;
+            }).join('');
+        }
+
+        // Загрузка задач исполнителя
+        async function loadPerformerMyTasks(status = 'all') {
+            showLoading();
+            
+            try {
+                let url = `${app.API_URL}/api/tasks?limit=20`;
+                if (status !== 'all') {
+                    url += `&status=${status}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderPerformerMyTasks(data.data.tasks);
+                } else {
+                    showNotification('Не удалось загрузить ваши задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки задач:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Рендер задач исполнителя
+        function renderPerformerMyTasks(tasks) {
+            const container = document.getElementById('performerMyTasks');
+            const noTasksElement = document.getElementById('noMyTasks');
+            
+            // Фильтруем только задачи, где исполнитель - текущий пользователь
+            const myTasks = tasks.filter(task => task.performer_id === app.currentUser.id);
+            
+            if (!myTasks || myTasks.length === 0) {
+                container.innerHTML = '';
+                noTasksElement.style.display = 'block';
+                return;
+            }
+            
+            noTasksElement.style.display = 'none';
+            
+            container.innerHTML = myTasks.map(task => {
+                const statusClass = `status-${task.status}`;
+                const statusText = getStatusText(task.status);
+                
+                const deadline = new Date(task.deadline);
+                const now = new Date();
+                const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                
+                let deadlineText = '';
+                let deadlineClass = '';
+                
+                if (daysDiff < 0) {
+                    deadlineText = `Просрочено ${Math.abs(daysDiff)} дн.`;
+                    deadlineClass = 'text-red-500';
+                } else if (daysDiff === 0) {
+                    deadlineText = 'Сегодня';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff === 1) {
+                    deadlineText = 'Завтра';
+                    deadlineClass = 'text-orange-500';
+                } else if (daysDiff <= 3) {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-yellow-500';
+                } else {
+                    deadlineText = `${daysDiff} дн.`;
+                    deadlineClass = 'text-green-500';
+                }
+                
+                let actionsHtml = '';
+                if (task.status === 'assigned') {
+                    actionsHtml = `
+                        <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'in_progress')">
+                            <i class="fas fa-play"></i>
+                            Начать работу
                         </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Загрузка задач исполнителя
-async function loadPerformerMyTasks(status = 'all') {
-    showLoading();
-    
-    try {
-        let url = `${app.API_URL}/api/tasks?limit=20`;
-        if (status !== 'all') {
-            url += `&status=${status}`;
-        }
-        
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            renderPerformerMyTasks(data.data.tasks);
-        } else {
-            showNotification('Не удалось загрузить ваши задачи', 'error');
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки задач:', error);
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-}
-
-// Рендер задач исполнителя
-function renderPerformerMyTasks(tasks) {
-    const container = document.getElementById('performerMyTasks');
-    const noTasksElement = document.getElementById('noMyTasks');
-    
-    // Фильтруем только задачи, где исполнитель - текущий пользователь
-    const myTasks = tasks.filter(task => task.performer_id === app.currentUser.id);
-    
-    if (!myTasks || myTasks.length === 0) {
-        container.innerHTML = '';
-        noTasksElement.style.display = 'block';
-        return;
-    }
-    
-    noTasksElement.style.display = 'none';
-    
-    container.innerHTML = myTasks.map(task => {
-        const statusClass = `status-${task.status}`;
-        const statusText = getStatusText(task.status);
-        
-        const deadline = new Date(task.deadline);
-        const now = new Date();
-        const daysDiff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
-        
-        let deadlineText = '';
-        let deadlineClass = '';
-        
-        if (daysDiff < 0) {
-            deadlineText = `Просрочено ${Math.abs(daysDiff)} дн.`;
-            deadlineClass = 'text-red-500';
-        } else if (daysDiff === 0) {
-            deadlineText = 'Сегодня';
-            deadlineClass = 'text-orange-500';
-        } else if (daysDiff === 1) {
-            deadlineText = 'Завтра';
-            deadlineClass = 'text-orange-500';
-        } else if (daysDiff <= 3) {
-            deadlineText = `${daysDiff} дн.`;
-            deadlineClass = 'text-yellow-500';
-        } else {
-            deadlineText = `${daysDiff} дн.`;
-            deadlineClass = 'text-green-500';
-        }
-        
-        let actionsHtml = '';
-        if (task.status === 'assigned') {
-            actionsHtml = `
-                <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'in_progress')">
-                    <i class="fas fa-play"></i>
-                    Начать работу
-                </button>
-            `;
-        } else if (task.status === 'in_progress') {
-            actionsHtml = `
-                <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'completed')">
-                    <i class="fas fa-check"></i>
-                    Завершить
-                </button>
-            `;
-        }
-        
-        return `
-            <div class="order-card" onclick="viewTaskDetails(${task.id})" style="cursor: pointer;">
-                <div class="order-header">
-                    <div class="flex-1">
-                        <h3 class="order-title">${task.title}</h3>
-                        <div class="mt-2">
-                            <span class="status-badge ${statusClass}">${statusText}</span>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
-                            <i class="fas fa-check-circle"></i> В работе
-                        </div>
-                        <div class="order-date">
-                            ${new Date(task.created_at).toLocaleDateString('ru-RU')}
-                        </div>
-                    </div>
-                </div>
-                <p class="order-description">${task.description}</p>
-                <div class="order-footer">
-                    <div class="flex-1">
-                        <div class="flex flex-wrap gap-3">
-                            <span class="order-date">
-                                <i class="fas fa-tag"></i> ${task.category_name}
-                            </span>
-                            <span class="order-date ${deadlineClass}">
-                                <i class="fas fa-calendar"></i> ${deadlineText}
-                            </span>
-                            <span class="order-date">
-                                <i class="fas fa-user"></i> ${task.client_first_name} ${task.client_last_name}
-                            </span>
-                        </div>
-                    </div>
-                    <div>
-                        ${actionsHtml}
-                        <button class="btn btn-secondary" onclick="viewTaskDetails(${task.id}); event.stopPropagation();">
-                            <i class="fas fa-eye"></i>
-                            Подробнее
+                    `;
+                } else if (task.status === 'in_progress') {
+                    actionsHtml = `
+                        <button class="btn btn-primary" onclick="updateTaskStatus(${task.id}, 'completed')">
+                            <i class="fas fa-check"></i>
+                            Завершить
                         </button>
+                    `;
+                }
+                
+                return `
+                    <div class="order-card" onclick="viewTaskDetails(${task.id})" style="cursor: pointer;">
+                        <div class="order-header">
+                            <div class="flex-1">
+                                <h3 class="order-title">${task.title}</h3>
+                                <div class="mt-2">
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
+                                    <i class="fas fa-check-circle"></i> В работе
+                                </div>
+                                <div class="order-date">
+                                    ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="order-description">${task.description}</p>
+                        <div class="order-footer">
+                            <div class="flex-1">
+                                <div class="flex flex-wrap gap-3">
+                                    <span class="order-date">
+                                        <i class="fas fa-tag"></i> ${task.category_name}
+                                    </span>
+                                    <span class="order-date ${deadlineClass}">
+                                        <i class="fas fa-calendar"></i> ${deadlineText}
+                                    </span>
+                                    <span class="order-date">
+                                        <i class="fas fa-user"></i> ${task.client_first_name} ${task.client_last_name}
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                ${actionsHtml}
+                                <button class="btn btn-secondary" onclick="viewTaskDetails(${task.id}); event.stopPropagation();">
+                                    <i class="fas fa-eye"></i>
+                                    Подробнее
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-// Принятие задачи исполнителем
-window.performerTakeTask = async function(taskId, taskTitle) {
-    if (!confirm(`Вы уверены, что хотите принять задачу "${taskTitle}"?`)) {
-        return;
-    }
-    
-    showLoading();
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/take`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.token}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification(data.message || 'Задача успешно принята!', 'success');
-            loadPerformerPage();
-        } else {
-            showNotification(data.error || 'Ошибка принятия задачи', 'error');
+                `;
+            }).join('');
         }
-    } catch (error) {
-        console.error('Ошибка принятия задачи:', error);
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-};
 
-// Фильтрация задач исполнителя
-window.filterPerformerTasks = function(status) {
-    // Обновляем активную кнопку
-    document.querySelectorAll('[data-status]').forEach(btn => {
-        btn.classList.remove('active', 'btn-primary');
-        btn.classList.add('btn-secondary');
-    });
-    
-    const activeBtn = document.querySelector(`[data-status="${status}"]`);
-    if (activeBtn) {
-        activeBtn.classList.remove('btn-secondary');
-        activeBtn.classList.add('btn-primary', 'active');
-    }
-    
-    loadPerformerMyTasks(status);
-};
+        // Принятие задачи исполнителем
+        window.performerTakeTask = async function(taskId, taskTitle) {
+            if (!confirm(`Вы уверены, что хотите принять задачу "${taskTitle}"?`)) {
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/take`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Задача успешно принята!', 'success');
+                    loadPerformerPage();
+                    loadTasksPage();
+                } else {
+                    showNotification(data.error || 'Ошибка принятия задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка принятия задачи:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // Фильтрация задач исполнителя
+        window.filterPerformerTasks = function(status) {
+            // Обновляем активную кнопку
+            document.querySelectorAll('[data-status]').forEach(btn => {
+                btn.classList.remove('active', 'btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            const activeBtn = document.querySelector(`[data-status="${status}"]`);
+            if (activeBtn) {
+                activeBtn.classList.remove('btn-secondary');
+                activeBtn.classList.add('btn-primary', 'active');
+            }
+            
+            loadPerformerMyTasks(status);
+        };
         
         // Загрузка статистики задач
         async function loadOrderStats() {
@@ -5402,14 +5531,6 @@ window.filterPerformerTasks = function(status) {
                     }
                     
                     document.getElementById('userStats').innerHTML = statsHtml;
-
-// Скрываем кнопку создания задачи для исполнителей
-if (app.currentUser && app.currentUser.role === 'performer') {
-    const newTaskBtn = document.getElementById('btnNewTask');
-    if (newTaskBtn) {
-        newTaskBtn.style.display = 'none';
-    }
-}
                     
                     // Для помощников загружаем специализации
                     if (user.role === 'performer') {
@@ -5417,6 +5538,12 @@ if (app.currentUser && app.currentUser.role === 'performer') {
                         await loadPerformerSpecializations();
                     } else {
                         document.getElementById('performerSpecializations').classList.add('hidden');
+                    }
+                    
+                    // Скрываем кнопку создания задачи для исполнителей
+                    const newTaskBtn = document.getElementById('btnNewTask');
+                    if (newTaskBtn && user.role === 'performer') {
+                        newTaskBtn.style.display = 'none';
                     }
                 }
             } catch (error) {
@@ -5815,38 +5942,6 @@ if (app.currentUser && app.currentUser.role === 'performer') {
             document.getElementById('mobileMenuBtn').innerHTML = '<i class="fas fa-bars"></i>';
         }
 
-        // Проверка уведомлений
-        async function checkNotifications() {
-            try {
-                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const unreadCount = data.data.unread_count || 0;
-                    
-                    // Обновляем счетчик в статистике
-                    if (app.currentPage === 'tasks' || app.currentPage === 'home') {
-                        await loadOrderStats();
-                    }
-                    
-                    // Показываем уведомление о новых сообщениях
-                    if (unreadCount > 0 && document.hidden) {
-                        showNotification(`У вас ${unreadCount} непрочитанных уведомлений`, 'info');
-                    }
-                } else if (response.status === 401) {
-                    // Токен невалиден, выходим
-                    logout();
-                }
-            } catch (error) {
-                console.error('Ошибка проверки уведомлений:', error);
-            }
-        }
-
         // Настройка обработчиков событий
         function setupEventListeners() {
             // Навигация
@@ -5874,7 +5969,12 @@ if (app.currentUser && app.currentUser.role === 'performer') {
             });
             
             // Задачи
-            document.getElementById('btnNewTask').addEventListener('click', () => {
+            document.getElementById('btnNewTask').addEventListener('click', (e) => {
+                if (app.currentUser && app.currentUser.role === 'performer') {
+                    e.preventDefault();
+                    showNotification('Исполнители не могут создавать задачи', 'error');
+                    return;
+                }
                 navigate('services');
             });
             
@@ -5898,6 +5998,27 @@ if (app.currentUser && app.currentUser.role === 'performer') {
                 loadTasks();
             });
             
+            // Исполнитель страница
+            document.getElementById('btnRefreshPerformerTasks')?.addEventListener('click', () => {
+                loadPerformerPage();
+            });
+            
+            document.getElementById('btnFilterAll')?.addEventListener('click', () => {
+                filterPerformerTasks('all');
+            });
+            
+            document.getElementById('btnFilterAssigned')?.addEventListener('click', () => {
+                filterPerformerTasks('assigned');
+            });
+            
+            document.getElementById('btnFilterInProgress')?.addEventListener('click', () => {
+                filterPerformerTasks('in_progress');
+            });
+            
+            document.getElementById('btnFilterCompleted')?.addEventListener('click', () => {
+                filterPerformerTasks('completed');
+            });
+            
             // Мобильное меню
             document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
             
@@ -5917,16 +6038,6 @@ if (app.currentUser && app.currentUser.role === 'performer') {
             document.getElementById('btnCloseSpecializations').addEventListener('click', () => {
                 closeModal('specializationsModal');
             });
-
-// Для исполнителей - редирект при клике на "Новая задача"
-document.getElementById('btnNewTask').addEventListener('click', function(e) {
-    if (app.currentUser && app.currentUser.role === 'performer') {
-        e.preventDefault();
-        showNotification('Исполнители не могут создавать задачи', 'error');
-        return false;
-    }
-    navigate('services');
-});
             
             // Переключение форм авторизации
             document.getElementById('btnShowRegister').addEventListener('click', showRegisterForm);
@@ -5993,13 +6104,6 @@ document.getElementById('btnNewTask').addEventListener('click', function(e) {
                     if (e.target.id === 'registerPassword' || e.target.id === 'registerEmail') {
                         document.getElementById('btnRegister').click();
                     }
-                }
-            });
-            
-            // Обработка видимости страницы для уведомлений
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden && app.currentUser) {
-                    checkNotifications();
                 }
             });
             
