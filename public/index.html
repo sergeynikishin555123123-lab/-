@@ -1851,15 +1851,22 @@
                 await loadCategories();
                 await loadSubscriptions();
                 
-                // Проверяем токен если есть
-                if (app.token) {
-                    const isValid = await verifyToken();
-                    if (!isValid) {
-                        console.log('❌ Токен невалиден, очищаем');
-                        localStorage.removeItem('token');
-                        app.token = null;
-                    }
-                }
+               // Проверяем токен если есть
+if (app.token) {
+    // Сначала проверим базовую валидность
+    const isValidStructure = await validateAndCleanToken();
+    
+    if (isValidStructure) {
+        const isValid = await verifyToken();
+        if (!isValid) {
+            console.log('❌ Токен невалиден, очищаем');
+            clearInvalidToken();
+        }
+    } else {
+        console.log('❌ Структура токена невалидна');
+        clearInvalidToken();
+    }
+}
                 
                 updateUserMenu();
                 setupEventListeners();
@@ -1878,38 +1885,107 @@
             }
         });
 
-        // Проверка токена
-        async function verifyToken() {
-            console.log('🔐 Проверка токена...');
-            
-            if (!app.token) {
-                console.log('❌ Токен отсутствует');
-                return false;
-            }
-            
-            try {
-                const response = await fetch(`${app.API_URL}/api/auth/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('✅ Токен валиден, пользователь:', data.data.user.email);
-                    app.currentUser = data.data.user;
-                    updateUserMenu();
-                    return true;
-                } else {
-                    console.log('❌ Токен невалиден:', response.status);
-                    return false;
-                }
-            } catch (error) {
-                console.error('🔐 Ошибка проверки токена:', error);
-                return false;
-            }
+// ==================== ФУНКЦИИ ОЧИСТКИ ====================
+
+// Функция для очистки невалидного токена
+function clearInvalidToken() {
+    if (localStorage.getItem('token')) {
+        console.log('🔄 Очистка недействительного токена');
+        localStorage.removeItem('token');
+        app.token = null;
+        app.currentUser = null;
+        // Принудительно обновляем меню
+        const userMenu = document.getElementById('userMenu');
+        if (userMenu) {
+            userMenu.innerHTML = `
+                <button class="btn btn-primary" id="btnOpenAuth">
+                    Войти
+                </button>
+            `;
         }
+        return true;
+    }
+    return false;
+}
+
+// Функция для проверки и очистки устаревшего токена
+async function validateAndCleanToken() {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    
+    try {
+        // Простая проверка структуры токена
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            console.log('❌ Неправильная структура токена');
+            clearInvalidToken();
+            return false;
+        }
+        
+        // Проверка, не истек ли токен (базовая проверка)
+        const payload = JSON.parse(atob(parts[1]));
+        const expiry = payload.exp * 1000; // конвертируем в миллисекунды
+        if (Date.now() > expiry) {
+            console.log('❌ Токен истек');
+            clearInvalidToken();
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Ошибка проверки токена:', error);
+        clearInvalidToken();
+        return false;
+    }
+}
+        
+       // Проверка токена
+async function verifyToken() {
+    console.log('🔐 Проверка токена...');
+    
+    // Сначала проверим структуру токена
+    if (!app.token) {
+        console.log('❌ Токен отсутствует');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/auth/profile`, {
+            headers: {
+                'Authorization': `Bearer ${app.token}`,
+                'Content-Type': 'application/json'
+            },
+            // Добавляем таймаут для запроса
+            signal: AbortSignal.timeout(10000) // 10 секунд
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Токен валиден, пользователь:', data.data.user.email);
+            app.currentUser = data.data.user;
+            updateUserMenu();
+            return true;
+        } else {
+            console.log('❌ Токен невалиден, статус:', response.status);
+            
+            // Очищаем токен при ошибках авторизации
+            if (response.status === 401 || response.status === 403 || response.status === 404) {
+                console.log('🚫 Очищаем невалидный токен');
+                clearInvalidToken();
+            }
+            return false;
+        }
+    } catch (error) {
+        console.error('🔐 Ошибка проверки токена:', error.name, error.message);
+        
+        // Очищаем токен при сетевых ошибках
+        if (error.name === 'AbortError' || error.name === 'TypeError' || error.name === 'NetworkError') {
+            console.log('🌐 Сетевая ошибка, очищаем токен');
+            clearInvalidToken();
+        }
+        return false;
+    }
+}
 
         // Обновление меню пользователя
         function updateUserMenu() {
