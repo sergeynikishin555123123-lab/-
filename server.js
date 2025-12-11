@@ -878,7 +878,7 @@ app.post('/api/admin/cache/clear', authMiddleware(['admin', 'superadmin']), asyn
 // Регистрация
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { email, password, first_name, last_name, phone, subscription_plan = 'essential' } = req.body;
+        const { email, password, first_name, last_name, phone, subscription_plan = 'essential', role = 'client' } = req.body;
         
         // Валидация
         if (!email || !password || !first_name || !last_name || !phone) {
@@ -937,8 +937,8 @@ app.post('/api/auth/register', async (req, res) => {
         // Генерация токена верификации
         const verificationToken = crypto.randomBytes(32).toString('hex');
         
-        // Определяем статус подписки
-        const initialFeePaid = subscription.initial_fee === 0 ? 1 : 0;
+        // Для исполнителей и администраторов сразу активная подписка
+        const initialFeePaid = (role === 'performer' || role === 'admin' || role === 'manager' || role === 'superadmin') ? 1 : (subscription.initial_fee === 0 ? 1 : 0);
         const subscriptionStatus = initialFeePaid ? 'active' : 'pending';
         
         // Дата истечения подписки
@@ -949,8 +949,25 @@ app.post('/api/auth/register', async (req, res) => {
             expiryDateStr = expiryDate.toISOString().split('T')[0];
         }
         
+        // Определяем лимит задач в зависимости от роли
+        let tasksLimit = subscription.tasks_limit;
+        if (role === 'performer') {
+            tasksLimit = 999; // Неограниченно для исполнителей
+        } else if (role === 'admin' || role === 'manager' || role === 'superadmin') {
+            tasksLimit = 9999; // Большой лимит для администраторов
+        }
+        
         // Аватар по умолчанию
-        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(first_name)}+${encodeURIComponent(last_name)}&background=FF6B8B&color=fff&bold=true`;
+        let avatarBgColor = 'FF6B8B'; // По умолчанию для клиентов
+        if (role === 'performer') {
+            avatarBgColor = '3498DB';
+        } else if (role === 'admin' || role === 'manager') {
+            avatarBgColor = '2ECC71';
+        } else if (role === 'superadmin') {
+            avatarBgColor = '9B59B6';
+        }
+        
+        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(first_name)}+${encodeURIComponent(last_name)}&background=${avatarBgColor}&color=fff&bold=true`;
         
         // Создание пользователя
         const result = await db.run(
@@ -959,19 +976,20 @@ app.post('/api/auth/register', async (req, res) => {
              subscription_plan, subscription_status, subscription_expires,
              initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url,
              verification_token) 
-            VALUES (?, ?, ?, ?, ?, 'client', ?, ?, ?, ?, ?, ?, ?, ?)`,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 email,
                 hashedPassword,
                 first_name,
                 last_name,
                 phone,
+                role,
                 subscription_plan,
                 subscriptionStatus,
                 expiryDateStr,
                 initialFeePaid,
                 subscription.initial_fee,
-                subscription.tasks_limit,
+                tasksLimit,
                 avatarUrl,
                 verificationToken
             ]
@@ -995,6 +1013,18 @@ app.post('/api/auth/register', async (req, res) => {
             );
         }
         
+        // Для исполнителей автоматически добавляем все специализации
+        if (role === 'performer') {
+            const categories = await db.all('SELECT id FROM categories WHERE is_active = 1');
+            for (const category of categories) {
+                await db.run(
+                    `INSERT INTO performer_categories (performer_id, category_id, is_active) 
+                     VALUES (?, ?, 1)`,
+                    [userId, category.id]
+                );
+            }
+        }
+        
         // Создаем приветственное уведомление
         await db.run(
             `INSERT INTO notifications 
@@ -1004,7 +1034,11 @@ app.post('/api/auth/register', async (req, res) => {
                 userId,
                 'welcome',
                 'Добро пожаловать!',
-                'Спасибо за регистрацию в Женском Консьерже. Для начала работы оплатите вступительный взнос и выберите услугу.'
+                role === 'performer' 
+                    ? 'Спасибо за регистрацию в качестве помощницы. Теперь вы можете принимать задачи от клиентов.'
+                    : role === 'client'
+                    ? 'Спасибо за регистрацию в Женском Консьерже. Для начала работы оплатите вступительный взнос и выберите услугу.'
+                    : 'Добро пожаловать в админ панель Женского Консьержа.'
             ]
         );
         
@@ -2611,6 +2645,72 @@ app.post('/api/tasks/:id/cancel', authMiddleware(), async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка отмены задачи'
+        });
+    }
+});
+
+// Получение доступных задач для исполнителей
+app.get('/api/tasks/available', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { limit = 20 } = req.query;
+        
+        // Получаем специализации исполнителя
+        const specializations = await db.all(
+            'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
+            [req.user.id]
+        );
+        
+        if (specializations.length === 0) {
+            return res.json({
+                success: true,
+                data: {
+                    tasks: [],
+                    count: 0,
+                    message: 'У вас нет активных специализаций. Выберите специализации в профиле.'
+                }
+            });
+        }
+        
+        const categoryIds = specializations.map(s => s.category_id);
+        const placeholders = categoryIds.map(() => '?').join(',');
+        
+        // Получаем доступные задачи
+        const tasks = await db.all(`
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name,
+                   u.avatar_url as client_avatar,
+                   u.rating as client_rating
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u ON t.client_id = u.id
+            WHERE t.status = 'searching' 
+              AND t.category_id IN (${placeholders})
+            ORDER BY t.priority DESC, t.created_at DESC
+            LIMIT ?
+        `, [...categoryIds, parseInt(limit)]);
+        
+        // Добавляем флаг, что исполнитель может принять задачу
+        const tasksWithFlag = tasks.map(task => ({
+            ...task,
+            can_take: true
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                tasks: tasksWithFlag,
+                count: tasksWithFlag.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения доступных задач:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения доступных задач'
         });
     }
 });
