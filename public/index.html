@@ -1266,15 +1266,14 @@
                                               placeholder="Особые пожелания, аллергии, предпочтения..." rows="3"></textarea>
                                 </div>
                                 
-                            <div class="form-group">
-    <div class="p-4 bg-pink-light rounded-lg">
-        <h4 class="font-bold mb-2 text-gold">Услуги включены в подписку</h4>
-        <p class="text-sm">
-            Все услуги бесплатны в рамках вашей подписки "${app.currentUser?.subscription_plan === 'premium' ? 'Премиум' : 'Эссеншл'}".
-            Вы платите только вступительный взнос и ежемесячную подписку.
-        </p>
-    </div>
-</div>
+                                <div class="form-group">
+                                    <label class="form-label">Предлагаемая цена (₽) *</label>
+                                    <input type="number" class="form-input" id="orderPrice" required min="500" max="50000"
+                                           placeholder="Укажите сумму за выполнение">
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        Минимальная цена: 500₽, Максимальная: 50,000₽
+                                    </div>
+                                </div>
                             </form>
                             
                             <div class="flex justify-between items-center mt-8">
@@ -2061,68 +2060,33 @@ async function verifyToken() {
             }
         }
 
+        // Рендер категорий на главной
         function renderHomeCategories() {
-    const container = document.getElementById('categoriesHome');
-    
-    if (app.categories.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center p-8">
-                <div class="loading">
-                    <div class="spinner"></div>
+            const container = document.getElementById('categoriesHome');
+            
+            if (app.categories.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center p-8">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Берем первые 6 категорий для главной
+            const displayCategories = app.categories.slice(0, 6);
+            
+            container.innerHTML = displayCategories.map(category => `
+                <div class="category-card" onclick="startOrderWizard(${category.id})">
+                    <div class="category-icon">${category.icon}</div>
+                    <h3 class="category-title">${category.display_name}</h3>
+                    <p class="category-desc">${category.description}</p>
+                    <button class="btn btn-pink mt-4">Заказать помощь</button>
                 </div>
-            </div>
-        `;
-        return;
-    }
-    
-    // Берем первые 6 категорий для главной
-    const displayCategories = app.categories.slice(0, 6);
-    
-    container.innerHTML = displayCategories.map(category => `
-        <div class="category-card" onclick="navigateToCategory(${category.id}, '${category.display_name}')">
-            <div class="category-icon">${category.icon}</div>
-            <h3 class="category-title">${category.display_name}</h3>
-            <p class="category-desc">${category.description}</p>
-            <button class="btn btn-pink mt-4">Выбрать услугу</button>
-        </div>
-    `).join('');
-}
-
-// ДОБАВИТЬ новую функцию:
-window.navigateToCategory = function(categoryId, categoryName) {
-    if (!app.currentUser) {
-        openAuthModal();
-        return;
-    }
-    
-    // Проверяем подписку
-    if (app.currentUser.subscription_status !== 'active') {
-        showNotification('Активируйте подписку для доступа к услугам', 'error');
-        navigate('subscriptions');
-        return;
-    }
-    
-    // Проверяем вступительный взнос
-    if (app.currentUser.initial_fee_paid !== 1) {
-        showNotification('Оплатите вступительный взнос для доступа к услугам', 'error');
-        navigate('subscriptions');
-        return;
-    }
-    
-    // Переходим к услугам и открываем нужную категорию
-    navigate('services');
-    
-    // Небольшая задержка для загрузки страницы
-    setTimeout(() => {
-        const categoryCard = document.querySelector(`[data-category-id="${categoryId}"]`);
-        if (categoryCard) {
-            categoryCard.click();
-        } else {
-            // Если карточка не найдена, просто показываем услуги категории
-            startOrderWizard(categoryId);
+            `).join('');
         }
-    }, 100);
-};
 
         // Загрузка страницы услуг
         async function loadServicesPage() {
@@ -2305,6 +2269,12 @@ window.navigateToCategory = function(categoryId, categoryName) {
                 return;
             }
             
+            // Проверяем баланс
+            const price = parseFloat(document.getElementById('orderPrice').value);
+            if (price > app.currentUser.balance) {
+                showNotification(`Недостаточно средств на балансе. Требуется: ${price}₽, доступно: ${app.currentUser.balance}₽`, 'error');
+                return;
+            }
             
             // Сохраняем данные
             app.wizardData.title = document.getElementById('orderTitle').value;
@@ -2483,42 +2453,34 @@ window.navigateToCategory = function(categoryId, categoryName) {
             
             const container = document.getElementById('subscriptionsGrid');
             
-           // В функции loadSubscriptionsPage ОБНОВИТЬ отображение подписок:
-// Добавить информацию о включенных услугах:
-
-container.innerHTML = app.subscriptions.map((sub, index) => {
-    const isFeatured = sub.name === 'premium';
-    const features = Array.isArray(sub.features) ? sub.features : JSON.parse(sub.features || '[]');
-    
-    return `
-        <div class="subscription-card ${isFeatured ? 'featured' : ''}">
-            ${isFeatured ? '<div class="subscription-featured">Рекомендуем</div>' : ''}
-            <h3 class="subscription-name">${sub.display_name}</h3>
-            <div class="subscription-price">${sub.price_monthly}₽</div>
-            <div class="subscription-period">в месяц</div>
-            ${sub.initial_fee > 0 ? `
-                <div class="mb-6">
-                    <div class="text-sm text-gray-500">Вступительный взнос:</div>
-                    <div class="font-bold text-gold">${sub.initial_fee}₽</div>
-                </div>
-            ` : ''}
-            <div class="mb-6">
-                <div class="text-sm text-gray-500">Включено услуг:</div>
-                <div class="font-bold text-green-600">${sub.tasks_per_month === 999 ? 'Неограниченно' : sub.tasks_per_month + ' в месяц'}</div>
-            </div>
-            <ul class="subscription-features">
-                ${features.map(feature => `
-                    <li><i class="fas fa-check"></i> ${feature}</li>
-                `).join('')}
-                <li><i class="fas fa-check text-green-500"></i> Все услуги включены в подписку</li>
-            </ul>
-            <button class="btn ${isFeatured ? 'btn-primary' : 'btn-secondary'} w-100 mt-auto" 
-                    onclick="subscribeToPlan('${sub.name}')">
-                ${app.currentUser ? 'Выбрать тариф' : 'Войти для выбора'}
-            </button>
-        </div>
-    `;
-}).join('');
+            container.innerHTML = app.subscriptions.map((sub, index) => {
+                const isFeatured = sub.name === 'premium';
+                const features = Array.isArray(sub.features) ? sub.features : JSON.parse(sub.features || '[]');
+                
+                return `
+                    <div class="subscription-card ${isFeatured ? 'featured' : ''}">
+                        ${isFeatured ? '<div class="subscription-featured">Рекомендуем</div>' : ''}
+                        <h3 class="subscription-name">${sub.display_name}</h3>
+                        <div class="subscription-price">${sub.price_monthly}₽</div>
+                        <div class="subscription-period">в месяц</div>
+                        ${sub.initial_fee > 0 ? `
+                            <div class="mb-6">
+                                <div class="text-sm text-gray-500">Вступительный взнос:</div>
+                                <div class="font-bold text-gold">${sub.initial_fee}₽</div>
+                            </div>
+                        ` : ''}
+                        <ul class="subscription-features">
+                            ${features.map(feature => `
+                                <li><i class="fas fa-check"></i> ${feature}</li>
+                            `).join('')}
+                        </ul>
+                        <button class="btn ${isFeatured ? 'btn-primary' : 'btn-secondary'} w-100 mt-auto" 
+                                onclick="subscribeToPlan('${sub.name}')">
+                            ${app.currentUser ? 'Выбрать тариф' : 'Войти для выбора'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
         }
 
 // index.html - обновить функцию subscribeToPlan (примерно строка 2548)
