@@ -1266,12 +1266,14 @@
                                               placeholder="Особые пожелания, аллергии, предпочтения..." rows="3"></textarea>
                                 </div>
                                 
-<div class="mb-4 p-3 bg-green-50 rounded">
-    <p class="text-sm text-green-700">
-        ✅ <strong>Эта услуга включена в вашу подписку!</strong><br>
-        После создания заказа помощница свяжется с вами для уточнения деталей.
-    </p>
-</div>
+                                <div class="form-group">
+                                    <label class="form-label">Предлагаемая цена (₽) *</label>
+                                    <input type="number" class="form-input" id="orderPrice" required min="500" max="50000"
+                                           placeholder="Укажите сумму за выполнение">
+                                    <div class="text-sm text-gray-500 mt-1">
+                                        Минимальная цена: 500₽, Максимальная: 50,000₽
+                                    </div>
+                                </div>
                             </form>
                             
                             <div class="flex justify-between items-center mt-8">
@@ -1650,51 +1652,41 @@
                     </div>
                 </div>
                 
-<!-- index.html - обновить registerForm -->
-<div id="registerForm" class="hidden">
-    <div class="grid grid-1 md:grid-2 gap-4 mb-4">
-        <div class="form-group">
-            <label class="form-label">Имя *</label>
-            <input type="text" class="form-input" id="registerFirstName" required placeholder="Иван">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Фамилия *</label>
-            <input type="text" class="form-input" id="registerLastName" required placeholder="Иванов">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="form-label">Email *</label>
-        <input type="email" class="form-input" id="registerEmail" required placeholder="email@example.com">
-    </div>
-    <div class="form-group">
-        <label class="form-label">Пароль *</label>
-        <input type="password" class="form-input" id="registerPassword" required minlength="6" placeholder="Минимум 6 символов">
-    </div>
-    <div class="form-group">
-        <label class="form-label">Телефон *</label>
-        <input type="tel" class="form-input" id="registerPhone" required placeholder="+79991234567">
-    </div>
-    <div class="form-group">
-        <label class="form-label">Тариф</label>
-        <select class="form-input" id="registerSubscription" onchange="updateRegistrationPrice()">
-            <option value="essential">Эссеншл (вступительный 500₽ + 500₽/мес)</option>
-            <option value="premium">Премиум (вступительный 1000₽ + 1990₽/мес)</option>
-        </select>
-        <div id="registrationPriceInfo" class="text-sm text-gray-500 mt-1">
-            Общая сумма для активации: 1000₽
-        </div>
-    </div>
-    <div class="mb-4 p-3 bg-blue-50 rounded">
-        <p class="text-sm text-blue-700">
-            💡 <strong>Все услуги включены в подписку!</strong><br>
-            После оплаты вы сможете создавать задачи без дополнительной платы.
-        </p>
-    </div>
-    <button class="btn btn-primary w-100 mb-4" id="btnRegister">Зарегистрироваться</button>
-    <div class="text-center">
-        <button class="btn btn-secondary w-100" id="btnShowLogin">Вернуться к входу</button>
-    </div>
-</div>
+                <div id="registerForm" class="hidden">
+                    <div class="grid grid-1 md:grid-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="form-label">Имя *</label>
+                            <input type="text" class="form-input" id="registerFirstName" required placeholder="Иван">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Фамилия *</label>
+                            <input type="text" class="form-input" id="registerLastName" required placeholder="Иванов">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="registerEmail" required placeholder="email@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Пароль *</label>
+                        <input type="password" class="form-input" id="registerPassword" required minlength="6" placeholder="Минимум 6 символов">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон *</label>
+                        <input type="tel" class="form-input" id="registerPhone" required placeholder="+79991234567">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тариф</label>
+                        <select class="form-input" id="registerSubscription">
+                            <option value="essential">Эссеншл (500₽ вступительный взнос)</option>
+                            <option value="premium">Премиум (1000₽ вступительный взнос)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100 mb-4" id="btnRegister">Зарегистрироваться</button>
+                    <div class="text-center">
+                        <button class="btn btn-secondary w-100" id="btnShowLogin">Вернуться к входу</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1884,38 +1876,38 @@
             }
         });
 
-// index.html - обновить функцию verifyToken (примерно строка 25)
-async function verifyToken() {
-    console.log('🔐 Проверка токена...');
-    
-    if (!app.token) {
-        console.log('❌ Токен отсутствует');
-        return false;
-    }
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/auth/check`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`,
-                'Content-Type': 'application/json'
+        // Проверка токена
+        async function verifyToken() {
+            console.log('🔐 Проверка токена...');
+            
+            if (!app.token) {
+                console.log('❌ Токен отсутствует');
+                return false;
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ Токен валиден, пользователь:', data.data.user.email);
-            app.currentUser = data.data.user;
-            updateUserMenu();
-            return true;
-        } else {
-            console.log('❌ Токен невалиден:', response.status);
-            return false;
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Токен валиден, пользователь:', data.data.user.email);
+                    app.currentUser = data.data.user;
+                    updateUserMenu();
+                    return true;
+                } else {
+                    console.log('❌ Токен невалиден:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('🔐 Ошибка проверки токена:', error);
+                return false;
+            }
         }
-    } catch (error) {
-        console.error('🔐 Ошибка проверки токена:', error);
-        return false;
-    }
-}
 
         // Обновление меню пользователя
         function updateUserMenu() {
@@ -2278,24 +2270,11 @@ async function verifyToken() {
             }
             
             // Проверяем баланс
-            const subscription = app.subscriptions.find(s => s.name === app.currentUser.subscription_plan);
-if (!subscription) {
-    showNotification('У вас нет активной подписки', 'error');
-    navigate('subscriptions');
-    return;
-}
-
-if (app.currentUser.subscription_status !== 'active') {
-    showNotification('Ваша подписка не активна', 'error');
-    navigate('subscriptions');
-    return;
-}
-
-if (app.currentUser.initial_fee_paid !== 1) {
-    showNotification('Необходимо оплатить вступительный взнос', 'error');
-    navigate('subscriptions');
-    return;
-}
+            const price = parseFloat(document.getElementById('orderPrice').value);
+            if (price > app.currentUser.balance) {
+                showNotification(`Недостаточно средств на балансе. Требуется: ${price}₽, доступно: ${app.currentUser.balance}₽`, 'error');
+                return;
+            }
             
             // Сохраняем данные
             app.wizardData.title = document.getElementById('orderTitle').value;
@@ -2312,92 +2291,74 @@ if (app.currentUser.initial_fee_paid !== 1) {
             showWizardStep(3);
         });
 
-// index.html - обновить шаг 3 визарда
-function showOrderReview() {
-    const container = document.getElementById('orderReview');
-    const category = app.categories.find(c => c.id == app.currentCategoryId);
-    
-    // Проверяем лимит подписки
-    const subscription = app.subscriptions.find(s => s.name === app.currentUser.subscription_plan);
-    const tasksLimit = subscription?.tasks_limit || 5;
-    const isUnlimited = tasksLimit === 999;
-    
-    // Получаем статистику использования
-    fetch(`${app.API_URL}/api/tasks/usage`, {
-        headers: {
-            'Authorization': `Bearer ${app.token}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const tasksUsed = data.data?.tasks_used || 0;
-        const remainingTasks = isUnlimited ? '∞' : tasksLimit - tasksUsed;
-        
-        container.innerHTML = `
-            <div class="card mb-6">
-                <h3 class="category-title mb-4">Информация о заказе</h3>
-                <div class="mb-4 p-3 bg-green-50 rounded">
-                    <p class="text-sm text-green-700">
-                        ✅ <strong>Эта задача включена в вашу подписку "${subscription?.display_name || ''}"!</strong><br>
-                        Использовано задач: ${tasksUsed} из ${isUnlimited ? '∞' : tasksLimit}. 
-                        Осталось: ${remainingTasks}.
-                    </p>
-                </div>
-                <div class="grid grid-1 md:grid-2 gap-4">
-                    <div>
-                        <div class="text-sm text-gray-500">Категория:</div>
-                        <div class="font-medium">${category?.display_name || ''}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-500">Услуга:</div>
-                        <div class="font-medium">${app.wizardData.serviceName}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-500">Приоритет:</div>
-                        <div class="font-medium">${getPriorityText(app.wizardData.priority)}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-500">Срок:</div>
-                        <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
-                    </div>
-                    <div class="md:col-span-2">
-                        <div class="text-sm text-gray-500">Название:</div>
-                        <div class="font-medium">${app.wizardData.title}</div>
-                    </div>
-                    <div class="md:col-span-2">
-                        <div class="text-sm text-gray-500">Описание:</div>
-                        <div class="font-medium">${app.wizardData.description}</div>
-                    </div>
-                    <div class="md:col-span-2">
-                        <div class="text-sm text-gray-500">Адрес:</div>
-                        <div class="font-medium">${app.wizardData.address}</div>
-                    </div>
-                    ${app.wizardData.additional ? `
-                        <div class="md:col-span-2">
-                            <div class="text-sm text-gray-500">Дополнительно:</div>
-                            <div class="font-medium">${app.wizardData.additional}</div>
-                        </div>
-                    ` : ''}
-                </div>
-            </div>
+        // Показать подтверждение заказа
+        function showOrderReview() {
+            const container = document.getElementById('orderReview');
+            const category = app.categories.find(c => c.id == app.currentCategoryId);
             
-            <div class="card">
-                <h4 class="font-bold mb-3">Что будет дальше?</h4>
-                <ol class="space-y-2 pl-5 list-decimal">
-                    <li>Заказ появится в разделе "Мои заказы"</li>
-                    <li>Помощница свяжется с вами для уточнения деталей</li>
-                    <li>Обсудит сроки и особенности выполнения</li>
-                    <li>Вы сможете общаться в чате заказа</li>
-                    <li>После выполнения оцените качество работы</li>
-                    <li><strong>Важно:</strong> Все услуги включены в вашу подписку!</li>
-                </ol>
-            </div>
-        `;
-    })
-    .catch(error => {
-        console.error('Ошибка получения статистики:', error);
-    });
-}
+            container.innerHTML = `
+                <div class="card mb-6">
+                    <h3 class="category-title mb-4">Информация о заказе</h3>
+                    <div class="grid grid-1 md:grid-2 gap-4">
+                        <div>
+                            <div class="text-sm text-gray-500">Категория:</div>
+                            <div class="font-medium">${category?.display_name || ''}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Услуга:</div>
+                            <div class="font-medium">${app.wizardData.serviceName}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Приоритет:</div>
+                            <div class="font-medium">${getPriorityText(app.wizardData.priority)}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Срок:</div>
+                            <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Цена:</div>
+                            <div class="text-xl font-bold text-gold">${app.wizardData.price}₽</div>
+                        </div>
+                        <div>
+                            <div class="text-sm text-gray-500">Баланс после оплаты:</div>
+                            <div class="text-xl font-bold ${(app.currentUser.balance - app.wizardData.price) < 0 ? 'text-red-500' : 'text-gray-800'}">
+                                ${(app.currentUser.balance - app.wizardData.price)}₽
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="text-sm text-gray-500">Название:</div>
+                            <div class="font-medium">${app.wizardData.title}</div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="text-sm text-gray-500">Описание:</div>
+                            <div class="font-medium">${app.wizardData.description}</div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <div class="text-sm text-gray-500">Адрес:</div>
+                            <div class="font-medium">${app.wizardData.address}</div>
+                        </div>
+                        ${app.wizardData.additional ? `
+                            <div class="md:col-span-2">
+                                <div class="text-sm text-gray-500">Дополнительно:</div>
+                                <div class="font-medium">${app.wizardData.additional}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4 class="font-bold mb-3">Что будет дальше?</h4>
+                    <ol class="space-y-2 pl-5 list-decimal">
+                        <li>Заказ появится в разделе "Мои заказы"</li>
+                        <li>Помощница свяжется с вами для уточнения деталей</li>
+                        <li>Обсудит сроки и особенности выполнения</li>
+                        <li>Вы сможете общаться в чате заказа</li>
+                        <li>После выполнения оцените качество работы</li>
+                    </ol>
+                </div>
+            `;
+        }
 
         // Получить текст приоритета
         function getPriorityText(priority) {
@@ -2492,141 +2453,105 @@ function showOrderReview() {
             
             const container = document.getElementById('subscriptionsGrid');
             
-           // index.html - обновить отображение подписок
-container.innerHTML = app.subscriptions.map((sub, index) => {
-    const isFeatured = sub.name === 'premium';
-    const features = Array.isArray(sub.features) ? sub.features : JSON.parse(sub.features || '[]');
-    const isCurrentPlan = app.currentUser && app.currentUser.subscription_plan === sub.name;
-    
-    return `
-        <div class="subscription-card ${isFeatured ? 'featured' : ''} ${isCurrentPlan ? 'border-gold' : ''}">
-            ${isFeatured ? '<div class="subscription-featured">Рекомендуем</div>' : ''}
-            ${isCurrentPlan ? '<div class="subscription-featured" style="background: var(--aquamarine); color: var(--graphite-dark);">Текущий план</div>' : ''}
-            
-            <h3 class="subscription-name">${sub.display_name}</h3>
-            <div class="subscription-price">${sub.price_monthly}₽</div>
-            <div class="subscription-period">в месяц</div>
-            
-            ${sub.initial_fee > 0 ? `
-                <div class="mb-4">
-                    <div class="text-sm text-gray-500">Вступительный взнос:</div>
-                    <div class="font-bold text-gold">${sub.initial_fee}₽</div>
-                </div>
-            ` : ''}
-            
-            <div class="mb-6">
-                <div class="text-sm text-gray-500">Включает:</div>
-                <div class="font-bold">${sub.tasks_limit === 999 ? 'Неограниченно' : sub.tasks_limit} задач в месяц</div>
-                <div class="text-xs text-gray-500 mt-1">Все услуги бесплатно!</div>
-            </div>
-            
-            <ul class="subscription-features">
-                ${features.map(feature => `
-                    <li><i class="fas fa-check"></i> ${feature}</li>
-                `).join('')}
-                <li><i class="fas fa-check"></i> Все услуги бесплатно</li>
-            </ul>
-            
-            ${isCurrentPlan ? `
-                <div class="mt-4 p-3 bg-blue-50 rounded text-center">
-                    <p class="text-sm text-blue-700">Ваш текущий план активен</p>
-                </div>
-            ` : `
-                <button class="btn ${isFeatured ? 'btn-primary' : 'btn-secondary'} w-100 mt-auto" 
-                        onclick="subscribeToPlan('${sub.name}')">
-                    ${app.currentUser ? 'Выбрать тариф' : 'Войти для выбора'}
-                </button>
-            `}
-        </div>
-    `;
-}).join('');
-
-      // index.html - обновить функцию subscribeToPlan
-window.subscribeToPlan = async function(planName, period = 'monthly') {
-    if (!app.currentUser) {
-        openAuthModal();
-        return;
-    }
-    
-    const subscription = app.subscriptions.find(s => s.name === planName);
-    if (!subscription) {
-        showNotification('Тариф не найден', 'error');
-        return;
-    }
-    
-    const price = period === 'yearly' ? subscription.price_yearly : subscription.price_monthly;
-    const requiresInitialFee = subscription.initial_fee > 0 && app.currentUser.initial_fee_paid === 0;
-    const totalAmount = price + (requiresInitialFee ? subscription.initial_fee : 0);
-    
-    const confirmMessage = requiresInitialFee ? 
-        `Для активации подписки "${subscription.display_name}" необходимо оплатить:
-        • Вступительный взнос: ${subscription.initial_fee}₽
-        • Абонентская плата: ${price}₽/${period === 'yearly' ? 'год' : 'месяц'}
-        Итого: ${totalAmount}₽
-        
-        У вас на балансе: ${app.currentUser.balance}₽
-        
-        После оплаты все услуги будут включены в подписку!
-        Продолжить?` :
-        `Активировать подписку "${subscription.display_name}"?
-        • Абонентская плата: ${price}₽/${period === 'yearly' ? 'год' : 'месяц'}
-        
-        У вас на балансе: ${app.currentUser.balance}₽
-        
-        После оплаты все услуги будут включены в подписку!
-        Продолжить?`;
-    
-    const confirmPayment = confirm(confirmMessage);
-    if (!confirmPayment) return;
-    
-    showLoading();
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.token}`
-            },
-            body: JSON.stringify({
-                plan: planName,
-                period: period
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification(data.message || 'Подписка успешно оформлена!', 'success');
-            
-            // Обновляем пользователя
-            if (data.data && data.data.user) {
-                app.currentUser = data.data.user;
-                updateUserMenu();
-            }
-            
-            // Перезагружаем страницу подписок
-            loadSubscriptionsPage();
-            
-            // Обновляем профиль если открыт
-            if (app.currentPage === 'profile') {
-                loadProfilePage();
-            }
-        } else {
-            if (data.total_amount) {
-                showNotification(`Недостаточно средств на балансе. Требуется: ${data.total_amount}₽, доступно: ${data.current_balance}₽`, 'error');
-                navigate('profile');
-            } else {
-                showNotification(data.error || 'Ошибка оформления подписки', 'error');
-            }
+            container.innerHTML = app.subscriptions.map((sub, index) => {
+                const isFeatured = sub.name === 'premium';
+                const features = Array.isArray(sub.features) ? sub.features : JSON.parse(sub.features || '[]');
+                
+                return `
+                    <div class="subscription-card ${isFeatured ? 'featured' : ''}">
+                        ${isFeatured ? '<div class="subscription-featured">Рекомендуем</div>' : ''}
+                        <h3 class="subscription-name">${sub.display_name}</h3>
+                        <div class="subscription-price">${sub.price_monthly}₽</div>
+                        <div class="subscription-period">в месяц</div>
+                        ${sub.initial_fee > 0 ? `
+                            <div class="mb-6">
+                                <div class="text-sm text-gray-500">Вступительный взнос:</div>
+                                <div class="font-bold text-gold">${sub.initial_fee}₽</div>
+                            </div>
+                        ` : ''}
+                        <ul class="subscription-features">
+                            ${features.map(feature => `
+                                <li><i class="fas fa-check"></i> ${feature}</li>
+                            `).join('')}
+                        </ul>
+                        <button class="btn ${isFeatured ? 'btn-primary' : 'btn-secondary'} w-100 mt-auto" 
+                                onclick="subscribeToPlan('${sub.name}')">
+                            ${app.currentUser ? 'Выбрать тариф' : 'Войти для выбора'}
+                        </button>
+                    </div>
+                `;
+            }).join('');
         }
-    } catch (error) {
-        console.error('Ошибка оформления подписки:', error);
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-};
+
+        // Оформление подписки
+        window.subscribeToPlan = async function(planName) {
+            if (!app.currentUser) {
+                openAuthModal();
+                return;
+            }
+            
+            const subscription = app.subscriptions.find(s => s.name === planName);
+            if (!subscription) {
+                showNotification('Тариф не найден', 'error');
+                return;
+            }
+            
+            // Проверяем, не нужно ли оплатить вступительный взнос
+            if (app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0) {
+                const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. Продолжить?`);
+                if (!confirmPayment) return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    },
+                    body: JSON.stringify({
+                        plan: planName,
+                        period: 'monthly',
+                        initial_fee_paid: app.currentUser.initial_fee_paid === 0
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Подписка успешно оформлена!', 'success');
+                    
+                    // Обновляем пользователя
+                    await verifyToken();
+                    
+                    // Перезагружаем страницу подписок
+                    loadSubscriptionsPage();
+                    
+                    // Обновляем профиль если открыт
+                    if (app.currentPage === 'profile') {
+                        loadProfilePage();
+                    }
+                } else {
+                    if (data.requires_initial_fee) {
+                        const payInitialFee = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${data.initial_fee_amount}₽. Продолжить?`);
+                        if (payInitialFee) {
+                            // Здесь можно добавить логику оплаты
+                            showNotification('Функция оплаты будет доступна в полной версии', 'info');
+                        }
+                    } else {
+                        showNotification(data.error || 'Ошибка оформления подписки', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка оформления подписки:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
         // Загрузка страницы заказов
         async function loadTasksPage() {
             if (!app.currentUser) {
@@ -3525,33 +3450,28 @@ window.subscribeToPlan = async function(planName, period = 'monthly') {
             }
         }
 
-       // index.html - обновить функцию checkNotifications (примерно строка 2145)
-async function checkNotifications() {
-    try {
-        const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`,
-                'Content-Type': 'application/json'
+        // Проверка уведомлений
+        async function checkNotifications() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const unreadCount = data.data.unread_count || 0;
+                    
+                    // Обновляем счетчик в статистике
+                    if (app.currentPage === 'tasks') {
+                        await loadOrderStats();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки уведомлений:', error);
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const unreadCount = data.data.unread_count || 0;
-            
-            // Обновляем счетчик в статистике
-            if (app.currentPage === 'tasks') {
-                await loadOrderStats();
-            }
-        } else if (response.status === 401) {
-            // Токен невалиден, выходим
-            logout();
         }
-    } catch (error) {
-        console.error('Ошибка проверки уведомлений:', error);
-        // Не показываем ошибку пользователю для этого фонового запроса
-    }
-}
 
         // Авторизация
         document.getElementById('btnLogin').addEventListener('click', async () => {
@@ -3745,19 +3665,7 @@ async function checkNotifications() {
             localStorage.removeItem('token');
             updateUserMenu();
             navigate('home');
-    showNotification('Вы вышли из системы', 'info');
-};
-
-        // Обновление цены при выборе тарифа в регистрации
-        window.updateRegistrationPrice = function() {
-            const plan = document.getElementById('registerSubscription').value;
-            const priceInfo = document.getElementById('registrationPriceInfo');
-            
-            if (plan === 'essential') {
-                priceInfo.innerHTML = 'Общая сумма для активации: 1000₽ (вступительный 500₽ + первый месяц 500₽)';
-            } else if (plan === 'premium') {
-                priceInfo.innerHTML = 'Общая сумма для активации: 2990₽ (вступительный 1000₽ + первый месяц 1990₽)';
-            }
+            showNotification('Вы вышли из системы', 'info');
         };
 
         // Показать форму регистрации
