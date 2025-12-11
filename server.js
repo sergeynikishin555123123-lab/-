@@ -333,6 +333,7 @@ const createInitialData = async () => {
         const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions WHERE name = 'essential'");
         if (!subscriptionsExist) {
            // server.js - обновить данные подписок (примерно строка 180-200)
+// server.js - примерно строка 180-200
 const subscriptions = [
     [
         'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
