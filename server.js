@@ -503,6 +503,53 @@ const formatPrice = (price) => {
     }).format(price);
 };
 
+// server.js - добавить перед authMiddleware (примерно строка 630)
+// Проверка токена (для веб-приложения)
+app.get('/api/auth/check', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({
+                success: false,
+                error: 'Требуется авторизация'
+            });
+        }
+        
+        const token = authHeader.replace('Bearer ', '').trim();
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
+        
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, is_active, avatar_url,
+                    balance, rating, completed_tasks
+             FROM users WHERE id = ? AND is_active = 1`,
+            [decoded.id]
+        );
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: { user }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка проверки токена:', error);
+        res.status(401).json({
+            success: false,
+            error: 'Неверный токен'
+        });
+    }
+});
+
 // ==================== JWT МИДЛВАР ====================
 const authMiddleware = (roles = []) => {
     return async (req, res, next) => {
@@ -1310,6 +1357,128 @@ app.get('/api/subscriptions', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка получения подписок'
+        });
+    }
+});
+
+// server.js - добавить после маршрута /api/subscriptions (примерно строка 920)
+// Оплата вступительного взноса и активация подписки
+app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req, res) => {
+    try {
+        const { plan, initial_fee_paid } = req.body;
+        
+        if (!plan) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан тарифный план'
+            });
+        }
+        
+        // Проверяем существование подписки
+        const subscription = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ? AND is_active = 1',
+            [plan]
+        );
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'Тарифный план не найден'
+            });
+        }
+        
+        // Проверяем, нужно ли оплатить вступительный взнос
+        if (!initial_fee_paid && subscription.initial_fee > 0) {
+            // Проверяем баланс
+            if (req.user.balance < subscription.initial_fee) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Недостаточно средств для оплаты вступительного взноса',
+                    requires_initial_fee: true,
+                    initial_fee_amount: subscription.initial_fee,
+                    current_balance: req.user.balance
+                });
+            }
+            
+            // Списываем вступительный взнос
+            await db.run(
+                'UPDATE users SET balance = balance - ? WHERE id = ?',
+                [subscription.initial_fee, req.user.id]
+            );
+            
+            // Создаем запись о платеже
+            const transactionId = `INITIAL-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+            await db.run(
+                `INSERT INTO payments 
+                (user_id, subscription_id, amount, description, status, payment_method, transaction_id) 
+                VALUES (?, ?, ?, ?, 'completed', 'initial_fee', ?)`,
+                [
+                    req.user.id,
+                    subscription.id,
+                    subscription.initial_fee,
+                    `Вступительный взнос для подписки "${subscription.display_name}"`,
+                    transactionId
+                ]
+            );
+            
+            // Обновляем статус пользователя
+            await db.run(
+                `UPDATE users SET 
+                    subscription_plan = ?,
+                    subscription_status = 'active',
+                    initial_fee_paid = 1,
+                    initial_fee_amount = ?,
+                    subscription_expires = DATE('now', '+30 days')
+                 WHERE id = ?`,
+                [plan, subscription.initial_fee, req.user.id]
+            );
+        } else {
+            // Просто активируем подписку
+            await db.run(
+                `UPDATE users SET 
+                    subscription_plan = ?,
+                    subscription_status = 'active',
+                    subscription_expires = DATE('now', '+30 days')
+                 WHERE id = ?`,
+                [plan, req.user.id]
+            );
+        }
+        
+        // Получаем обновленного пользователя
+        const updatedUser = await db.get(
+            `SELECT id, email, first_name, last_name, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, balance
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        
+        // Добавляем уведомление
+        await db.run(
+            `INSERT INTO notifications (user_id, title, message, type) 
+             VALUES (?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'Подписка активирована!',
+                `Подписка "${subscription.display_name}" успешно активирована.`,
+                'success'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Подписка успешно активирована!',
+            data: {
+                user: updatedUser,
+                subscription
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка активации подписки:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка активации подписки'
         });
     }
 });
