@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Премиум-минималистичная цветовая палитра */
+        /* Полный премиум-минималистичный стиль */
         :root {
             --ivory-bg: #F9F7F3;
             --graphite-dark: #3D3D3D;
@@ -1345,6 +1345,14 @@
                 <div id="homeStats" class="hidden">
                     <!-- Динамически заполняется -->
                 </div>
+
+                <!-- Отзывы -->
+                <div id="reviewsSection" class="hidden">
+                    <h2 class="section-title text-center">Отзывы клиентов</h2>
+                    <div class="category-grid" id="reviewsGrid">
+                        <!-- Динамически заполняется -->
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1530,6 +1538,14 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Часто задаваемые вопросы -->
+                <div id="faqSection" class="card mt-8">
+                    <h2 class="section-title text-center">Часто задаваемые вопросы</h2>
+                    <div id="faqList" class="mt-8">
+                        <!-- Динамически заполняется -->
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1577,6 +1593,15 @@
                                 <label class="form-label">Категория</label>
                                 <select class="form-input w-full md:w-48" id="filterCategory">
                                     <option value="all">Все категории</option>
+                                </select>
+                            </div>
+                            <div class="w-full md:w-auto">
+                                <label class="form-label">Дата</label>
+                                <select class="form-input w-full md:w-48" id="filterDate">
+                                    <option value="all">Все время</option>
+                                    <option value="today">Сегодня</option>
+                                    <option value="week">Эта неделя</option>
+                                    <option value="month">Этот месяц</option>
                                 </select>
                             </div>
                         </div>
@@ -1677,6 +1702,35 @@
                             <!-- Динамически заполняется -->
                         </div>
                     </div>
+
+                    <!-- История платежей -->
+                    <div id="paymentHistorySection" class="card md:col-span-2 hidden">
+                        <h2 class="category-title mb-4">
+                            <i class="fas fa-history"></i>
+                            История платежей
+                        </h2>
+                        <div id="paymentHistory">
+                            <!-- Динамически заполняется -->
+                        </div>
+                    </div>
+
+                    <!-- Безопасность -->
+                    <div class="card">
+                        <h2 class="category-title mb-4">
+                            <i class="fas fa-shield-alt"></i>
+                            Безопасность
+                        </h2>
+                        <div class="space-y-4">
+                            <button class="btn btn-secondary w-100" id="btnChangePassword">
+                                <i class="fas fa-key"></i>
+                                Изменить пароль
+                            </button>
+                            <button class="btn btn-danger w-100" id="btnDeleteAccount">
+                                <i class="fas fa-trash-alt"></i>
+                                Удалить аккаунт
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1754,6 +1808,40 @@
                 </div>
             </div>
         </section>
+
+        <!-- Админ панель -->
+        <section id="page-admin" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1 class="section-title">Админ панель</h1>
+                    <p class="section-subtitle">
+                        Управление пользователями, задачами и системой
+                    </p>
+                </div>
+
+                <!-- Статистика -->
+                <div class="mb-8">
+                    <div class="grid grid-2 md:grid-4 gap-4" id="adminStats">
+                        <!-- Динамически заполняется -->
+                    </div>
+                </div>
+
+                <!-- Табы -->
+                <div class="card mb-8">
+                    <div class="flex flex-wrap border-b border-gray-200">
+                        <button class="tab-btn px-4 py-2 font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-300" data-tab="users">Пользователи</button>
+                        <button class="tab-btn px-4 py-2 font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-300" data-tab="tasks">Задачи</button>
+                        <button class="tab-btn px-4 py-2 font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-300" data-tab="finances">Финансы</button>
+                        <button class="tab-btn px-4 py-2 font-medium text-gray-600 hover:text-gray-800 border-b-2 border-transparent hover:border-gray-300" data-tab="settings">Настройки</button>
+                    </div>
+                </div>
+
+                <!-- Контент табов -->
+                <div id="adminTabContent">
+                    <!-- Динамически заполняется -->
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Футер -->
@@ -1817,6 +1905,9 @@
                         <label class="form-label">Пароль</label>
                         <input type="password" class="form-input" id="loginPassword" required placeholder="Введите пароль">
                     </div>
+                    <div class="form-group">
+                        <a href="#" class="text-sm text-gray-500 hover:text-gray-700" id="btnForgotPassword">Забыли пароль?</a>
+                    </div>
                     <button class="btn btn-primary w-100 mb-4" id="btnLogin">Войти</button>
                     <div class="text-center">
                         <button class="btn btn-secondary w-100" id="btnShowRegister">Зарегистрироваться</button>
@@ -1851,6 +1942,10 @@
                         <input type="password" class="form-input" id="registerPassword" required minlength="6" placeholder="Минимум 6 символов">
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Подтвердите пароль *</label>
+                        <input type="password" class="form-input" id="registerConfirmPassword" required minlength="6" placeholder="Повторите пароль">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Телефон *</label>
                         <input type="tel" class="form-input" id="registerPhone" required placeholder="+79991234567">
                     </div>
@@ -1861,10 +1956,39 @@
                             <option value="premium">Премиум (1000₽ вступительный взнос)</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="registerAgree" class="w-4 h-4" required>
+                            <span class="text-sm">Я согласен с <a href="#" class="text-gray-700 hover:text-gray-900">условиями использования</a></span>
+                        </label>
+                    </div>
                     <button class="btn btn-primary w-100 mb-4" id="btnRegister">Зарегистрироваться</button>
                     <div class="text-center">
                         <button class="btn btn-secondary w-100" id="btnShowLogin">Вернуться к входу</button>
                     </div>
+                </div>
+                
+                <div id="forgotPasswordForm" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Email для восстановления</label>
+                        <input type="email" class="form-input" id="forgotEmail" required placeholder="email@example.com">
+                    </div>
+                    <button class="btn btn-primary w-100 mb-4" id="btnSendResetLink">Отправить ссылку для сброса</button>
+                    <div class="text-center">
+                        <button class="btn btn-secondary w-100" id="btnBackToLoginFromForgot">Вернуться к входу</button>
+                    </div>
+                </div>
+                
+                <div id="resetPasswordForm" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Новый пароль</label>
+                        <input type="password" class="form-input" id="resetPassword" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Подтвердите новый пароль</label>
+                        <input type="password" class="form-input" id="resetConfirmPassword" required minlength="6">
+                    </div>
+                    <button class="btn btn-primary w-100 mb-4" id="btnResetPassword">Сбросить пароль</button>
                 </div>
             </div>
         </div>
@@ -1934,6 +2058,10 @@
                         <label class="form-label">Телефон *</label>
                         <input type="tel" class="form-input" id="editPhone" required>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Аватар URL (необязательно)</label>
+                        <input type="url" class="form-input" id="editAvatarUrl" placeholder="https://...">
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -1963,6 +2091,133 @@
         </div>
     </div>
 
+    <!-- Модалка смены пароля -->
+    <div class="modal" id="changePasswordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Смена пароля</h3>
+                <button class="close-btn" id="btnCloseChangePassword">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="form-group">
+                        <label class="form-label">Текущий пароль</label>
+                        <input type="password" class="form-input" id="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Новый пароль</label>
+                        <input type="password" class="form-input" id="newPassword" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Подтвердите новый пароль</label>
+                        <input type="password" class="form-input" id="confirmNewPassword" required minlength="6">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnSaveNewPassword">Сменить пароль</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка удаления аккаунта -->
+    <div class="modal" id="deleteAccountModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Удаление аккаунта</h3>
+                <button class="close-btn" id="btnCloseDeleteAccount">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-6">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #FF6B6B; margin-bottom: 16px;"></i>
+                    <h4 class="mb-4">Внимание! Это действие необратимо.</h4>
+                    <p class="mb-4">Все ваши данные будут удалены:</p>
+                    <ul class="text-left mb-6 space-y-2">
+                        <li><i class="fas fa-times text-red-500"></i> Ваш профиль</li>
+                        <li><i class="fas fa-times text-red-500"></i> История заказов</li>
+                        <li><i class="fas fa-times text-red-500"></i> Подписка</li>
+                        <li><i class="fas fa-times text-red-500"></i> Баланс</li>
+                    </ul>
+                    <p class="text-sm text-gray-500">Для подтверждения введите ваш пароль:</p>
+                </div>
+                <form id="deleteAccountForm">
+                    <div class="form-group">
+                        <input type="password" class="form-input" id="deleteAccountPassword" required placeholder="Введите ваш пароль">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" id="btnConfirmDeleteAccount">Удалить аккаунт</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка оплаты -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Оплата</h3>
+                <button class="close-btn" id="btnClosePayment">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="paymentContent">
+                    <!-- Динамически заполняется -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модалка добавления администратора -->
+    <div class="modal" id="addAdminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить администратора</h3>
+                <button class="close-btn" id="btnCloseAddAdmin">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addAdminForm">
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="adminEmail" required placeholder="admin@concierge.ru">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Пароль *</label>
+                        <input type="password" class="form-input" id="adminPassword" required minlength="6">
+                    </div>
+                    <div class="grid grid-1 md:grid-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="form-label">Имя *</label>
+                            <input type="text" class="form-input" id="adminFirstName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Фамилия *</label>
+                            <input type="text" class="form-input" id="adminLastName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Роль</label>
+                        <select class="form-input" id="adminRole">
+                            <option value="admin">Администратор</option>
+                            <option value="manager">Менеджер</option>
+                            <option value="superadmin">Супер-админ</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnSaveAdmin">Добавить администратора</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Контейнер для уведомлений -->
     <div id="notificationContainer"></div>
 
@@ -1976,7 +2231,7 @@
     </div>
 
     <script>
-        // Глобальное состояние приложения
+        // Полная версия приложения с полным функционалом
         const app = {
             currentUser: null,
             token: localStorage.getItem('token'),
@@ -1989,12 +2244,14 @@
             categories: [],
             services: [],
             subscriptions: [],
+            notifications: [],
+            unreadNotifications: 0,
             API_URL: window.location.origin
         };
 
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🌸 Инициализация Женский Консьерж v5.4.0...');
+            console.log('🌸 Инициализация Женский Консьерж v5.4.0 (полная версия)...');
             
             try {
                 // Проверяем соединение с API
@@ -2006,8 +2263,10 @@
                 console.log('✅ API доступен');
                 
                 // Загружаем базовые данные
-                await loadCategories();
-                await loadSubscriptions();
+                await Promise.all([
+                    loadCategories(),
+                    loadSubscriptions()
+                ]);
                 
                 // Проверяем токен если есть
                 if (app.token) {
@@ -2029,6 +2288,9 @@
                     setInterval(async () => {
                         await checkNotifications();
                     }, 60000);
+                    
+                    // Первая проверка
+                    await checkNotifications();
                 }
                 
             } catch (error) {
@@ -2083,6 +2345,11 @@
                     <div class="flex items-center gap-3">
                         <div class="user-avatar" id="btnOpenProfile" title="Профиль">
                             ${initial}
+                            ${app.unreadNotifications > 0 ? `
+                                <span style="position: absolute; top: -5px; right: -5px; background: #FF6B6B; color: white; font-size: 0.6rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    ${app.unreadNotifications}
+                                </span>
+                            ` : ''}
                         </div>
                         <div class="hidden md:block">
                             <div style="font-weight: 600; color: var(--graphite-dark); font-size: 0.9rem;">${firstName}</div>
@@ -2188,6 +2455,14 @@
                 case 'task-details':
                     loadTaskDetailsPage();
                     break;
+                case 'admin':
+                    if (app.currentUser && ['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+                        loadAdminPage();
+                    } else {
+                        navigate('home');
+                        showNotification('Нет доступа к админ панели', 'error');
+                    }
+                    break;
             }
         }
 
@@ -2202,6 +2477,856 @@
             // Показываем статистику если пользователь авторизован
             if (app.currentUser) {
                 await loadHomeStats();
+            }
+            
+            // Загружаем отзывы
+            await loadReviews();
+        }
+
+        // Загрузка отзывов
+        async function loadReviews() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/reviews?featured=true&limit=3`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.data.reviews.length > 0) {
+                        document.getElementById('reviewsSection').classList.remove('hidden');
+                        renderReviews(data.data.reviews);
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки отзывов:', error);
+            }
+        }
+
+        // Рендер отзывов
+        function renderReviews(reviews) {
+            const container = document.getElementById('reviewsGrid');
+            
+            container.innerHTML = reviews.map(review => `
+                <div class="category-card">
+                    <div class="category-icon">
+                        ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                    </div>
+                    <h3 class="category-title">${review.client_name || 'Анонимный пользователь'}</h3>
+                    <p class="category-desc">"${review.comment || 'Отличная работа!'}"</p>
+                    <div class="text-sm text-gray-500 mt-4">
+                        ${new Date(review.created_at).toLocaleDateString('ru-RU')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Загрузка FAQ
+        async function loadFAQ() {
+            const faqList = document.getElementById('faqList');
+            if (!faqList) return;
+            
+            const faqs = [
+                {
+                    question: 'Как работает система подписок?',
+                    answer: 'Вы оплачиваете вступительный взнос один раз при регистрации, затем ежемесячную плату. Все услуги в рамках вашего тарифа бесплатны для вас.'
+                },
+                {
+                    question: 'Можно ли изменить тариф?',
+                    answer: 'Да, вы можете изменить тариф в любой момент. Разница в стоимости будет учтена при следующем платеже.'
+                },
+                {
+                    question: 'Что входит в вступительный взнос?',
+                    answer: 'Вступительный взнос покрывает расходы на проверку и обучение помощниц, а также страховку качества услуг.'
+                },
+                {
+                    question: 'Как отменить подписку?',
+                    answer: 'Вы можете отменить подписку в любое время в разделе "Мой профиль". Подписка останется активной до конца оплаченного периода.'
+                },
+                {
+                    question: 'Как выбираются помощницы?',
+                    answer: 'Все наши помощницы проходят строгий отбор, проверку документов и обучение. Вы можете видеть их рейтинг и отзывы перед выбором.'
+                },
+                {
+                    question: 'Что делать, если не устроило качество услуги?',
+                    answer: 'Мы гарантируем возврат средств или повторное оказание услуги, если качество не устроило. Свяжитесь с нашей поддержкой.'
+                }
+            ];
+            
+            faqList.innerHTML = faqs.map((faq, index) => `
+                <div class="faq-item mb-4">
+                    <button class="faq-question w-full text-left p-4 bg-gray-50 rounded-lg flex justify-between items-center" data-faq="${index}">
+                        <span class="font-medium">${faq.question}</span>
+                        <i class="fas fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div class="faq-answer hidden p-4 border border-gray-100 rounded-b-lg border-t-0">
+                        <p>${faq.answer}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Добавляем обработчики для FAQ
+            document.querySelectorAll('.faq-question').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const index = this.getAttribute('data-faq');
+                    const answer = document.querySelector(`.faq-answer[data-faq="${index}"]`);
+                    const icon = this.querySelector('i');
+                    
+                    if (answer.classList.contains('hidden')) {
+                        answer.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        answer.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+        }
+
+        // Загрузка админ панели
+        async function loadAdminPage() {
+            try {
+                // Загружаем статистику
+                const statsResponse = await fetch(`${app.API_URL}/api/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    renderAdminStats(statsData.data);
+                }
+                
+                // Загружаем пользователей по умолчанию
+                await loadAdminUsers();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки админ панели:', error);
+                showNotification('Ошибка загрузки админ панели', 'error');
+            }
+        }
+
+        // Рендер статистики админ панели
+        function renderAdminStats(stats) {
+            const container = document.getElementById('adminStats');
+            
+            container.innerHTML = `
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${stats.total_users || 0}</div>
+                    <div class="admin-stat-label">Пользователи</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${stats.total_tasks || 0}</div>
+                    <div class="admin-stat-label">Задачи</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${stats.total_income || 0}₽</div>
+                    <div class="admin-stat-label">Доход</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${stats.active_subscriptions || 0}</div>
+                    <div class="admin-stat-label">Подписки</div>
+                </div>
+            `;
+        }
+
+        // Загрузка пользователей для админ панели
+        async function loadAdminUsers() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/users?limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAdminUsers(data.data.users);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+
+        // Рендер пользователей в админ панели
+        function renderAdminUsers(users) {
+            const container = document.getElementById('adminTabContent');
+            
+            container.innerHTML = `
+                <div id="adminUsersTab" class="tab-content active">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Управление пользователями</h3>
+                        <button class="btn btn-primary" id="btnAddAdmin">
+                            <i class="fas fa-plus"></i>
+                            Добавить администратора
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Имя</th>
+                                    <th>Email</th>
+                                    <th>Роль</th>
+                                    <th>Статус</th>
+                                    <th>Дата регистрации</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(user => `
+                                    <tr>
+                                        <td>${user.id}</td>
+                                        <td>${user.first_name} ${user.last_name}</td>
+                                        <td>${user.email}</td>
+                                        <td>
+                                            <span class="role-badge role-${user.role}">
+                                                ${getRoleDisplayName(user.role)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge ${user.is_active ? 'status-completed' : 'status-cancelled'}">
+                                                ${user.is_active ? 'Активен' : 'Неактивен'}
+                                            </span>
+                                        </td>
+                                        <td>${new Date(user.created_at).toLocaleDateString('ru-RU')}</td>
+                                        <td>
+                                            <div class="flex gap-2">
+                                                <button class="btn btn-secondary btn-sm" onclick="editUser(${user.id})">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id}, '${user.first_name}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="adminTasksTab" class="tab-content hidden">
+                    <h3 class="text-lg font-semibold mb-4">Управление задачами</h3>
+                    <div class="text-center p-8 text-gray-500">
+                        <p>Загрузка задач...</p>
+                    </div>
+                </div>
+                <div id="adminFinancesTab" class="tab-content hidden">
+                    <h3 class="text-lg font-semibold mb-4">Финансовая отчетность</h3>
+                    <div class="text-center p-8 text-gray-500">
+                        <p>Загрузка финансовой информации...</p>
+                    </div>
+                </div>
+                <div id="adminSettingsTab" class="tab-content hidden">
+                    <h3 class="text-lg font-semibold mb-4">Настройки системы</h3>
+                    <div class="text-center p-8 text-gray-500">
+                        <p>Загрузка настроек...</p>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем обработчики для табов
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tab = this.getAttribute('data-tab');
+                    
+                    // Удаляем активные классы
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('border-gray-800', 'text-gray-800');
+                        b.classList.add('border-transparent', 'text-gray-600');
+                    });
+                    
+                    // Добавляем активный класс текущей кнопке
+                    this.classList.remove('border-transparent', 'text-gray-600');
+                    this.classList.add('border-gray-800', 'text-gray-800');
+                    
+                    // Скрываем все табы
+                    document.querySelectorAll('.tab-content').forEach(tabContent => {
+                        tabContent.classList.remove('active');
+                        tabContent.classList.add('hidden');
+                    });
+                    
+                    // Показываем выбранный таб
+                    const targetTab = document.getElementById(`admin${tab.charAt(0).toUpperCase() + tab.slice(1)}Tab`);
+                    if (targetTab) {
+                        targetTab.classList.remove('hidden');
+                        targetTab.classList.add('active');
+                        
+                        // Загружаем данные для таба
+                        switch(tab) {
+                            case 'tasks':
+                                loadAdminTasks();
+                                break;
+                            case 'finances':
+                                loadAdminFinances();
+                                break;
+                            case 'settings':
+                                loadAdminSettings();
+                                break;
+                        }
+                    }
+                });
+            });
+            
+            // Активируем первый таб
+            document.querySelector('.tab-btn').click();
+        }
+
+        // Редактирование пользователя (админ)
+        window.editUser = async function(userId) {
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.data.user;
+                    
+                    // Открываем модалку редактирования
+                    // (нужно добавить модалку в HTML)
+                    showNotification(`Редактирование пользователя: ${user.email}`, 'info');
+                }
+            } catch (error) {
+                console.error('Ошибка получения пользователя:', error);
+            }
+        };
+
+        // Удаление пользователя (админ)
+        window.deleteUser = function(userId, userName) {
+            if (confirm(`Вы уверены, что хотите удалить пользователя "${userName}"? Это действие необратимо.`)) {
+                showLoading();
+                
+                fetch(`${app.API_URL}/api/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message || 'Пользователь удален', 'success');
+                        loadAdminUsers();
+                    } else {
+                        showNotification(data.error || 'Ошибка удаления пользователя', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка удаления пользователя:', error);
+                    showNotification('Ошибка сети', 'error');
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+            }
+        };
+
+        // Загрузка задач для админ панели
+        async function loadAdminTasks() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/tasks?limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAdminTasks(data.data.tasks);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки задач:', error);
+            }
+        }
+
+        // Рендер задач в админ панели
+        function renderAdminTasks(tasks) {
+            const container = document.getElementById('adminTasksTab');
+            
+            container.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Все задачи системы</h3>
+                    <button class="btn btn-secondary" onclick="loadAdminTasks()">
+                        <i class="fas fa-sync-alt"></i>
+                        Обновить
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Клиент</th>
+                                <th>Исполнитель</th>
+                                <th>Статус</th>
+                                <th>Цена</th>
+                                <th>Создана</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tasks.map(task => `
+                                <tr>
+                                    <td>${task.id}</td>
+                                    <td>${task.title}</td>
+                                    <td>${task.client_name || 'Не указан'}</td>
+                                    <td>${task.performer_name || 'Не назначен'}</td>
+                                    <td>
+                                        <span class="status-badge status-${task.status}">
+                                            ${getStatusText(task.status)}
+                                        </span>
+                                    </td>
+                                    <td>${task.price || 0}₽</td>
+                                    <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                                    <td>
+                                        <div class="flex gap-2">
+                                            <button class="btn btn-secondary btn-sm" onclick="adminViewTask(${task.id})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-primary btn-sm" onclick="adminEditTask(${task.id})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Загрузка финансов для админ панели
+        async function loadAdminFinances() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/finances`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAdminFinances(data.data);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки финансов:', error);
+            }
+        }
+
+        // Рендер финансов в админ панели
+        function renderAdminFinances(finances) {
+            const container = document.getElementById('adminFinancesTab');
+            
+            container.innerHTML = `
+                <div class="grid grid-1 md:grid-3 gap-6 mb-6">
+                    <div class="card">
+                        <h4 class="font-semibold mb-2">Общий доход</h4>
+                        <div class="text-2xl font-bold text-green-600">${finances.total_income || 0}₽</div>
+                        <div class="text-sm text-gray-500">За все время</div>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold mb-2">Доход за месяц</h4>
+                        <div class="text-2xl font-bold text-blue-600">${finances.monthly_income || 0}₽</div>
+                        <div class="text-sm text-gray-500">Текущий месяц</div>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold mb-2">Ожидаемые платежи</h4>
+                        <div class="text-2xl font-bold text-yellow-600">${finances.pending_payments || 0}₽</div>
+                        <div class="text-sm text-gray-500">В обработке</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4 class="font-semibold mb-4">Последние транзакции</h4>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Пользователь</th>
+                                    <th>Тип</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(finances.recent_transactions || []).map(trans => `
+                                    <tr>
+                                        <td>${trans.id}</td>
+                                        <td>${trans.user_email}</td>
+                                        <td>${trans.type === 'subscription' ? 'Подписка' : trans.type === 'initial_fee' ? 'Вступительный взнос' : 'Пополнение'}</td>
+                                        <td class="${trans.amount > 0 ? 'text-green-600' : 'text-red-600'} font-semibold">
+                                            ${trans.amount > 0 ? '+' : ''}${trans.amount}₽
+                                        </td>
+                                        <td>
+                                            <span class="status-badge ${trans.status === 'completed' ? 'status-completed' : trans.status === 'pending' ? 'status-in-progress' : 'status-cancelled'}">
+                                                ${trans.status === 'completed' ? 'Завершено' : trans.status === 'pending' ? 'В обработке' : 'Отменено'}
+                                            </span>
+                                        </td>
+                                        <td>${new Date(trans.created_at).toLocaleDateString('ru-RU')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Загрузка настроек для админ панели
+        async function loadAdminSettings() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/settings`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAdminSettings(data.data.settings);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки настроек:', error);
+            }
+        }
+
+        // Рендер настроек в админ панели
+        function renderAdminSettings(settings) {
+            const container = document.getElementById('adminSettingsTab');
+            
+            container.innerHTML = `
+                <div class="card mb-6">
+                    <h4 class="font-semibold mb-4">Настройки системы</h4>
+                    <form id="adminSettingsForm">
+                        <div class="grid grid-1 md:grid-2 gap-4 mb-4">
+                            <div class="form-group">
+                                <label class="form-label">Название сайта</label>
+                                <input type="text" class="form-input" id="siteName" value="${settings.site_name || 'Женский Консьерж'}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email поддержки</label>
+                                <input type="email" class="form-input" id="supportEmail" value="${settings.support_email || 'support@concierge.ru'}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Телефон поддержки</label>
+                                <input type="tel" class="form-input" id="supportPhone" value="${settings.support_phone || '+79991234567'}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Комиссия системы (%)</label>
+                                <input type="number" class="form-input" id="systemFee" min="0" max="50" step="0.1" value="${settings.system_fee || 10}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label class="form-label">Описание сайта</label>
+                            <textarea class="form-input form-textarea" id="siteDescription" rows="3">${settings.site_description || ''}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="siteMaintenance" class="w-4 h-4" ${settings.site_maintenance ? 'checked' : ''}>
+                                <span class="text-sm">Режим технического обслуживания</span>
+                            </label>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-6">
+                        <button class="btn btn-primary" id="btnSaveSettings">
+                            <i class="fas fa-save"></i>
+                            Сохранить настройки
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h4 class="font-semibold mb-4">Опасная зона</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="font-medium mb-2">Очистить кеш</h5>
+                            <p class="text-sm text-gray-500 mb-2">Удалить временные данные и перезагрузить кеш системы</p>
+                            <button class="btn btn-secondary" id="btnClearCache">
+                                <i class="fas fa-broom"></i>
+                                Очистить кеш
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium mb-2">Пересчитать статистику</h5>
+                            <p class="text-sm text-gray-500 mb-2">Пересчитать все статистические данные системы</p>
+                            <button class="btn btn-secondary" id="btnRecalcStats">
+                                <i class="fas fa-calculator"></i>
+                                Пересчитать статистику
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <h5 class="font-medium mb-2 text-red-600">Резервное копирование</h5>
+                            <p class="text-sm text-gray-500 mb-2">Создать полную резервную копию базы данных</p>
+                            <button class="btn btn-danger" id="btnBackup">
+                                <i class="fas fa-database"></i>
+                                Создать бэкап
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Добавляем обработчики для кнопок настроек
+            document.getElementById('btnSaveSettings').addEventListener('click', saveAdminSettings);
+            document.getElementById('btnClearCache').addEventListener('click', clearAdminCache);
+            document.getElementById('btnRecalcStats').addEventListener('click', recalcAdminStats);
+            document.getElementById('btnBackup').addEventListener('click', createBackup);
+        }
+
+        // Сохранение настроек админ панели
+        async function saveAdminSettings() {
+            const settings = {
+                site_name: document.getElementById('siteName').value,
+                support_email: document.getElementById('supportEmail').value,
+                support_phone: document.getElementById('supportPhone').value,
+                system_fee: parseFloat(document.getElementById('systemFee').value),
+                site_description: document.getElementById('siteDescription').value,
+                site_maintenance: document.getElementById('siteMaintenance').checked
+            };
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Настройки сохранены', 'success');
+                } else {
+                    showNotification(data.error || 'Ошибка сохранения настроек', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения настроек:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Очистка кеша (админ)
+        async function clearAdminCache() {
+            if (!confirm('Вы уверены, что хотите очистить кеш системы?')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/cache/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Кеш очищен', 'success');
+                } else {
+                    showNotification(data.error || 'Ошибка очистки кеша', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка очистки кеша:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Пересчет статистики (админ)
+        async function recalcAdminStats() {
+            if (!confirm('Пересчитать статистику системы? Это может занять некоторое время.')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/stats/recalculate`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Статистика пересчитана', 'success');
+                    loadAdminPage(); // Перезагружаем страницу
+                } else {
+                    showNotification(data.error || 'Ошибка пересчета статистики', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка пересчета статистики:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Создание бэкапа (админ)
+        async function createBackup() {
+            if (!confirm('Создать резервную копию базы данных?')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/backup`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Бэкап создан успешно', 'success');
+                    
+                    // Скачиваем файл бэкапа
+                    if (data.data.backup_url) {
+                        window.open(data.data.backup_url, '_blank');
+                    }
+                } else {
+                    showNotification(data.error || 'Ошибка создания бэкапа', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка создания бэкапа:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Просмотр задачи (админ)
+        window.adminViewTask = function(taskId) {
+            app.currentTaskId = taskId;
+            navigate('task-details');
+        };
+
+        // Редактирование задачи (админ)
+        window.adminEditTask = async function(taskId) {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/tasks/${taskId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const task = data.data.task;
+                    
+                    // Открываем модалку редактирования задачи
+                    // (нужно добавить модалку в HTML)
+                    showNotification(`Редактирование задачи: ${task.title}`, 'info');
+                }
+            } catch (error) {
+                console.error('Ошибка получения задачи:', error);
+                showNotification('Ошибка загрузки задачи', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // Добавление администратора
+        document.getElementById('btnAddAdmin')?.addEventListener('click', function() {
+            openModal('addAdminModal');
+        });
+
+        // Сохранение администратора
+        document.getElementById('btnSaveAdmin')?.addEventListener('click', async function() {
+            const form = document.getElementById('addAdminForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            const adminData = {
+                email: document.getElementById('adminEmail').value,
+                password: document.getElementById('adminPassword').value,
+                first_name: document.getElementById('adminFirstName').value,
+                last_name: document.getElementById('adminLastName').value,
+                role: document.getElementById('adminRole').value,
+                subscription_plan: 'premium',
+                initial_fee_paid: 1,
+                subscription_status: 'active'
+            };
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(adminData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Администратор добавлен', 'success');
+                    closeModal('addAdminModal');
+                    loadAdminUsers();
+                } else {
+                    showNotification(data.error || 'Ошибка добавления администратора', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка добавления администратора:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Проверка уведомлений
+        async function checkNotifications() {
+            if (!app.currentUser) return;
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    app.notifications = data.data.notifications || [];
+                    app.unreadNotifications = data.data.unread_count || 0;
+                    
+                    // Обновляем меню
+                    updateUserMenu();
+                    
+                    // Показываем уведомление о новых сообщениях
+                    if (app.unreadNotifications > 0 && !document.hasFocus()) {
+                        showNotification(`У вас ${app.unreadNotifications} непрочитанных уведомлений`, 'info');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки уведомлений:', error);
             }
         }
 
