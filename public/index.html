@@ -1876,38 +1876,38 @@
             }
         });
 
-        // Проверка токена
-        async function verifyToken() {
-            console.log('🔐 Проверка токена...');
-            
-            if (!app.token) {
-                console.log('❌ Токен отсутствует');
-                return false;
+// index.html - обновить функцию verifyToken (примерно строка 25)
+async function verifyToken() {
+    console.log('🔐 Проверка токена...');
+    
+    if (!app.token) {
+        console.log('❌ Токен отсутствует');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/auth/check`, {
+            headers: {
+                'Authorization': `Bearer ${app.token}`,
+                'Content-Type': 'application/json'
             }
-            
-            try {
-                const response = await fetch(`${app.API_URL}/api/auth/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('✅ Токен валиден, пользователь:', data.data.user.email);
-                    app.currentUser = data.data.user;
-                    updateUserMenu();
-                    return true;
-                } else {
-                    console.log('❌ Токен невалиден:', response.status);
-                    return false;
-                }
-            } catch (error) {
-                console.error('🔐 Ошибка проверки токена:', error);
-                return false;
-            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Токен валиден, пользователь:', data.data.user.email);
+            app.currentUser = data.data.user;
+            updateUserMenu();
+            return true;
+        } else {
+            console.log('❌ Токен невалиден:', response.status);
+            return false;
         }
+    } catch (error) {
+        console.error('🔐 Ошибка проверки токена:', error);
+        return false;
+    }
+}
 
         // Обновление меню пользователя
         function updateUserMenu() {
@@ -2483,74 +2483,75 @@
             }).join('');
         }
 
-        // Оформление подписки
-        window.subscribeToPlan = async function(planName) {
-            if (!app.currentUser) {
-                openAuthModal();
-                return;
+       // index.html - обновить функцию subscribeToPlan (примерно строка 2548)
+window.subscribeToPlan = async function(planName) {
+    if (!app.currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    const subscription = app.subscriptions.find(s => s.name === planName);
+    if (!subscription) {
+        showNotification('Тариф не найден', 'error');
+        return;
+    }
+    
+    // Проверяем, не нужно ли оплатить вступительный взнос
+    const requiresInitialFee = app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0;
+    
+    if (requiresInitialFee) {
+        const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. У вас на балансе: ${app.currentUser.balance}₽. Продолжить?`);
+        if (!confirmPayment) return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${app.token}`
+            },
+            body: JSON.stringify({
+                plan: planName,
+                initial_fee_paid: !requiresInitialFee // true если уже оплачен
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification(data.message || 'Подписка успешно оформлена!', 'success');
+            
+            // Обновляем пользователя
+            if (data.data && data.data.user) {
+                app.currentUser = data.data.user;
+                updateUserMenu();
             }
             
-            const subscription = app.subscriptions.find(s => s.name === planName);
-            if (!subscription) {
-                showNotification('Тариф не найден', 'error');
-                return;
-            }
+            // Перезагружаем страницу подписок
+            loadSubscriptionsPage();
             
-            // Проверяем, не нужно ли оплатить вступительный взнос
-            if (app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0) {
-                const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. Продолжить?`);
-                if (!confirmPayment) return;
+            // Обновляем профиль если открыт
+            if (app.currentPage === 'profile') {
+                loadProfilePage();
             }
-            
-            showLoading();
-            
-            try {
-                const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${app.token}`
-                    },
-                    body: JSON.stringify({
-                        plan: planName,
-                        period: 'monthly',
-                        initial_fee_paid: app.currentUser.initial_fee_paid === 0
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showNotification(data.message || 'Подписка успешно оформлена!', 'success');
-                    
-                    // Обновляем пользователя
-                    await verifyToken();
-                    
-                    // Перезагружаем страницу подписок
-                    loadSubscriptionsPage();
-                    
-                    // Обновляем профиль если открыт
-                    if (app.currentPage === 'profile') {
-                        loadProfilePage();
-                    }
-                } else {
-                    if (data.requires_initial_fee) {
-                        const payInitialFee = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${data.initial_fee_amount}₽. Продолжить?`);
-                        if (payInitialFee) {
-                            // Здесь можно добавить логику оплаты
-                            showNotification('Функция оплаты будет доступна в полной версии', 'info');
-                        }
-                    } else {
-                        showNotification(data.error || 'Ошибка оформления подписки', 'error');
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка оформления подписки:', error);
-                showNotification('Ошибка сети', 'error');
-            } finally {
-                hideLoading();
+        } else {
+            if (data.requires_initial_fee) {
+                showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽, доступно: ${data.current_balance}₽`, 'error');
+                navigate('profile');
+            } else {
+                showNotification(data.error || 'Ошибка оформления подписки', 'error');
             }
-        };
+        }
+    } catch (error) {
+        console.error('Ошибка оформления подписки:', error);
+        showNotification('Ошибка сети', 'error');
+    } finally {
+        hideLoading();
+    }
+};
 
         // Загрузка страницы заказов
         async function loadTasksPage() {
@@ -3450,28 +3451,33 @@
             }
         }
 
-        // Проверка уведомлений
-        async function checkNotifications() {
-            try {
-                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const unreadCount = data.data.unread_count || 0;
-                    
-                    // Обновляем счетчик в статистике
-                    if (app.currentPage === 'tasks') {
-                        await loadOrderStats();
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка проверки уведомлений:', error);
+       // index.html - обновить функцию checkNotifications (примерно строка 2145)
+async function checkNotifications() {
+    try {
+        const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
+            headers: {
+                'Authorization': `Bearer ${app.token}`,
+                'Content-Type': 'application/json'
             }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const unreadCount = data.data.unread_count || 0;
+            
+            // Обновляем счетчик в статистике
+            if (app.currentPage === 'tasks') {
+                await loadOrderStats();
+            }
+        } else if (response.status === 401) {
+            // Токен невалиден, выходим
+            logout();
         }
+    } catch (error) {
+        console.error('Ошибка проверки уведомлений:', error);
+        // Не показываем ошибку пользователю для этого фонового запроса
+    }
+}
 
         // Авторизация
         document.getElementById('btnLogin').addEventListener('click', async () => {
