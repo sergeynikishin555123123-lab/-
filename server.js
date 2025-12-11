@@ -332,20 +332,21 @@ const createInitialData = async () => {
         // 1. Подписки
         const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions WHERE name = 'essential'");
         if (!subscriptionsExist) {
-            const subscriptions = [
-                [
-                    'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
-                    0, 0, 500, 5,
-                    '["До 5 задач в месяц", "Базовые услуги", "Поддержка по email", "Стандартное время ответа"]',
-                    '#FF6B8B', 1, 1
-                ],
-                [
-                    'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
-                    1990, 19900, 1000, 999,
-                    '["Неограниченные задачи", "Все услуги премиум-класса", "Приоритетная поддержка 24/7", "Личный помощник"]',
-                    '#9B59B6', 2, 1
-                ]
-            ];
+           // server.js - обновить данные подписок (примерно строка 180-200)
+const subscriptions = [
+    [
+        'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
+        500, 5000, 500, 5, // месячная цена 500₽, годовая 5000₽, вступительный 500₽, 5 задач в месяц
+        '["До 5 задач в месяц", "Базовые услуги бесплатно", "Поддержка по email", "Стандартное время ответа"]',
+        '#FF6B8B', 1, 1
+    ],
+    [
+        'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
+        1990, 19900, 1000, 999, // месячная цена 1990₽, годовая 19900₽, вступительный 1000₽, неограниченно
+        '["Неограниченные задачи", "Все услуги бесплатно", "Приоритетная поддержка 24/7", "Личный помощник"]',
+        '#9B59B6', 2, 1
+    ]
+];
 
             for (const sub of subscriptions) {
                 await db.run(
@@ -1368,11 +1369,10 @@ app.get('/api/subscriptions', async (req, res) => {
     }
 });
 
-// server.js - добавить после маршрута /api/subscriptions (примерно строка 920)
-// Оплата вступительного взноса и активация подписки
+// server.js - обновить /api/subscriptions/subscribe
 app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req, res) => {
     try {
-        const { plan, initial_fee_paid } = req.body;
+        const { plan, period = 'monthly' } = req.body;
         
         if (!plan) {
             return res.status(400).json({
@@ -1394,27 +1394,34 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             });
         }
         
-        // Проверяем, нужно ли оплатить вступительный взнос
-        if (!initial_fee_paid && subscription.initial_fee > 0) {
-            // Проверяем баланс
-            if (req.user.balance < subscription.initial_fee) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Недостаточно средств для оплаты вступительного взноса',
-                    requires_initial_fee: true,
-                    initial_fee_amount: subscription.initial_fee,
-                    current_balance: req.user.balance
-                });
-            }
-            
-            // Списываем вступительный взнос
-            await db.run(
-                'UPDATE users SET balance = balance - ? WHERE id = ?',
-                [subscription.initial_fee, req.user.id]
-            );
-            
-            // Создаем запись о платеже
-            const transactionId = `INITIAL-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        const price = period === 'yearly' ? subscription.price_yearly : subscription.price_monthly;
+        const requiresInitialFee = subscription.initial_fee > 0;
+        const totalAmount = price + (requiresInitialFee ? subscription.initial_fee : 0);
+        
+        // Проверяем баланс
+        if (req.user.balance < totalAmount) {
+            return res.status(400).json({
+                success: false,
+                error: 'Недостаточно средств на балансе',
+                requires_initial_fee: requiresInitialFee,
+                initial_fee_amount: subscription.initial_fee,
+                subscription_price: price,
+                total_amount: totalAmount,
+                current_balance: req.user.balance
+            });
+        }
+        
+        // Списываем общую сумму
+        await db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ?',
+            [totalAmount, req.user.id]
+        );
+        
+        // Создаем записи о платежах
+        
+        // 1. Вступительный взнос (если требуется)
+        if (requiresInitialFee) {
+            const initialFeeTransactionId = `INITIAL-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
             await db.run(
                 `INSERT INTO payments 
                 (user_id, subscription_id, amount, description, status, payment_method, transaction_id) 
@@ -1424,32 +1431,50 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
                     subscription.id,
                     subscription.initial_fee,
                     `Вступительный взнос для подписки "${subscription.display_name}"`,
-                    transactionId
+                    initialFeeTransactionId
                 ]
             );
-            
-            // Обновляем статус пользователя
-            await db.run(
-                `UPDATE users SET 
-                    subscription_plan = ?,
-                    subscription_status = 'active',
-                    initial_fee_paid = 1,
-                    initial_fee_amount = ?,
-                    subscription_expires = DATE('now', '+30 days')
-                 WHERE id = ?`,
-                [plan, subscription.initial_fee, req.user.id]
-            );
-        } else {
-            // Просто активируем подписку
-            await db.run(
-                `UPDATE users SET 
-                    subscription_plan = ?,
-                    subscription_status = 'active',
-                    subscription_expires = DATE('now', '+30 days')
-                 WHERE id = ?`,
-                [plan, req.user.id]
-            );
         }
+        
+        // 2. Платеж за подписку
+        const subscriptionTransactionId = `SUBSCRIPTION-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        await db.run(
+            `INSERT INTO payments 
+            (user_id, subscription_id, amount, description, status, payment_method, transaction_id) 
+            VALUES (?, ?, ?, ?, 'completed', 'subscription', ?)`,
+            [
+                req.user.id,
+                subscription.id,
+                price,
+                `Подписка "${subscription.display_name}" на ${period === 'yearly' ? 'год' : 'месяц'}`,
+                subscriptionTransactionId
+            ]
+        );
+        
+        // Обновляем статус пользователя
+        const expiryDate = new Date();
+        if (period === 'yearly') {
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+        } else {
+            expiryDate.setMonth(expiryDate.getMonth() + 1);
+        }
+        
+        await db.run(
+            `UPDATE users SET 
+                subscription_plan = ?,
+                subscription_status = 'active',
+                initial_fee_paid = ?,
+                initial_fee_amount = ?,
+                subscription_expires = ?
+             WHERE id = ?`,
+            [
+                plan,
+                requiresInitialFee ? 1 : 0,
+                subscription.initial_fee,
+                expiryDate.toISOString().split('T')[0],
+                req.user.id
+            ]
+        );
         
         // Получаем обновленного пользователя
         const updatedUser = await db.get(
@@ -1467,17 +1492,35 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             [
                 req.user.id,
                 'Подписка активирована!',
-                `Подписка "${subscription.display_name}" успешно активирована.`,
+                `Подписка "${subscription.display_name}" успешно активирована. 
+                 Вступительный взнос: ${requiresInitialFee ? subscription.initial_fee + '₽' : 'не требуется'}.
+                 Абонентская плата: ${price}₽ за ${period === 'yearly' ? 'год' : 'месяц'}.`,
                 'success'
             ]
         );
+        
+        // Логируем активацию подписки
+        await logAudit(req.user.id, 'subscribe', 'subscription', subscription.id, {
+            plan: plan,
+            period: period,
+            initial_fee: subscription.initial_fee,
+            subscription_price: price,
+            total_amount: totalAmount
+        });
         
         res.json({
             success: true,
             message: 'Подписка успешно активирована!',
             data: {
                 user: updatedUser,
-                subscription
+                subscription,
+                payment_details: {
+                    initial_fee: subscription.initial_fee,
+                    subscription_price: price,
+                    period: period,
+                    total_amount: totalAmount,
+                    balance_after: req.user.balance - totalAmount
+                }
             }
         });
         
@@ -1492,6 +1535,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 
 // ==================== ЗАДАЧИ ====================
 
+// server.js - обновить POST /api/tasks (примерно строка 1050-1100)
 // Создание задачи
 app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
@@ -1504,8 +1548,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             deadline, 
             address, 
             contact_info,
-            additional_requirements,
-            price
+            additional_requirements
         } = req.body;
         
         // Валидация
@@ -1531,7 +1574,10 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         
         // Проверяем подписку пользователя
         const user = await db.get(
-            'SELECT subscription_status, initial_fee_paid, balance FROM users WHERE id = ?',
+            `SELECT u.*, s.tasks_limit 
+             FROM users u
+             LEFT JOIN subscriptions s ON u.subscription_plan = s.name
+             WHERE u.id = ?`,
             [req.user.id]
         );
         
@@ -1549,6 +1595,23 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             });
         }
         
+        // Проверяем лимит задач
+        if (user.tasks_limit !== 999) { // 999 = безлимит
+            const tasksThisMonth = await db.get(
+                `SELECT COUNT(*) as count FROM tasks 
+                 WHERE client_id = ? 
+                 AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')`,
+                [req.user.id]
+            );
+            
+            if (tasksThisMonth.count >= user.tasks_limit) {
+                return res.status(403).json({
+                    success: false,
+                    error: `Вы исчерпали лимит задач на этот месяц (${user.tasks_limit}). Обновите подписку или дождитесь следующего месяца.`
+                });
+            }
+        }
+        
         // Проверяем дату дедлайна
         const deadlineDate = new Date(deadline);
         if (deadlineDate < new Date()) {
@@ -1558,29 +1621,22 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             });
         }
         
-        // Рассчитываем цену
-        let finalPrice = price;
-        if (!finalPrice || finalPrice < 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Укажите корректную цену задачи'
-            });
-        }
-        
-        // Проверяем баланс пользователя
-        if (finalPrice > user.balance) {
-            return res.status(400).json({
-                success: false,
-                error: 'Недостаточно средств на балансе',
-                balance: user.balance,
-                required: finalPrice
-            });
-        }
-        
         // Генерируем номер задачи
         const taskNumber = generateTaskNumber();
         
-        // Создаем задачу
+        // Для услуг получаем базовую цену для отображения, но не списываем с баланса
+        let servicePrice = 0;
+        if (service_id) {
+            const service = await db.get(
+                'SELECT base_price FROM services WHERE id = ?',
+                [service_id]
+            );
+            if (service) {
+                servicePrice = service.base_price;
+            }
+        }
+        
+        // Создаем задачу БЕЗ списания средств
         const result = await db.run(
             `INSERT INTO tasks 
             (task_number, title, description, client_id, category_id, service_id, 
@@ -1595,7 +1651,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
                 category_id,
                 service_id || null,
                 priority,
-                finalPrice,
+                servicePrice, // Сохраняем цену услуги, но не списываем
                 address,
                 deadline,
                 contact_info,
@@ -1604,27 +1660,6 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         );
         
         const taskId = result.lastID;
-        
-        // Списываем средства с баланса пользователя
-        await db.run(
-            'UPDATE users SET balance = balance - ? WHERE id = ?',
-            [finalPrice, req.user.id]
-        );
-        
-        // Создаем запись о платеже
-        const transactionId = `TASK-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-        await db.run(
-            `INSERT INTO payments 
-            (user_id, task_id, amount, description, status, payment_method, transaction_id) 
-            VALUES (?, ?, ?, ?, 'completed', 'task_payment', ?)`,
-            [
-                req.user.id,
-                taskId,
-                finalPrice,
-                `Оплата задачи: ${title}`,
-                transactionId
-            ]
-        );
         
         // Добавляем запись в историю статусов
         await db.run(
@@ -1649,7 +1684,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             [
                 req.user.id,
                 'Задача создана!',
-                `Задача "${title}" успешно создана. Номер: ${taskNumber}.`,
+                `Задача "${title}" успешно создана. Номер: ${taskNumber}. Включена в вашу подписку.`,
                 'success',
                 JSON.stringify({ task_id: task.id, task_number: taskNumber })
             ]
@@ -1659,15 +1694,15 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         await logAudit(req.user.id, 'create_task', 'task', taskId, {
             task_number: taskNumber,
             title: title,
-            price: finalPrice
+            included_in_subscription: true
         });
         
         res.status(201).json({
             success: true,
-            message: 'Задача успешно создана!',
+            message: 'Задача успешно создана и включена в вашу подписку!',
             data: { 
                 task,
-                balance_after: user.balance - finalPrice
+                included_in_subscription: true
             }
         });
         
