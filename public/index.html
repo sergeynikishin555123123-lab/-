@@ -1077,6 +1077,153 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--graphite-medium);
         }
+        
+        /* Роли */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-client {
+            background: #F2DDE6;
+            color: #C2185B;
+        }
+        
+        .role-performer {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        
+        .role-admin {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .role-manager {
+            background: #FFF3E0;
+            color: #EF6C00;
+        }
+        
+        .role-superadmin {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+        
+        /* Лимиты задач */
+        .progress-container {
+            margin: 16px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(61, 61, 61, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-metallic);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--graphite-medium);
+        }
+        
+        /* Панель помощника */
+        .specialization-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--lavender-light);
+            color: var(--graphite-dark);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        
+        /* Админ панель */
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        .admin-stat-card {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(61, 61, 61, 0.08);
+        }
+        
+        .admin-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--graphite-dark);
+            margin-bottom: 6px;
+        }
+        
+        .admin-stat-label {
+            color: var(--graphite-medium);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Таблицы */
+        .table-container {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid rgba(61, 61, 61, 0.08);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th {
+            background: rgba(249, 247, 243, 0.5);
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--graphite-dark);
+            border-bottom: 1px solid rgba(61, 61, 61, 0.08);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(61, 61, 61, 0.04);
+            color: var(--graphite-medium);
+            font-size: 0.9rem;
+        }
+        
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tr:hover {
+            background: rgba(249, 247, 243, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -1098,6 +1245,10 @@
                 <a href="#" class="nav-link" data-page="subscriptions">Подписки</a>
                 <a href="#" class="nav-link" data-page="tasks">Мои заказы</a>
                 <a href="#" class="nav-link" data-page="profile">Профиль</a>
+                
+                <!-- Динамические ссылки для разных ролей -->
+                <span id="roleSpecificLinks"></span>
+                
                 <div class="user-menu" id="userMenu">
                     <!-- Динамически заполняется -->
                 </div>
@@ -1114,7 +1265,7 @@
                     <h1 class="section-title">Помощь, когда она нужна</h1>
                     <p class="section-subtitle">
                         Бытовые задачи, забота о себе, организация мероприятий — мы поможем со всем. 
-                        Просто выберите нужную помощь и опишите детали.
+                        Просто выберите нужную помощь и опишите детали. Все услуги включены в подписку!
                     </p>
                     <div class="mt-8 flex items-center justify-center gap-4 flex-wrap">
                         <button class="btn btn-primary" id="btnStartOrder">
@@ -1132,7 +1283,7 @@
                 <div class="mb-8">
                     <h2 class="section-title text-center">Категории помощи</h2>
                     <p class="section-subtitle text-center">
-                        Более 6 категорий помощи для вашего комфорта
+                        Более 6 категорий помощи для вашего комфорта. Все услуги бесплатны при активной подписке!
                     </p>
                     <div class="category-grid" id="categoriesHome">
                         <!-- Динамически заполняется -->
@@ -1145,24 +1296,24 @@
                     <div class="grid grid-2 md:grid-4 mt-8">
                         <div class="text-center">
                             <div class="category-icon mb-4">
-                                <i class="fas fa-list-alt"></i>
+                                <i class="fas fa-crown"></i>
                             </div>
-                            <h3 class="category-title">Выберите категорию</h3>
-                            <p class="category-desc">Бытовые задачи, уход за собой, помощь с детьми</p>
+                            <h3 class="category-title">Выберите подписку</h3>
+                            <p class="category-desc">Оплатите вступительный взнос и выберите тарифный план</p>
                         </div>
                         <div class="text-center">
                             <div class="category-icon mb-4">
-                                <i class="fas fa-hand-pointer"></i>
+                                <i class="fas fa-list-alt"></i>
                             </div>
                             <h3 class="category-title">Выберите услугу</h3>
-                            <p class="category-desc">Конкретная помощь, которая вам нужна прямо сейчас</p>
+                            <p class="category-desc">Более 12 услуг в 6 категориях. Все включено в подписку!</p>
                         </div>
                         <div class="text-center">
                             <div class="category-icon mb-4">
                                 <i class="fas fa-edit"></i>
                             </div>
                             <h3 class="category-title">Опишите детали</h3>
-                            <p class="category-desc">С подсказками что важно указать</p>
+                            <p class="category-desc">С подсказками что важно указать для лучшего результата</p>
                         </div>
                         <div class="text-center">
                             <div class="category-icon mb-4">
@@ -1173,6 +1324,11 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Статистика (только для авторизованных) -->
+                <div id="homeStats" class="hidden">
+                    <!-- Динамически заполняется -->
+                </div>
             </div>
         </section>
 
@@ -1182,7 +1338,7 @@
                 <div class="page-header">
                     <h1 class="section-title">Категории помощи</h1>
                     <p class="section-subtitle">
-                        Выберите категорию помощи, которая вам нужна
+                        Выберите категорию помощи, которая вам нужна. Все услуги бесплатны при активной подписке!
                     </p>
                 </div>
 
@@ -1197,6 +1353,19 @@
                         <div class="wizard-step" id="wizardStep1">
                             <h2 class="section-title mb-4">Выберите услугу</h2>
                             <p class="section-subtitle mb-8" id="categoryDescription"></p>
+                            
+                            <!-- Лимит задач -->
+                            <div id="tasksLimitInfo" class="card mb-6 hidden">
+                                <div class="progress-container">
+                                    <div class="progress-text">
+                                        <span>Использовано задач</span>
+                                        <span><span id="tasksUsed">0</span> / <span id="tasksLimit">0</span></span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="tasksProgress" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="mb-8" id="servicesGrid">
                                 <!-- Динамически заполняется -->
@@ -1266,12 +1435,15 @@
                                               placeholder="Особые пожелания, аллергии, предпочтения..." rows="3"></textarea>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label class="form-label">Предлагаемая цена (₽) *</label>
-                                    <input type="number" class="form-input" id="orderPrice" required min="500" max="50000"
-                                           placeholder="Укажите сумму за выполнение">
-                                    <div class="text-sm text-gray-500 mt-1">
-                                        Минимальная цена: 500₽, Максимальная: 50,000₽
+                                <!-- Для помощников - предложение цены -->
+                                <div id="priceForPerformer" class="hidden">
+                                    <div class="form-group">
+                                        <label class="form-label">Предлагаемая стоимость (₽)</label>
+                                        <input type="number" class="form-input" id="orderPrice" min="0" max="50000"
+                                               placeholder="Укажите примерную стоимость (необязательно)">
+                                        <div class="text-sm text-gray-500 mt-1">
+                                            Для информации. Клиенты не платят за услуги отдельно.
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -1320,7 +1492,7 @@
                     <h1 class="section-title">Тарифы с вступительным взносом</h1>
                     <p class="section-subtitle">
                         Простая система: вступительный взнос + ежемесячная оплата. 
-                        Выбирайте то, что подходит именно вам.
+                        Все услуги включены в подписку. Выбирайте то, что подходит именно вам.
                     </p>
                 </div>
 
@@ -1343,14 +1515,14 @@
                                 <i class="fas fa-shield-alt"></i>
                             </div>
                             <h3 class="category-title">Гарантия качества</h3>
-                            <p class="category-desc">Все услуги застрахованы и проверены</p>
+                            <p class="category-desc">Все услуги проверены и застрахованы</p>
                         </div>
                         <div class="text-center">
                             <div class="category-icon mb-4">
-                                <i class="fas fa-clock"></i>
+                                <i class="fas fa-infinity"></i>
                             </div>
-                            <h3 class="category-title">24/7 поддержка</h3>
-                            <p class="category-desc">На связи всегда, когда вам нужна помощь</p>
+                            <h3 class="category-title">Все включено</h3>
+                            <p class="category-desc">Никаких скрытых платежей. Все услуги в подписке</p>
                         </div>
                     </div>
                 </div>
@@ -1363,13 +1535,21 @@
                 <div class="page-header">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 class="section-title">Мои заказы</h1>
-                            <p class="section-subtitle">Все ваши заказы в одном месте</p>
+                            <h1 class="section-title" id="tasksPageTitle">Мои заказы</h1>
+                            <p class="section-subtitle" id="tasksPageSubtitle">Все ваши заказы в одном месте</p>
                         </div>
                         <button class="btn btn-primary" id="btnNewOrder">
                             <i class="fas fa-plus"></i>
                             Новый заказ
                         </button>
+                    </div>
+                </div>
+
+                <!-- Для помощников: доступные задачи -->
+                <div id="availableTasksSection" class="hidden mb-8">
+                    <h2 class="category-title mb-4">Доступные задачи</h2>
+                    <div class="orders-grid" id="availableTasksList">
+                        <!-- Динамически заполняется -->
                     </div>
                 </div>
 
@@ -1466,6 +1646,23 @@
                         </div>
                     </div>
 
+                    <!-- Для помощников: специализации -->
+                    <div id="performerSpecializations" class="card hidden md:col-span-2">
+                        <h2 class="category-title mb-4">
+                            <i class="fas fa-tags"></i>
+                            Мои специализации
+                        </h2>
+                        <div id="specializationsList">
+                            <!-- Динамически заполняется -->
+                        </div>
+                        <div class="mt-8">
+                            <button class="btn btn-primary w-100" id="btnEditSpecializations">
+                                <i class="fas fa-edit"></i>
+                                Изменить специализации
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Статистика -->
                     <div class="card md:col-span-2">
                         <h2 class="category-title mb-4">
@@ -1494,6 +1691,60 @@
                         </div>
                         <div id="paymentsHistory" style="max-height: 300px; overflow-y: auto;">
                             <!-- Динамически заполняется -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Админ панель -->
+        <section id="page-admin" class="page">
+            <div class="container">
+                <div class="page-header">
+                    <h1 class="section-title">Панель управления</h1>
+                    <p class="section-subtitle">Управление системой, пользователями и задачами</p>
+                </div>
+
+                <!-- Статистика -->
+                <div class="admin-stats-grid" id="adminStats">
+                    <!-- Динамически заполняется -->
+                </div>
+
+                <!-- Быстрые действия -->
+                <div class="grid grid-1 md:grid-3 gap-6 mb-8">
+                    <div class="card text-center">
+                        <i class="fas fa-users category-icon mb-4"></i>
+                        <h3 class="category-title mb-4">Пользователи</h3>
+                        <p class="category-desc mb-6">Управление всеми пользователями системы</p>
+                        <button class="btn btn-primary w-100" onclick="loadAdminSection('users')">
+                            Управление
+                        </button>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fas fa-tasks category-icon mb-4"></i>
+                        <h3 class="category-title mb-4">Задачи</h3>
+                        <p class="category-desc mb-6">Просмотр и управление всеми задачами</p>
+                        <button class="btn btn-primary w-100" onclick="loadAdminSection('tasks')">
+                            Управление
+                        </button>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fas fa-chart-pie category-icon mb-4"></i>
+                        <h3 class="category-title mb-4">Статистика</h3>
+                        <p class="category-desc mb-6">Детальная статистика и аналитика</p>
+                        <button class="btn btn-primary w-100" onclick="loadAdminSection('analytics')">
+                            Просмотр
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Контент админ панели -->
+                <div id="adminContent">
+                    <div class="card">
+                        <div class="text-center p-8">
+                            <i class="fas fa-tachometer-alt" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
+                            <h3 class="category-title mb-4">Панель управления</h3>
+                            <p class="category-desc">Выберите раздел для управления</p>
                         </div>
                     </div>
                 </div>
@@ -1533,13 +1784,13 @@
                         </div>
                     </div>
 
-                    <!-- Исполнитель -->
+                    <!-- Исполнитель/Клиент -->
                     <div class="card">
-                        <h2 class="category-title mb-4">
-                            <i class="fas fa-user-tie"></i>
-                            Помощница
+                        <h2 class="category-title mb-4" id="orderParticipantTitle">
+                            <i class="fas fa-user"></i>
+                            Участник
                         </h2>
-                        <div id="performerInfo">
+                        <div id="participantInfo">
                             <!-- Динамически заполняется -->
                         </div>
                     </div>
@@ -1614,7 +1865,7 @@
         
         <div class="copyright">
             <p>© 2024 Женский Консьерж. Все права защищены.</p>
-            <p class="mt-4">Версия 5.2.0</p>
+            <p class="mt-4">Версия 5.4.0 | Все услуги включены в подписку</p>
         </div>
     </footer>
 
@@ -1773,6 +2024,27 @@
         </div>
     </div>
 
+    <!-- Модалка специализаций (для помощников) -->
+    <div class="modal" id="specializationsModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Мои специализации</h3>
+                <button class="close-btn" id="btnCloseSpecializations">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4">Выберите категории, в которых вы специализируетесь. Вы будете видеть только задачи из выбранных категорий.</p>
+                <div class="grid grid-2 md:grid-3 gap-3" id="specializationsGrid">
+                    <!-- Динамически заполняется -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="btnSaveSpecializations">Сохранить специализации</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Модалка пополнения баланса -->
     <div class="modal" id="addBalanceModal">
         <div class="modal-content">
@@ -1829,12 +2101,12 @@
             categories: [],
             services: [],
             subscriptions: [],
-            API_URL: window.location.origin.replace('https://', 'https://').replace('http://', 'http://')
+            API_URL: window.location.origin
         };
 
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🌸 Инициализация Женский Консьерж v5.2.0...');
+            console.log('🌸 Инициализация Женский Консьерж v5.4.0...');
             
             try {
                 // Проверяем соединение с API
@@ -1860,6 +2132,7 @@
                 }
                 
                 updateUserMenu();
+                updateRoleSpecificLinks();
                 setupEventListeners();
                 loadCurrentPage();
                 
@@ -1876,38 +2149,38 @@
             }
         });
 
-       // index.html - обновить функцию verifyToken (примерно строка 25)
-async function verifyToken() {
-    console.log('🔐 Проверка токена...');
-    
-    if (!app.token) {
-        console.log('❌ Токен отсутствует');
-        return false;
-    }
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/auth/check`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`,
-                'Content-Type': 'application/json'
+        async function verifyToken() {
+            console.log('🔐 Проверка токена...');
+            
+            if (!app.token) {
+                console.log('❌ Токен отсутствует');
+                return false;
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log('✅ Токен валиден, пользователь:', data.data.user.email);
-            app.currentUser = data.data.user;
-            updateUserMenu();
-            return true;
-        } else {
-            console.log('❌ Токен невалиден:', response.status);
-            return false;
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/auth/check`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Токен валиден, пользователь:', data.data.user.email);
+                    app.currentUser = data.data.user;
+                    updateUserMenu();
+                    updateRoleSpecificLinks();
+                    return true;
+                } else {
+                    console.log('❌ Токен невалиден:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('🔐 Ошибка проверки токена:', error);
+                return false;
+            }
         }
-    } catch (error) {
-        console.error('🔐 Ошибка проверки токена:', error);
-        return false;
-    }
-}
 
         // Обновление меню пользователя
         function updateUserMenu() {
@@ -1916,16 +2189,17 @@ async function verifyToken() {
             if (app.currentUser) {
                 const firstName = app.currentUser.first_name || 'Пользователь';
                 const initial = firstName.charAt(0).toUpperCase();
+                const role = app.currentUser.role;
                 
                 userMenu.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="user-avatar" id="btnOpenProfile">
+                        <div class="user-avatar" id="btnOpenProfile" title="Профиль">
                             ${initial}
                         </div>
                         <div class="hidden md:block">
                             <div style="font-weight: 600; color: var(--graphite-dark); font-size: 0.9rem;">${firstName}</div>
-                            <div style="font-size: 0.75rem; color: var(--graphite-light);">
-                                ${getRoleDisplayName(app.currentUser.role)}
+                            <div class="role-badge role-${role}" style="font-size: 0.65rem; padding: 2px 6px;">
+                                ${getRoleDisplayName(role)}
                             </div>
                         </div>
                         <button class="btn btn-secondary" id="btnLogout" style="padding: 8px 16px; font-size: 0.85rem;">
@@ -1940,6 +2214,25 @@ async function verifyToken() {
                     </button>
                 `;
             }
+        }
+
+        // Обновление ссылок для разных ролей
+        function updateRoleSpecificLinks() {
+            const container = document.getElementById('roleSpecificLinks');
+            
+            if (!app.currentUser) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const role = app.currentUser.role;
+            let links = '';
+            
+            if (['admin', 'manager', 'superadmin'].includes(role)) {
+                links = `<a href="#" class="nav-link" data-page="admin">Админ</a>`;
+            }
+            
+            container.innerHTML = links;
         }
 
         // Получить отображаемое имя роли
@@ -2004,6 +2297,9 @@ async function verifyToken() {
                 case 'profile':
                     loadProfilePage();
                     break;
+                case 'admin':
+                    loadAdminPage();
+                    break;
                 case 'order-details':
                     loadOrderDetailsPage();
                     break;
@@ -2017,6 +2313,96 @@ async function verifyToken() {
             }
             
             renderHomeCategories();
+            
+            // Показываем статистику если пользователь авторизован
+            if (app.currentUser) {
+                await loadHomeStats();
+            }
+        }
+
+        // Загрузка статистики на главной
+        async function loadHomeStats() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const stats = data.data.stats;
+                    const user = data.data.user;
+                    
+                    const container = document.getElementById('homeStats');
+                    
+                    if (user.role === 'client') {
+                        container.innerHTML = `
+                            <div class="card">
+                                <h2 class="category-title mb-4">Ваша статистика</h2>
+                                <div class="grid grid-2 md:grid-4 gap-4">
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.tasks_remaining || 0}</div>
+                                        <div class="stat-label">Осталось задач</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                        <div class="stat-label">Завершено</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                        <div class="stat-label">В работе</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.unread_notifications || 0}</div>
+                                        <div class="stat-label">Уведомления</div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 pt-6 border-t border-gray-100">
+                                    <div class="progress-container">
+                                        <div class="progress-text">
+                                            <span>Использовано задач</span>
+                                            <span>${stats?.tasks_used || 0} / ${stats?.tasks_limit || 0}</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: ${stats?.tasks_limit ? (stats.tasks_used / stats.tasks_limit) * 100 : 0}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.classList.remove('hidden');
+                    } else if (user.role === 'performer') {
+                        const performerStats = stats.performer_stats || {};
+                        container.innerHTML = `
+                            <div class="card">
+                                <h2 class="category-title mb-4">Ваша статистика</h2>
+                                <div class="grid grid-2 md:grid-4 gap-4">
+                                    <div class="text-center">
+                                        <div class="stat-value">${performerStats.tasks_taken || 0}</div>
+                                        <div class="stat-label">Принято задач</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                        <div class="stat-label">В работе</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${performerStats.avg_rating ? performerStats.avg_rating.toFixed(1) : '0.0'}</div>
+                                        <div class="stat-label">Рейтинг</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="stat-value">${stats?.unread_notifications || 0}</div>
+                                        <div class="stat-label">Уведомления</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        container.classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
         }
 
         // Загрузка категорий
@@ -2083,7 +2469,10 @@ async function verifyToken() {
                     <div class="category-icon">${category.icon}</div>
                     <h3 class="category-title">${category.display_name}</h3>
                     <p class="category-desc">${category.description}</p>
-                    <button class="btn btn-pink mt-4">Заказать помощь</button>
+                    <button class="btn btn-pink mt-4">
+                        <i class="fas fa-bolt"></i>
+                        Заказать помощь
+                    </button>
                 </div>
             `).join('');
         }
@@ -2101,13 +2490,16 @@ async function verifyToken() {
                     <div class="category-icon">${category.icon}</div>
                     <h3 class="category-title">${category.display_name}</h3>
                     <p class="category-desc">${category.description}</p>
-                    <button class="btn btn-pink mt-4">Заказать помощь</button>
+                    <button class="btn btn-pink mt-4">
+                        <i class="fas fa-bolt"></i>
+                        Заказать помощь
+                    </button>
                 </div>
             `).join('');
         }
 
         // Запуск визарда заказа
-        window.startOrderWizard = function(categoryId) {
+        window.startOrderWizard = async function(categoryId) {
             if (!app.currentUser) {
                 openAuthModal();
                 return;
@@ -2127,6 +2519,26 @@ async function verifyToken() {
                 return;
             }
             
+            // Для клиентов проверяем лимит задач
+            if (app.currentUser.role === 'client') {
+                const userData = await fetch(`${app.API_URL}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (userData.ok) {
+                    const data = await userData.json();
+                    const stats = data.data.stats;
+                    
+                    if (stats.tasks_remaining <= 0) {
+                        showNotification(`Превышен лимит задач по вашей подписке. Доступно: ${stats.tasks_limit}, использовано: ${stats.tasks_used}.`, 'error');
+                        navigate('subscriptions');
+                        return;
+                    }
+                }
+            }
+            
             app.currentCategoryId = categoryId;
             app.wizardData = {
                 categoryId: categoryId
@@ -2138,6 +2550,11 @@ async function verifyToken() {
             
             // Загружаем услуги для категории
             loadServicesForCategory(categoryId);
+            
+            // Для помощников показываем поле для цены
+            if (app.currentUser.role === 'performer') {
+                document.getElementById('priceForPerformer').classList.remove('hidden');
+            }
         };
 
         // Загрузка услуг для категории
@@ -2155,18 +2572,39 @@ async function verifyToken() {
                     // Обновляем описание категории
                     document.getElementById('categoryDescription').textContent = category?.description || 'Выберите услугу';
                     
+                    // Для клиентов показываем информацию о лимите задач
+                    if (app.currentUser && app.currentUser.role === 'client') {
+                        const userData = await fetch(`${app.API_URL}/api/auth/profile`, {
+                            headers: {
+                                'Authorization': `Bearer ${app.token}`
+                            }
+                        });
+                        
+                        if (userData.ok) {
+                            const userResponse = await userData.json();
+                            const stats = userResponse.data.stats;
+                            
+                            document.getElementById('tasksLimitInfo').classList.remove('hidden');
+                            document.getElementById('tasksUsed').textContent = stats.tasks_used;
+                            document.getElementById('tasksLimit').textContent = stats.tasks_limit;
+                            
+                            const progress = stats.tasks_limit > 0 ? (stats.tasks_used / stats.tasks_limit) * 100 : 0;
+                            document.getElementById('tasksProgress').style.width = `${progress}%`;
+                        }
+                    }
+                    
                     // Рендерим услуги
                     if (data.data.services.length === 0) {
                         container.innerHTML = '<p class="text-center text-gray-500 py-8">Услуги для этой категории скоро появятся</p>';
                     } else {
                         container.innerHTML = data.data.services.map(service => `
-                            <div class="category-card service-card" data-id="${service.id}" onclick="selectService(${service.id}, '${service.name}', ${service.base_price || 0})">
+                            <div class="category-card service-card" data-id="${service.id}" onclick="selectService(${service.id}, '${service.name}')">
                                 <div class="category-icon">${service.icon || '✨'}</div>
                                 <h3 class="category-title">${service.name}</h3>
                                 <p class="category-desc">${service.description}</p>
                                 <div class="mt-4">
-                                    <div style="font-size: 1.3rem; font-weight: 600; color: var(--gold-metallic);">
-                                        ${service.base_price ? `${service.base_price}₽` : 'Цена по договорённости'}
+                                    <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
+                                        <i class="fas fa-check-circle"></i> Включено в подписку
                                     </div>
                                     <div class="text-sm text-gray-500 mt-1">${service.estimated_time || 'Время по договорённости'}</div>
                                 </div>
@@ -2186,11 +2624,10 @@ async function verifyToken() {
         }
 
         // Выбор услуги
-        window.selectService = function(serviceId, serviceName, basePrice) {
+        window.selectService = function(serviceId, serviceName) {
             app.currentServiceId = serviceId;
             app.wizardData.serviceId = serviceId;
             app.wizardData.serviceName = serviceName;
-            app.wizardData.basePrice = basePrice;
             
             // Включаем кнопку продолжения
             document.getElementById('btnNextToDetails').disabled = false;
@@ -2206,11 +2643,6 @@ async function verifyToken() {
             if (selectedCard) {
                 selectedCard.style.borderColor = 'var(--gold-metallic)';
                 selectedCard.style.boxShadow = 'var(--shadow)';
-            }
-            
-            // Устанавливаем цену в поле
-            if (basePrice > 0) {
-                document.getElementById('orderPrice').value = basePrice;
             }
         };
 
@@ -2269,13 +2701,6 @@ async function verifyToken() {
                 return;
             }
             
-            // Проверяем баланс
-            const price = parseFloat(document.getElementById('orderPrice').value);
-            if (price > app.currentUser.balance) {
-                showNotification(`Недостаточно средств на балансе. Требуется: ${price}₽, доступно: ${app.currentUser.balance}₽`, 'error');
-                return;
-            }
-            
             // Сохраняем данные
             app.wizardData.title = document.getElementById('orderTitle').value;
             app.wizardData.description = document.getElementById('orderDescription').value;
@@ -2284,7 +2709,13 @@ async function verifyToken() {
             app.wizardData.address = document.getElementById('orderAddress').value;
             app.wizardData.contact = document.getElementById('orderContact').value;
             app.wizardData.additional = document.getElementById('orderAdditional').value;
-            app.wizardData.price = price;
+            
+            // Для помощников сохраняем цену
+            if (app.currentUser.role === 'performer') {
+                app.wizardData.price = document.getElementById('orderPrice').value || 0;
+            } else {
+                app.wizardData.price = 0; // Для клиентов всегда 0
+            }
             
             // Показываем подтверждение
             showOrderReview();
@@ -2316,16 +2747,20 @@ async function verifyToken() {
                             <div class="text-sm text-gray-500">Срок:</div>
                             <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
                         </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Цена:</div>
-                            <div class="text-xl font-bold text-gold">${app.wizardData.price}₽</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Баланс после оплаты:</div>
-                            <div class="text-xl font-bold ${(app.currentUser.balance - app.wizardData.price) < 0 ? 'text-red-500' : 'text-gray-800'}">
-                                ${(app.currentUser.balance - app.wizardData.price)}₽
+                        ${app.currentUser.role === 'client' ? `
+                            <div class="md:col-span-2">
+                                <div class="text-sm text-gray-500">Стоимость:</div>
+                                <div class="text-xl font-bold text-gold">
+                                    <i class="fas fa-check-circle text-green-500"></i> Бесплатно (включено в подписку)
+                                </div>
                             </div>
-                        </div>
+                        ` : ''}
+                        ${app.currentUser.role === 'performer' && app.wizardData.price > 0 ? `
+                            <div class="md:col-span-2">
+                                <div class="text-sm text-gray-500">Предложенная стоимость:</div>
+                                <div class="text-xl font-bold text-gold">${app.wizardData.price}₽</div>
+                            </div>
+                        ` : ''}
                         <div class="md:col-span-2">
                             <div class="text-sm text-gray-500">Название:</div>
                             <div class="font-medium">${app.wizardData.title}</div>
@@ -2350,11 +2785,18 @@ async function verifyToken() {
                 <div class="card">
                     <h4 class="font-bold mb-3">Что будет дальше?</h4>
                     <ol class="space-y-2 pl-5 list-decimal">
-                        <li>Заказ появится в разделе "Мои заказы"</li>
-                        <li>Помощница свяжется с вами для уточнения деталей</li>
-                        <li>Обсудит сроки и особенности выполнения</li>
-                        <li>Вы сможете общаться в чате заказа</li>
-                        <li>После выполнения оцените качество работы</li>
+                        ${app.currentUser.role === 'client' ? `
+                            <li>Задача будет создана и отправлена доступным помощникам</li>
+                            <li>Помощница свяжется с вами для уточнения деталей</li>
+                            <li>Обсудит сроки и особенности выполнения</li>
+                            <li>Вы сможете общаться в чате задачи</li>
+                            <li>После выполнения оцените качество работы</li>
+                        ` : `
+                            <li>Задача будет создана и отправлена менеджеру на проверку</li>
+                            <li>После одобрения она станет доступна для клиентов</li>
+                            <li>Клиенты смогут выбирать вашу услугу</li>
+                            <li>Вы получите уведомление о новых задачах</li>
+                        `}
                     </ol>
                 </div>
             `;
@@ -2397,15 +2839,14 @@ async function verifyToken() {
                         address: app.wizardData.address,
                         contact_info: app.wizardData.contact,
                         additional_requirements: app.wizardData.additional,
-                        price: app.wizardData.price,
-                        is_urgent: app.wizardData.priority === 'urgent'
+                        price: app.wizardData.price
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showNotification(data.message || 'Заказ успешно создан!', 'success');
+                    showNotification(data.message || 'Задача успешно создана!', 'success');
                     
                     // Сбрасываем визард
                     cancelOrderWizard();
@@ -2413,10 +2854,10 @@ async function verifyToken() {
                     // Переходим к заказам
                     navigate('tasks');
                 } else {
-                    showNotification(data.error || 'Ошибка создания заказа', 'error');
+                    showNotification(data.error || 'Ошибка создания задачи', 'error');
                 }
             } catch (error) {
-                console.error('Ошибка создания заказа:', error);
+                console.error('Ошибка создания задачи:', error);
                 showNotification('Ошибка сети', 'error');
             } finally {
                 hideLoading();
@@ -2434,6 +2875,9 @@ async function verifyToken() {
             // Скрываем визард, показываем категории
             document.getElementById('orderWizard').classList.add('hidden');
             document.getElementById('categoriesGrid').style.display = 'grid';
+            
+            // Скрываем поле цены
+            document.getElementById('priceForPerformer').classList.add('hidden');
             
             // Сбрасываем форму
             document.getElementById('orderForm').reset();
@@ -2483,75 +2927,75 @@ async function verifyToken() {
             }).join('');
         }
 
-// index.html - обновить функцию subscribeToPlan (примерно строка 2548)
-window.subscribeToPlan = async function(planName) {
-    if (!app.currentUser) {
-        openAuthModal();
-        return;
-    }
-    
-    const subscription = app.subscriptions.find(s => s.name === planName);
-    if (!subscription) {
-        showNotification('Тариф не найден', 'error');
-        return;
-    }
-    
-    // Проверяем, не нужно ли оплатить вступительный взнос
-    const requiresInitialFee = app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0;
-    
-    if (requiresInitialFee) {
-        const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. У вас на балансе: ${app.currentUser.balance}₽. Продолжить?`);
-        if (!confirmPayment) return;
-    }
-    
-    showLoading();
-    
-    try {
-        const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${app.token}`
-            },
-            body: JSON.stringify({
-                plan: planName,
-                initial_fee_paid: !requiresInitialFee // true если уже оплачен
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            showNotification(data.message || 'Подписка успешно оформлена!', 'success');
-            
-            // Обновляем пользователя
-            if (data.data && data.data.user) {
-                app.currentUser = data.data.user;
-                updateUserMenu();
+        // Оформление подписки
+        window.subscribeToPlan = async function(planName) {
+            if (!app.currentUser) {
+                openAuthModal();
+                return;
             }
             
-            // Перезагружаем страницу подписок
-            loadSubscriptionsPage();
+            const subscription = app.subscriptions.find(s => s.name === planName);
+            if (!subscription) {
+                showNotification('Тариф не найден', 'error');
+                return;
+            }
             
-            // Обновляем профиль если открыт
-            if (app.currentPage === 'profile') {
-                loadProfilePage();
+            // Проверяем, не нужно ли оплатить вступительный взнос
+            const requiresInitialFee = app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0;
+            
+            if (requiresInitialFee) {
+                const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. У вас на балансе: ${app.currentUser.balance}₽. Продолжить?`);
+                if (!confirmPayment) return;
             }
-        } else {
-            if (data.requires_initial_fee) {
-                showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽, доступно: ${data.current_balance}₽`, 'error');
-                navigate('profile');
-            } else {
-                showNotification(data.error || 'Ошибка оформления подписки', 'error');
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    },
+                    body: JSON.stringify({
+                        plan: planName,
+                        initial_fee_paid: !requiresInitialFee
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Подписка успешно оформлена!', 'success');
+                    
+                    // Обновляем пользователя
+                    if (data.data && data.data.user) {
+                        app.currentUser = data.data.user;
+                        updateUserMenu();
+                    }
+                    
+                    // Перезагружаем страницу подписок
+                    loadSubscriptionsPage();
+                    
+                    // Обновляем профиль если открыт
+                    if (app.currentPage === 'profile') {
+                        loadProfilePage();
+                    }
+                } else {
+                    if (data.requires_initial_fee) {
+                        showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽, доступно: ${data.current_balance}₽`, 'error');
+                        navigate('profile');
+                    } else {
+                        showNotification(data.error || 'Ошибка оформления подписки', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка оформления подписки:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
             }
-        }
-    } catch (error) {
-        console.error('Ошибка оформления подписки:', error);
-        showNotification('Ошибка сети', 'error');
-    } finally {
-        hideLoading();
-    }
-};
+        };
 
         // Загрузка страницы заказов
         async function loadTasksPage() {
@@ -2561,9 +3005,140 @@ window.subscribeToPlan = async function(planName) {
                 return;
             }
             
+            // Обновляем заголовок страницы в зависимости от роли
+            const title = document.getElementById('tasksPageTitle');
+            const subtitle = document.getElementById('tasksPageSubtitle');
+            
+            if (app.currentUser.role === 'performer') {
+                title.textContent = 'Мои задачи';
+                subtitle.textContent = 'Задачи, которые вы выполняете или можете принять';
+                
+                // Показываем доступные задачи
+                document.getElementById('availableTasksSection').classList.remove('hidden');
+                await loadAvailableTasks();
+            } else if (app.currentUser.role === 'client') {
+                title.textContent = 'Мои заказы';
+                subtitle.textContent = 'Все ваши заказы в одном месте';
+                document.getElementById('availableTasksSection').classList.add('hidden');
+            } else {
+                title.textContent = 'Все задачи';
+                subtitle.textContent = 'Управление задачами системы';
+                document.getElementById('availableTasksSection').classList.add('hidden');
+            }
+            
             await loadOrderStats();
             await loadOrders();
         }
+
+        // Загрузка доступных задач для помощников
+        async function loadAvailableTasks() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks?status=searching&limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAvailableTasks(data.data.tasks);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки доступных задач:', error);
+            }
+        }
+
+        // Рендер доступных задач
+        function renderAvailableTasks(tasks) {
+            const container = document.getElementById('availableTasksList');
+            
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="card text-center p-8">
+                        <i class="fas fa-search" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
+                        <h3 class="category-title mb-4">Нет доступных задач</h3>
+                        <p class="category-desc">Новых задач в ваших специализациях пока нет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => {
+                const category = app.categories.find(c => c.id == task.category_id);
+                
+                return `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="flex-1">
+                                <h3 class="order-title">${task.title}</h3>
+                                <div class="mt-2">
+                                    <span class="status-badge status-searching">В поиске</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);">
+                                    <i class="fas fa-check-circle"></i> Бесплатно
+                                </div>
+                                <div class="order-date">
+                                    ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="order-description">${task.description}</p>
+                        <div class="order-footer">
+                            <div>
+                                <span class="order-date">
+                                    <i class="fas fa-tag"></i> ${category?.display_name || 'Категория'}
+                                </span>
+                            </div>
+                            <div>
+                                ${task.can_take ? `
+                                    <button class="btn btn-primary" onclick="takeTask(${task.id})">
+                                        <i class="fas fa-hand-paper"></i>
+                                        Принять задачу
+                                    </button>
+                                ` : `
+                                    <span class="order-date text-red-500">
+                                        <i class="fas fa-times"></i> Не ваша специализация
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Принять задачу (для помощников)
+        window.takeTask = async function(taskId) {
+            if (!confirm('Вы уверены, что хотите принять эту задачу?')) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks/${taskId}/take`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Задача успешно принята!', 'success');
+                    loadTasksPage();
+                } else {
+                    showNotification(data.error || 'Ошибка принятия задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка принятия задачи:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
 
         // Загрузка статистики заказов
         async function loadOrderStats() {
@@ -2577,26 +3152,70 @@ window.subscribeToPlan = async function(planName) {
                 if (response.ok) {
                     const data = await response.json();
                     const stats = data.data.stats;
+                    const user = data.data.user;
                     
                     const container = document.getElementById('orderStats');
-                    container.innerHTML = `
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.total_tasks || 0}</div>
-                            <div class="stat-label">Всего заказов</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.completed_tasks || 0}</div>
-                            <div class="stat-label">Завершено</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.active_tasks || 0}</div>
-                            <div class="stat-label">В работе</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.unread_notifications || 0}</div>
-                            <div class="stat-label">Уведомления</div>
-                        </div>
-                    `;
+                    
+                    if (user.role === 'client') {
+                        container.innerHTML = `
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.total_tasks || 0}</div>
+                                <div class="stat-label">Всего заказов</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                <div class="stat-label">В работе</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.tasks_remaining || 0}</div>
+                                <div class="stat-label">Осталось задач</div>
+                            </div>
+                        `;
+                    } else if (user.role === 'performer') {
+                        const performerStats = stats.performer_stats || {};
+                        container.innerHTML = `
+                            <div class="stat-card">
+                                <div class="stat-value">${performerStats.tasks_taken || 0}</div>
+                                <div class="stat-label">Принято задач</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                <div class="stat-label">В работе</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${performerStats.avg_rating ? performerStats.avg_rating.toFixed(1) : '0.0'}</div>
+                                <div class="stat-label">Рейтинг</div>
+                            </div>
+                        `;
+                    } else {
+                        // Для админов/менеджеров
+                        container.innerHTML = `
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.total_tasks || 0}</div>
+                                <div class="stat-label">Всего задач</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                <div class="stat-label">В работе</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.unread_notifications || 0}</div>
+                                <div class="stat-label">Уведомления</div>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки статистики:', error);
@@ -2650,12 +3269,14 @@ window.subscribeToPlan = async function(planName) {
                 container.innerHTML = `
                     <div class="card text-center p-8">
                         <i class="fas fa-shopping-bag" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 16px;"></i>
-                        <h3 class="category-title mb-4">У вас пока нет заказов</h3>
-                        <p class="category-desc mb-8">Создайте свой первый заказ через раздел услуг</p>
-                        <button class="btn btn-primary" onclick="navigate('services')">
-                            <i class="fas fa-plus"></i>
-                            Создать заказ
-                        </button>
+                        <h3 class="category-title mb-4">Заказов пока нет</h3>
+                        <p class="category-desc mb-8">${app.currentUser.role === 'client' ? 'Создайте свой первый заказ' : 'Нет задач для отображения'}</p>
+                        ${app.currentUser.role === 'client' ? `
+                            <button class="btn btn-primary" onclick="navigate('services')">
+                                <i class="fas fa-plus"></i>
+                                Создать заказ
+                            </button>
+                        ` : ''}
                     </div>
                 `;
                 return;
@@ -2680,6 +3301,10 @@ window.subscribeToPlan = async function(planName) {
                     deadlineText = `${daysDiff} дн.`;
                 }
                 
+                const priceHtml = order.price > 0 ? 
+                    `<div style="font-size: 1.1rem; font-weight: 600; color: var(--gold-metallic);">${order.price}₽</div>` :
+                    `<div style="font-size: 1.1rem; font-weight: 600; color: var(--aquamarine);"><i class="fas fa-check-circle"></i> Бесплатно</div>`;
+                
                 return `
                     <div class="order-card" onclick="viewOrderDetails(${order.id})">
                         <div class="order-header">
@@ -2690,9 +3315,7 @@ window.subscribeToPlan = async function(planName) {
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div style="font-size: 1.1rem; font-weight: 600; color: var(--gold-metallic);">
-                                    ${order.price}₽
-                                </div>
+                                ${priceHtml}
                                 <div class="order-date">
                                     ${new Date(order.created_at).toLocaleDateString('ru-RU')}
                                 </div>
@@ -2819,6 +3442,14 @@ window.subscribeToPlan = async function(planName) {
             document.getElementById('orderDetailTitle').textContent = task.title;
             document.getElementById('orderDetailNumber').textContent = `Номер: ${task.task_number || task.id}`;
             
+            // Обновляем заголовок участника
+            const participantTitle = document.getElementById('orderParticipantTitle');
+            if (app.currentUser.role === 'client' && task.performer_id) {
+                participantTitle.innerHTML = '<i class="fas fa-user-tie"></i> Помощница';
+            } else if (app.currentUser.role === 'performer') {
+                participantTitle.innerHTML = '<i class="fas fa-user"></i> Клиент';
+            }
+            
             // Основная информация
             document.getElementById('orderDetailContent').innerHTML = `
                 <div class="mb-6">
@@ -2836,8 +3467,8 @@ window.subscribeToPlan = async function(planName) {
                             </div>
                         </div>
                         <div class="text-right">
-                            <div style="font-size: 1.3rem; font-weight: 600; color: var(--gold-metallic);">
-                                ${task.price}₽
+                            <div style="font-size: 1.3rem; font-weight: 600; color: ${task.price > 0 ? 'var(--gold-metallic)' : 'var(--aquamarine)'};">
+                                ${task.price > 0 ? `${task.price}₽` : '<i class="fas fa-check-circle"></i> Бесплатно'}
                             </div>
                             <div style="color: var(--graphite-light); font-size: 0.9rem;">
                                 <i class="fas fa-tag"></i> ${task.category_name}
@@ -2908,40 +3539,61 @@ window.subscribeToPlan = async function(planName) {
             const actionsContainer = document.getElementById('orderActions');
             let actionsHtml = '<div class="flex gap-4 flex-wrap">';
             
-            if (['new', 'searching', 'assigned'].includes(task.status)) {
-                actionsHtml += `
-                    <button class="btn btn-danger" onclick="cancelOrder(${task.id}, '${task.title}')">
-                        <i class="fas fa-times"></i>
-                        Отменить заказ
-                    </button>
-                `;
-            }
-            
-            if (task.status === 'in_progress') {
-                actionsHtml += `
-                    <button class="btn btn-primary" onclick="completeOrder(${task.id}, '${task.title}')">
-                        <i class="fas fa-check"></i>
-                        Завершить заказ
-                    </button>
-                `;
-            }
-            
-            if (task.status === 'completed' && !task.review) {
-                actionsHtml += `
-                    <button class="btn btn-pink" onclick="rateOrder(${task.id}, '${task.title}')">
-                        <i class="fas fa-star"></i>
-                        Оценить
-                    </button>
-                `;
+            if (app.currentUser.role === 'client') {
+                if (['new', 'searching', 'assigned'].includes(task.status)) {
+                    actionsHtml += `
+                        <button class="btn btn-danger" onclick="cancelOrder(${task.id}, '${task.title}')">
+                            <i class="fas fa-times"></i>
+                            Отменить заказ
+                        </button>
+                    `;
+                }
+                
+                if (task.status === 'in_progress') {
+                    actionsHtml += `
+                        <button class="btn btn-primary" onclick="completeOrder(${task.id}, '${task.title}')">
+                            <i class="fas fa-check"></i>
+                            Завершить заказ
+                        </button>
+                    `;
+                }
+                
+                if (task.status === 'completed' && !task.rating) {
+                    actionsHtml += `
+                        <button class="btn btn-pink" onclick="rateOrder(${task.id}, '${task.title}')">
+                            <i class="fas fa-star"></i>
+                            Оценить
+                        </button>
+                    `;
+                }
+            } else if (app.currentUser.role === 'performer') {
+                if (task.status === 'assigned' && task.performer_id === app.currentUser.id) {
+                    actionsHtml += `
+                        <button class="btn btn-primary" onclick="updateOrderStatus(${task.id}, 'in_progress')">
+                            <i class="fas fa-play"></i>
+                            Начать выполнение
+                        </button>
+                    `;
+                }
+                
+                if (task.status === 'in_progress' && task.performer_id === app.currentUser.id) {
+                    actionsHtml += `
+                        <button class="btn btn-primary" onclick="updateOrderStatus(${task.id}, 'completed')">
+                            <i class="fas fa-check"></i>
+                            Завершить задачу
+                        </button>
+                    `;
+                }
             }
             
             actionsHtml += '</div>';
             actionsContainer.innerHTML = actionsHtml;
             
-            // Исполнитель
-            const performerContainer = document.getElementById('performerInfo');
-            if (task.performer_id) {
-                performerContainer.innerHTML = `
+            // Информация о участнике
+            const participantContainer = document.getElementById('participantInfo');
+            if (app.currentUser.role === 'client' && task.performer_id) {
+                // Показываем информацию о помощнике
+                participantContainer.innerHTML = `
                     <div class="text-center p-4">
                         <div style="width: 70px; height: 70px; background: var(--lavender-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--graphite-dark); font-size: 1.3rem; font-weight: 600;">
                             ${task.performer_first_name ? task.performer_first_name[0] : ''}${task.performer_last_name ? task.performer_last_name[0] : ''}
@@ -2961,25 +3613,85 @@ window.subscribeToPlan = async function(planName) {
                                 <i class="fas fa-phone text-gray-500 mr-2"></i> ${task.performer_phone}
                             </div>
                         ` : ''}
-                        ${task.performer_email ? `
+                    </div>
+                `;
+            } else if (app.currentUser.role === 'performer') {
+                // Показываем информацию о клиенте
+                participantContainer.innerHTML = `
+                    <div class="text-center p-4">
+                        <div style="width: 70px; height: 70px; background: var(--pastel-pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--graphite-dark); font-size: 1.3rem; font-weight: 600;">
+                            ${task.client_first_name ? task.client_first_name[0] : ''}${task.client_last_name ? task.client_last_name[0] : ''}
+                        </div>
+                        <h4 class="category-title mb-2">${task.client_first_name} ${task.client_last_name}</h4>
+                        <p class="category-desc mb-4">Клиент</p>
+                        ${task.client_phone ? `
                             <div class="mb-4">
-                                <i class="fas fa-envelope text-gray-500 mr-2"></i> ${task.performer_email}
+                                <i class="fas fa-phone text-gray-500 mr-2"></i> ${task.client_phone}
                             </div>
                         ` : ''}
                     </div>
                 `;
             } else {
-                performerContainer.innerHTML = `
+                participantContainer.innerHTML = `
                     <div class="text-center p-4">
                         <i class="fas fa-user-clock" style="font-size: 2.5rem; color: var(--graphite-light); margin-bottom: 12px;"></i>
-                        <p class="category-desc">Помощница еще не назначена</p>
-                        <p class="text-sm text-gray-500 mt-2">
-                            Как только найдётся подходящая помощница, она появится здесь
-                        </p>
+                        <p class="category-desc">Информация о участнике</p>
                     </div>
                 `;
             }
         }
+
+        // Обновление статуса задачи
+        window.updateOrderStatus = async function(orderId, status) {
+            let confirmMessage = '';
+            let notes = '';
+            
+            switch(status) {
+                case 'in_progress':
+                    confirmMessage = 'Вы подтверждаете начало выполнения задачи?';
+                    notes = 'Исполнитель начал выполнение задачи';
+                    break;
+                case 'completed':
+                    confirmMessage = 'Вы подтверждаете завершение задачи?';
+                    notes = 'Исполнитель завершил выполнение задачи';
+                    break;
+                default:
+                    confirmMessage = 'Вы уверены?';
+                    notes = 'Статус изменен';
+            }
+            
+            if (!confirm(confirmMessage)) return;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/tasks/${orderId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    },
+                    body: JSON.stringify({ 
+                        status: status,
+                        notes: notes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Статус задачи изменен', 'success');
+                    loadOrderDetailsPage();
+                } else {
+                    showNotification(data.error || 'Ошибка изменения статуса', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка изменения статуса:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
 
         // Загрузка чата заказа
         async function loadOrderChat(taskId) {
@@ -3332,6 +4044,14 @@ window.subscribeToPlan = async function(planName) {
                             <div class="text-sm text-gray-500">Telegram:</div>
                             <div class="font-medium">${user.telegram_username || 'Не указан'}</div>
                         </div>
+                        <div class="mb-4">
+                            <div class="text-sm text-gray-500">Роль:</div>
+                            <div>
+                                <span class="role-badge role-${user.role}">
+                                    ${getRoleDisplayName(user.role)}
+                                </span>
+                            </div>
+                        </div>
                         <div>
                             <div class="text-sm text-gray-500">Дата регистрации:</div>
                             <div class="font-medium">${new Date(user.created_at).toLocaleDateString('ru-RU')}</div>
@@ -3369,23 +4089,6 @@ window.subscribeToPlan = async function(planName) {
                                 </div>
                             </div>
                         `;
-                        
-                        if (subscription.current_usage) {
-                            subscriptionHtml += `
-                                <div class="mt-6 pt-6 border-t border-gray-100">
-                                    <div class="text-sm text-gray-500 mb-2">Использование в этом месяце:</div>
-                                    <div class="mt-2">
-                                        <div style="background: var(--lavender-light); height: 8px; border-radius: 4px; overflow: hidden;">
-                                            <div style="width: ${subscription.current_usage.percentage}%; background: var(--gold-metallic); height: 100%;"></div>
-                                        </div>
-                                        <div class="flex justify-between mt-2 text-xs">
-                                            <span>${subscription.current_usage.tasks_used} из ${subscription.current_usage.is_unlimited ? '∞' : subscription.current_usage.tasks_limit} задач</span>
-                                            <span>${subscription.current_usage.percentage}%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                        }
                     } else {
                         subscriptionHtml = `
                             <div class="text-center p-4">
@@ -3400,28 +4103,80 @@ window.subscribeToPlan = async function(planName) {
                     document.getElementById('subscriptionInfo').innerHTML = subscriptionHtml;
                     
                     // Статистика
-                    document.getElementById('userStats').innerHTML = `
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.total_tasks || 0}</div>
-                            <div class="stat-label">Всего заказов</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.completed_tasks || 0}</div>
-                            <div class="stat-label">Завершено</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.active_tasks || 0}</div>
-                            <div class="stat-label">В работе</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">${stats?.total_spent || 0}₽</div>
-                            <div class="stat-label">Всего потрачено</div>
-                        </div>
-                    `;
+                    let statsHtml = '';
+                    if (user.role === 'client') {
+                        statsHtml = `
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.total_tasks || 0}</div>
+                                <div class="stat-label">Всего заказов</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.tasks_remaining || 0}</div>
+                                <div class="stat-label">Осталось задач</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.total_spent || 0}₽</div>
+                                <div class="stat-label">Всего потрачено</div>
+                            </div>
+                        `;
+                    } else if (user.role === 'performer') {
+                        const performerStats = stats.performer_stats || {};
+                        statsHtml = `
+                            <div class="stat-card">
+                                <div class="stat-value">${performerStats.tasks_taken || 0}</div>
+                                <div class="stat-label">Принято задач</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${user.rating || '0.0'}</div>
+                                <div class="stat-label">Рейтинг</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${user.completed_tasks || 0}</div>
+                                <div class="stat-label">Выполнено</div>
+                            </div>
+                        `;
+                    } else {
+                        statsHtml = `
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.total_tasks || 0}</div>
+                                <div class="stat-label">Всего задач</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.completed_tasks || 0}</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${stats?.active_tasks || 0}</div>
+                                <div class="stat-label">В работе</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${user.balance || 0}₽</div>
+                                <div class="stat-label">Баланс</div>
+                            </div>
+                        `;
+                    }
+                    
+                    document.getElementById('userStats').innerHTML = statsHtml;
                     
                     // Обновляем баланс
                     if (user.balance !== undefined) {
                         document.getElementById('currentBalance').textContent = `${user.balance}₽`;
+                    }
+                    
+                    // Для помощников загружаем специализации
+                    if (user.role === 'performer') {
+                        document.getElementById('performerSpecializations').classList.remove('hidden');
+                        await loadPerformerSpecializations();
+                    } else {
+                        document.getElementById('performerSpecializations').classList.add('hidden');
                     }
                     
                     // Загружаем историю платежей
@@ -3434,6 +4189,116 @@ window.subscribeToPlan = async function(planName) {
                 hideLoading();
             }
         }
+
+        // Загрузка специализаций помощника
+        async function loadPerformerSpecializations() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/performer/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const specializations = data.data.specializations;
+                    
+                    const container = document.getElementById('specializationsList');
+                    if (specializations.length === 0) {
+                        container.innerHTML = '<p class="text-gray-500">У вас нет специализаций. Выберите категории, в которых вы специализируетесь.</p>';
+                    } else {
+                        container.innerHTML = specializations.map(spec => `
+                            <div class="specialization-badge">
+                                ${spec.icon} ${spec.display_name}
+                                ${spec.is_active ? '<i class="fas fa-check text-green-500"></i>' : '<i class="fas fa-times text-red-500"></i>'}
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки специализаций:', error);
+            }
+        }
+
+        // Редактирование специализаций
+        document.getElementById('btnEditSpecializations').addEventListener('click', async () => {
+            showLoading();
+            
+            try {
+                // Загружаем все категории
+                if (app.categories.length === 0) {
+                    await loadCategories();
+                }
+                
+                // Загружаем текущие специализации
+                const response = await fetch(`${app.API_URL}/api/performer/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const currentSpecializations = data.data.specializations;
+                    const currentIds = currentSpecializations.map(s => s.id);
+                    
+                    // Рендерим выбор специализаций
+                    const container = document.getElementById('specializationsGrid');
+                    container.innerHTML = app.categories.map(category => `
+                        <div class="form-group">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" 
+                                       class="w-5 h-5" 
+                                       value="${category.id}"
+                                       ${currentIds.includes(category.id) ? 'checked' : ''}>
+                                <span>${category.icon} ${category.display_name}</span>
+                            </label>
+                        </div>
+                    `).join('');
+                    
+                    openModal('specializationsModal');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки специализаций:', error);
+                showNotification('Ошибка загрузки специализаций', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Сохранение специализаций
+        document.getElementById('btnSaveSpecializations').addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('#specializationsGrid input[type="checkbox"]:checked');
+            const categoryIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/performer/specializations`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    },
+                    body: JSON.stringify({ category_ids: categoryIds })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(data.message || 'Специализации успешно обновлены', 'success');
+                    closeModal('specializationsModal');
+                    loadProfilePage();
+                } else {
+                    showNotification(data.error || 'Ошибка обновления специализаций', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка обновления специализаций:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
+            }
+        });
 
         // Загрузка истории платежей
         async function loadPaymentsHistory() {
@@ -3451,33 +4316,286 @@ window.subscribeToPlan = async function(planName) {
             }
         }
 
-        // index.html - обновить функцию checkNotifications (примерно строка 2145)
-async function checkNotifications() {
-    try {
-        const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
-            headers: {
-                'Authorization': `Bearer ${app.token}`,
-                'Content-Type': 'application/json'
+        // Загрузка админ панели
+        async function loadAdminPage() {
+            if (!app.currentUser || !['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+                navigate('home');
+                return;
             }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const unreadCount = data.data.unread_count || 0;
             
-            // Обновляем счетчик в статистике
-            if (app.currentPage === 'tasks') {
-                await loadOrderStats();
+            showLoading();
+            
+            try {
+                const response = await fetch(`${app.API_URL}/api/admin/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    renderAdminDashboard(data.data);
+                } else {
+                    showNotification('Не удалось загрузить админ панель', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки админ панели:', error);
+                showNotification('Ошибка сети', 'error');
+            } finally {
+                hideLoading();
             }
-        } else if (response.status === 401) {
-            // Токен невалиден, выходим
-            logout();
         }
-    } catch (error) {
-        console.error('Ошибка проверки уведомлений:', error);
-        // Не показываем ошибку пользователю для этого фонового запроса
-    }
-}
+
+        // Рендер админ дашборда
+        function renderAdminDashboard(data) {
+            const container = document.getElementById('adminStats');
+            
+            container.innerHTML = `
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${data.summary.total_users}</div>
+                    <div class="admin-stat-label">Пользователей</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${data.summary.total_tasks}</div>
+                    <div class="admin-stat-label">Задач</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${data.summary.total_revenue}₽</div>
+                    <div class="admin-stat-label">Доход</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-value">${data.summary.completed_tasks}</div>
+                    <div class="admin-stat-label">Завершено</div>
+                </div>
+            `;
+            
+            // Основной контент
+            const adminContent = document.getElementById('adminContent');
+            adminContent.innerHTML = `
+                <div class="grid grid-1 md:grid-2 gap-6 mb-8">
+                    <div class="card">
+                        <h3 class="category-title mb-4">Последние задачи</h3>
+                        <div class="space-y-3">
+                            ${data.recent_tasks.slice(0, 5).map(task => `
+                                <div class="flex items-center justify-between p-3 border rounded-lg border-gray-100">
+                                    <div>
+                                        <div class="font-medium">${task.title}</div>
+                                        <div class="text-xs text-gray-500">${task.category_name}</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-medium">${getStatusText(task.status)}</div>
+                                        <div class="text-xs text-gray-500">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="category-title mb-4">Лучшие исполнители</h3>
+                        <div class="space-y-3">
+                            ${data.top_performers.slice(0, 5).map(performer => `
+                                <div class="flex items-center justify-between p-3 border rounded-lg border-gray-100">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                            ${performer.first_name ? performer.first_name[0] : ''}${performer.last_name ? performer.last_name[0] : ''}
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">${performer.first_name} ${performer.last_name}</div>
+                                            <div class="text-xs text-gray-500">${performer.tasks_completed || 0} задач</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-medium text-gold">${performer.avg_rating ? performer.avg_rating.toFixed(1) : '0.0'}</div>
+                                        <div class="text-xs text-gray-500">Рейтинг</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="category-title mb-4">Статистика по категориям</h3>
+                    <div class="grid grid-2 md:grid-3 gap-4">
+                        ${data.categories.map(cat => `
+                            <div class="text-center p-4 border rounded-lg border-gray-100">
+                                <div class="text-2xl font-bold mb-2">${cat.icon}</div>
+                                <div class="font-medium">${cat.display_name}</div>
+                                <div class="text-sm text-gray-500">${cat.task_count} задач</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Загрузка раздела админ панели
+        window.loadAdminSection = async function(section) {
+            showLoading();
+            
+            try {
+                let url = '';
+                let title = '';
+                
+                switch(section) {
+                    case 'users':
+                        url = `${app.API_URL}/api/admin/users`;
+                        title = 'Управление пользователями';
+                        break;
+                    case 'tasks':
+                        url = `${app.API_URL}/api/admin/tasks`;
+                        title = 'Управление задачами';
+                        break;
+                    case 'analytics':
+                        // Здесь будет загрузка аналитики
+                        break;
+                }
+                
+                if (url) {
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `Bearer ${app.token}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        renderAdminSection(section, title, data.data);
+                    }
+                }
+            } catch (error) {
+                console.error(`Ошибка загрузки раздела ${section}:`, error);
+                showNotification('Ошибка загрузки данных', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
+
+        // Рендер раздела админ панели
+        function renderAdminSection(section, title, data) {
+            const container = document.getElementById('adminContent');
+            
+            if (section === 'users') {
+                container.innerHTML = `
+                    <div class="mb-6">
+                        <h2 class="section-title">${title}</h2>
+                        <p class="section-subtitle">Всего пользователей: ${data.total}</p>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Имя</th>
+                                    <th>Email</th>
+                                    <th>Роль</th>
+                                    <th>Подписка</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.users.map(user => `
+                                    <tr>
+                                        <td>${user.id}</td>
+                                        <td>${user.first_name} ${user.last_name}</td>
+                                        <td>${user.email}</td>
+                                        <td><span class="role-badge role-${user.role}">${getRoleDisplayName(user.role)}</span></td>
+                                        <td>${user.subscription_plan}</td>
+                                        <td>
+                                            <span class="status-badge ${user.subscription_status === 'active' ? 'status-completed' : 'status-cancelled'}">
+                                                ${user.subscription_status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-secondary btn-sm" onclick="editUser(${user.id})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } else if (section === 'tasks') {
+                container.innerHTML = `
+                    <div class="mb-6">
+                        <h2 class="section-title">${title}</h2>
+                        <p class="section-subtitle">Всего задач: ${data.total}</p>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Задача</th>
+                                    <th>Категория</th>
+                                    <th>Клиент</th>
+                                    <th>Исполнитель</th>
+                                    <th>Статус</th>
+                                    <th>Создана</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.tasks.map(task => `
+                                    <tr>
+                                        <td>${task.id}</td>
+                                        <td>${task.title}</td>
+                                        <td>${task.category_name}</td>
+                                        <td>${task.client_first_name} ${task.client_last_name}</td>
+                                        <td>${task.performer_first_name ? task.performer_first_name + ' ' + task.performer_last_name : '-'}</td>
+                                        <td><span class="status-badge status-${task.status}">${getStatusText(task.status)}</span></td>
+                                        <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        }
+
+        // Редактирование пользователя (админ)
+        window.editUser = function(userId) {
+            // Реализация редактирования пользователя
+            showNotification('Функция редактирования пользователя в разработке', 'info');
+        };
+
+        // Проверка уведомлений
+        async function checkNotifications() {
+            try {
+                const response = await fetch(`${app.API_URL}/api/notifications?unread_only=true&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${app.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const unreadCount = data.data.unread_count || 0;
+                    
+                    // Обновляем счетчик в статистике
+                    if (app.currentPage === 'tasks' || app.currentPage === 'home') {
+                        await loadOrderStats();
+                    }
+                    
+                    // Показываем уведомление о новых сообщениях
+                    if (unreadCount > 0 && document.hidden) {
+                        showNotification(`У вас ${unreadCount} непрочитанных уведомлений`, 'info');
+                    }
+                } else if (response.status === 401) {
+                    // Токен невалиден, выходим
+                    logout();
+                }
+            } catch (error) {
+                console.error('Ошибка проверки уведомлений:', error);
+            }
+        }
 
         // Авторизация
         document.getElementById('btnLogin').addEventListener('click', async () => {
@@ -3513,6 +4631,7 @@ async function checkNotifications() {
                     showNotification(data.message || 'Вход выполнен успешно!', 'success');
                     closeModal('authModal');
                     updateUserMenu();
+                    updateRoleSpecificLinks();
                     
                     // Перезагружаем текущую страницу
                     loadCurrentPage();
@@ -3575,6 +4694,7 @@ async function checkNotifications() {
                         localStorage.setItem('token', app.token);
                         app.currentUser = data.data.user;
                         updateUserMenu();
+                        updateRoleSpecificLinks();
                     }
                     
                     // Если требуется вступительный взнос
@@ -3587,6 +4707,7 @@ async function checkNotifications() {
                     } else {
                         closeModal('authModal');
                         updateUserMenu();
+                        updateRoleSpecificLinks();
                         navigate('home');
                     }
                 } else {
@@ -3670,6 +4791,7 @@ async function checkNotifications() {
             app.currentUser = null;
             localStorage.removeItem('token');
             updateUserMenu();
+            updateRoleSpecificLinks();
             navigate('home');
             showNotification('Вы вышли из системы', 'info');
         };
@@ -3826,6 +4948,10 @@ async function checkNotifications() {
                 closeModal('editProfileModal');
             });
             
+            document.getElementById('btnCloseSpecializations').addEventListener('click', () => {
+                closeModal('specializationsModal');
+            });
+            
             document.getElementById('btnCloseAddBalance').addEventListener('click', () => {
                 closeModal('addBalanceModal');
             });
@@ -3961,9 +5087,10 @@ async function checkNotifications() {
             }
         };
 
-        console.log('🌸 Женский Консьерж v5.2.0 успешно загружен!');
+        console.log('🌸 Женский Консьерж v5.4.0 успешно загружен!');
         console.log('🔧 API URL:', app.API_URL);
         console.log('🔧 Демо аккаунты: demoLogin("client"), demoLogin("performer"), demoLogin("admin")');
+        console.log('⚡ Все услуги бесплатны для клиентов с активной подпиской!');
     </script>
 </body>
 </html>
