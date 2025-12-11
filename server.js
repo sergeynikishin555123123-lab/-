@@ -117,40 +117,24 @@ const initDatabase = async () => {
 
         // Подписки
         await db.exec(`
-    CREATE TABLE IF NOT EXISTS subscriptions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL,
-        display_name TEXT NOT NULL,
-        description TEXT NOT NULL,
-        price_monthly REAL NOT NULL,
-        price_yearly REAL NOT NULL,
-        initial_fee REAL NOT NULL DEFAULT 0,
-        tasks_per_month INTEGER NOT NULL,  -- Изменено: количество включенных задач в месяц
-        features TEXT NOT NULL,
-        color_theme TEXT DEFAULT '#FF6B8B',
-        sort_order INTEGER DEFAULT 0,
-        is_active INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                price_monthly REAL NOT NULL,
+                price_yearly REAL NOT NULL,
+                initial_fee REAL NOT NULL DEFAULT 0,
+                tasks_limit INTEGER NOT NULL,
+                features TEXT NOT NULL,
+                color_theme TEXT DEFAULT '#FF6B8B',
+                sort_order INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS subscription_usage (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        subscription_id INTEGER NOT NULL,
-        month_year TEXT NOT NULL,  -- Формат: YYYY-MM
-        tasks_used INTEGER DEFAULT 0,
-        tasks_limit INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE,
-        UNIQUE(user_id, month_year)
-    )
-`);
-        
         // Категории
         await db.exec(`
             CREATE TABLE IF NOT EXISTS categories (
@@ -349,19 +333,19 @@ const createInitialData = async () => {
         const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions WHERE name = 'essential'");
         if (!subscriptionsExist) {
             const subscriptions = [
-    [
-        'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
-        0, 0, 500, 5,  // 5 задач в месяц
-        '["5 задач в месяц", "Базовые услуги", "Поддержка по email", "Стандартное время ответа"]',
-        '#FF6B8B', 1, 1
-    ],
-    [
-        'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
-        1990, 19900, 1000, 999,  // Практически неограниченно
-        '["Неограниченные задачи", "Все услуги премиум-класса", "Приоритетная поддержка 24/7", "Личный помощник"]',
-        '#9B59B6', 2, 1
-    ]
-];
+                [
+                    'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
+                    0, 0, 500, 5,
+                    '["До 5 задач в месяц", "Базовые услуги", "Поддержка по email", "Стандартное время ответа"]',
+                    '#FF6B8B', 1, 1
+                ],
+                [
+                    'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
+                    1990, 19900, 1000, 999,
+                    '["Неограниченные задачи", "Все услуги премиум-класса", "Приоритетная поддержка 24/7", "Личный помощник"]',
+                    '#9B59B6', 2, 1
+                ]
+            ];
 
             for (const sub of subscriptions) {
                 await db.run(
@@ -678,50 +662,6 @@ const authMiddleware = (roles = []) => {
             });
         }
     };
-};
-
-// ==================== НОВЫЙ МИДЛВАР ДЛЯ ПРОВЕРКИ ЛИМИТА ====================
-const checkSubscriptionLimit = async (req, res, next) => {
-    try {
-        if (req.user.role === 'client') {
-            const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-            
-            // Получаем лимит из подписки пользователя
-            const subscription = await db.get(
-                'SELECT tasks_per_month FROM subscriptions WHERE name = ?',
-                [req.user.subscription_plan]
-            );
-            
-            if (subscription) {
-                // Получаем текущее использование
-                const usage = await db.get(
-                    `SELECT tasks_used, tasks_limit 
-                     FROM subscription_usage 
-                     WHERE user_id = ? AND month_year = ?`,
-                    [req.user.id, currentMonth]
-                );
-                
-                const tasksUsed = usage?.tasks_used || 0;
-                const tasksLimit = subscription.tasks_per_month;
-                
-                // Если лимит исчерпан
-                if (tasksUsed >= tasksLimit && tasksLimit < 999) {
-                    return res.status(403).json({
-                        success: false,
-                        error: `Лимит задач исчерпан. Доступно ${tasksLimit} задач в месяц.`,
-                        limit_reached: true,
-                        tasks_used: tasksUsed,
-                        tasks_limit: tasksLimit
-                    });
-                }
-            }
-        }
-        
-        next();
-    } catch (error) {
-        console.error('Ошибка проверки лимита подписки:', error);
-        next();
-    }
 };
 
 // ==================== API МАРШРУТЫ ====================
@@ -1552,9 +1492,8 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 
 // ==================== ЗАДАЧИ ====================
 
-// ЗАМЕНИТЬ ВСЮ ФУНКЦИЮ создания задачи:
-
-app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkSubscriptionLimit, async (req, res) => {
+// Создание задачи
+app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
         const { 
             title, 
@@ -1565,10 +1504,11 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
             deadline, 
             address, 
             contact_info,
-            additional_requirements
+            additional_requirements,
+            price
         } = req.body;
         
-        // УБРАТЬ price из валидации
+        // Валидация
         if (!title || !description || !category_id || !deadline || !address || !contact_info) {
             return res.status(400).json({
                 success: false,
@@ -1591,7 +1531,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
         
         // Проверяем подписку пользователя
         const user = await db.get(
-            'SELECT subscription_status, initial_fee_paid FROM users WHERE id = ?',
+            'SELECT subscription_status, initial_fee_paid, balance FROM users WHERE id = ?',
             [req.user.id]
         );
         
@@ -1618,25 +1558,29 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
             });
         }
         
-        // УБРАТЬ проверку цены и баланса
-        // Услуги теперь бесплатные в рамках подписки
+        // Рассчитываем цену
+        let finalPrice = price;
+        if (!finalPrice || finalPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите корректную цену задачи'
+            });
+        }
         
-        // Получаем услугу для расчета примерной цены (только для информации)
-        let estimatedPrice = 0;
-        if (service_id) {
-            const service = await db.get(
-                'SELECT base_price FROM services WHERE id = ?',
-                [service_id]
-            );
-            if (service) {
-                estimatedPrice = service.base_price;
-            }
+        // Проверяем баланс пользователя
+        if (finalPrice > user.balance) {
+            return res.status(400).json({
+                success: false,
+                error: 'Недостаточно средств на балансе',
+                balance: user.balance,
+                required: finalPrice
+            });
         }
         
         // Генерируем номер задачи
         const taskNumber = generateTaskNumber();
         
-        // Создаем задачу (price теперь 0 или информационный)
+        // Создаем задачу
         const result = await db.run(
             `INSERT INTO tasks 
             (task_number, title, description, client_id, category_id, service_id, 
@@ -1651,7 +1595,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
                 category_id,
                 service_id || null,
                 priority,
-                estimatedPrice, // Сохраняем как информационное поле
+                finalPrice,
                 address,
                 deadline,
                 contact_info,
@@ -1661,35 +1605,26 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
         
         const taskId = result.lastID;
         
-        // УБРАТЬ списание с баланса и запись о платеже
-        
-        // Обновляем счетчик использованных задач
-        const currentMonth = new Date().toISOString().slice(0, 7);
-        
-        const existingUsage = await db.get(
-            'SELECT id FROM subscription_usage WHERE user_id = ? AND month_year = ?',
-            [req.user.id, currentMonth]
+        // Списываем средства с баланса пользователя
+        await db.run(
+            'UPDATE users SET balance = balance - ? WHERE id = ?',
+            [finalPrice, req.user.id]
         );
         
-        if (existingUsage) {
-            await db.run(
-                'UPDATE subscription_usage SET tasks_used = tasks_used + 1 WHERE id = ?',
-                [existingUsage.id]
-            );
-        } else {
-            // Получаем лимит из подписки
-            const subscription = await db.get(
-                'SELECT tasks_per_month FROM subscriptions WHERE name = ?',
-                [req.user.subscription_plan]
-            );
-            
-            await db.run(
-                `INSERT INTO subscription_usage 
-                (user_id, subscription_id, month_year, tasks_used, tasks_limit) 
-                VALUES (?, (SELECT id FROM subscriptions WHERE name = ?), ?, 1, ?)`,
-                [req.user.id, req.user.subscription_plan, currentMonth, subscription?.tasks_per_month || 5]
-            );
-        }
+        // Создаем запись о платеже
+        const transactionId = `TASK-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        await db.run(
+            `INSERT INTO payments 
+            (user_id, task_id, amount, description, status, payment_method, transaction_id) 
+            VALUES (?, ?, ?, ?, 'completed', 'task_payment', ?)`,
+            [
+                req.user.id,
+                taskId,
+                finalPrice,
+                `Оплата задачи: ${title}`,
+                transactionId
+            ]
+        );
         
         // Добавляем запись в историю статусов
         await db.run(
@@ -1724,18 +1659,15 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), checkS
         await logAudit(req.user.id, 'create_task', 'task', taskId, {
             task_number: taskNumber,
             title: title,
-            subscription_used: true
+            price: finalPrice
         });
         
         res.status(201).json({
             success: true,
-            message: 'Задача успешно создана! (услуга включена в подписку)',
+            message: 'Задача успешно создана!',
             data: { 
                 task,
-                subscription_info: {
-                    model: 'all_inclusive',
-                    message: 'Услуги включены в подписку'
-                }
+                balance_after: user.balance - finalPrice
             }
         });
         
