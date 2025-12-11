@@ -3975,33 +3975,44 @@
         };
 
         // Загрузка страницы задач
-        async function loadTasksPage() {
-            if (!app.currentUser) {
-                navigate('home');
-                openAuthModal();
-                return;
-            }
-            
-            // Обновляем заголовок страницы в зависимости от роли
-            const title = document.getElementById('tasksPageTitle');
-            const subtitle = document.getElementById('tasksPageSubtitle');
-            
-            if (app.currentUser.role === 'performer') {
-                title.textContent = 'Мои задачи';
-                subtitle.textContent = 'Задачи, которые вы выполняете или можете принять';
-                
-                // Показываем доступные задачи
-                document.getElementById('availableTasksSection').classList.remove('hidden');
-                await loadAvailableTasks();
-            } else if (app.currentUser.role === 'client') {
-                title.textContent = 'Мои заказы';
-                subtitle.textContent = 'Все ваши заказы в одном месте';
-                document.getElementById('availableTasksSection').classList.add('hidden');
-            }
-            
-            await loadOrderStats();
-            await loadTasks();
-        }
+async function loadTasksPage() {
+    if (!app.currentUser) {
+        navigate('home');
+        openAuthModal();
+        return;
+    }
+    
+    // Обновляем заголовок страницы в зависимости от роли
+    const title = document.getElementById('tasksPageTitle');
+    const subtitle = document.getElementById('tasksPageSubtitle');
+    
+    if (app.currentUser.role === 'performer') {
+        title.textContent = 'Мои задачи';
+        subtitle.textContent = 'Задачи, которые вы выполняете или можете принять';
+        
+        // Показываем доступные задачи
+        document.getElementById('availableTasksSection').classList.remove('hidden');
+        await loadAvailableTasks();
+        
+        // Скрываем кнопку "Новая задача" для исполнителей
+        document.getElementById('btnNewTask').style.display = 'none';
+    } else if (app.currentUser.role === 'client') {
+        title.textContent = 'Мои заказы';
+        subtitle.textContent = 'Все ваши заказы в одном месте';
+        document.getElementById('availableTasksSection').classList.add('hidden');
+        
+        // Показываем кнопку "Новая задача" для клиентов
+        document.getElementById('btnNewTask').style.display = 'flex';
+    } else if (['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
+        title.textContent = 'Все задачи';
+        subtitle.textContent = 'Управление задачами системы';
+        document.getElementById('availableTasksSection').classList.add('hidden');
+        document.getElementById('btnNewTask').style.display = 'none';
+    }
+    
+    await loadOrderStats();
+    await loadTasks();
+}
 
         // Загрузка доступных задач для помощников
         async function loadAvailableTasks() {
@@ -5039,6 +5050,14 @@
                     }
                     
                     document.getElementById('userStats').innerHTML = statsHtml;
+
+// Скрываем кнопку создания задачи для исполнителей
+if (app.currentUser && app.currentUser.role === 'performer') {
+    const newTaskBtn = document.getElementById('btnNewTask');
+    if (newTaskBtn) {
+        newTaskBtn.style.display = 'none';
+    }
+}
                     
                     // Для помощников загружаем специализации
                     if (user.role === 'performer') {
@@ -5546,6 +5565,16 @@
             document.getElementById('btnCloseSpecializations').addEventListener('click', () => {
                 closeModal('specializationsModal');
             });
+
+// Для исполнителей - редирект при клике на "Новая задача"
+document.getElementById('btnNewTask').addEventListener('click', function(e) {
+    if (app.currentUser && app.currentUser.role === 'performer') {
+        e.preventDefault();
+        showNotification('Исполнители не могут создавать задачи', 'error');
+        return false;
+    }
+    navigate('services');
+});
             
             // Переключение форм авторизации
             document.getElementById('btnShowRegister').addEventListener('click', showRegisterForm);
