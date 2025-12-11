@@ -1652,41 +1652,51 @@
                     </div>
                 </div>
                 
-                <div id="registerForm" class="hidden">
-                    <div class="grid grid-1 md:grid-2 gap-4 mb-4">
-                        <div class="form-group">
-                            <label class="form-label">Имя *</label>
-                            <input type="text" class="form-input" id="registerFirstName" required placeholder="Иван">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Фамилия *</label>
-                            <input type="text" class="form-input" id="registerLastName" required placeholder="Иванов">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email *</label>
-                        <input type="email" class="form-input" id="registerEmail" required placeholder="email@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Пароль *</label>
-                        <input type="password" class="form-input" id="registerPassword" required minlength="6" placeholder="Минимум 6 символов">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Телефон *</label>
-                        <input type="tel" class="form-input" id="registerPhone" required placeholder="+79991234567">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Тариф</label>
-                        <select class="form-input" id="registerSubscription">
-                            <option value="essential">Эссеншл (500₽ вступительный взнос)</option>
-                            <option value="premium">Премиум (1000₽ вступительный взнос)</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary w-100 mb-4" id="btnRegister">Зарегистрироваться</button>
-                    <div class="text-center">
-                        <button class="btn btn-secondary w-100" id="btnShowLogin">Вернуться к входу</button>
-                    </div>
-                </div>
+<!-- index.html - обновить registerForm -->
+<div id="registerForm" class="hidden">
+    <div class="grid grid-1 md:grid-2 gap-4 mb-4">
+        <div class="form-group">
+            <label class="form-label">Имя *</label>
+            <input type="text" class="form-input" id="registerFirstName" required placeholder="Иван">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Фамилия *</label>
+            <input type="text" class="form-input" id="registerLastName" required placeholder="Иванов">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" id="registerEmail" required placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+        <label class="form-label">Пароль *</label>
+        <input type="password" class="form-input" id="registerPassword" required minlength="6" placeholder="Минимум 6 символов">
+    </div>
+    <div class="form-group">
+        <label class="form-label">Телефон *</label>
+        <input type="tel" class="form-input" id="registerPhone" required placeholder="+79991234567">
+    </div>
+    <div class="form-group">
+        <label class="form-label">Тариф</label>
+        <select class="form-input" id="registerSubscription" onchange="updateRegistrationPrice()">
+            <option value="essential">Эссеншл (вступительный 500₽ + 500₽/мес)</option>
+            <option value="premium">Премиум (вступительный 1000₽ + 1990₽/мес)</option>
+        </select>
+        <div id="registrationPriceInfo" class="text-sm text-gray-500 mt-1">
+            Общая сумма для активации: 1000₽
+        </div>
+    </div>
+    <div class="mb-4 p-3 bg-blue-50 rounded">
+        <p class="text-sm text-blue-700">
+            💡 <strong>Все услуги включены в подписку!</strong><br>
+            После оплаты вы сможете создавать задачи без дополнительной платы.
+        </p>
+    </div>
+    <button class="btn btn-primary w-100 mb-4" id="btnRegister">Зарегистрироваться</button>
+    <div class="text-center">
+        <button class="btn btn-secondary w-100" id="btnShowLogin">Вернуться к входу</button>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -2291,74 +2301,92 @@ async function verifyToken() {
             showWizardStep(3);
         });
 
-        // Показать подтверждение заказа
-        function showOrderReview() {
-            const container = document.getElementById('orderReview');
-            const category = app.categories.find(c => c.id == app.currentCategoryId);
-            
-            container.innerHTML = `
-                <div class="card mb-6">
-                    <h3 class="category-title mb-4">Информация о заказе</h3>
-                    <div class="grid grid-1 md:grid-2 gap-4">
-                        <div>
-                            <div class="text-sm text-gray-500">Категория:</div>
-                            <div class="font-medium">${category?.display_name || ''}</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Услуга:</div>
-                            <div class="font-medium">${app.wizardData.serviceName}</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Приоритет:</div>
-                            <div class="font-medium">${getPriorityText(app.wizardData.priority)}</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Срок:</div>
-                            <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Цена:</div>
-                            <div class="text-xl font-bold text-gold">${app.wizardData.price}₽</div>
-                        </div>
-                        <div>
-                            <div class="text-sm text-gray-500">Баланс после оплаты:</div>
-                            <div class="text-xl font-bold ${(app.currentUser.balance - app.wizardData.price) < 0 ? 'text-red-500' : 'text-gray-800'}">
-                                ${(app.currentUser.balance - app.wizardData.price)}₽
-                            </div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <div class="text-sm text-gray-500">Название:</div>
-                            <div class="font-medium">${app.wizardData.title}</div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <div class="text-sm text-gray-500">Описание:</div>
-                            <div class="font-medium">${app.wizardData.description}</div>
-                        </div>
-                        <div class="md:col-span-2">
-                            <div class="text-sm text-gray-500">Адрес:</div>
-                            <div class="font-medium">${app.wizardData.address}</div>
-                        </div>
-                        ${app.wizardData.additional ? `
-                            <div class="md:col-span-2">
-                                <div class="text-sm text-gray-500">Дополнительно:</div>
-                                <div class="font-medium">${app.wizardData.additional}</div>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h4 class="font-bold mb-3">Что будет дальше?</h4>
-                    <ol class="space-y-2 pl-5 list-decimal">
-                        <li>Заказ появится в разделе "Мои заказы"</li>
-                        <li>Помощница свяжется с вами для уточнения деталей</li>
-                        <li>Обсудит сроки и особенности выполнения</li>
-                        <li>Вы сможете общаться в чате заказа</li>
-                        <li>После выполнения оцените качество работы</li>
-                    </ol>
-                </div>
-            `;
+// index.html - обновить шаг 3 визарда
+function showOrderReview() {
+    const container = document.getElementById('orderReview');
+    const category = app.categories.find(c => c.id == app.currentCategoryId);
+    
+    // Проверяем лимит подписки
+    const subscription = app.subscriptions.find(s => s.name === app.currentUser.subscription_plan);
+    const tasksLimit = subscription?.tasks_limit || 5;
+    const isUnlimited = tasksLimit === 999;
+    
+    // Получаем статистику использования
+    fetch(`${app.API_URL}/api/tasks/usage`, {
+        headers: {
+            'Authorization': `Bearer ${app.token}`
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tasksUsed = data.data?.tasks_used || 0;
+        const remainingTasks = isUnlimited ? '∞' : tasksLimit - tasksUsed;
+        
+        container.innerHTML = `
+            <div class="card mb-6">
+                <h3 class="category-title mb-4">Информация о заказе</h3>
+                <div class="mb-4 p-3 bg-green-50 rounded">
+                    <p class="text-sm text-green-700">
+                        ✅ <strong>Эта задача включена в вашу подписку "${subscription?.display_name || ''}"!</strong><br>
+                        Использовано задач: ${tasksUsed} из ${isUnlimited ? '∞' : tasksLimit}. 
+                        Осталось: ${remainingTasks}.
+                    </p>
+                </div>
+                <div class="grid grid-1 md:grid-2 gap-4">
+                    <div>
+                        <div class="text-sm text-gray-500">Категория:</div>
+                        <div class="font-medium">${category?.display_name || ''}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Услуга:</div>
+                        <div class="font-medium">${app.wizardData.serviceName}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Приоритет:</div>
+                        <div class="font-medium">${getPriorityText(app.wizardData.priority)}</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-500">Срок:</div>
+                        <div class="font-medium">${new Date(app.wizardData.deadline).toLocaleString('ru-RU')}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="text-sm text-gray-500">Название:</div>
+                        <div class="font-medium">${app.wizardData.title}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="text-sm text-gray-500">Описание:</div>
+                        <div class="font-medium">${app.wizardData.description}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="text-sm text-gray-500">Адрес:</div>
+                        <div class="font-medium">${app.wizardData.address}</div>
+                    </div>
+                    ${app.wizardData.additional ? `
+                        <div class="md:col-span-2">
+                            <div class="text-sm text-gray-500">Дополнительно:</div>
+                            <div class="font-medium">${app.wizardData.additional}</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <div class="card">
+                <h4 class="font-bold mb-3">Что будет дальше?</h4>
+                <ol class="space-y-2 pl-5 list-decimal">
+                    <li>Заказ появится в разделе "Мои заказы"</li>
+                    <li>Помощница свяжется с вами для уточнения деталей</li>
+                    <li>Обсудит сроки и особенности выполнения</li>
+                    <li>Вы сможете общаться в чате заказа</li>
+                    <li>После выполнения оцените качество работы</li>
+                    <li><strong>Важно:</strong> Все услуги включены в вашу подписку!</li>
+                </ol>
+            </div>
+        `;
+    })
+    .catch(error => {
+        console.error('Ошибка получения статистики:', error);
+    });
+}
 
         // Получить текст приоритета
         function getPriorityText(priority) {
@@ -2483,8 +2511,8 @@ async function verifyToken() {
             }).join('');
         }
 
-       // index.html - обновить функцию subscribeToPlan (примерно строка 2548)
-window.subscribeToPlan = async function(planName) {
+      // index.html - обновить функцию subscribeToPlan
+window.subscribeToPlan = async function(planName, period = 'monthly') {
     if (!app.currentUser) {
         openAuthModal();
         return;
@@ -2496,13 +2524,30 @@ window.subscribeToPlan = async function(planName) {
         return;
     }
     
-    // Проверяем, не нужно ли оплатить вступительный взнос
-    const requiresInitialFee = app.currentUser.initial_fee_paid === 0 && subscription.initial_fee > 0;
+    const price = period === 'yearly' ? subscription.price_yearly : subscription.price_monthly;
+    const requiresInitialFee = subscription.initial_fee > 0 && app.currentUser.initial_fee_paid === 0;
+    const totalAmount = price + (requiresInitialFee ? subscription.initial_fee : 0);
     
-    if (requiresInitialFee) {
-        const confirmPayment = confirm(`Для активации подписки необходимо оплатить вступительный взнос ${subscription.initial_fee}₽. У вас на балансе: ${app.currentUser.balance}₽. Продолжить?`);
-        if (!confirmPayment) return;
-    }
+    const confirmMessage = requiresInitialFee ? 
+        `Для активации подписки "${subscription.display_name}" необходимо оплатить:
+        • Вступительный взнос: ${subscription.initial_fee}₽
+        • Абонентская плата: ${price}₽/${period === 'yearly' ? 'год' : 'месяц'}
+        Итого: ${totalAmount}₽
+        
+        У вас на балансе: ${app.currentUser.balance}₽
+        
+        После оплаты все услуги будут включены в подписку!
+        Продолжить?` :
+        `Активировать подписку "${subscription.display_name}"?
+        • Абонентская плата: ${price}₽/${period === 'yearly' ? 'год' : 'месяц'}
+        
+        У вас на балансе: ${app.currentUser.balance}₽
+        
+        После оплаты все услуги будут включены в подписку!
+        Продолжить?`;
+    
+    const confirmPayment = confirm(confirmMessage);
+    if (!confirmPayment) return;
     
     showLoading();
     
@@ -2515,7 +2560,7 @@ window.subscribeToPlan = async function(planName) {
             },
             body: JSON.stringify({
                 plan: planName,
-                initial_fee_paid: !requiresInitialFee // true если уже оплачен
+                period: period
             })
         });
         
@@ -2538,8 +2583,8 @@ window.subscribeToPlan = async function(planName) {
                 loadProfilePage();
             }
         } else {
-            if (data.requires_initial_fee) {
-                showNotification(`Недостаточно средств для оплаты вступительного взноса. Требуется: ${data.initial_fee_amount}₽, доступно: ${data.current_balance}₽`, 'error');
+            if (data.total_amount) {
+                showNotification(`Недостаточно средств на балансе. Требуется: ${data.total_amount}₽, доступно: ${data.current_balance}₽`, 'error');
                 navigate('profile');
             } else {
                 showNotification(data.error || 'Ошибка оформления подписки', 'error');
@@ -2552,7 +2597,6 @@ window.subscribeToPlan = async function(planName) {
         hideLoading();
     }
 };
-
         // Загрузка страницы заказов
         async function loadTasksPage() {
             if (!app.currentUser) {
