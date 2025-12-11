@@ -3748,24 +3748,24 @@ async function checkNotifications() {
     showNotification('Вы вышли из системы', 'info');
 };
 
-// Обновление цены при выборе тарифа в регистрации
-window.updateRegistrationPrice = function() {
-    const plan = document.getElementById('registerSubscription').value;
-    const priceInfo = document.getElementById('registrationPriceInfo');
-    
-    if (plan === 'essential') {
-        priceInfo.innerHTML = 'Общая сумма для активации: 1000₽ (вступительный 500₽ + первый месяц 500₽)';
-    } else if (plan === 'premium') {
-        priceInfo.innerHTML = 'Общая сумма для активации: 2990₽ (вступительный 1000₽ + первый месяц 1990₽)';
-    }
-};
+        // Обновление цены при выборе тарифа в регистрации
+        window.updateRegistrationPrice = function() {
+            const plan = document.getElementById('registerSubscription').value;
+            const priceInfo = document.getElementById('registrationPriceInfo');
+            
+            if (plan === 'essential') {
+                priceInfo.innerHTML = 'Общая сумма для активации: 1000₽ (вступительный 500₽ + первый месяц 500₽)';
+            } else if (plan === 'premium') {
+                priceInfo.innerHTML = 'Общая сумма для активации: 2990₽ (вступительный 1000₽ + первый месяц 1990₽)';
+            }
+        };
 
-// Показать форму регистрации
-window.showRegisterForm = function() {
-    document.getElementById('loginForm').classList.add('hidden');
-    document.getElementById('registerForm').classList.remove('hidden');
-    document.getElementById('authModalTitle').textContent = 'Регистрация';
-};
+        // Показать форму регистрации
+        window.showRegisterForm = function() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('authModalTitle').textContent = 'Регистрация';
+        };
 
         // Показать форму входа
         window.showLoginForm = function() {
@@ -4052,4 +4052,4 @@ window.showRegisterForm = function() {
         console.log('🔧 Демо аккаунты: demoLogin("client"), demoLogin("performer"), demoLogin("admin")');
     </script>
 </body>
-</html> 
+</html>
