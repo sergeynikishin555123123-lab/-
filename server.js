@@ -22,20 +22,64 @@ try {
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
 
-// ==================== CORS НАСТРОЙКА ====================
+// CORS настройки - УПРОЩЕННАЯ ВЕРСИЯ ДЛЯ РАЗРАБОТКИ
 const corsOptions = {
-    origin: '*', // Разрешаем все источники
+    origin: function (origin, callback) {
+        // Разрешаем все источники в режиме разработки
+        if (!origin || process.env.NODE_ENV === 'development') {
+            callback(null, true);
+        } else {
+            // В продакшене можно настроить строгие правила
+            const allowedOrigins = [
+                'http://localhost:3000',
+                'http://localhost:5500',
+                'http://127.0.0.1:5500',
+                'http://localhost:8080',
+                'https://concierge-service.ru',
+                'http://concierge-service.ru'
+            ];
+            
+            if (allowedOrigins.indexOf(origin) !== -1) {
+                callback(null, true);
+            } else {
+                callback(new Error('CORS политика не разрешает доступ с этого источника'));
+            }
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Request-ID']
 };
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
-// Добавьте middleware для логов
+// Парсинг тела запроса
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.static('public'));
+
+// Логирование запросов
 app.use((req, res, next) => {
-    console.log(`🌐 [${req.requestId || 'no-id'}] ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
+    const requestId = crypto.randomBytes(8).toString('hex');
+    req.requestId = requestId;
+    
+    const startTime = Date.now();
+    
+    console.log(`🌐 [${requestId}] ${req.method} ${req.path} - ${req.ip} - ${new Date().toISOString()}`);
+    
+    if (req.method === 'POST' && req.path.includes('/api/')) {
+        const logBody = { ...req.body };
+        if (logBody.password) logBody.password = '***';
+        if (logBody.token) logBody.token = '***';
+        console.log(`📦 [${requestId}] Body:`, JSON.stringify(logBody).substring(0, 200));
+    }
+    
+    res.on('finish', () => {
+        const duration = Date.now() - startTime;
+        console.log(`⏱️ [${requestId}] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms`);
+    });
+    
     next();
 });
 
@@ -840,9 +884,6 @@ const createInitialData = async () => {
 
 // ==================== TELEGRAM БОТ ====================
 const initTelegramBot = async () => {
-    console.log('🤖 Telegram Bot: отключен для устранения ошибок CORS');
-    return null; // Просто возвращаем null, чтобы бот не запускался
-};
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     
     if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') {
