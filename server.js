@@ -22,74 +22,42 @@ try {
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
 
-// УПРОЩЕННАЯ CORS настройка для разработки
+// CORS настройки - УПРОЩЕННАЯ ВЕРСИЯ ДЛЯ РАЗРАБОТКИ
 const corsOptions = {
     origin: function (origin, callback) {
-        // Разрешаем ВСЕ источники в режиме разработки
-        if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+        // Разрешаем все источники в режиме разработки
+        if (!origin || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
-            // В продакшене настраиваем безопасность
+            // В продакшене можно настроить строгие правила
             const allowedOrigins = [
                 'http://localhost:3000',
                 'http://localhost:5500',
                 'http://127.0.0.1:5500',
                 'http://localhost:8080',
-                'http://localhost:5173',
-                'http://localhost:5174',
-                'http://172.18.0.4:3000', // Docker контейнер
-                'http://172.18.0.4:5500',
                 'https://concierge-service.ru',
                 'http://concierge-service.ru'
             ];
             
-            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            if (allowedOrigins.indexOf(origin) !== -1) {
                 callback(null, true);
             } else {
-                console.log('🌐 CORS блокирован для origin:', origin);
-                callback(null, true); // Временно разрешаем все для отладки
-                // callback(new Error('CORS политика не разрешает доступ с этого источника'));
+                callback(new Error('CORS политика не разрешает доступ с этого источника'));
             }
         }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Request-ID', 'X-CSRF-Token', 'Access-Control-Allow-Origin'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    maxAge: 86400, // 24 часа
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Request-ID']
 };
 
-// Применяем CORS ко всем маршрутам
 app.use(cors(corsOptions));
-
-// Обработка preflight запросов
 app.options('*', cors(corsOptions));
-
-// Также добавляем заголовки вручную для надежности
-app.use((req, res, next) => {
-    // Устанавливаем заголовки CORS для всех ответов
-    const origin = req.headers.origin;
-    if (origin) {
-        res.header('Access-Control-Allow-Origin', origin);
-    }
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token');
-    res.header('Access-Control-Expose-Headers', 'Content-Range, X-Content-Range');
-    
-    // Пропускаем preflight запросы
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    
-    next();
-});
 
 // Парсинг тела запроса
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.static('public'));
 
 // Логирование запросов
 app.use((req, res, next) => {
@@ -919,89 +887,95 @@ const initTelegramBot = async () => {
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     
     if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN_HERE') {
-        console.log('🤖 Telegram Bot: Токен не указан. Работаем без бота');
-        
-        // Создаем заглушки для функций уведомлений
-        module.exports.notifyManagersAboutNewTask = async () => {};
-        module.exports.notifyUserAboutNewMessage = async () => {};
-        module.exports.notifyUserAboutTaskStatus = async () => {};
-        module.exports.notifyUserAboutNewReview = async () => {};
-        
+        console.log('🤖 Telegram Bot: Токен не указан. Добавьте TELEGRAM_BOT_TOKEN в .env файл');
         return null;
     }
     
     if (!TelegramBot) {
-        console.log('🤖 Telegram Bot: модуль не установлен. Работаем без бота');
+        console.log('🤖 Telegram Bot: модуль не установлен');
         return null;
     }
     
     try {
         console.log('🤖 Запуск Telegram Bot...');
         
-        // Настройки для избежания таймаутов
-        const botOptions = {
+        const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, {
             polling: {
                 interval: 300,
                 autoStart: true,
                 params: {
-                    timeout: 30
+                    timeout: 10
                 }
             },
             request: {
-                timeout: 30000, // 30 секунд
-                agentOptions: {
-                    keepAlive: true,
-                    keepAliveMsecs: 10000
-                }
-            },
-            onlyFirstMatch: true,
-            baseApiUrl: 'https://api.telegram.org'
-        };
-        
-        const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, botOptions);
-        
-        // Обработчик ошибок polling
-        bot.on('polling_error', (error) => {
-            console.log('🤖 Telegram Polling Error:', error.message);
-            
-            // Не выводим ошибки таймаута как критические
-            if (error.code === 'EFATAL' && error.message.includes('ESOCKETTIMEDOUT')) {
-                console.log('🤖 Telegram: временная ошибка сети, продолжаем работу');
-            } else {
-                console.error('🤖 Telegram Polling Critical Error:', error);
+                timeout: 10000
             }
-        });
-        
-        // Обработчик ошибок вебхука
-        bot.on('webhook_error', (error) => {
-            console.log('🤖 Telegram Webhook Error:', error.message);
-        });
-        
-        // Обработчик ошибок
-        bot.on('error', (error) => {
-            console.log('🤖 Telegram General Error:', error.message);
         });
         
         // Обработчик команды /start
         bot.onText(/\/start/, async (msg) => {
+            const chatId = msg.chat.id;
+            const userId = msg.from.id;
+            const userName = msg.from.first_name || 'пользователь';
+            const userUsername = msg.from.username ? `@${msg.from.username}` : null;
+            
             try {
-                const chatId = msg.chat.id;
-                const userId = msg.from.id;
-                const userName = msg.from.first_name || 'пользователь';
+                // Проверяем, есть ли пользователь в базе
+                let user = await db.get(
+                    `SELECT u.id, u.first_name, u.last_name, u.role, u.subscription_plan, 
+                            u.subscription_status, u.telegram_id, u.telegram_username 
+                     FROM users u 
+                     WHERE u.telegram_id = ? OR u.telegram_username = ?`,
+                    [userId.toString(), userUsername]
+                );
                 
-                // Простое приветствие без проверки в БД
-                const message = `🎀 *Привет, ${userName}!*\n\n` +
-                               `Добро пожаловать в *Женский Консьерж*! 👗\n\n` +
-                               `Я ваш персональный помощник в бытовых вопросах.\n\n` +
-                               `Для работы с ботом необходимо *зарегистрироваться* на сайте:\n\n` +
-                               `🌐 [Открыть сайт](http://localhost:3000)\n\n` +
-                               `После регистрации привяжите Telegram в настройках профиля.`;
+                let message = `🎀 *Привет, ${userName}!*\n\n`;
+                
+                if (user) {
+                    // Обновляем telegram_id если он изменился или отсутствовал
+                    if (!user.telegram_id || user.telegram_id !== userId.toString()) {
+                        await db.run(
+                            `UPDATE users SET telegram_id = ?, telegram_username = ?, updated_at = CURRENT_TIMESTAMP 
+                             WHERE id = ?`,
+                            [userId.toString(), userUsername, user.id]
+                        );
+                        user.telegram_id = userId.toString();
+                        user.telegram_username = userUsername;
+                    }
+                    
+                    message += `Рады снова вас видеть! 👋\n`;
+                    message += `*Ваш профиль:*\n`;
+                    message += `👤 *Имя:* ${user.first_name} ${user.last_name}\n`;
+                    message += `🎫 *Роль:* ${getRoleDisplayName(user.role)}\n`;
+                    message += `📋 *Подписка:* ${user.subscription_plan === 'premium' ? 'Премиум' : 'Эссеншл'}\n`;
+                    message += `📊 *Статус:* ${user.subscription_status === 'active' ? '✅ Активна' : '❌ Не активна'}\n\n`;
+                    
+                    message += `*Доступные команды:*\n`;
+                    message += `/profile - Мой профиль\n`;
+                    message += `/tasks - Мои задачи\n`;
+                    message += `/balance - Мой баланс\n`;
+                    message += `/help - Помощь\n`;
+                    message += `/website - Открыть сайт\n`;
+                    
+                } else {
+                    message += `Добро пожаловать в *Женский Консьерж*! 👗\n\n`;
+                    message += `Я ваш персональный помощник в бытовых вопросах.\n`;
+                    message += `Для начала работы необходимо *зарегистрироваться* на нашем сайте:\n\n`;
+                    message += `🌐 [Открыть сайт](https://concierge-service.ru)\n\n`;
+                    message += `После регистрации вы сможете:\n`;
+                    message += `• Создавать задачи\n`;
+                    message += `• Общаться с помощниками\n`;
+                    message += `• Отслеживать выполнение\n`;
+                    message += `• Получать уведомления\n\n`;
+                    message += `_После регистрации привяжите Telegram в настройках профиля._`;
+                }
                 
                 const keyboard = {
                     reply_markup: {
                         keyboard: [
                             [{ text: '🌐 Открыть сайт' }],
-                            [{ text: '🆘 Помощь' }]
+                            [{ text: '📋 Мои задачи' }, { text: '👤 Профиль' }],
+                            [{ text: '💰 Баланс' }, { text: '🆘 Помощь' }]
                         ],
                         resize_keyboard: true,
                         one_time_keyboard: false
@@ -1012,46 +986,332 @@ const initTelegramBot = async () => {
                 
                 await bot.sendMessage(chatId, message, keyboard);
                 
+                // Логируем действие
+                await logAudit(user ? user.id : null, 'telegram_start', 'user', userId, {
+                    chat_id: chatId,
+                    username: userUsername,
+                    has_account: !!user
+                });
+                
             } catch (error) {
-                console.error('Ошибка обработки /start:', error.message);
+                console.error('Ошибка обработки /start:', error);
+                await bot.sendMessage(chatId, 
+                    'Привет! Я бот Женского Консьержа. К сожалению, возникла техническая ошибка. Пожалуйста, попробуйте позже или обратитесь в поддержку.',
+                    { parse_mode: 'Markdown' }
+                );
             }
         });
         
-        // Упрощенные команды
+        // Команда /profile
+        bot.onText(/\/profile/, async (msg) => {
+            const chatId = msg.chat.id;
+            
+            try {
+                const user = await db.get(
+                    `SELECT u.id, u.first_name, u.last_name, u.email, u.phone, u.role, 
+                            u.subscription_plan, u.subscription_status, u.subscription_expires,
+                            u.balance, u.rating, u.completed_tasks, u.avatar_url,
+                            COUNT(DISTINCT t.id) as total_tasks,
+                            SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completed_tasks_count
+                     FROM users u
+                     LEFT JOIN tasks t ON u.id = t.client_id
+                     WHERE u.telegram_id = ?
+                     GROUP BY u.id`,
+                    [chatId.toString()]
+                );
+                
+                if (!user) {
+                    await bot.sendMessage(chatId, 
+                        'Вы не привязали Telegram к аккаунту. Сделайте это в настройках профиля на сайте.',
+                        { parse_mode: 'Markdown' }
+                    );
+                    return;
+                }
+                
+                let message = `*👤 Ваш профиль*\n\n`;
+                message += `*Имя:* ${user.first_name} ${user.last_name}\n`;
+                message += `*Email:* ${user.email}\n`;
+                message += `*Телефон:* ${user.phone}\n`;
+                message += `*Роль:* ${getRoleDisplayName(user.role)}\n\n`;
+                
+                message += `*📊 Статистика:*\n`;
+                message += `• Всего задач: ${user.total_tasks || 0}\n`;
+                message += `• Завершено: ${user.completed_tasks_count || 0}\n`;
+                message += `• Рейтинг: ${user.rating ? '⭐'.repeat(Math.round(user.rating)) : 'Еще нет оценок'}\n`;
+                message += `• Баланс: ${user.balance}₽\n\n`;
+                
+                message += `*📋 Подписка:*\n`;
+                message += `• Тариф: ${user.subscription_plan === 'premium' ? 'Премиум' : 'Эссеншл'}\n`;
+                message += `• Статус: ${user.subscription_status === 'active' ? '✅ Активна' : '❌ Не активна'}\n`;
+                if (user.subscription_expires) {
+                    const expires = new Date(user.subscription_expires);
+                    message += `• Действует до: ${expires.toLocaleDateString('ru-RU')}\n`;
+                }
+                
+                await bot.sendMessage(chatId, message, { 
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '✏️ Изменить профиль', callback_data: 'edit_profile' }],
+                            [{ text: '💰 Пополнить баланс', callback_data: 'add_balance' }],
+                            [{ text: '📋 Изменить подписку', callback_data: 'change_subscription' }]
+                        ]
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ошибка получения профиля:', error);
+                await bot.sendMessage(chatId, 
+                    'Ошибка получения данных профиля. Пожалуйста, попробуйте позже.',
+                    { parse_mode: 'Markdown' }
+                );
+            }
+        });
+        
+        // Команда /tasks
+        bot.onText(/\/tasks/, async (msg) => {
+            const chatId = msg.chat.id;
+            
+            try {
+                const user = await db.get(
+                    `SELECT id, role FROM users WHERE telegram_id = ?`,
+                    [chatId.toString()]
+                );
+                
+                if (!user) {
+                    await bot.sendMessage(chatId, 
+                        'Вы не привязали Telegram к аккаунту. Сделайте это в настройках профиля на сайте.',
+                        { parse_mode: 'Markdown' }
+                    );
+                    return;
+                }
+                
+                let tasks;
+                if (user.role === 'client') {
+                    tasks = await db.all(
+                        `SELECT t.id, t.task_number, t.title, t.status, t.priority, 
+                                t.price, t.deadline, c.display_name as category_name
+                         FROM tasks t
+                         LEFT JOIN categories c ON t.category_id = c.id
+                         WHERE t.client_id = ?
+                         ORDER BY t.created_at DESC
+                         LIMIT 5`,
+                        [user.id]
+                    );
+                } else if (user.role === 'performer') {
+                    tasks = await db.all(
+                        `SELECT t.id, t.task_number, t.title, t.status, t.priority, 
+                                t.price, t.deadline, c.display_name as category_name,
+                                u.first_name as client_first_name, u.last_name as client_last_name
+                         FROM tasks t
+                         LEFT JOIN categories c ON t.category_id = c.id
+                         LEFT JOIN users u ON t.client_id = u.id
+                         WHERE t.performer_id = ? OR (t.status = 'searching' AND t.performer_id IS NULL)
+                         ORDER BY t.created_at DESC
+                         LIMIT 5`,
+                        [user.id]
+                    );
+                } else {
+                    tasks = await db.all(
+                        `SELECT t.id, t.task_number, t.title, t.status, t.priority, 
+                                t.price, t.deadline, c.display_name as category_name,
+                                u.first_name as client_first_name, u.last_name as client_last_name
+                         FROM tasks t
+                         LEFT JOIN categories c ON t.category_id = c.id
+                         LEFT JOIN users u ON t.client_id = u.id
+                         ORDER BY t.created_at DESC
+                         LIMIT 5`,
+                        []
+                    );
+                }
+                
+                if (tasks.length === 0) {
+                    await bot.sendMessage(chatId, 
+                        'У вас пока нет задач. Создайте первую задачу на сайте!',
+                        { parse_mode: 'Markdown' }
+                    );
+                    return;
+                }
+                
+                let message = `*📋 Ваши задачи (последние 5):*\n\n`;
+                
+                tasks.forEach((task, index) => {
+                    const statusEmoji = {
+                        'new': '🆕',
+                        'searching': '🔍',
+                        'assigned': '👤',
+                        'in_progress': '🔄',
+                        'completed': '✅',
+                        'cancelled': '❌',
+                        'rejected': '🚫',
+                        'expired': '⏰'
+                    }[task.status] || '📝';
+                    
+                    const priorityEmoji = {
+                        'low': '🔵',
+                        'medium': '🟡',
+                        'high': '🟠',
+                        'urgent': '🔴'
+                    }[task.priority] || '⚪';
+                    
+                    message += `${index + 1}. ${statusEmoji} *${task.title}*\n`;
+                    message += `   📍 ${task.category_name}\n`;
+                    message += `   ${priorityEmoji} ${task.priority}\n`;
+                    message += `   ⏰ ${new Date(task.deadline).toLocaleDateString('ru-RU')}\n`;
+                    message += `   💰 ${task.price}₽\n`;
+                    
+                    if (task.client_first_name) {
+                        message += `   👤 ${task.client_first_name} ${task.client_last_name}\n`;
+                    }
+                    
+                    message += `   🆔 ${task.task_number}\n\n`;
+                });
+                
+                message += `🌐 Для управления задачами перейдите на сайт.`;
+                
+                await bot.sendMessage(chatId, message, { 
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '🌐 Открыть сайт', url: 'http://localhost:3000/tasks' }],
+                            [{ text: '➕ Создать задачу', url: 'http://localhost:3000/services' }],
+                            [{ text: '🔄 Обновить', callback_data: 'refresh_tasks' }]
+                        ]
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ошибка получения задач:', error);
+                await bot.sendMessage(chatId, 
+                    'Ошибка получения задач. Пожалуйста, попробуйте позже.',
+                    { parse_mode: 'Markdown' }
+                );
+            }
+        });
+        
+        // Команда /balance
+        bot.onText(/\/balance/, async (msg) => {
+            const chatId = msg.chat.id;
+            
+            try {
+                const user = await db.get(
+                    `SELECT balance, subscription_plan FROM users WHERE telegram_id = ?`,
+                    [chatId.toString()]
+                );
+                
+                if (!user) {
+                    await bot.sendMessage(chatId, 
+                        'Вы не привязали Telegram к аккаунту.',
+                        { parse_mode: 'Markdown' }
+                    );
+                    return;
+                }
+                
+                // Получаем историю платежей
+                const payments = await db.all(
+                    `SELECT description, amount, status, created_at 
+                     FROM payments 
+                     WHERE user_id = (SELECT id FROM users WHERE telegram_id = ?)
+                     ORDER BY created_at DESC
+                     LIMIT 5`,
+                    [chatId.toString()]
+                );
+                
+                let message = `*💰 Ваш баланс:* ${user.balance}₽\n\n`;
+                message += `*📋 Тариф:* ${user.subscription_plan === 'premium' ? 'Премиум' : 'Эссеншл'}\n\n`;
+                
+                if (payments.length > 0) {
+                    message += `*📜 Последние операции:*\n`;
+                    payments.forEach(payment => {
+                        const date = new Date(payment.created_at);
+                        const statusEmoji = payment.status === 'completed' ? '✅' : 
+                                          payment.status === 'pending' ? '⏳' : '❌';
+                        message += `• ${statusEmoji} ${payment.description}: ${payment.amount}₽\n`;
+                        message += `  📅 ${date.toLocaleDateString('ru-RU')}\n`;
+                    });
+                } else {
+                    message += `*📜 История операций пуста*\n`;
+                }
+                
+                message += `\n*Для пополнения баланса:*\n`;
+                message += `1. Перейдите на сайт\n`;
+                message += `2. Откройте раздел "Баланс"\n`;
+                message += `3. Выберите способ оплаты\n`;
+                
+                await bot.sendMessage(chatId, message, { 
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [{ text: '💳 Пополнить баланс', url: 'http://localhost:3000/profile' }],
+                            [{ text: '📊 Подробная история', url: 'http://localhost:3000/profile#payments' }]
+                        ]
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Ошибка получения баланса:', error);
+                await bot.sendMessage(chatId, 
+                    'Ошибка получения данных баланса. Пожалуйста, попробуйте позже.',
+                    { parse_mode: 'Markdown' }
+                );
+            }
+        });
+        
+        // Команда /help
         bot.onText(/\/help/, async (msg) => {
             const chatId = msg.chat.id;
             
-            const message = `*🆘 Помощь по боту*\n\n` +
-                           `*Доступные команды:*\n` +
-                           `/start - Начало работы\n` +
-                           `/help - Эта справка\n` +
-                           `/website - Открыть сайт\n\n` +
-                           `*Для полного функционала:*\n` +
-                           `1. Зарегистрируйтесь на сайте\n` +
-                           `2. Привяжите Telegram в настройках\n` +
-                           `3. Создавайте задачи через сайт\n\n` +
-                           `🌐 [Открыть сайт](http://localhost:3000)`;
+            const message = `*🆘 Помощь по боту*\n\n`;
+            message += `*Доступные команды:*\n`;
+            message += `/start - Начало работы с ботом\n`;
+            message += `/profile - Мой профиль и статистика\n`;
+            message += `/tasks - Мои задачи\n`;
+            message += `/balance - Мой баланс и история операций\n`;
+            message += `/help - Эта справка\n`;
+            message += `/website - Открыть сайт\n\n`;
+            
+            message += `*Как пользоваться:*\n`;
+            message += `1. Зарегистрируйтесь на сайте\n`;
+            message += `2. Привяжите Telegram в настройках профиля\n`;
+            message += `3. Создавайте задачи через сайт\n`;
+            message += `4. Получайте уведомления в Telegram\n`;
+            message += `5. Общайтесь с помощниками в чате\n\n`;
+            
+            message += `*Поддержка:*\n`;
+            message += `📧 Email: info@concierge-service.ru\n`;
+            message += `📞 Телефон: +7 (999) 123-45-67\n`;
+            message += `🕐 Часы работы: Ежедневно с 9:00 до 21:00\n\n`;
+            
+            message += `_Для сложных вопросов рекомендуем обращаться через сайт._`;
             
             await bot.sendMessage(chatId, message, { 
                 parse_mode: 'Markdown',
-                disable_web_page_preview: true
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: '🌐 Открыть сайт', url: 'http://localhost:3000' }],
+                        [{ text: '📞 Связаться с поддержкой', url: 'http://localhost:3000/contact' }]
+                    ]
+                }
             });
         });
         
+        // Команда /website
         bot.onText(/\/website/, async (msg) => {
             const chatId = msg.chat.id;
             
             await bot.sendMessage(chatId, 
                 `🌐 *Женский Консьерж*\n\n` +
-                `Перейдите на наш сайт для полного доступа:\n\n` +
-                `🔗 [Открыть сайт](http://localhost:3000)\n\n` +
+                `Перейдите на наш сайт для полного доступа ко всем функциям:\n\n` +
+                `🔗 [concierge-service.ru](http://localhost:3000)\n\n` +
                 `На сайте вы можете:\n` +
-                `• Создавать задачи\n` +
+                `• Создавать и управлять задачами\n` +
                 `• Выбирать помощников\n` +
                 `• Общаться в чатах\n` +
-                `• Управлять подпиской`,
+                `• Управлять подпиской\n` +
+                `• Смотреть историю операций`,
                 { 
                     parse_mode: 'Markdown',
+                    disable_web_page_preview: false,
                     reply_markup: {
                         inline_keyboard: [[{ text: '🌐 Открыть сайт', url: 'http://localhost:3000' }]]
                     }
@@ -1064,8 +1324,24 @@ const initTelegramBot = async () => {
             const chatId = msg.chat.id;
             const text = msg.text;
             
-            if (!text || text.startsWith('/')) return;
+            // Пропускаем команды
+            if (text && text.startsWith('/')) return;
             
+            // Проверяем, есть ли пользователь
+            const user = await db.get(
+                `SELECT id, first_name, role FROM users WHERE telegram_id = ?`,
+                [chatId.toString()]
+            );
+            
+            if (!user) {
+                await bot.sendMessage(chatId, 
+                    'Для общения с ботом необходимо привязать Telegram к аккаунту на сайте.',
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+            
+            // Если это кнопка "Открыть сайт"
             if (text === '🌐 Открыть сайт') {
                 await bot.sendMessage(chatId, 
                     'Открываю сайт...',
@@ -1078,53 +1354,391 @@ const initTelegramBot = async () => {
                 return;
             }
             
+            // Если это кнопка "Мои задачи"
+            if (text === '📋 Мои задачи') {
+                // Вызываем команду /tasks
+                const mockMsg = { ...msg, text: '/tasks' };
+                bot.emit('text', mockMsg);
+                return;
+            }
+            
+            // Если это кнопка "Профиль"
+            if (text === '👤 Профиль') {
+                // Вызываем команду /profile
+                const mockMsg = { ...msg, text: '/profile' };
+                bot.emit('text', mockMsg);
+                return;
+            }
+            
+            // Если это кнопка "Баланс"
+            if (text === '💰 Баланс') {
+                // Вызываем команду /balance
+                const mockMsg = { ...msg, text: '/balance' };
+                bot.emit('text', mockMsg);
+                return;
+            }
+            
+            // Если это кнопка "Помощь"
             if (text === '🆘 Помощь') {
+                // Вызываем команду /help
                 const mockMsg = { ...msg, text: '/help' };
                 bot.emit('text', mockMsg);
                 return;
             }
             
-            // Простой ответ на другие сообщения
+            // Если это кнопка "Статистика"
+            if (text === '📊 Статистика') {
+                await bot.sendMessage(chatId, 
+                    'Для просмотра статистики перейдите на сайт в раздел "Профиль".',
+                    { parse_mode: 'Markdown' }
+                );
+                return;
+            }
+            
+            // Обычное сообщение
             await bot.sendMessage(chatId, 
-                `Привет! 👋\n\n` +
-                `Я бот *Женского Консьержа*. Для полного функционала перейдите на сайт.\n\n` +
-                `🌐 [Открыть сайт](http://localhost:3000)`,
-                { 
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                        inline_keyboard: [[{ text: '🌐 Перейти на сайт', url: 'http://localhost:3000' }]]
-                    }
-                }
+                `Привет, ${user.first_name}! 👋\n\n` +
+                `Я могу помочь вам с:\n` +
+                `• Просмотром профиля (/profile)\n` +
+                `• Управлением задачами (/tasks)\n` +
+                `• Проверкой баланса (/balance)\n` +
+                `• Получением справки (/help)\n\n` +
+                `Для сложных операций и создания задач используйте сайт.`,
+                { parse_mode: 'Markdown' }
             );
         });
         
-        console.log('✅ Telegram Bot запущен (упрощенная версия)');
-        telegramBot = bot;
+        // Обработка callback-запросов
+        bot.on('callback_query', async (callbackQuery) => {
+            const chatId = callbackQuery.message.chat.id;
+            const data = callbackQuery.data;
+            
+            try {
+                if (data === 'refresh_tasks') {
+                    await bot.answerCallbackQuery(callbackQuery.id);
+                    const mockMsg = { chat: { id: chatId }, text: '/tasks' };
+                    bot.emit('text', mockMsg);
+                    return;
+                }
+                
+                if (data === 'edit_profile') {
+                    await bot.answerCallbackQuery(callbackQuery.id, { text: 'Для изменения профиля перейдите на сайт' });
+                    await bot.sendMessage(chatId, 
+                        'Для изменения данных профиля перейдите на сайт в раздел "Настройки".',
+                        {
+                            reply_markup: {
+                                inline_keyboard: [[{ text: '🌐 Перейти к настройкам', url: 'http://localhost:3000/profile/settings' }]]
+                            }
+                        }
+                    );
+                    return;
+                }
+                
+                if (data === 'add_balance') {
+                    await bot.answerCallbackQuery(callbackQuery.id, { text: 'Переход к пополнению баланса' });
+                    await bot.sendMessage(chatId, 
+                        'Для пополнения баланса перейдите на сайт:',
+                        {
+                            reply_markup: {
+                                inline_keyboard: [[{ text: '💳 Пополнить баланс', url: 'http://localhost:3000/profile/balance' }]]
+                            }
+                        }
+                    );
+                    return;
+                }
+                
+                if (data === 'change_subscription') {
+                    await bot.answerCallbackQuery(callbackQuery.id, { text: 'Переход к управлению подпиской' });
+                    await bot.sendMessage(chatId, 
+                        'Для изменения подписки перейдите на сайт:',
+                        {
+                            reply_markup: {
+                                inline_keyboard: [[{ text: '📋 Управление подпиской', url: 'http://localhost:3000/subscriptions' }]]
+                            }
+                        }
+                    );
+                    return;
+                }
+                
+                await bot.answerCallbackQuery(callbackQuery.id, { text: 'Команда не распознана' });
+                
+            } catch (error) {
+                console.error('Ошибка обработки callback:', error);
+                await bot.answerCallbackQuery(callbackQuery.id, { text: 'Произошла ошибка' });
+            }
+        });
         
-        // Заглушки для функций уведомлений
-        const createStub = (name) => {
-            return async (...args) => {
-                console.log(`🤖 Telegram Bot (stub): ${name} called, but notifications disabled`);
-                return true;
-            };
+        // Функция для отправки уведомлений менеджерам о новой задаче
+        const notifyManagersAboutNewTask = async (taskId) => {
+            try {
+                const managers = await db.all(
+                    `SELECT u.telegram_id 
+                     FROM users u 
+                     WHERE u.role IN ('admin', 'manager', 'superadmin') 
+                     AND u.telegram_id IS NOT NULL 
+                     AND u.is_active = 1`
+                );
+                
+                const task = await db.get(
+                    `SELECT t.task_number, t.title, t.description, t.price, t.address, 
+                            t.deadline, t.contact_info, t.priority, t.is_urgent,
+                            c.display_name as category_name,
+                            u.first_name as client_first_name, u.last_name as client_last_name,
+                            u.phone as client_phone
+                     FROM tasks t
+                     LEFT JOIN categories c ON t.category_id = c.id
+                     LEFT JOIN users u ON t.client_id = u.id
+                     WHERE t.id = ?`,
+                    [taskId]
+                );
+                
+                if (!task || managers.length === 0) return;
+                
+                const priorityEmoji = {
+                    'low': '🔵',
+                    'medium': '🟡',
+                    'high': '🟠',
+                    'urgent': '🔴'
+                }[task.priority] || '⚪';
+                
+                const urgentText = task.is_urgent ? '🚨 *СРОЧНАЯ ЗАДАЧА* 🚨\n\n' : '';
+                
+                const message = `${urgentText}🆕 *Новая задача создана!*\n\n` +
+                               `*${task.title}*\n` +
+                               `📋 *Категория:* ${task.category_name}\n` +
+                               `👤 *Клиент:* ${task.client_first_name} ${task.client_last_name}\n` +
+                               `📞 *Телефон:* ${task.client_phone}\n` +
+                               `📍 *Адрес:* ${task.address}\n` +
+                               `${priorityEmoji} *Приоритет:* ${task.priority}\n` +
+                               `⏰ *Срок:* ${new Date(task.deadline).toLocaleString('ru-RU')}\n` +
+                               `💰 *Стоимость:* ${task.price}₽\n` +
+                               `🔢 *Номер:* ${task.task_number}\n\n` +
+                               `*Описание:*\n${task.description.substring(0, 200)}${task.description.length > 200 ? '...' : ''}\n\n` +
+                               `_Требуется назначение исполнителя_`;
+                
+                for (const manager of managers) {
+                    try {
+                        await bot.sendMessage(
+                            manager.telegram_id,
+                            message,
+                            { 
+                                parse_mode: 'Markdown',
+                                disable_web_page_preview: true,
+                                reply_markup: {
+                                    inline_keyboard: [[
+                                        { text: '👁️ Просмотреть задачу', url: `http://localhost:3000/admin/tasks/${taskId}` },
+                                        { text: '📋 Назначить исполнителя', url: `http://localhost:3000/admin/tasks/${taskId}/assign` }
+                                    ]]
+                                }
+                            }
+                        );
+                    } catch (error) {
+                        console.log(`Не удалось отправить уведомление менеджеру ${manager.telegram_id}:`, error.message);
+                    }
+                }
+                
+                await logAudit(null, 'telegram_notify_managers', 'task', taskId, {
+                    managers_count: managers.length,
+                    task_number: task.task_number
+                });
+                
+            } catch (error) {
+                console.error('Ошибка отправки уведомлений менеджерам:', error);
+                await logAudit(null, 'telegram_notify_error', 'system', null, {
+                    error: error.message,
+                    task_id: taskId
+                });
+            }
         };
         
-        module.exports.notifyManagersAboutNewTask = createStub('notifyManagersAboutNewTask');
-        module.exports.notifyUserAboutNewMessage = createStub('notifyUserAboutNewMessage');
-        module.exports.notifyUserAboutTaskStatus = createStub('notifyUserAboutTaskStatus');
-        module.exports.notifyUserAboutNewReview = createStub('notifyUserAboutNewReview');
+        // Функция для отправки уведомления клиенту о новом сообщении
+        const notifyUserAboutNewMessage = async (userId, taskId, messagePreview, senderName) => {
+            try {
+                const user = await db.get(
+                    `SELECT telegram_id FROM users WHERE id = ? AND telegram_id IS NOT NULL AND is_active = 1`,
+                    [userId]
+                );
+                
+                if (!user || !user.telegram_id) return;
+                
+                const task = await db.get(
+                    `SELECT task_number, title FROM tasks WHERE id = ?`,
+                    [taskId]
+                );
+                
+                if (!task) return;
+                
+                const message = `💬 *Новое сообщение в задаче*\n\n` +
+                               `*${task.title}*\n` +
+                               `🔢 ${task.task_number}\n\n` +
+                               `👤 *От:* ${senderName}\n` +
+                               `📝 *Сообщение:*\n${messagePreview.substring(0, 100)}${messagePreview.length > 100 ? '...' : ''}\n\n` +
+                               `_Перейдите в чат задачи, чтобы ответить_`;
+                
+                await bot.sendMessage(
+                    user.telegram_id,
+                    message,
+                    {
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '💬 Открыть чат', url: `http://localhost:3000/tasks/${taskId}/chat` }
+                            ]]
+                        }
+                    }
+                );
+                
+                await logAudit(null, 'telegram_notify_message', 'task', taskId, {
+                    user_id: userId,
+                    message_preview: messagePreview.substring(0, 50)
+                });
+                
+            } catch (error) {
+                console.error('Ошибка отправки уведомления о сообщении:', error);
+            }
+        };
+        
+        // Функция для отправки уведомления о изменении статуса задачи
+        const notifyUserAboutTaskStatus = async (userId, taskId, oldStatus, newStatus, notes = '') => {
+            try {
+                const user = await db.get(
+                    `SELECT telegram_id FROM users WHERE id = ? AND telegram_id IS NOT NULL AND is_active = 1`,
+                    [userId]
+                );
+                
+                if (!user || !user.telegram_id) return;
+                
+                const task = await db.get(
+                    `SELECT task_number, title FROM tasks WHERE id = ?`,
+                    [taskId]
+                );
+                
+                if (!task) return;
+                
+                const statusNames = {
+                    'new': 'Новая',
+                    'searching': 'Поиск исполнителя',
+                    'assigned': 'Назначена',
+                    'in_progress': 'В работе',
+                    'completed': 'Завершена',
+                    'cancelled': 'Отменена',
+                    'rejected': 'Отклонена',
+                    'expired': 'Просрочена'
+                };
+                
+                const statusEmojis = {
+                    'new': '🆕',
+                    'searching': '🔍',
+                    'assigned': '👤',
+                    'in_progress': '🔄',
+                    'completed': '✅',
+                    'cancelled': '❌',
+                    'rejected': '🚫',
+                    'expired': '⏰'
+                };
+                
+                const message = `${statusEmojis[newStatus] || '📝'} *Статус задачи изменен*\n\n` +
+                               `*${task.title}*\n` +
+                               `🔢 ${task.task_number}\n\n` +
+                               `📊 *Статус:* ${statusNames[oldStatus] || oldStatus} → ${statusNames[newStatus] || newStatus}\n`;
+                
+                if (notes) {
+                    message += `📝 *Примечание:* ${notes}\n`;
+                }
+                
+                message += `\n_Подробности в приложении_`;
+                
+                await bot.sendMessage(
+                    user.telegram_id,
+                    message,
+                    {
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '👁️ Просмотреть задачу', url: `http://localhost:3000/tasks/${taskId}` }
+                            ]]
+                        }
+                    }
+                );
+                
+                await logAudit(null, 'telegram_notify_status', 'task', taskId, {
+                    user_id: userId,
+                    old_status: oldStatus,
+                    new_status: newStatus
+                });
+                
+            } catch (error) {
+                console.error('Ошибка отправки уведомления о статусе:', error);
+            }
+        };
+        
+        // Функция для отправки уведомления о новом отзыве
+        const notifyUserAboutNewReview = async (userId, taskId, rating, comment = '') => {
+            try {
+                const user = await db.get(
+                    `SELECT telegram_id FROM users WHERE id = ? AND telegram_id IS NOT NULL AND is_active = 1`,
+                    [userId]
+                );
+                
+                if (!user || !user.telegram_id) return;
+                
+                const task = await db.get(
+                    `SELECT task_number, title FROM tasks WHERE id = ?`,
+                    [taskId]
+                );
+                
+                if (!task) return;
+                
+                const stars = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+                
+                const message = `⭐ *Новый отзыв о вашей работе*\n\n` +
+                               `*${task.title}*\n` +
+                               `🔢 ${task.task_number}\n\n` +
+                               `📊 *Оценка:* ${stars} (${rating}/5)\n`;
+                
+                if (comment) {
+                    message += `📝 *Комментарий:* ${comment.substring(0, 200)}${comment.length > 200 ? '...' : ''}\n`;
+                }
+                
+                message += `\n_Спасибо за вашу работу!_`;
+                
+                await bot.sendMessage(
+                    user.telegram_id,
+                    message,
+                    {
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { text: '👁️ Просмотреть отзыв', url: `http://localhost:3000/tasks/${taskId}/review` }
+                            ]]
+                        }
+                    }
+                );
+                
+                await logAudit(null, 'telegram_notify_review', 'task', taskId, {
+                    user_id: userId,
+                    rating: rating
+                });
+                
+            } catch (error) {
+                console.error('Ошибка отправки уведомления об отзыве:', error);
+            }
+        };
+        
+        console.log('✅ Telegram Bot запущен успешно');
+        telegramBot = bot;
+        
+        // Экспортируем функции для использования в API
+        module.exports.notifyManagersAboutNewTask = notifyManagersAboutNewTask;
+        module.exports.notifyUserAboutNewMessage = notifyUserAboutNewMessage;
+        module.exports.notifyUserAboutTaskStatus = notifyUserAboutTaskStatus;
+        module.exports.notifyUserAboutNewReview = notifyUserAboutNewReview;
         
         return bot;
         
     } catch (error) {
         console.error('❌ Ошибка запуска Telegram Bot:', error.message);
-        
-        // Создаем заглушки при ошибке
-        module.exports.notifyManagersAboutNewTask = async () => {};
-        module.exports.notifyUserAboutNewMessage = async () => {};
-        module.exports.notifyUserAboutTaskStatus = async () => {};
-        module.exports.notifyUserAboutNewReview = async () => {};
-        
+        console.error(error.stack);
         return null;
     }
 };
@@ -1275,37 +1889,23 @@ const authMiddleware = (roles = []) => {
             try {
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
                 
-// Проверяем пользователя в БД
-const user = await db.get(
-    `SELECT id, email, first_name, last_name, phone, role, 
-            subscription_plan, subscription_status, subscription_expires,
-            initial_fee_paid, initial_fee_amount, is_active, avatar_url,
-            balance, rating, completed_tasks
-     FROM users WHERE id = ?`,
-    [decoded.id]
-);
-
-if (!user) {
-    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден или заблокирован`);
-    
-    // Отправляем специальный код для клиента
-    return res.status(401).json({ 
-        success: false, 
-        error: 'Пользователь не найден или удален',
-        code: 'USER_NOT_FOUND',
-        user_id: decoded.id
-    });
-}
-
-// Проверяем активен ли пользователь
-if (user.is_active !== 1) {
-    console.log(`🔐 [${requestId}] Ошибка: пользователь ${user.email} заблокирован`);
-    return res.status(403).json({ 
-        success: false, 
-        error: 'Аккаунт заблокирован',
-        code: 'USER_BLOCKED'
-    });
-}
+                // Проверяем пользователя в БД
+                const user = await db.get(
+                    `SELECT id, email, first_name, last_name, phone, role, 
+                            subscription_plan, subscription_status, subscription_expires,
+                            initial_fee_paid, initial_fee_amount, is_active, avatar_url,
+                            balance, rating, completed_tasks
+                     FROM users WHERE id = ? AND is_active = 1`,
+                    [decoded.id]
+                );
+                
+                if (!user) {
+                    console.log(`🔐 [${requestId}] Ошибка: пользователь с id ${decoded.id} не найден или заблокирован`);
+                    return res.status(401).json({ 
+                        success: false, 
+                        error: 'Пользователь не найден или заблокирован' 
+                    });
+                }
                 
                 req.user = {
                     id: user.id,
@@ -1566,9 +2166,6 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/health', async (req, res) => {
-    // Пропускаем CORS для health check
-    res.header('Access-Control-Allow-Origin', '*');
-    
     try {
         // Проверяем подключение к базе данных
         await db.get('SELECT 1 as status');
@@ -1584,8 +2181,7 @@ app.get('/health', async (req, res) => {
             success: true,
             status: 'OK',
             database: 'connected',
-            telegram_bot: telegramBot ? 'connected' : 'disabled_or_error',
-            cors: 'enabled',
+            telegram_bot: telegramBot ? 'connected' : 'disabled',
             statistics: {
                 users: users.count,
                 tasks: tasks.count,
@@ -5167,30 +5763,17 @@ app.use((req, res, next) => {
     next();
 });
 
-// ==================== ОБРАБОТКА CORS ОШИБОК ====================
-
-// Глобальный обработчик ошибок CORS
+// Глобальный обработчик ошибок
 app.use((err, req, res, next) => {
-    if (err.message && err.message.includes('CORS')) {
-        console.log('🌐 CORS Error:', {
-            origin: req.headers.origin,
-            method: req.method,
-            path: req.path,
-            ip: req.ip
-        });
-        
-        return res.status(200).json({ // Возвращаем 200 вместо 500 для CORS ошибок
-            success: false,
-            error: 'CORS error',
-            message: 'Please check your request origin',
-            allowed_origins: [
-                'http://localhost:3000',
-                'http://localhost:5500',
-                'http://127.0.0.1:5500'
-            ]
-        });
-    }
-    next(err);
+    const requestId = req.requestId;
+    console.error(`❌ [${requestId}] Необработанная ошибка:`, err);
+    
+    res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+        request_id: requestId
+    });
 });
 
 // ==================== ЗАПУСК СЕРВЕРА ====================
