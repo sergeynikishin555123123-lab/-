@@ -1187,6 +1187,261 @@
             letter-spacing: 0.5px;
         }
 
+         /* Стили для системы подписок */
+.welcome-modal {
+    max-width: 500px;
+    background: linear-gradient(135deg, var(--white) 0%, var(--pink-light) 100%);
+    border: 2px solid var(--gold-metallic);
+}
+
+.subscription-wizard {
+    max-width: 700px;
+}
+
+.subscription-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.subscription-step.active {
+    display: block;
+}
+
+.tier-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.tier-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 2px solid rgba(61, 61, 61, 0.1);
+    transition: var(--transition);
+    position: relative;
+    cursor: pointer;
+}
+
+.tier-card.selected {
+    border-color: var(--gold-metallic);
+    background: linear-gradient(135deg, #FFF9F9 0%, #FFFAF0 100%);
+}
+
+.tier-card.recommended {
+    border-color: var(--lavender);
+}
+
+.tier-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--lavender);
+    color: var(--graphite-dark);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.tier-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--graphite-dark);
+    text-align: center;
+}
+
+.tier-price {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 5px;
+    color: var(--graphite-dark);
+}
+
+.tier-period {
+    text-align: center;
+    color: var(--graphite-medium);
+    margin-bottom: 20px;
+}
+
+.tier-features {
+    list-style: none;
+}
+
+.tier-features li {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(61, 61, 61, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tier-features li i {
+    color: var(--aquamarine);
+    flex-shrink: 0;
+}
+
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.payment-method {
+    border: 2px solid rgba(61, 61, 61, 0.1);
+    border-radius: var(--radius);
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: white;
+}
+
+.payment-method:hover {
+    border-color: var(--graphite-medium);
+}
+
+.payment-method.selected {
+    border-color: var(--gold-metallic);
+    background: var(--pastel-pink);
+}
+
+.payment-method i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--graphite-dark);
+}
+
+.payment-form {
+    display: none;
+}
+
+.payment-form.active {
+    display: block;
+}
+
+.days-counter {
+    font-size: 0.9rem;
+    color: var(--graphite-medium);
+    background: rgba(61, 61, 61, 0.05);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.days-counter.warning {
+    background: #FFF0E6;
+    color: #F57C00;
+}
+
+.days-counter.danger {
+    background: #FFE6E6;
+    color: #D32F2F;
+}
+
+.subscription-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-active {
+    background: rgba(127, 224, 209, 0.2);
+    color: #388E3C;
+}
+
+.status-suspended {
+    background: #FFF0E6;
+    color: #F57C00;
+}
+
+.status-expired {
+    background: #F5F5F5;
+    color: #757575;
+}
+
+.status-pending {
+    background: #E6F7FF;
+    color: #1976D2;
+}
+
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(61, 61, 61, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 4000;
+    animation: fadeIn 0.3s ease;
+}
+
+.welcome-content {
+    background: white;
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+.welcome-icon {
+    font-size: 4rem;
+    color: var(--gold-metallic);
+    margin-bottom: 20px;
+}
+
+.welcome-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: var(--graphite-dark);
+}
+
+.welcome-subtitle {
+    color: var(--graphite-medium);
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+}
+
+.welcome-features {
+    text-align: left;
+    margin: 30px 0;
+}
+
+.welcome-features li {
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(61, 61, 61, 0.05);
+}
+
+.welcome-features li:last-child {
+    border-bottom: none;
+}
+
+.welcome-features li i {
+    color: var(--aquamarine);
+}
+        
 /* Стили для панели исполнителя */
 .performer-dashboard {
     display: grid;
@@ -2007,7 +2262,320 @@
         </div>
     </footer>
 
-    <!-- Модальные окна -->
+    <!-- Модальное окно приветствия для пользователей с подпиской -->
+<div class="welcome-overlay" id="welcomeOverlay" style="display: none;">
+    <div class="welcome-content">
+        <div class="welcome-icon">
+            <i class="fas fa-crown"></i>
+        </div>
+        <h2 class="welcome-title">Добро пожаловать в подписку!</h2>
+        <p class="welcome-subtitle" id="welcomeSubscriptionName">
+            Вы успешно активировали подписку Премиум
+        </p>
+        
+        <div id="welcomeContent">
+            <!-- Контент меняется в зависимости от типа пользователя -->
+        </div>
+        
+        <div class="mt-8">
+            <button class="btn btn-primary" id="btnStartUsing">
+                <i class="fas fa-rocket"></i>
+                Начать пользоваться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно подписки (визард) -->
+<div class="modal" id="subscriptionWizardModal">
+    <div class="modal-content subscription-wizard">
+        <div class="modal-header">
+            <h3 class="modal-title">Оформление подписки</h3>
+            <button class="close-btn" id="btnCloseSubscriptionWizard">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Шаг 1: Выбор тарифа -->
+            <div class="subscription-step active" id="subscriptionStep1">
+                <h4 class="mb-4" style="font-weight: 600; color: var(--graphite-dark);">Выберите тарифный план</h4>
+                <p class="mb-6 text-gray-600">Все планы включают вступительный взнос за проверку помощниц</p>
+                
+                <div class="tier-comparison" id="tierComparison">
+                    <!-- Динамически заполняется -->
+                </div>
+                
+                <div class="flex justify-between items-center mt-8">
+                    <button class="btn btn-secondary" id="btnCancelSubscription">
+                        <i class="fas fa-times"></i>
+                        Отмена
+                    </button>
+                    <button class="btn btn-primary" id="btnNextToPayment" disabled>
+                        Продолжить
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Шаг 2: Оплата вступительного взноса -->
+            <div class="subscription-step" id="subscriptionStep2">
+                <h4 class="mb-4" style="font-weight: 600; color: var(--graphite-dark);">Оплата вступительного взноса</h4>
+                <p class="mb-6 text-gray-600">Вступительный взнос покрывает расходы на проверку и обучение помощниц</p>
+                
+                <div class="card mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h5 id="selectedTierName" class="font-semibold">Эссеншл</h5>
+                            <p class="text-sm text-gray-500">Вступительный взнос</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold" id="selectedTierFee">500₽</div>
+                            <p class="text-sm text-gray-500">Оплата один раз</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h6 class="font-medium mb-3">Что включает вступительный взнос:</h6>
+                        <ul class="space-y-2 text-sm">
+                            <li><i class="fas fa-check text-green-500 mr-2"></i> Проверка документов помощниц</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i> Обучение и сертификация</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i> Страховка качества услуг</li>
+                            <li><i class="fas fa-check text-green-500 mr-2"></i> Система рейтингов и отзывов</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h6 class="font-medium mb-3">Способ оплаты:</h6>
+                    <div class="payment-methods">
+                        <div class="payment-method" data-method="card">
+                            <i class="fas fa-credit-card"></i>
+                            <div>Банковская карта</div>
+                        </div>
+                        <div class="payment-method" data-method="yoomoney">
+                            <i class="fas fa-wallet"></i>
+                            <div>ЮMoney</div>
+                        </div>
+                        <div class="payment-method" data-method="sbp">
+                            <i class="fas fa-qrcode"></i>
+                            <div>СБП</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Форма оплаты картой -->
+                <div class="payment-form" id="cardPaymentForm">
+                    <h6 class="font-medium mb-3">Данные карты:</h6>
+                    <div class="grid grid-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="form-label">Номер карты</label>
+                            <input type="text" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Срок действия</label>
+                            <input type="text" class="form-input" placeholder="ММ/ГГ" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CVC</label>
+                            <input type="text" class="form-input" placeholder="123" maxlength="3">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Владелец</label>
+                            <input type="text" class="form-input" placeholder="IVAN IVANOV">
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 mb-6">
+                        <input type="checkbox" id="saveCard" checked>
+                        <label for="saveCard" class="text-sm">Сохранить карту для автоматических платежей</label>
+                    </div>
+                </div>
+                
+                <!-- Форма ЮMoney -->
+                <div class="payment-form" id="yoomoneyPaymentForm">
+                    <p class="mb-4 text-gray-600">Будет открыта страница оплаты ЮMoney</p>
+                </div>
+                
+                <!-- Форма СБП -->
+                <div class="payment-form" id="sbpPaymentForm">
+                    <p class="mb-4 text-gray-600">Отсканируйте QR-код для оплаты через СБП</p>
+                </div>
+                
+                <div class="flex justify-between items-center mt-8">
+                    <button class="btn btn-secondary" id="btnBackToTiers">
+                        <i class="fas fa-arrow-left"></i>
+                        Назад
+                    </button>
+                    <button class="btn btn-primary" id="btnPayInitialFee">
+                        <i class="fas fa-lock"></i>
+                        Оплатить вступительный взнос
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Шаг 3: Успешная оплата -->
+            <div class="subscription-step" id="subscriptionStep3">
+                <div class="text-center">
+                    <div class="mb-6">
+                        <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--aquamarine);"></i>
+                    </div>
+                    <h4 class="mb-4" style="font-weight: 600; color: var(--graphite-dark);">Оплата прошла успешно!</h4>
+                    <p class="mb-6 text-gray-600">Вступительный взнос оплачен. Теперь вы можете пользоваться сервисом</p>
+                    
+                    <div class="card mb-6 text-left">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h5 id="successTierName" class="font-semibold">Эссеншл</h5>
+                                <p class="text-sm text-gray-500">Ваш тарифный план</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xl font-bold" id="successTierFee">500₽</div>
+                                <p class="text-sm text-gray-500">Вступительный взнос оплачен</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6 class="font-medium mb-3">Что теперь доступно:</h6>
+                            <ul class="space-y-2 text-sm">
+                                <li><i class="fas fa-check text-green-500 mr-2"></i> Доступ ко всем услугам</li>
+                                <li><i class="fas fa-check text-green-500 mr-2"></i> До <span id="successTasksLimit">5</span> задач в месяц</li>
+                                <li><i class="fas fa-check text-green-500 mr-2"></i> Приоритетная поддержка</li>
+                                <li><i class="fas fa-check text-green-500 mr-2"></i> Автоматическое списание</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-gray-500 mb-6">
+                        <p><i class="fas fa-info-circle mr-2"></i> Следующий платеж (<span id="nextPaymentAmount">0</span>₽) будет списан <span id="nextPaymentDate">--.--.----</span></p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center mt-8">
+                    <button class="btn btn-primary" id="btnFinishSubscription">
+                        <i class="fas fa-check"></i>
+                        Начать пользоваться
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Шаг 4: Ежемесячный платеж -->
+            <div class="subscription-step" id="subscriptionStep4">
+                <h4 class="mb-4" style="font-weight: 600; color: var(--graphite-dark);">Настройка ежемесячного платежа</h4>
+                <p class="mb-6 text-gray-600">Настройте автоплатёж для бесперебойного доступа к услугам</p>
+                
+                <div class="card mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h5 id="monthlyTierName" class="font-semibold">Эссеншл</h5>
+                            <p class="text-sm text-gray-500">Ежемесячная оплата</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xl font-bold" id="monthlyTierPrice">0₽</div>
+                            <p class="text-sm text-gray-500">в месяц</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm">Дата следующего платежа:</span>
+                            <span class="font-medium" id="monthlyNextDate">--.--.----</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">Период подписки:</span>
+                            <span class="font-medium">30 дней</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 mb-4">
+                        <input type="checkbox" id="autoRenewal" checked>
+                        <label for="autoRenewal" class="font-medium">Включить автопродление</label>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">
+                        При включенном автопродлении средства будут списываться автоматически за 1 день до окончания подписки
+                    </p>
+                </div>
+                
+                <div class="flex justify-between items-center mt-8">
+                    <button class="btn btn-secondary" id="btnSkipMonthly">
+                        <i class="fas fa-clock"></i>
+                        Настроить позже
+                    </button>
+                    <button class="btn btn-primary" id="btnConfirmMonthly">
+                        <i class="fas fa-check"></i>
+                        Включить автоплатёж
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно пополнения баланса -->
+<div class="modal" id="depositModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Пополнение баланса</h3>
+            <button class="close-btn" id="btnCloseDeposit">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-6">
+                <p class="text-gray-600 mb-4">Пополните баланс для автоматической оплаты подписки</p>
+                
+                <div class="flex items-center justify-between mb-4 p-4 border rounded-lg border-gray-200">
+                    <div>
+                        <div class="text-sm text-gray-500">Текущий баланс</div>
+                        <div class="text-2xl font-bold" id="currentBalance">0₽</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">Ежемесячный платёж</div>
+                        <div class="text-xl font-bold text-blue-600" id="monthlyPaymentAmount">0₽</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h6 class="font-medium mb-3">Сумма пополнения:</h6>
+                <div class="grid grid-3 gap-3 mb-4">
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="500">500₽</button>
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="1000">1000₽</button>
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="2000">2000₽</button>
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="3000">3000₽</button>
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="5000">5000₽</button>
+                    <button class="deposit-amount-btn btn btn-secondary" data-amount="10000">10000₽</button>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Другая сумма</label>
+                    <input type="number" class="form-input" id="customAmount" placeholder="Введите сумму" min="100" step="100">
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h6 class="font-medium mb-3">Способ оплаты:</h6>
+                <div class="payment-methods">
+                    <div class="payment-method selected" data-method="card">
+                        <i class="fas fa-credit-card"></i>
+                        <div>Карта</div>
+                    </div>
+                    <div class="payment-method" data-method="yoomoney">
+                        <i class="fas fa-wallet"></i>
+                        <div>ЮMoney</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="btnConfirmDeposit" disabled>
+                <i class="fas fa-credit-card"></i>
+                Пополнить баланс
+            </button>
+        </div>
+    </div>
+</div>
     <!-- Модалка авторизации -->
     <div class="modal" id="authModal">
         <div class="modal-content">
@@ -2599,23 +3167,22 @@
                     break;
             }
         }
-
-        // Загрузка главной страницы
-        async function loadHomePage() {
-            if (app.categories.length === 0) {
-                await loadCategories();
-            }
-            
-            renderHomeCategories();
-            
-            // Показываем статистику если пользователь авторизован
-            if (app.currentUser) {
-                await loadHomeStats();
-            }
-            
-            // Загружаем отзывы
-            await loadReviews();
-        }
+async function loadHomePage() {
+    if (app.categories.length === 0) {
+        await loadCategories();
+    }
+    
+    renderHomeCategories();
+    
+    // Показываем статистику если пользователь авторизован
+    if (app.currentUser) {
+        await loadHomeStats();
+        await checkSubscriptionState(); // Проверяем состояние подписки
+    }
+    
+    // Загружаем отзывы
+    await loadReviews();
+}
 
         // Загрузка отзывов
         async function loadReviews() {
@@ -2713,6 +3280,71 @@
             });
         }
 
+// В функции loadHomePage() добавьте:
+if (!app.currentUser) {
+    const homeStats = document.getElementById('homeStats');
+    if (homeStats) {
+        homeStats.innerHTML = `
+            <div class="card mb-8" style="background: linear-gradient(135deg, var(--pastel-pink) 0%, var(--pink-light) 100%);">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="flex-1">
+                        <h2 class="category-title mb-4">Начните пользоваться уже сегодня!</h2>
+                        <div class="grid grid-2 gap-4 mb-6">
+                            <div class="text-center">
+                                <div class="category-icon mb-4">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <h3 class="category-title" style="font-size: 1.1rem;">Быстрая регистрация</h3>
+                                <p class="category-desc">Заполните простую форму и получите доступ</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="category-icon mb-4">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <h3 class="category-title" style="font-size: 1.1rem;">Выберите подписку</h3>
+                                <p class="category-desc">От 0₽ в месяц с вступительным взносом</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="category-icon mb-4">
+                                    <i class="fas fa-hands-helping"></i>
+                                </div>
+                                <h3 class="category-title" style="font-size: 1.1rem;">Заказывайте помощь</h3>
+                                <p class="category-desc">Более 12 услуг в 6 категориях</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="category-icon mb-4">
+                                    <i class="fas fa-infinity"></i>
+                                </div>
+                                <h3 class="category-title" style="font-size: 1.1rem;">Все включено</h3>
+                                <p class="category-desc">Никаких скрытых платежей</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center md:text-right">
+                        <div class="mb-4">
+                            <button class="btn btn-primary" onclick="openAuthModal()">
+                                <i class="fas fa-user-plus"></i>
+                                Зарегистрироваться
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-600">
+                            Уже есть аккаунт? 
+                            <a href="#" onclick="openAuthModal(); return false;" style="color: var(--gold-metallic); text-decoration: underline;">
+                                Войдите
+                            </a>
+                        </p>
+                        <div class="mt-4 text-xs text-gray-500">
+                            <p><i class="fas fa-shield-alt"></i> Гарантия возврата средств</p>
+                            <p><i class="fas fa-check-circle"></i> Без обязательств</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        homeStats.classList.remove('hidden');
+    }
+}
+        
         // Загрузка админ панели
         async function loadAdminPage() {
             if (!app.currentUser || !['admin', 'manager', 'superadmin'].includes(app.currentUser.role)) {
@@ -3645,47 +4277,42 @@
             `).join('');
         }
 
-        // Запуск визарда заказа
-        window.startOrderWizard = async function(categoryId) {
-            if (!app.currentUser) {
-                openAuthModal();
-                return;
+window.startOrderWizard = async function(categoryId) {
+    if (!app.currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    // Проверяем состояние подписки
+    try {
+        const response = await fetch(`${app.API_URL}/api/auth/subscription-info`, {
+            headers: {
+                'Authorization': `Bearer ${app.token}`
             }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const subscription = data.data.subscription;
             
-            // Проверяем активна ли подписка
-            if (app.currentUser.subscription_status !== 'active') {
-                showNotification('Ваша подписка не активна. Активируйте подписку для создания заказов.', 'error');
-                navigate('subscriptions');
-                return;
-            }
-            
-            // Проверяем оплачен ли вступительный взнос
-            if (app.currentUser.initial_fee_paid !== 1) {
-                showNotification('Необходимо оплатить вступительный взнос для создания заказов.', 'error');
-                navigate('subscriptions');
-                return;
-            }
-            
-            // Для клиентов проверяем лимит задач
-            if (app.currentUser.role === 'client') {
-                const userData = await fetch(`${app.API_URL}/api/auth/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${app.token}`
-                    }
-                });
-                
-                if (userData.ok) {
-                    const data = await userData.json();
-                    const stats = data.data.stats;
-                    
-                    if (stats.tasks_remaining <= 0) {
-                        showNotification(`Превышен лимит задач по вашей подписке. Доступно: ${stats.tasks_limit}, использовано: ${stats.tasks_used}.`, 'error');
-                        navigate('subscriptions');
-                        return;
-                    }
+            // Проверяем можно ли создавать задачи
+            if (!subscription.can_create_tasks) {
+                if (subscription.state === 'no_subscription' || subscription.state === 'initial_fee_paid') {
+                    showNotification('Для создания задач необходимо оформить подписку', 'error');
+                    openSubscriptionWizard();
+                    return;
+                } else if (subscription.state === 'suspended' || subscription.state === 'expired') {
+                    showNotification('Ваша подписка не активна. Пополните баланс или возобновите подписку', 'error');
+                    openDepositModal();
+                    return;
+                } else if (subscription.tasks_remaining <= 0) {
+                    showNotification(`Лимит задач исчерпан. Доступно: ${subscription.tasks_limit}, использовано: ${subscription.tasks_used}. Подождите до обновления лимита или смените тариф`, 'error');
+                    navigate('subscriptions');
+                    return;
                 }
             }
             
+            // Если все проверки пройдены - продолжаем
             app.currentCategoryId = categoryId;
             app.wizardData = {
                 categoryId: categoryId
@@ -3697,7 +4324,15 @@
             
             // Загружаем услуги для категории
             loadServicesForCategory(categoryId);
-        };
+            
+        } else {
+            showNotification('Не удалось проверить подписку', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка проверки подписки:', error);
+        showNotification('Ошибка сети', 'error');
+    }
+};
 
         // Загрузка услуг для категории
         async function loadServicesForCategory(categoryId) {
@@ -5198,6 +5833,8 @@
             }
         };
 
+
+        
         // Загрузка истории статусов
         async function loadStatusHistory(taskId) {
             try {
@@ -5554,6 +6191,624 @@
             }
         }
 
+// ==================== СИСТЕМА ПОДПИСОК ====================
+
+// Состояния пользователя
+let userSubscriptionState = null;
+let selectedTier = null;
+let selectedPaymentMethod = 'card';
+
+// Проверка состояния подписки при загрузке
+async function checkSubscriptionState() {
+    if (!app.currentUser) return;
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/auth/subscription-info`, {
+            headers: {
+                'Authorization': `Bearer ${app.token}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            userSubscriptionState = data.data.subscription.state;
+            
+            // Показываем приветственное окно для новых подписчиков
+            if (userSubscriptionState === 'active' && 
+                localStorage.getItem('welcome_shown') !== 'true') {
+                showWelcomeModal(data.data.subscription);
+            }
+            
+            // Показываем предупреждение о низком балансе
+            if (userSubscriptionState === 'active' && data.data.subscription.days_remaining < 3) {
+                showLowBalanceWarning(data.data);
+            }
+            
+            // Показываем баннер для пользователей без подписки
+            updateSubscriptionBanner(data.data.subscription);
+        }
+    } catch (error) {
+        console.error('Ошибка проверки подписки:', error);
+    }
+}
+
+// Показ приветственного модального окна
+function showWelcomeModal(subscription) {
+    const overlay = document.getElementById('welcomeOverlay');
+    const welcomeContent = document.getElementById('welcomeContent');
+    
+    document.getElementById('welcomeSubscriptionName').textContent = 
+        `Вы успешно активировали подписку ${subscription.display_name}`;
+    
+    welcomeContent.innerHTML = `
+        <div class="welcome-features">
+            <h4 style="font-weight: 600; margin-bottom: 15px; color: var(--graphite-dark);">Теперь вам доступно:</h4>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> <strong>Безлимитный доступ</strong> к услугам в рамках вашего тарифа</li>
+                <li><i class="fas fa-check-circle"></i> <strong>${subscription.tasks_limit} задач</strong> в месяц бесплатно</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Приоритетная поддержка</strong> 24/7</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Автоматическое списание</strong> - вам не нужно помнить о платежах</li>
+                <li><i class="fas fa-check-circle"></i> <strong>Без скрытых платежей</strong> - всё включено в подписку</li>
+            </ul>
+        </div>
+        
+        <div class="mt-6 p-4 border rounded-lg border-gold" style="background: rgba(197, 168, 128, 0.1);">
+            <h5 style="font-weight: 600; margin-bottom: 10px; color: var(--gold-dark);">
+                <i class="fas fa-info-circle"></i> Важная информация
+            </h5>
+            <p style="font-size: 0.9rem; color: var(--graphite-medium);">
+                Ваша подписка автоматически продлится <strong>за 1 день до окончания</strong>.
+                Следующий платёж (${subscription.price_monthly}₽) будет списан <strong>${new Date(new Date().setDate(new Date().getDate() + 29)).toLocaleDateString('ru-RU')}</strong>.
+                Баланс: <strong>${app.currentUser.balance || 0}₽</strong>
+            </p>
+        </div>
+    `;
+    
+    overlay.style.display = 'flex';
+    
+    // Сохраняем флаг, что окно показано
+    localStorage.setItem('welcome_shown', 'true');
+}
+
+// Показ предупреждения о низком балансе
+function showLowBalanceWarning(data) {
+    const days = data.subscription.days_remaining;
+    const balance = data.balance;
+    const monthlyPrice = data.subscription.price_monthly;
+    
+    let message = '';
+    let type = 'warning';
+    
+    if (balance < monthlyPrice) {
+        message = `Недостаточно средств для продления подписки! Баланс: ${balance}₽, требуется: ${monthlyPrice}₽. Пополните баланс.`;
+        type = 'error';
+    } else if (days <= 1) {
+        message = `Подписка истекает завтра! Автоматическое списание ${monthlyPrice}₽ будет выполнено сегодня.`;
+        type = 'error';
+    } else if (days <= 3) {
+        message = `Подписка истекает через ${days} дня. Автоматическое списание ${monthlyPrice}₽ будет выполнено через ${days-1} дня.`;
+        type = 'warning';
+    }
+    
+    if (message) {
+        showNotification(message, type);
+    }
+}
+
+// Обновление баннера подписки на главной
+function updateSubscriptionBanner(subscription) {
+    const homeStats = document.getElementById('homeStats');
+    
+    if (!homeStats) return;
+    
+    let bannerHtml = '';
+    
+    switch(userSubscriptionState) {
+        case 'active':
+            bannerHtml = `
+                <div class="card mb-8" style="border-left: 4px solid var(--aquamarine);">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 style="font-weight: 600; color: var(--graphite-dark); margin-bottom: 4px;">
+                                <i class="fas fa-crown" style="color: var(--gold-metallic);"></i>
+                                Ваша подписка активна
+                            </h3>
+                            <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                                Тариф: <strong>${subscription.display_name}</strong> | 
+                                Осталось задач: <strong>${subscription.tasks_remaining}/${subscription.tasks_limit}</strong> | 
+                                Действует до: <strong>${new Date(subscription.expires).toLocaleDateString('ru-RU')}</strong>
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="subscription-status-badge status-active">
+                                <i class="fas fa-check-circle"></i>
+                                Активна (${subscription.days_remaining} дн.)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'suspended':
+            bannerHtml = `
+                <div class="card mb-8" style="border-left: 4px solid #F57C00; background: #FFF0E6;">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 style="font-weight: 600; color: #F57C00; margin-bottom: 4px;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Подписка приостановлена
+                            </h3>
+                            <p style="color: #F57C00; font-size: 0.9rem;">
+                                Недостаточно средств для продления подписки. Пополните баланс для возобновления доступа.
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" onclick="openDepositModal()">
+                                <i class="fas fa-credit-card"></i>
+                                Пополнить баланс
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'expired':
+            bannerHtml = `
+                <div class="card mb-8" style="border-left: 4px solid #D32F2F; background: #FFE6E6;">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 style="font-weight: 600; color: #D32F2F; margin-bottom: 4px;">
+                                <i class="fas fa-times-circle"></i>
+                                Подписка истекла
+                            </h3>
+                            <p style="color: #D32F2F; font-size: 0.9rem;">
+                                Срок действия подписки истёк. Оформите новую подписку для возобновления доступа.
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" onclick="openSubscriptionWizard()">
+                                <i class="fas fa-sync-alt"></i>
+                                Возобновить подписку
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'initial_fee_paid':
+            bannerHtml = `
+                <div class="card mb-8" style="border-left: 4px solid #1976D2; background: #E6F7FF;">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 style="font-weight: 600; color: #1976D2; margin-bottom: 4px;">
+                                <i class="fas fa-clock"></i>
+                                Готово к активации
+                            </h3>
+                            <p style="color: #1976D2; font-size: 0.9rem;">
+                                Вступительный взнос оплачен. Выберите тарифный план для активации подписки.
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" onclick="openSubscriptionWizard()">
+                                <i class="fas fa-bolt"></i>
+                                Выбрать тариф
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            break;
+            
+        case 'no_subscription':
+            bannerHtml = `
+                <div class="card mb-8" style="border-left: 4px solid var(--graphite-dark); background: rgba(61, 61, 61, 0.05);">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 style="font-weight: 600; color: var(--graphite-dark); margin-bottom: 4px;">
+                                <i class="fas fa-star"></i>
+                                Начните пользоваться сервисом
+                            </h3>
+                            <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                                Оформите подписку для доступа ко всем услугам. Первый платёж - вступительный взнос за проверку помощниц.
+                            </p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-primary" onclick="openSubscriptionWizard()">
+                                <i class="fas fa-crown"></i>
+                                Оформить подписку
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            break;
+    }
+    
+    if (bannerHtml) {
+        // Добавляем баннер в начало секции статистики
+        const existingBanner = homeStats.querySelector('.subscription-banner');
+        if (existingBanner) {
+            existingBanner.remove();
+        }
+        
+        const banner = document.createElement('div');
+        banner.className = 'subscription-banner';
+        banner.innerHTML = bannerHtml;
+        homeStats.prepend(banner);
+    }
+}
+
+// Открытие визарда подписки
+function openSubscriptionWizard() {
+    if (!app.currentUser) {
+        openAuthModal();
+        return;
+    }
+    
+    // Загружаем доступные тарифы
+    loadSubscriptionTiers();
+    showSubscriptionStep(1);
+    openModal('subscriptionWizardModal');
+}
+
+// Загрузка тарифов для визарда
+async function loadSubscriptionTiers() {
+    try {
+        const response = await fetch(`${app.API_URL}/api/subscriptions`);
+        if (response.ok) {
+            const data = await response.json();
+            const tiers = data.data.subscriptions;
+            
+            const container = document.getElementById('tierComparison');
+            container.innerHTML = tiers.map(tier => `
+                <div class="tier-card ${tier.is_popular ? 'recommended' : ''}" data-tier='${JSON.stringify(tier)}' onclick="selectTier(this)">
+                    ${tier.is_popular ? '<div class="tier-badge">Популярный</div>' : ''}
+                    <h3 class="tier-name">${tier.display_name}</h3>
+                    <div class="tier-price">${tier.price_monthly}₽</div>
+                    <div class="tier-period">в месяц</div>
+                    
+                    <div class="mb-4">
+                        <div style="text-align: center; padding: 8px; background: rgba(61, 61, 61, 0.05); border-radius: var(--radius-sm);">
+                            <div style="font-size: 0.9rem; color: var(--graphite-medium);">Вступительный взнос</div>
+                            <div style="font-size: 1.2rem; font-weight: 700; color: var(--graphite-dark);">${tier.initial_fee}₽</div>
+                        </div>
+                    </div>
+                    
+                    <ul class="tier-features">
+                        ${tier.features.map(feature => `
+                            <li><i class="fas fa-check"></i> ${feature}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки тарифов:', error);
+        showNotification('Не удалось загрузить тарифы', 'error');
+    }
+}
+
+// Выбор тарифа
+function selectTier(element) {
+    // Сбрасываем выделение
+    document.querySelectorAll('.tier-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Выделяем выбранный
+    element.classList.add('selected');
+    
+    // Сохраняем выбранный тариф
+    selectedTier = JSON.parse(element.getAttribute('data-tier'));
+    
+    // Активируем кнопку продолжения
+    document.getElementById('btnNextToPayment').disabled = false;
+}
+
+// Показать шаг визарда
+function showSubscriptionStep(step) {
+    // Скрываем все шаги
+    document.querySelectorAll('.subscription-step').forEach(step => {
+        step.classList.remove('active');
+    });
+    
+    // Показываем нужный шаг
+    document.getElementById(`subscriptionStep${step}`).classList.add('active');
+    
+    // Обновляем данные на шагах
+    if (selectedTier) {
+        updateSubscriptionSteps(selectedTier);
+    }
+}
+
+// Обновление данных на шагах визарда
+function updateSubscriptionSteps(tier) {
+    // Шаг 2: Вступительный взнос
+    document.getElementById('selectedTierName').textContent = tier.display_name;
+    document.getElementById('selectedTierFee').textContent = `${tier.initial_fee}₽`;
+    
+    // Шаг 3: Успешная оплата
+    document.getElementById('successTierName').textContent = tier.display_name;
+    document.getElementById('successTierFee').textContent = `${tier.initial_fee}₽`;
+    document.getElementById('successTasksLimit').textContent = tier.tasks_limit;
+    
+    // Рассчитываем дату следующего платежа
+    const nextPaymentDate = new Date();
+    nextPaymentDate.setDate(nextPaymentDate.getDate() + 30);
+    
+    document.getElementById('nextPaymentAmount').textContent = tier.price_monthly;
+    document.getElementById('nextPaymentDate').textContent = nextPaymentDate.toLocaleDateString('ru-RU');
+    
+    // Шаг 4: Ежемесячный платёж
+    document.getElementById('monthlyTierName').textContent = tier.display_name;
+    document.getElementById('monthlyTierPrice').textContent = `${tier.price_monthly}₽`;
+    document.getElementById('monthlyNextDate').textContent = nextPaymentDate.toLocaleDateString('ru-RU');
+}
+
+// Оплата вступительного взноса
+async function payInitialFee() {
+    if (!selectedTier) {
+        showNotification('Выберите тариф', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/subscriptions/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${app.token}`
+            },
+            body: JSON.stringify({
+                plan: selectedTier.name,
+                initial_fee_paid: false // Симуляция оплаты
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Обновляем пользователя
+            if (data.data && data.data.user) {
+                app.currentUser = data.data.user;
+                updateUserMenu();
+            }
+            
+            // Переходим к шагу успешной оплаты
+            showSubscriptionStep(3);
+            
+            showNotification('Вступительный взнос успешно оплачен!', 'success');
+        } else {
+            if (data.requires_initial_fee) {
+                // Недостаточно средств - предлагаем пополнить баланс
+                showNotification(`Недостаточно средств. Требуется: ${data.initial_fee_amount}₽`, 'error');
+                closeModal('subscriptionWizardModal');
+                openDepositModal(data.initial_fee_amount);
+            } else {
+                showNotification(data.error || 'Ошибка оплаты', 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка оплаты вступительного взноса:', error);
+        showNotification('Ошибка сети', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Открытие модалки пополнения баланса
+function openDepositModal(requiredAmount = null) {
+    // Обновляем баланс
+    document.getElementById('currentBalance').textContent = `${app.currentUser?.balance || 0}₽`;
+    
+    // Устанавливаем требуемую сумму если указана
+    if (requiredAmount) {
+        document.getElementById('customAmount').value = requiredAmount;
+    }
+    
+    openModal('depositModal');
+}
+
+// Пополнение баланса
+async function depositBalance(amount) {
+    showLoading();
+    
+    try {
+        const response = await fetch(`${app.API_URL}/api/auth/deposit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${app.token}`
+            },
+            body: JSON.stringify({ amount })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Обновляем баланс пользователя
+            if (app.currentUser) {
+                app.currentUser.balance = (app.currentUser.balance || 0) + amount;
+                updateUserMenu();
+            }
+            
+            showNotification(data.message || 'Баланс успешно пополнен', 'success');
+            closeModal('depositModal');
+            
+            // Если была попытка оплатить подписку - продолжаем
+            if (selectedTier) {
+                openSubscriptionWizard();
+                showSubscriptionStep(2);
+            }
+        } else {
+            showNotification(data.error || 'Ошибка пополнения баланса', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка пополнения баланса:', error);
+        showNotification('Ошибка сети', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Завершение оформления подписки
+function finishSubscriptionWizard() {
+    closeModal('subscriptionWizardModal');
+    
+    // Показываем приветственное окно
+    if (selectedTier) {
+        const subscriptionData = {
+            display_name: selectedTier.display_name,
+            tasks_limit: selectedTier.tasks_limit,
+            price_monthly: selectedTier.price_monthly
+        };
+        
+        showWelcomeModal(subscriptionData);
+    }
+    
+    // Обновляем страницу
+    loadCurrentPage();
+}
+
+// ==================== ОБНОВЛЕНИЕ ИНИЦИАЛИЗАЦИИ ====================
+
+// В функции initApplication добавьте:
+async function initApplication() {
+    // ... существующий код ...
+    
+    // После успешного входа проверяем подписку
+    if (app.currentUser) {
+        await checkSubscriptionState();
+    }
+    
+    // Добавляем новые обработчики событий
+    setupSubscriptionEventListeners();
+}
+
+// Добавьте обработчики событий для системы подписок
+function setupSubscriptionEventListeners() {
+    // Приветственное окно
+    document.getElementById('btnStartUsing')?.addEventListener('click', function() {
+        document.getElementById('welcomeOverlay').style.display = 'none';
+    });
+    
+    // Визард подписки
+    document.getElementById('btnNextToPayment')?.addEventListener('click', function() {
+        if (!selectedTier) return;
+        showSubscriptionStep(2);
+    });
+    
+    document.getElementById('btnBackToTiers')?.addEventListener('click', function() {
+        showSubscriptionStep(1);
+    });
+    
+    document.getElementById('btnPayInitialFee')?.addEventListener('click', function() {
+        payInitialFee();
+    });
+    
+    document.getElementById('btnFinishSubscription')?.addEventListener('click', function() {
+        finishSubscriptionWizard();
+    });
+    
+    document.getElementById('btnConfirmMonthly')?.addEventListener('click', function() {
+        showNotification('Автоплатёж успешно настроен', 'success');
+        finishSubscriptionWizard();
+    });
+    
+    document.getElementById('btnSkipMonthly')?.addEventListener('click', function() {
+        finishSubscriptionWizard();
+    });
+    
+    document.getElementById('btnCancelSubscription')?.addEventListener('click', function() {
+        closeModal('subscriptionWizardModal');
+    });
+    
+    document.getElementById('btnCloseSubscriptionWizard')?.addEventListener('click', function() {
+        closeModal('subscriptionWizardModal');
+    });
+    
+    // Выбор способа оплаты
+    document.querySelectorAll('.payment-method').forEach(method => {
+        method.addEventListener('click', function() {
+            // Сбрасываем выделение
+            document.querySelectorAll('.payment-method').forEach(m => {
+                m.classList.remove('selected');
+            });
+            
+            // Выделяем выбранный
+            this.classList.add('selected');
+            
+            // Получаем метод
+            selectedPaymentMethod = this.getAttribute('data-method');
+            
+            // Показываем соответствующую форму
+            document.querySelectorAll('.payment-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            document.getElementById(`${selectedPaymentMethod}PaymentForm`)?.classList.add('active');
+        });
+    });
+    
+    // Пополнение баланса
+    document.getElementById('btnCloseDeposit')?.addEventListener('click', function() {
+        closeModal('depositModal');
+    });
+    
+    document.getElementById('btnConfirmDeposit')?.addEventListener('click', function() {
+        const amount = parseInt(document.getElementById('customAmount').value) || 
+                      parseInt(this.querySelector('.selected')?.getAttribute('data-amount')) || 0;
+        
+        if (amount >= 100) {
+            depositBalance(amount);
+        } else {
+            showNotification('Минимальная сумма пополнения 100₽', 'error');
+        }
+    });
+    
+    // Кнопки быстрого выбора суммы
+    document.querySelectorAll('.deposit-amount-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Сбрасываем выделение
+            document.querySelectorAll('.deposit-amount-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-secondary');
+            });
+            
+            // Выделяем выбранную сумму
+            this.classList.remove('btn-secondary');
+            this.classList.add('btn-primary');
+            
+            // Устанавливаем сумму в поле
+            document.getElementById('customAmount').value = this.getAttribute('data-amount');
+            
+            // Активируем кнопку подтверждения
+            document.getElementById('btnConfirmDeposit').disabled = false;
+        });
+    });
+    
+    // Ввод произвольной суммы
+    document.getElementById('customAmount')?.addEventListener('input', function() {
+        const amount = parseInt(this.value) || 0;
+        if (amount >= 100) {
+            document.getElementById('btnConfirmDeposit').disabled = false;
+            
+            // Сбрасываем выделение кнопок
+            document.querySelectorAll('.deposit-amount-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-secondary');
+            });
+        } else {
+            document.getElementById('btnConfirmDeposit').disabled = true;
+        }
+    });
+}
+        
         // Загрузка специализаций помощника
         async function loadPerformerSpecializations() {
             try {
