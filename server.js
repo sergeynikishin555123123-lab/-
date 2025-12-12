@@ -314,6 +314,193 @@ const initDatabase = async () => {
     }
 };
 
+// ==================== СИСТЕМА ПОДПИСОК И ПЛАТЕЖЕЙ ====================
+
+// Автоматическое списание подписок (запускается каждый день)
+const processSubscriptionRenewals = async () => {
+    try {
+        console.log('💰 Начало обработки подписок...');
+        
+        // Находим подписки, срок которых истекает сегодня или уже истек
+        const expiringSubscriptions = await db.all(`
+            SELECT u.*, s.price_monthly
+            FROM users u
+            JOIN subscriptions s ON u.subscription_plan = s.name
+            WHERE u.subscription_status = 'active'
+              AND u.subscription_expires <= DATE('now', '+1 day')
+              AND u.is_active = 1
+        `);
+        
+        console.log(`📊 Найдено ${expiringSubscriptions.length} подписок для обработки`);
+        
+        for (const user of expiringSubscriptions) {
+            try {
+                // Проверяем баланс
+                if (user.balance >= user.price_monthly) {
+                    // Списываем средства
+                    await db.run(
+                        'UPDATE users SET balance = balance - ? WHERE id = ?',
+                        [user.price_monthly, user.id]
+                    );
+                    
+                    // Продлеваем подписку
+                    const newExpiryDate = new Date();
+                    newExpiryDate.setDate(newExpiryDate.getDate() + 30);
+                    
+                    await db.run(
+                        `UPDATE users SET 
+                            subscription_expires = ?,
+                            tasks_used = 0,
+                            updated_at = CURRENT_TIMESTAMP
+                         WHERE id = ?`,
+                        [newExpiryDate.toISOString().split('T')[0], user.id]
+                    );
+                    
+                    // Создаем транзакцию
+                    await db.run(
+                        `INSERT INTO transactions 
+                        (user_id, type, amount, description, status) 
+                        VALUES (?, ?, ?, ?, ?)`,
+                        [
+                            user.id,
+                            'subscription_renewal',
+                            -user.price_monthly,
+                            `Продление подписки: ${user.subscription_plan}`,
+                            'completed'
+                        ]
+                    );
+                    
+                    // Обновляем статистику
+                    await db.run(
+                        'UPDATE users SET total_spent = total_spent + ? WHERE id = ?',
+                        [user.price_monthly, user.id]
+                    );
+                    
+                    // Создаем уведомление
+                    await db.run(
+                        `INSERT INTO notifications 
+                        (user_id, type, title, message) 
+                        VALUES (?, ?, ?, ?)`,
+                        [
+                            user.id,
+                            'subscription_renewed',
+                            'Подписка продлена',
+                            `Ваша подписка успешно продлена. Списан ${user.price_monthly}₽. Подписка действует до ${newExpiryDate.toLocaleDateString('ru-RU')}`
+                        ]
+                    );
+                    
+                    console.log(`✅ Подписка продлена для пользователя ${user.email}`);
+                    
+                } else {
+                    // Недостаточно средств - приостанавливаем подписку
+                    await db.run(
+                        `UPDATE users SET 
+                            subscription_status = 'suspended',
+                            updated_at = CURRENT_TIMESTAMP
+                         WHERE id = ?`,
+                        [user.id]
+                    );
+                    
+                    // Создаем уведомление
+                    await db.run(
+                        `INSERT INTO notifications 
+                        (user_id, type, title, message) 
+                        VALUES (?, ?, ?, ?)`,
+                        [
+                            user.id,
+                            'subscription_suspended',
+                            'Подписка приостановлена',
+                            'Недостаточно средств для продления подписки. Пополните баланс и активируйте подписку снова.'
+                        ]
+                    );
+                    
+                    console.log(`⛔ Подписка приостановлена для пользователя ${user.email} (недостаточно средств)`);
+                }
+                
+            } catch (error) {
+                console.error(`Ошибка обработки пользователя ${user.email}:`, error);
+            }
+        }
+        
+        // Обрабатываем подписки, которые были приостановлены и теперь есть средства
+        const suspendedUsers = await db.all(`
+            SELECT u.*, s.price_monthly
+            FROM users u
+            JOIN subscriptions s ON u.subscription_plan = s.name
+            WHERE u.subscription_status = 'suspended'
+              AND u.balance >= s.price_monthly
+              AND u.is_active = 1
+        `);
+        
+        for (const user of suspendedUsers) {
+            try {
+                // Списываем средства
+                await db.run(
+                    'UPDATE users SET balance = balance - ? WHERE id = ?',
+                    [user.price_monthly, user.id]
+                );
+                
+                // Активируем подписку
+                const newExpiryDate = new Date();
+                newExpiryDate.setDate(newExpiryDate.getDate() + 30);
+                
+                await db.run(
+                    `UPDATE users SET 
+                        subscription_status = 'active',
+                        subscription_expires = ?,
+                        tasks_used = 0,
+                        updated_at = CURRENT_TIMESTAMP
+                     WHERE id = ?`,
+                    [newExpiryDate.toISOString().split('T')[0], user.id]
+                );
+                
+                // Создаем транзакцию
+                await db.run(
+                    `INSERT INTO transactions 
+                    (user_id, type, amount, description, status) 
+                    VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        user.id,
+                        'subscription_reactivation',
+                        -user.price_monthly,
+                        `Активация подписки: ${user.subscription_plan}`,
+                        'completed'
+                    ]
+                );
+                
+                // Создаем уведомление
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message) 
+                    VALUES (?, ?, ?, ?)`,
+                    [
+                        user.id,
+                        'subscription_reactivated',
+                        'Подписка активирована',
+                        `Ваша подписка активирована. Списан ${user.price_monthly}₽. Подписка действует до ${newExpiryDate.toLocaleDateString('ru-RU')}`
+                    ]
+                );
+                
+                console.log(`✅ Подписка активирована для пользователя ${user.email}`);
+                
+            } catch (error) {
+                console.error(`Ошибка активации пользователя ${user.email}:`, error);
+            }
+        }
+        
+        console.log('🎉 Обработка подписок завершена');
+        
+    } catch (error) {
+        console.error('Ошибка обработки подписок:', error);
+    }
+};
+
+// Запускаем обработчик подписок каждый день
+setInterval(processSubscriptionRenewals, 24 * 60 * 60 * 1000);
+
+// Первый запуск через 10 секунд после старта сервера
+setTimeout(processSubscriptionRenewals, 10000);
+
 // ==================== ТЕСТОВЫЕ ДАННЫЕ ====================
 const createInitialData = async () => {
     try {
@@ -1512,6 +1699,205 @@ app.delete('/api/auth/account', authMiddleware(), async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка удаления аккаунта'
+        });
+    }
+});
+
+// Получение информации о подписке пользователя
+app.get('/api/auth/subscription-info', authMiddleware(), async (req, res) => {
+    try {
+        const user = await db.get(
+            `SELECT u.*, 
+                    s.display_name as subscription_display_name,
+                    s.price_monthly,
+                    s.price_yearly,
+                    s.features,
+                    s.initial_fee,
+                    s.tasks_limit
+             FROM users u
+             LEFT JOIN subscriptions s ON u.subscription_plan = s.name
+             WHERE u.id = ?`,
+            [req.user.id]
+        );
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        // Рассчитываем дни до истечения подписки
+        let daysRemaining = 0;
+        let subscriptionState = 'none';
+        let canCreateTasks = false;
+        
+        if (user.subscription_expires) {
+            const expiryDate = new Date(user.subscription_expires);
+            const now = new Date();
+            const diffTime = expiryDate - now;
+            daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (user.subscription_status === 'active' && daysRemaining > 0) {
+                subscriptionState = 'active';
+                canCreateTasks = user.tasks_used < user.tasks_limit;
+            } else if (user.subscription_status === 'suspended') {
+                subscriptionState = 'suspended';
+            } else if (daysRemaining <= 0) {
+                subscriptionState = 'expired';
+            }
+        } else if (user.initial_fee_paid) {
+            subscriptionState = 'initial_fee_paid';
+        } else {
+            subscriptionState = 'no_subscription';
+        }
+        
+        // Парсим features из JSON строки
+        let features = [];
+        if (user.features && typeof user.features === 'string') {
+            try {
+                features = JSON.parse(user.features);
+            } catch (error) {
+                features = [];
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                subscription: {
+                    plan: user.subscription_plan,
+                    display_name: user.subscription_display_name,
+                    status: user.subscription_status,
+                    state: subscriptionState,
+                    expires: user.subscription_expires,
+                    days_remaining: daysRemaining,
+                    price_monthly: user.price_monthly,
+                    price_yearly: user.price_yearly,
+                    initial_fee: user.initial_fee,
+                    initial_fee_paid: user.initial_fee_paid,
+                    tasks_limit: user.tasks_limit,
+                    tasks_used: user.tasks_used,
+                    tasks_remaining: Math.max(0, user.tasks_limit - user.tasks_used),
+                    features: features,
+                    can_create_tasks: canCreateTasks
+                },
+                balance: user.balance
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения информации о подписке:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения информации о подписке'
+        });
+    }
+});
+
+// Пополнение баланса
+app.post('/api/auth/deposit', authMiddleware(), async (req, res) => {
+    try {
+        const { amount } = req.body;
+        
+        if (!amount || amount <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Неверная сумма пополнения'
+            });
+        }
+        
+        // Пополняем баланс
+        await db.run(
+            'UPDATE users SET balance = balance + ? WHERE id = ?',
+            [amount, req.user.id]
+        );
+        
+        // Создаем транзакцию
+        await db.run(
+            `INSERT INTO transactions 
+            (user_id, type, amount, description, status) 
+            VALUES (?, ?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'deposit',
+                amount,
+                `Пополнение баланса`,
+                'completed'
+            ]
+        );
+        
+        // Создаем уведомление
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message) 
+            VALUES (?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'deposit_success',
+                'Баланс пополнен',
+                `Ваш баланс пополнен на ${amount}₽`
+            ]
+        );
+        
+        // Получаем обновленного пользователя
+        const user = await db.get(
+            'SELECT balance FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Баланс успешно пополнен',
+            data: {
+                new_balance: user.balance
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка пополнения баланса:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка пополнения баланса'
+        });
+    }
+});
+
+// Отмена подписки
+app.post('/api/auth/cancel-subscription', authMiddleware(['client']), async (req, res) => {
+    try {
+        // Отменяем автопродление (меняем статус)
+        await db.run(
+            `UPDATE users SET 
+                subscription_status = 'cancelled',
+                updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [req.user.id]
+        );
+        
+        // Создаем уведомление
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message) 
+            VALUES (?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'subscription_cancelled',
+                'Подписка отменена',
+                'Ваша подписка отменена. Она останется активной до конца оплаченного периода.'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Подписка успешно отменена'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отмены подписки:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отмены подписки'
         });
     }
 });
