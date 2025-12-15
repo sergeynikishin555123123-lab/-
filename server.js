@@ -1,3 +1,4 @@
+// server.js - исправленная версия
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -7,6 +8,7 @@ const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
@@ -15,7 +17,7 @@ const app = express();
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' 
         ? ['https://yourdomain.com'] 
-        : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -40,6 +42,12 @@ const initDatabase = async () => {
         const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/concierge_prod.db' : './concierge.db';
         console.log(`📁 Путь к базе данных: ${dbPath}`);
         
+        // Убедимся, что директория существует
+        const dir = path.dirname(dbPath);
+        if (dir !== '.' && !fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        
         db = await open({
             filename: dbPath,
             driver: sqlite3.Database
@@ -49,11 +57,10 @@ const initDatabase = async () => {
 
         // Включаем внешние ключи
         await db.run('PRAGMA foreign_keys = ON');
+        await db.run('PRAGMA journal_mode = WAL');
+        await db.run('PRAGMA synchronous = NORMAL');
 
         // Создание таблиц
-        await db.exec('BEGIN TRANSACTION');
-
-        // Пользователи
         await db.exec(`
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,7 +101,7 @@ const initDatabase = async () => {
                 display_name TEXT NOT NULL,
                 description TEXT NOT NULL,
                 price_monthly REAL NOT NULL,
-                price_yearly REAL NOT NULL,
+                price_yearly REAL,
                 initial_fee REAL NOT NULL DEFAULT 0,
                 tasks_limit INTEGER NOT NULL,
                 features TEXT NOT NULL,
@@ -302,7 +309,6 @@ const initDatabase = async () => {
             )
         `);
 
-        await db.exec('COMMIT');
         console.log('✅ Все таблицы созданы');
 
         // Создаем тестовые данные
@@ -310,8 +316,8 @@ const initDatabase = async () => {
         
         return db;
     } catch (error) {
-        await db.exec('ROLLBACK');
         console.error('❌ Ошибка инициализации базы данных:', error.message);
+        console.error('Stack trace:', error.stack);
         throw error;
     }
 };
@@ -321,8 +327,8 @@ const createInitialData = async () => {
     try {
         console.log('📝 Создание начальных данных...');
 
-        // 1. Настройки системы
-        const settingsExist = await db.get("SELECT 1 FROM settings WHERE key = 'site_name'");
+        // Проверяем и создаем настройки
+        const settingsExist = await db.get("SELECT 1 FROM settings LIMIT 1");
         if (!settingsExist) {
             const settings = [
                 ['site_name', 'Женский Консьерж', 'Название сайта', 'general'],
@@ -346,8 +352,8 @@ const createInitialData = async () => {
             console.log('✅ Настройки системы созданы');
         }
 
-        // 2. FAQ
-        const faqExist = await db.get("SELECT 1 FROM faq WHERE question LIKE '%Как работает система подписок%'");
+        // Создаем FAQ
+        const faqExist = await db.get("SELECT 1 FROM faq LIMIT 1");
         if (!faqExist) {
             const faqs = [
                 ['Как работает система подписок?', 'Вы оплачиваете вступительный взнос один раз при регистрации, затем ежемесячную плату. Все услуги в рамках вашего тарифа бесплатны для вас.', 'subscriptions', 1, 1],
@@ -367,13 +373,13 @@ const createInitialData = async () => {
             console.log('✅ FAQ созданы');
         }
 
-        // 3. Подписки
-        const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions WHERE name = 'essential'");
+        // Создаем подписки
+        const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions LIMIT 1");
         if (!subscriptionsExist) {
             const subscriptions = [
                 [
                     'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
-                    0, 0, 500, 5,
+                    990, 9900, 500, 5,
                     JSON.stringify(['До 5 задач в месяц', 'Все базовые услуги', 'Поддержка по email', 'Стандартное время ответа']),
                     '#FF6B8B', 1, 0, 1
                 ],
@@ -382,6 +388,12 @@ const createInitialData = async () => {
                     1990, 19900, 1000, 999,
                     JSON.stringify(['Неограниченные задачи', 'Все услуги премиум-класса', 'Приоритетная поддержка 24/7', 'Личный помощник', 'Срочные заказы']),
                     '#9B59B6', 2, 1, 1
+                ],
+                [
+                    'vip', 'VIP', 'Индивидуальный подход и максимальный комфорт',
+                    4990, 49900, 2000, 999,
+                    JSON.stringify(['Неограниченные задачи', 'Все услуги VIP-класса', 'Персональный менеджер', 'Экстренная поддержка', 'Высший приоритет']),
+                    '#C5A880', 3, 0, 1
                 ]
             ];
 
@@ -397,16 +409,16 @@ const createInitialData = async () => {
             console.log('✅ Тарифы подписок созданы');
         }
 
-        // 4. Категории услуг
-        const categoriesExist = await db.get("SELECT 1 FROM categories WHERE name = 'home_and_household'");
+        // Создаем категории
+        const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
         if (!categoriesExist) {
             const categories = [
-                ['home_and_household', 'Дом и быт', 'Уборка, готовка, уход за домом', '🏠', '#FF6B8B', 1, 1],
-                ['family_and_children', 'Дети и семья', 'Няни, репетиторы, помощь с детьми', '👨‍👩‍👧‍👦', '#3498DB', 2, 1],
-                ['beauty_and_health', 'Красота и здоровье', 'Маникюр, массаж, парикмахерские услуги', '💅', '#9B59B6', 3, 1],
-                ['courses_and_education', 'Курсы и образование', 'Репетиторство, обучение, курсы', '🎓', '#2ECC71', 4, 1],
-                ['shopping_and_delivery', 'Покупки и доставка', 'Покупка и доставка товаров', '🛒', '#E74C3C', 5, 1],
-                ['events_and_organization', 'События и организация', 'Организация мероприятий и праздников', '🎉', '#F39C12', 6, 1]
+                ['home_and_household', 'Дом и быт', 'Уборка, готовка, уход за домом', 'fas fa-home', '#FF6B8B', 1, 1],
+                ['family_and_children', 'Дети и семья', 'Няни, репетиторы, помощь с детьми', 'fas fa-baby', '#3498DB', 2, 1],
+                ['beauty_and_health', 'Красота и здоровье', 'Маникюр, массаж, парикмахерские услуги', 'fas fa-spa', '#9B59B6', 3, 1],
+                ['courses_and_education', 'Курсы и образование', 'Репетиторство, обучение, курсы', 'fas fa-graduation-cap', '#2ECC71', 4, 1],
+                ['shopping_and_delivery', 'Покупки и доставка', 'Покупка и доставка товаров', 'fas fa-shopping-cart', '#E74C3C', 5, 1],
+                ['events_and_organization', 'События и организация', 'Организация мероприятий и праздников', 'fas fa-birthday-cake', '#F39C12', 6, 1]
             ];
 
             for (const cat of categories) {
@@ -420,8 +432,8 @@ const createInitialData = async () => {
             console.log('✅ Категории услуг созданы');
         }
 
-        // 5. Услуги
-        const servicesExist = await db.get("SELECT 1 FROM services WHERE name = 'Уборка квартиры'");
+        // Создаем услуги
+        const servicesExist = await db.get("SELECT 1 FROM services LIMIT 1");
         if (!servicesExist) {
             // Получаем ID категорий
             const categories = await db.all("SELECT id, name FROM categories");
@@ -464,7 +476,7 @@ const createInitialData = async () => {
             console.log('✅ Услуги созданы (12 услуг)');
         }
 
-        // 6. Тестовые пользователи
+        // Создаем тестовых пользователей
         const usersExist = await db.get("SELECT 1 FROM users WHERE email = 'superadmin@concierge.ru'");
         if (!usersExist) {
             const passwordHash = await bcrypt.hash('admin123', 12);
@@ -475,51 +487,42 @@ const createInitialData = async () => {
             expiryDate.setFullYear(expiryDate.getFullYear() + 1);
             const expiryDateStr = expiryDate.toISOString().split('T')[0];
 
-            // Главный админ с ID 898508164
-            const adminId = 898508164;
-            
-            // Пользователи с фиксированными ID для тестирования
+            // Пользователи
             const users = [
-                // Главный админ (ID 898508164)
-                [adminId, 'superadmin@concierge.ru', passwordHash, 'Александр', 'Иванов', '+79991112233', 'superadmin', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Александр+Иванов&background=9B59B6&color=fff&bold=true', 0, 1000, 1, 1000, 999, 3, 5, 0, 4.9, 100, 1, 1, null, null, null],
+                // Супер админ
+                ['superadmin@concierge.ru', passwordHash, 'Александр', 'Иванов', '+79991112233', 'superadmin', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Александр+Иванов&background=9B59B6&color=fff&bold=true', 0, 1000, 1, 1000, 999, 0, 0, 4.9, 0, 1, 1, null, null, null],
                 
                 // Администраторы
-                [2, 'admin@concierge.ru', passwordHash, 'Мария', 'Петрова', '+79992223344', 'admin', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Мария+Петрова&background=2ECC71&color=fff&bold=true', 0, 1000, 1, 1000, 999, 2, 5, 0, 4.8, 50, 1, 1, null, null, null],
+                ['admin@concierge.ru', passwordHash, 'Мария', 'Петрова', '+79992223344', 'admin', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Мария+Петрова&background=2ECC71&color=fff&bold=true', 0, 1000, 1, 1000, 999, 0, 0, 4.8, 0, 1, 1, null, null, null],
                 
                 // Помощники
-                [3, 'performer1@concierge.ru', performerPasswordHash, 'Анна', 'Кузнецова', '+79994445566', 'performer', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Анна+Кузнецова&background=3498DB&color=fff&bold=true', 0, 500, 1, 500, 20, 5, 5, 0, 4.5, 30, 1, 1, null, null, null],
-                [4, 'performer2@concierge.ru', performerPasswordHash, 'Мария', 'Смирнова', '+79995556677', 'performer', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Мария+Смирнова&background=3498DB&color=fff&bold=true', 0, 500, 1, 500, 20, 8, 5, 0, 4.6, 45, 1, 1, null, null, null],
-                [5, 'performer3@concierge.ru', performerPasswordHash, 'Ирина', 'Васильева', '+79996667788', 'performer', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Ирина+Васильева&background=3498DB&color=fff&bold=true', 0, 1000, 1, 1000, 50, 15, 5, 0, 4.8, 60, 1, 1, null, null, null],
+                ['performer1@concierge.ru', performerPasswordHash, 'Анна', 'Кузнецова', '+79994445566', 'performer', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Анна+Кузнецова&background=3498DB&color=fff&bold=true', 0, 500, 1, 500, 20, 5, 0, 4.5, 30, 1, 1, null, null, null],
+                ['performer2@concierge.ru', performerPasswordHash, 'Мария', 'Смирнова', '+79995556677', 'performer', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Мария+Смирнова&background=3498DB&color=fff&bold=true', 0, 500, 1, 500, 20, 8, 0, 4.6, 45, 1, 1, null, null, null],
+                ['performer3@concierge.ru', performerPasswordHash, 'Ирина', 'Васильева', '+79996667788', 'performer', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Ирина+Васильева&background=3498DB&color=fff&bold=true', 0, 1000, 1, 1000, 50, 15, 0, 4.8, 60, 1, 1, null, null, null],
                 
                 // Клиенты
-                [6, 'client1@example.com', clientPasswordHash, 'Елена', 'Васильева', '+79997778899', 'client', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Елена+Васильева&background=FF6B8B&color=fff&bold=true', 0, 1000, 1, 1000, 999, 2, 5, 0, 4.0, 10, 1, 1, null, null, null],
-                [7, 'client2@example.com', clientPasswordHash, 'Наталья', 'Федорова', '+79998889900', 'client', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Наталья+Федорова&background=FF6B8B&color=fff&bold=true', 0, 500, 1, 500, 5, 1, 5, 0, 4.5, 3, 1, 1, null, null, null],
-                [8, 'client3@example.com', clientPasswordHash, 'Оксана', 'Николаева', '+79999990011', 'client', 'essential', 'pending', null, 'https://ui-avatars.com/api/?name=Оксана+Николаева&background=FF6B8B&color=fff&bold=true', 0, 500, 0, 500, 5, 0, 5, 0, 0, 0, 1, 1, null, null, null]
+                ['client1@example.com', clientPasswordHash, 'Елена', 'Васильева', '+79997778899', 'client', 'premium', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Елена+Васильева&background=FF6B8B&color=fff&bold=true', 0, 1000, 1, 1000, 999, 2, 10, 4.0, 10, 1, 1, null, null, null],
+                ['client2@example.com', clientPasswordHash, 'Наталья', 'Федорова', '+79998889900', 'client', 'essential', 'active', expiryDateStr, 'https://ui-avatars.com/api/?name=Наталья+Федорова&background=FF6B8B&color=fff&bold=true', 0, 500, 1, 500, 5, 1, 5, 4.5, 3, 1, 1, null, null, null],
+                ['client3@example.com', clientPasswordHash, 'Оксана', 'Николаева', '+79999990011', 'client', 'essential', 'pending', null, 'https://ui-avatars.com/api/?name=Оксана+Николаева&background=FF6B8B&color=fff&bold=true', 0, 500, 0, 500, 5, 0, 0, 0, 0, 1, 1, null, null, null]
             ];
 
             for (const user of users) {
-                const [id, email, password, first_name, last_name, phone, role, subscription_plan, subscription_status, subscription_expires, avatar_url, balance, initial_fee_amount, initial_fee_paid, initial_fee_amount2, tasks_limit, tasks_used, tasks_limit2, total_spent, user_rating, completed_tasks, is_active, email_verified, verification_token, reset_token, reset_token_expires] = user;
-                
                 await db.run(
                     `INSERT INTO users 
-                    (id, email, password, first_name, last_name, phone, role, 
+                    (email, password, first_name, last_name, phone, role, 
                      subscription_plan, subscription_status, subscription_expires,
                      avatar_url, balance, initial_fee_paid, initial_fee_amount, 
                      tasks_limit, tasks_used, total_spent, user_rating, completed_tasks, 
                      is_active, email_verified, verification_token, reset_token, reset_token_expires) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [id, email, password, first_name, last_name, phone, role,
-                     subscription_plan, subscription_status, subscription_expires,
-                     avatar_url, balance, initial_fee_paid, initial_fee_amount, 
-                     tasks_limit, tasks_used, total_spent || 0, user_rating, completed_tasks,
-                     is_active, email_verified, verification_token, reset_token, reset_token_expires]
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    user
                 );
             }
             console.log('✅ Тестовые пользователи созданы');
             
             // Назначаем помощников к категориям
             const categories = await db.all("SELECT id FROM categories");
-            const performers = await db.all("SELECT id FROM users WHERE role = 'performer' AND id >= 3 AND id <= 5");
+            const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
             
             for (const performer of performers) {
                 // Каждый помощник специализируется на 2-3 категориях
@@ -539,7 +542,7 @@ const createInitialData = async () => {
             console.log('✅ Назначения помощников по категориям созданы');
             
             // Создаем тестовые задачи
-            const clients = await db.all("SELECT id FROM users WHERE role = 'client' AND subscription_status = 'active' AND id >= 6 AND id <= 7");
+            const clients = await db.all("SELECT id FROM users WHERE role = 'client' AND subscription_status = 'active'");
             const categoriesList = await db.all("SELECT id FROM categories");
             const servicesList = await db.all("SELECT id FROM services WHERE is_active = 1");
             
@@ -566,7 +569,7 @@ const createInitialData = async () => {
                     const service = servicesList[Math.floor(Math.random() * servicesList.length)];
                     const performer = performers[Math.floor(Math.random() * performers.length)];
                     
-                    const taskNumber = `TASK-202412${(i + 1).toString().padStart(2, '0')}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+                    const taskNumber = `TASK-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}${new Date().getDate().toString().padStart(2, '0')}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
                     
                     const statuses = ['new', 'searching', 'assigned', 'in_progress', 'completed'];
                     const status = statuses[Math.floor(Math.random() * statuses.length)];
@@ -652,6 +655,7 @@ const createInitialData = async () => {
         
     } catch (error) {
         console.error('⚠️ Ошибка создания начальных данных:', error.message);
+        console.error('Stack trace:', error.stack);
     }
 };
 
@@ -683,6 +687,7 @@ const authMiddleware = (roles = []) => {
             const publicRoutes = [
                 'GET /',
                 'GET /health',
+                'GET /api',
                 'GET /api/subscriptions',
                 'GET /api/categories',
                 'GET /api/categories/*',
@@ -771,9 +776,10 @@ const authMiddleware = (roles = []) => {
                 next();
                 
             } catch (jwtError) {
+                console.error('JWT Error:', jwtError.message);
                 return res.status(401).json({ 
                     success: false, 
-                    error: 'Неверный токен' 
+                    error: 'Неверный или истекший токен' 
                 });
             }
             
@@ -960,8 +966,8 @@ app.post('/api/auth/register', async (req, res) => {
             (email, password, first_name, last_name, phone, role, 
              subscription_plan, subscription_status, subscription_expires,
              initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url,
-             verification_token) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             verification_token, balance) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 email,
                 hashedPassword,
@@ -976,7 +982,8 @@ app.post('/api/auth/register', async (req, res) => {
                 subscription.initial_fee,
                 tasksLimit,
                 avatarUrl,
-                verificationToken
+                verificationToken,
+                initialFeePaid ? 0 : subscription.initial_fee
             ]
         );
         
@@ -1003,7 +1010,7 @@ app.post('/api/auth/register', async (req, res) => {
             const categories = await db.all('SELECT id FROM categories WHERE is_active = 1');
             for (const category of categories) {
                 await db.run(
-                    `INSERT INTO performer_categories (performer_id, category_id, is_active) 
+                    `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, is_active) 
                      VALUES (?, ?, 1)`,
                     [userId, category.id]
                 );
@@ -1032,7 +1039,7 @@ app.post('/api/auth/register', async (req, res) => {
             `SELECT id, email, first_name, last_name, phone, role, 
                     subscription_plan, subscription_status, subscription_expires,
                     initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, tasks_used,
-                    user_rating
+                    user_rating, balance
              FROM users WHERE id = ?`,
             [userId]
         );
@@ -1064,7 +1071,7 @@ app.post('/api/auth/register', async (req, res) => {
             data: { 
                 user: userForResponse,
                 token,
-                requires_initial_fee: !initialFeePaid,
+                requires_initial_fee: !initialFeePaid && subscription.initial_fee > 0,
                 initial_fee_amount: subscription.initial_fee
             }
         });
@@ -1458,9 +1465,10 @@ app.get('/api/subscriptions', async (req, res) => {
 });
 
 // Оплата вступительного взноса и активация подписки
-app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req, res) => {
+app.post('/api/subscriptions/subscribe', authMiddleware(), async (req, res) => {
     try {
-        const { plan, initial_fee_paid } = req.body;
+        const { plan } = req.body;
+        const userId = req.user.id;
         
         if (!plan) {
             return res.status(400).json({
@@ -1482,13 +1490,23 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             });
         }
         
+        // Проверяем текущего пользователя
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
         // Проверяем, нужно ли оплатить вступительный взнос
-        if (!initial_fee_paid && subscription.initial_fee > 0) {
+        if (subscription.initial_fee > 0 && !user.initial_fee_paid) {
             // В реальном приложении здесь будет интеграция с платежной системой
             // Для демо просто отмечаем как оплаченный
             await db.run(
                 'UPDATE users SET balance = balance - ? WHERE id = ?',
-                [subscription.initial_fee, req.user.id]
+                [subscription.initial_fee, userId]
             );
             
             // Создаем транзакцию
@@ -1497,7 +1515,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
                 (user_id, type, amount, description, status) 
                 VALUES (?, ?, ?, ?, ?)`,
                 [
-                    req.user.id,
+                    userId,
                     'initial_fee',
                     -subscription.initial_fee,
                     `Вступительный взнос: ${subscription.display_name}`,
@@ -1508,59 +1526,38 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             // Обновляем статистику пользователя
             await db.run(
                 'UPDATE users SET total_spent = total_spent + ? WHERE id = ?',
-                [subscription.initial_fee, req.user.id]
-            );
-            
-            // Обновляем статус пользователя
-            await db.run(
-                `UPDATE users SET 
-                    subscription_plan = ?,
-                    subscription_status = 'active',
-                    initial_fee_paid = 1,
-                    initial_fee_amount = ?,
-                    tasks_limit = ?,
-                    subscription_expires = DATE('now', '+30 days')
-                 WHERE id = ?`,
-                [plan, subscription.initial_fee, subscription.tasks_limit, req.user.id]
-            );
-            
-            // Создаем уведомление
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message) 
-                VALUES (?, ?, ?, ?)`,
-                [
-                    req.user.id,
-                    'subscription_activated',
-                    'Подписка активирована!',
-                    `Поздравляем! Вы успешно активировали подписку "${subscription.display_name}". Теперь вы можете создавать задачи.`
-                ]
-            );
-        } else {
-            // Просто активируем подписку
-            await db.run(
-                `UPDATE users SET 
-                    subscription_plan = ?,
-                    subscription_status = 'active',
-                    tasks_limit = ?,
-                    subscription_expires = DATE('now', '+30 days')
-                 WHERE id = ?`,
-                [plan, subscription.tasks_limit, req.user.id]
-            );
-            
-            // Создаем уведомление
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message) 
-                VALUES (?, ?, ?, ?)`,
-                [
-                    req.user.id,
-                    'subscription_changed',
-                    'Тариф изменен',
-                    `Ваш тариф изменен на "${subscription.display_name}".`
-                ]
+                [subscription.initial_fee, userId]
             );
         }
+        
+        // Обновляем статус пользователя
+        await db.run(
+            `UPDATE users SET 
+                subscription_plan = ?,
+                subscription_status = 'active',
+                initial_fee_paid = 1,
+                initial_fee_amount = ?,
+                tasks_limit = ?,
+                subscription_expires = DATE('now', '+30 days'),
+                tasks_used = 0
+             WHERE id = ?`,
+            [plan, subscription.initial_fee, subscription.tasks_limit, userId]
+        );
+        
+        // Создаем уведомление
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message) 
+            VALUES (?, ?, ?, ?)`,
+            [
+                userId,
+            subscription.initial_fee > 0 && !user.initial_fee_paid ? 'subscription_activated' : 'subscription_changed',
+                subscription.initial_fee > 0 && !user.initial_fee_paid ? 'Подписка активирована!' : 'Тариф изменен',
+                subscription.initial_fee > 0 && !user.initial_fee_paid 
+                    ? `Поздравляем! Вы успешно активировали подписку "${subscription.display_name}". Теперь вы можете создавать задачи.`
+                    : `Ваш тариф изменен на "${subscription.display_name}".`
+            ]
+        );
         
         // Получаем обновленного пользователя
         const updatedUser = await db.get(
@@ -1569,7 +1566,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
                     initial_fee_paid, initial_fee_amount, balance, tasks_limit, tasks_used,
                     user_rating
              FROM users WHERE id = ?`,
-            [req.user.id]
+            [userId]
         );
         
         // Переименовываем user_rating в rating для фронтенда
@@ -1580,7 +1577,9 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
         
         res.json({
             success: true,
-            message: 'Подписка успешно активирована!',
+            message: subscription.initial_fee > 0 && !user.initial_fee_paid 
+                ? 'Подписка успешно активирована!'
+                : 'Тариф успешно изменен!',
             data: {
                 user: userForResponse,
                 subscription
@@ -1599,7 +1598,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 // ==================== ЗАДАЧИ ====================
 
 // Создание задачи
-app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
+app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager']), async (req, res) => {
     try {
         const { 
             title, 
@@ -1778,7 +1777,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             message: 'Задача успешно создана!',
             data: { 
                 task,
-                tasks_used: req.user.role === 'client' ? req.user.tasks_used + 1 : 0,
+                tasks_used: req.user.role === 'client' ? req.user.tasks_used + 1 : req.user.tasks_used,
                 tasks_remaining: req.user.role === 'client' ? req.user.tasks_limit - (req.user.tasks_used + 1) : 999,
                 available_performers: performers.length
             }
@@ -1893,6 +1892,330 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
+// ==================== АДМИН API ====================
+
+// Статистика для админ-панели
+app.get('/api/admin/stats', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const totalUsers = await db.get("SELECT COUNT(*) as count FROM users");
+        const totalTasks = await db.get("SELECT COUNT(*) as count FROM tasks");
+        const activeSubscriptions = await db.get("SELECT COUNT(*) as count FROM users WHERE subscription_status = 'active'");
+        const totalIncome = await db.get("SELECT SUM(amount) as total FROM transactions WHERE type = 'initial_fee' AND status = 'completed'");
+        
+        res.json({
+            success: true,
+            data: {
+                total_users: totalUsers.count,
+                total_tasks: totalTasks.count,
+                active_subscriptions: activeSubscriptions.count,
+                total_income: totalIncome.total || 0
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка получения статистики:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
+        });
+    }
+});
+
+// Получение всех пользователей для админ-панели
+app.get('/api/admin/users', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { search, role, limit = 50, offset = 0 } = req.query;
+        
+        let query = `SELECT * FROM users WHERE 1=1`;
+        const params = [];
+        
+        if (search) {
+            query += ` AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)`;
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        if (role && role !== 'all') {
+            query += ` AND role = ?`;
+            params.push(role);
+        }
+        
+        query += ` ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const users = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: { users }
+        });
+    } catch (error) {
+        console.error('Ошибка получения пользователей:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения пользователей'
+        });
+    }
+});
+
+// Получение всех задач для админ-панели
+app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { status, limit = 50, offset = 0 } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   u1.first_name as client_first_name, 
+                   u1.last_name as client_last_name,
+                   u2.first_name as performer_first_name,
+                   u2.last_name as performer_last_name
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u1 ON t.client_id = u1.id
+            LEFT JOIN users u2 ON t.performer_id = u2.id
+            WHERE 1=1
+        `;
+        const params = [];
+        
+        if (status && status !== 'all') {
+            query += ` AND t.status = ?`;
+            params.push(status);
+        }
+        
+        query += ` ORDER BY t.created_at DESC LIMIT ? OFFSET ?`;
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const tasks = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: { tasks }
+        });
+    } catch (error) {
+        console.error('Ошибка получения задач:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Получение всех подписок для админ-панели
+app.get('/api/admin/subscriptions', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const subscriptions = await db.all(
+            'SELECT * FROM subscriptions ORDER BY sort_order ASC'
+        );
+        
+        // Парсим features из JSON строки
+        const subscriptionsWithParsedFeatures = subscriptions.map(sub => ({
+            ...sub,
+            features: typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features
+        }));
+        
+        res.json({
+            success: true,
+            data: { subscriptions: subscriptionsWithParsedFeatures }
+        });
+    } catch (error) {
+        console.error('Ошибка получения подписок:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения подписок'
+        });
+    }
+});
+
+// Получение всех услуг для админ-панели
+app.get('/api/admin/services', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const services = await db.all(`
+            SELECT s.*, c.display_name as category_name
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            ORDER BY s.category_id, s.sort_order ASC
+        `);
+        
+        res.json({
+            success: true,
+            data: { services }
+        });
+    } catch (error) {
+        console.error('Ошибка получения услуг:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
+        });
+    }
+});
+
+// Получение всех категорий для админ-панели
+app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const categories = await db.all(
+            'SELECT * FROM categories ORDER BY sort_order ASC'
+        );
+        
+        res.json({
+            success: false,
+            data: { categories }
+        });
+    } catch (error) {
+        console.error('Ошибка получения категорий:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения категорий'
+        });
+    }
+});
+
+// Создание/обновление категории
+app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { id, name, display_name, description, icon, color, sort_order, is_active } = req.body;
+        
+        if (!name || !display_name || !description || !icon) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        if (id) {
+            // Обновление существующей категории
+            await db.run(
+                `UPDATE categories SET 
+                    name = ?, display_name = ?, description = ?, icon = ?, 
+                    color = ?, sort_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [name, display_name, description, icon, color || '#FF6B8B', sort_order || 0, is_active ? 1 : 0, id]
+            );
+        } else {
+            // Создание новой категории
+            await db.run(
+                `INSERT INTO categories (name, display_name, description, icon, color, sort_order, is_active)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [name, display_name, description, icon, color || '#FF6B8B', sort_order || 0, is_active ? 1 : 0]
+            );
+        }
+        
+        res.json({
+            success: true,
+            message: id ? 'Категория обновлена' : 'Категория создана'
+        });
+    } catch (error) {
+        console.error('Ошибка сохранения категории:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения категории'
+        });
+    }
+});
+
+// Создание/обновление подписки
+app.post('/api/admin/subscriptions', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { 
+            id, name, display_name, description, price_monthly, price_yearly, 
+            initial_fee, tasks_limit, features, color_theme, sort_order, is_popular, is_active 
+        } = req.body;
+        
+        if (!name || !display_name || !description || !price_monthly || !tasks_limit) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        const featuresArray = Array.isArray(features) ? features : [];
+        
+        if (id) {
+            // Обновление существующей подписки
+            await db.run(
+                `UPDATE subscriptions SET 
+                    name = ?, display_name = ?, description = ?, price_monthly = ?, 
+                    price_yearly = ?, initial_fee = ?, tasks_limit = ?, features = ?,
+                    color_theme = ?, sort_order = ?, is_popular = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [
+                    name, display_name, description, price_monthly, price_yearly || price_monthly * 12,
+                    initial_fee || 0, tasks_limit, JSON.stringify(featuresArray),
+                    color_theme || '#FF6B8B', sort_order || 0, is_popular ? 1 : 0, is_active ? 1 : 0, id
+                ]
+            );
+        } else {
+            // Создание новой подписки
+            await db.run(
+                `INSERT INTO subscriptions 
+                (name, display_name, description, price_monthly, price_yearly, initial_fee, 
+                 tasks_limit, features, color_theme, sort_order, is_popular, is_active)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    name, display_name, description, price_monthly, price_yearly || price_monthly * 12,
+                    initial_fee || 0, tasks_limit, JSON.stringify(featuresArray),
+                    color_theme || '#FF6B8B', sort_order || 0, is_popular ? 1 : 0, is_active ? 1 : 0
+                ]
+            );
+        }
+        
+        res.json({
+            success: true,
+            message: id ? 'Подписка обновлена' : 'Подписка создана'
+        });
+    } catch (error) {
+        console.error('Ошибка сохранения подписки:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения подписки'
+        });
+    }
+});
+
+// Создание/обновление услуги
+app.post('/api/admin/services', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { id, category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured } = req.body;
+        
+        if (!category_id || !name || !description) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        if (id) {
+            // Обновление существующей услуги
+            await db.run(
+                `UPDATE services SET 
+                    category_id = ?, name = ?, description = ?, base_price = ?, 
+                    estimated_time = ?, is_active = ?, sort_order = ?, is_featured = ?, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [category_id, name, description, base_price || 0, estimated_time || null, 
+                 is_active ? 1 : 0, sort_order || 0, is_featured ? 1 : 0, id]
+            );
+        } else {
+            // Создание новой услуги
+            await db.run(
+                `INSERT INTO services (category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [category_id, name, description, base_price || 0, estimated_time || null, 
+                 is_active ? 1 : 0, sort_order || 0, is_featured ? 1 : 0]
+            );
+        }
+        
+        res.json({
+            success: true,
+            message: id ? 'Услуга обновлена' : 'Услуга создана'
+        });
+    } catch (error) {
+        console.error('Ошибка сохранения услуги:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения услуги'
+        });
+    }
+});
+
 // ==================== ОБСЛУЖИВАНИЕ СТАТИЧЕСКИХ ФАЙЛОВ ====================
 
 // SPA маршрутизация для приложения
@@ -1925,7 +2248,7 @@ app.use((err, req, res, next) => {
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v2.0.0 (ОПТИМИЗИРОВАННАЯ ВЕРСИЯ)');
+        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v2.0.0 (ИСПРАВЛЕННАЯ ВЕРСИЯ)');
         console.log('='.repeat(80));
         console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
         console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
@@ -1955,7 +2278,7 @@ const startServer = async () => {
             
             console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
             console.log('='.repeat(60));
-            console.log('👑 Главный админ (ID 898508164): superadmin@concierge.ru / admin123');
+            console.log('👑 Главный админ: superadmin@concierge.ru / admin123');
             console.log('👨‍💼 Админ: admin@concierge.ru / admin123');
             console.log('👩‍🏫 Помощник 1: performer1@concierge.ru / performer123');
             console.log('👩‍🏫 Помощник 2: performer2@concierge.ru / performer123');
@@ -1967,11 +2290,12 @@ const startServer = async () => {
             
             console.log('\n⚡ ОСНОВНЫЕ ФУНКЦИОНАЛЬНОСТИ:');
             console.log('='.repeat(60));
-            console.log('✅ Система подписок (услуги включены в стоимость)');
+            console.log('✅ Система подписок (3 тарифа)');
             console.log('✅ 6 категорий услуг');
             console.log('✅ 12 услуг (бесплатно в рамках подписки)');
             console.log('✅ Контроль лимитов задач');
             console.log('✅ Создание и управление задачами');
+            console.log('✅ Полная админ-панель');
             console.log('✅ Адаптивный дизайн для всех устройств');
             console.log('✅ Полная JWT аутентификация');
             console.log('✅ Готов к продакшену');
