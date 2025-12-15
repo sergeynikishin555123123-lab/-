@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const { v4: uuidv4 } = require('uuid');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
@@ -32,6 +34,22 @@ let db;
 const initDatabase = async () => {
     try {
         console.log('🔄 Инициализация базы данных...');
+        
+        // Создаем папку для базы данных
+        ensureDbDirectory();
+        
+        const dbPath = process.env.NODE_ENV === 'production' 
+            ? `${__dirname}/concierge.db`
+            : './concierge.db';
+            
+        console.log(`📁 Путь к базе данных: ${dbPath}`);
+        console.log(`📂 Текущая директория: ${__dirname}`);
+        console.log(`💻 Платформа: ${os.platform()}`);
+        
+        db = await open({
+            filename: dbPath,
+            driver: sqlite3.Database
+        });
         
         const dbPath = './concierge.db';
         console.log(`📁 Путь к базе данных: ${dbPath}`);
