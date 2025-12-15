@@ -1,4 +1,4 @@
-// server-complete-bot.js - Сервер с интеграцией Telegram бота
+// server.js - Полный сервер для Женский Консьерж
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -7,325 +7,12 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
-const crypto = require('crypto');
-const TelegramBot = require('node-telegram-bot-api');
+const { v4: uuidv4 } = require('uuid');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_BOT_TOKEN';
-const TELEGRAM_ADMIN_ID = -898508164; // Ваш Telegram ID
+const PORT = process.env.PORT || 3000;
 
-// ==================== TELEGRAM БОТ ====================
-let bot = null;
-if (TELEGRAM_BOT_TOKEN && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
-    bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-    console.log('🤖 Telegram бот запущен');
-    
-    // Обработка команды /start
-    bot.onText(/\/start/, async (msg) => {
-        const chatId = msg.chat.id;
-        const firstName = msg.from.first_name || 'Пользователь';
-        
-        try {
-            // Создаем или обновляем пользователя в системе
-            await createOrUpdateTelegramUser(msg.from, chatId);
-            
-            // Отправляем приветственное сообщение с кнопками
-            const options = {
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: '🌐 Основное приложение', url: `http://localhost:${PORT}` },
-                            { text: '👑 Админ-панель', url: `http://localhost:${PORT}/admin.html` }
-                        ],
-                        [
-                            { text: '💼 Панель менеджера', url: `http://localhost:${PORT}/manager.html` }
-                        ],
-                        [
-                            { text: '📊 Статистика системы', callback_data: 'stats' },
-                            { text: '🆘 Помощь', callback_data: 'help' }
-                        ]
-                    ]
-                }
-            };
-            
-            bot.sendMessage(chatId, 
-                `👋 Привет, ${firstName}!\n\n` +
-                `Добро пожаловать в *Женский Консьерж*!\n\n` +
-                `📱 *Доступные интерфейсы:*\n` +
-                `• 🌐 Основное приложение — для клиентов и исполнителей\n` +
-                `• 👑 Админ-панель — для администраторов системы\n` +
-                `• 💼 Панель менеджера — для менеджеров поддержки\n\n` +
-                `🚀 *Быстрый доступ:*`, 
-                { parse_mode: 'Markdown', ...options }
-            );
-            
-            // Для администратора отправляем дополнительную информацию
-            if (chatId === TELEGRAM_ADMIN_ID) {
-                bot.sendMessage(chatId,
-                    `🔐 *Вы администратор системы*\n\n` +
-                    `Ваши права доступа:\n` +
-                    `✅ Админ-панель: FULL ACCESS\n` +
-                    `✅ Панель менеджера: FULL ACCESS\n` +
-                    `✅ Основное приложение: все роли\n\n` +
-                    `📋 Тестовые аккаунты:\n` +
-                    `• admin@test.com / admin123\n` +
-                    `• manager@test.com / admin123\n` +
-                    `• client@test.com / client123`,
-                    { parse_mode: 'Markdown' }
-                );
-            }
-            
-        } catch (error) {
-            console.error('Ошибка обработки команды /start:', error);
-            bot.sendMessage(chatId, '⚠️ Произошла ошибка. Попробуйте позже.');
-        }
-    });
-    
-    // Обработка callback-кнопок
-    bot.on('callback_query', async (callbackQuery) => {
-        const chatId = callbackQuery.message.chat.id;
-        const data = callbackQuery.data;
-        
-        try {
-            if (data === 'stats') {
-                const stats = await getSystemStats();
-                bot.sendMessage(chatId,
-                    `📊 *Статистика системы*\n\n` +
-                    `👥 Пользователей: ${stats.users}\n` +
-                    `📋 Задач: ${stats.tasks}\n` +
-                    `✅ Завершено: ${stats.completed_tasks}\n` +
-                    `🔍 В поиске: ${stats.searching_tasks}\n` +
-                    `💰 Общая выручка: ${stats.revenue} ₽\n\n` +
-                    `⏱️ Обновлено: ${new Date().toLocaleTimeString('ru-RU')}`,
-                    { parse_mode: 'Markdown' }
-                );
-            }
-            else if (data === 'help') {
-                bot.sendMessage(chatId,
-                    `🆘 *Помощь и поддержка*\n\n` +
-                    `*Основное приложение:*\n` +
-                    `• Для клиентов: создание задач\n` +
-                    `• Для исполнителей: выполнение задач\n\n` +
-                    `*Админ-панель:*\n` +
-                    `• Управление пользователями\n` +
-                    `• Управление категориями и услугами\n` +
-                    `• Статистика и аналитика\n\n` +
-                    `*Панель менеджера:*\n` +
-                    `• Назначение исполнителей\n` +
-                    `• Контроль выполнения задач\n` +
-                    `• Общение с клиентами\n\n` +
-                    `📧 Поддержка: support@concierge.ru`,
-                    { parse_mode: 'Markdown' }
-                );
-            }
-            
-            // Подтверждаем обработку callback
-            bot.answerCallbackQuery(callbackQuery.id);
-            
-        } catch (error) {
-            console.error('Ошибка обработки callback:', error);
-            bot.answerCallbackQuery(callbackQuery.id, { text: 'Ошибка получения данных' });
-        }
-    });
-    
-    // Команда /links - быстрый доступ к ссылкам
-    bot.onText(/\/links/, (msg) => {
-        const chatId = msg.chat.id;
-        bot.sendMessage(chatId,
-            `🔗 *Быстрые ссылки*\n\n` +
-            `🌐 Основное приложение:\n` +
-            `http://localhost:${PORT}\n\n` +
-            `👑 Админ-панель:\n` +
-            `http://localhost:${PORT}/admin.html\n\n` +
-            `💼 Панель менеджера:\n` +
-            `http://localhost:${PORT}/manager.html`,
-            { parse_mode: 'Markdown' }
-        );
-    });
-    
-    // Команда /status - статус системы
-    bot.onText(/\/status/, async (msg) => {
-        const chatId = msg.chat.id;
-        
-        try {
-            const stats = await getSystemStats();
-            const users = await db.all("SELECT role, COUNT(*) as count FROM users WHERE is_active = 1 GROUP BY role");
-            
-            let userStats = '';
-            users.forEach(u => {
-                userStats += `• ${u.role}: ${u.count}\n`;
-            });
-            
-            bot.sendMessage(chatId,
-                `🟢 *Статус системы*\n\n` +
-                `📊 *Статистика:*\n` +
-                userStats +
-                `\n🔄 *Последние действия:*\n` +
-                `• Сервер: ${process.uptime().toFixed(0)} сек\n` +
-                `• Память: ${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)} MB\n` +
-                `• БД: подключена\n\n` +
-                `📍 Адрес сервера: http://localhost:${PORT}`,
-                { parse_mode: 'Markdown' }
-            );
-            
-        } catch (error) {
-            bot.sendMessage(chatId, '⚠️ Ошибка получения статуса');
-        }
-    });
-    
-    // Уведомления о важных событиях
-    async function sendTelegramNotification(message, isImportant = false) {
-        if (bot && TELEGRAM_ADMIN_ID) {
-            try {
-                await bot.sendMessage(
-                    TELEGRAM_ADMIN_ID, 
-                    isImportant ? `🔔 ${message}` : `📝 ${message}`,
-                    { parse_mode: 'Markdown' }
-                );
-            } catch (error) {
-                console.error('Ошибка отправки уведомления в Telegram:', error);
-            }
-        }
-    }
-    
-} else {
-    console.log('⚠️ Telegram бот не запущен (не указан токен)');
-}
-
-// Функция для получения статистики системы
-async function getSystemStats() {
-    try {
-        const stats = await db.get(`
-            SELECT 
-                (SELECT COUNT(*) FROM users) as users,
-                (SELECT COUNT(*) FROM tasks) as tasks,
-                (SELECT COUNT(*) FROM tasks WHERE status = 'completed') as completed_tasks,
-                (SELECT COUNT(*) FROM tasks WHERE status = 'searching') as searching_tasks,
-                (SELECT COALESCE(SUM(budget), 0) FROM tasks) as revenue
-        `);
-        return stats;
-    } catch (error) {
-        console.error('Ошибка получения статистики:', error);
-        return { users: 0, tasks: 0, completed_tasks: 0, searching_tasks: 0, revenue: 0 };
-    }
-}
-
-// Функция создания/обновления пользователя из Telegram
-async function createOrUpdateTelegramUser(telegramUser, chatId) {
-    try {
-        // Проверяем, существует ли пользователь
-        const existingUser = await db.get(
-            "SELECT id FROM users WHERE telegram_id = ? OR email = ?",
-            [chatId, `telegram_${chatId}@concierge.local`]
-        );
-        
-        if (existingUser) {
-            // Обновляем последнюю активность
-            await db.run(
-                "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?",
-                [existingUser.id]
-            );
-            return existingUser.id;
-        }
-        
-        // Создаем нового пользователя
-        const firstName = telegramUser.first_name || 'Telegram';
-        const lastName = telegramUser.last_name || 'User';
-        const username = telegramUser.username ? `@${telegramUser.username}` : null;
-        
-        // Если это администратор (ID -898508164), создаем его как суперадмина и менеджера
-        let role = 'client';
-        let subscription = 'free';
-        
-        if (chatId === TELEGRAM_ADMIN_ID) {
-            role = 'superadmin';
-            subscription = 'premium';
-        }
-        
-        // Хешируем пароль
-        const hashedPassword = await bcrypt.hash('telegram123', 10);
-        
-        // Дата истечения подписки
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 365);
-        
-        // Создаем пользователя
-        const result = await db.run(`
-            INSERT INTO users 
-            (email, password, first_name, last_name, telegram_id, telegram_username, 
-             role, subscription_plan, subscription_status, subscription_expires,
-             initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                `telegram_${chatId}@concierge.local`,
-                hashedPassword,
-                firstName,
-                lastName,
-                chatId,
-                username,
-                role,
-                subscription,
-                'active',
-                expiryDate.toISOString().split('T')[0],
-                1,
-                0,
-                9999,
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(firstName)}+${encodeURIComponent(lastName)}&background=7289DA&color=fff&bold=true`,
-                1000
-            ]
-        );
-        
-        const userId = result.lastID;
-        
-        // Для администратора создаем также менеджера
-        if (chatId === TELEGRAM_ADMIN_ID) {
-            await db.run(`
-                INSERT INTO users 
-                (email, password, first_name, last_name, role, 
-                 subscription_plan, subscription_status, subscription_expires,
-                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    'admin@test.com',
-                    hashedPassword,
-                    'Администратор',
-                    'Системы',
-                    'manager',
-                    'premium',
-                    'active',
-                    expiryDate.toISOString().split('T')[0],
-                    1,
-                    0,
-                    9999,
-                    `https://ui-avatars.com/api/?name=Администратор+Системы&background=9B59B6&color=fff&bold=true`,
-                    50000
-                ]
-            );
-        }
-        
-        // Создаем приветственное уведомление в системе
-        await db.run(
-            `INSERT INTO notifications 
-            (user_id, type, title, message) 
-            VALUES (?, ?, ?, ?)`,
-            [
-                userId,
-                'welcome',
-                'Добро пожаловать из Telegram!',
-                'Вы успешно зарегистрированы через Telegram бота.'
-            ]
-        );
-        
-        return userId;
-        
-    } catch (error) {
-        console.error('Ошибка создания пользователя из Telegram:', error);
-        throw error;
-    }
-}
-
-// ==================== ОСНОВНОЙ СЕРВЕР ====================
 // CORS настройки
 app.use(cors({
     origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500', 'http://127.0.0.1:5500'],
@@ -359,10 +46,10 @@ const initDatabase = async () => {
         // Включаем внешние ключи
         await db.run('PRAGMA foreign_keys = ON');
 
-        // Создание таблиц с Telegram полями
+        // Создание таблиц
         await db.exec('BEGIN TRANSACTION');
 
-        // Пользователи с полем для Telegram
+        // Пользователи
         await db.exec(`
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -395,7 +82,6 @@ const initDatabase = async () => {
                 skills TEXT,
                 vk_url TEXT,
                 instagram_url TEXT,
-                telegram_username TEXT,
                 website_url TEXT,
                 is_active INTEGER DEFAULT 1,
                 email_verified INTEGER DEFAULT 1,
@@ -408,7 +94,7 @@ const initDatabase = async () => {
             )
         `);
 
-        // Остальные таблицы (как в предыдущем примере)
+        // Подписки
         await db.exec(`
             CREATE TABLE IF NOT EXISTS subscriptions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -430,6 +116,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Категории услуг
         await db.exec(`
             CREATE TABLE IF NOT EXISTS categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -445,6 +132,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Услуги
         await db.exec(`
             CREATE TABLE IF NOT EXISTS services (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -462,6 +150,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Задачи
         await db.exec(`
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -498,6 +187,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // История статусов задач
         await db.exec(`
             CREATE TABLE IF NOT EXISTS task_status_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -511,6 +201,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Сообщения в чате
         await db.exec(`
             CREATE TABLE IF NOT EXISTS task_messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -527,6 +218,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Отзывы
         await db.exec(`
             CREATE TABLE IF NOT EXISTS reviews (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -545,6 +237,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Специализации исполнителей
         await db.exec(`
             CREATE TABLE IF NOT EXISTS performer_categories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -560,6 +253,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Транзакции
         await db.exec(`
             CREATE TABLE IF NOT EXISTS transactions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -576,6 +270,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Уведомления
         await db.exec(`
             CREATE TABLE IF NOT EXISTS notifications (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -592,6 +287,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // Настройки системы
         await db.exec(`
             CREATE TABLE IF NOT EXISTS settings (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -604,6 +300,7 @@ const initDatabase = async () => {
             )
         `);
 
+        // FAQ
         await db.exec(`
             CREATE TABLE IF NOT EXISTS faq (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -644,8 +341,8 @@ const createInitialData = async () => {
                 ['site_description', 'Помощь в бытовых вопросах от женщин для женщин', 'Описание сайта', 'general'],
                 ['support_email', 'support@concierge.ru', 'Email поддержки', 'general'],
                 ['support_phone', '+79991234567', 'Телефон поддержки', 'general'],
-                ['telegram_bot', TELEGRAM_BOT_TOKEN || 'none', 'Токен Telegram бота', 'telegram'],
-                ['telegram_admin_id', TELEGRAM_ADMIN_ID.toString(), 'ID администратора Telegram', 'telegram'],
+                ['telegram_bot_token', process.env.TELEGRAM_BOT_TOKEN || 'none', 'Токен Telegram бота', 'telegram'],
+                ['telegram_admin_id', '-898508164', 'ID администратора Telegram', 'telegram'],
                 ['system_fee_percent', '10', 'Комиссия системы (%)', 'financial'],
                 ['min_task_price', '0', 'Минимальная цена задачи', 'financial'],
                 ['max_task_price', '100000', 'Максимальная цена задачи', 'financial']
@@ -660,147 +357,456 @@ const createInitialData = async () => {
             console.log('✅ Настройки системы созданы');
         }
 
-        // 2. Автоматически создаем администратора с Telegram ID -898508164
-        const adminExists = await db.get("SELECT 1 FROM users WHERE telegram_id = ?", [TELEGRAM_ADMIN_ID]);
-        if (!adminExists) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            const expiryDate = new Date();
-            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-            
-            // Создаем суперадмина
-            await db.run(`
-                INSERT INTO users 
-                (email, password, first_name, last_name, telegram_id, role, 
-                 subscription_plan, subscription_status, subscription_expires,
-                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    'admin@test.com',
-                    hashedPassword,
-                    'Александр',
-                    'Иванов',
-                    TELEGRAM_ADMIN_ID,
-                    'superadmin',
-                    'premium',
-                    'active',
-                    expiryDate.toISOString().split('T')[0],
-                    1,
-                    0,
-                    9999,
-                    'https://ui-avatars.com/api/?name=Александр+Иванов&background=9B59B6&color=fff&bold=true',
-                    100000
-                ]
-            );
-            
-            // Создаем менеджера для этого же пользователя
-            await db.run(`
-                INSERT INTO users 
-                (email, password, first_name, last_name, role, 
-                 subscription_plan, subscription_status, subscription_expires,
-                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    'manager@test.com',
-                    hashedPassword,
-                    'Мария',
-                    'Петрова',
-                    'manager',
-                    'premium',
-                    'active',
-                    expiryDate.toISOString().split('T')[0],
-                    1,
-                    0,
-                    9999,
-                    'https://ui-avatars.com/api/?name=Мария+Петрова&background=2ECC71&color=fff&bold=true',
-                    50000
-                ]
-            );
-            
-            console.log(`✅ Администратор с Telegram ID ${TELEGRAM_ADMIN_ID} создан`);
+        // 2. FAQ
+        const faqExist = await db.get("SELECT 1 FROM faq WHERE question LIKE '%Как работает система%'");
+        if (!faqExist) {
+            const faqs = [
+                ['Как работает система подписок?', 'Вы выбираете подходящий тариф, оплачиваете его и получаете доступ ко всем услугам в рамках выбранного пакета. Можно менять тариф в любое время.', 'subscriptions', 1, 1],
+                ['Можно ли отменить подписку?', 'Да, вы можете отменить подписку в любой момент в настройках профиля. Подписка останется активной до конца оплаченного периода.', 'subscriptions', 2, 1],
+                ['Как выбрать исполнителя?', 'После создания задачи система автоматически подберет подходящих исполнителей. Вы можете просмотреть их профили, рейтинги и отзывы перед выбором.', 'tasks', 3, 1],
+                ['Что делать, если не устроило качество услуги?', 'Мы гарантируем возврат средств или повторное оказание услуги, если качество не устроило. Свяжитесь с нашей поддержкой в течение 24 часов после выполнения задачи.', 'quality', 4, 1],
+                ['Как пополнить баланс?', 'Вы можете пополнить баланс через раздел "Пополнение баланса" в вашем профиле. Доступны банковские карты, ЮMoney и СБП.', 'payments', 5, 1]
+            ];
+
+            for (const faq of faqs) {
+                await db.run(
+                    `INSERT INTO faq (question, answer, category, sort_order, is_active) VALUES (?, ?, ?, ?, ?)`,
+                    faq
+                );
+            }
+            console.log('✅ FAQ созданы');
         }
 
-        // 3. Остальные тестовые данные (как в предыдущем примере)
-        // ... [остальной код создания тестовых данных без изменений]
+        // 3. Подписки (4 тарифа)
+        const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions WHERE name = 'free'");
+        if (!subscriptionsExist) {
+            const subscriptions = [
+                [
+                    'free', 'Бесплатный', 'Пробный доступ к платформе',
+                    0, 0, 0, 3,
+                    '["До 3 задач в месяц", "Базовые категории услуг", "Обычная поддержка", "Возможность оценивать исполнителей"]',
+                    '#6B7280', 1, 0, 0, 1
+                ],
+                [
+                    'basic', 'Базовый', 'Для регулярного использования',
+                    990, 9500, 0, 10,
+                    '["До 10 задач в месяц", "Все категории услуг", "Приоритетная поддержка", "Подбор исполнителей", "Безопасные платежи"]',
+                    '#3B82F6', 2, 0, 0, 1
+                ],
+                [
+                    'premium', 'Премиум', 'Полный доступ ко всем возможностям',
+                    2990, 28650, 0, 999,
+                    '["Неограниченное количество задач", "Все категории услуг премиум-класса", "Персональный менеджер", "Экспресс-подбор исполнителей", "VIP-поддержка 24/7", "Страхование задач", "Скидки на услуги"]',
+                    '#F59E0B', 3, 1, 1, 1
+                ],
+                [
+                    'vip', 'VIP', 'Эксклюзивное обслуживание',
+                    5990, 57500, 0, 9999,
+                    '["Все возможности Премиум", "Персональная помощница", "Эксклюзивные исполнительницы", "Консьерж-сервис", "Бесплатные консультации", "Подарки и бонусы", "Приоритет во всем"]',
+                    '#8B5CF6', 4, 0, 0, 1
+                ]
+            ];
+
+            for (const sub of subscriptions) {
+                await db.run(
+                    `INSERT INTO subscriptions 
+                    (name, display_name, description, price_monthly, price_yearly, 
+                     initial_fee, tasks_limit, features, color_theme, sort_order, is_popular, is_featured, is_active) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    sub
+                );
+            }
+            console.log('✅ Тарифы подписок созданы (4 тарифа)');
+        }
+
+        // 4. Категории услуг (10 категорий)
+        const categoriesExist = await db.get("SELECT 1 FROM categories WHERE name = 'cleaning'");
+        if (!categoriesExist) {
+            const categories = [
+                ['cleaning', 'Уборка', 'Генеральная уборка, регулярная уборка, уборка после ремонта', 'fas fa-broom', '#FF6B8B', 1, 1],
+                ['cooking', 'Готовка', 'Приготовление еды, семейные ужины, диетическое питание', 'fas fa-utensils', '#4CAF50', 2, 1],
+                ['shopping', 'Покупки', 'Покупка продуктов, одежды, подарков, онлайн-шопинг', 'fas fa-shopping-bag', '#2196F3', 3, 1],
+                ['beauty', 'Красота', 'Маникюр, прически, макияж, уходовые процедуры', 'fas fa-spa', '#9C27B0', 4, 1],
+                ['organization', 'Организация', 'Планирование мероприятий, организация пространства', 'fas fa-calendar-alt', '#FF9800', 5, 1],
+                ['education', 'Образование', 'Репетиторство, курсы, помощь с учебой', 'fas fa-graduation-cap', '#795548', 6, 1],
+                ['childcare', 'Уход за детьми', 'Няни, сопровождение, помощь с детьми', 'fas fa-baby', '#00BCD4', 7, 1],
+                ['petcare', 'Уход за питомцами', 'Выгул, кормление, уход за животными', 'fas fa-paw', '#FF5722', 8, 1],
+                ['delivery', 'Доставка', 'Доставка еды, документов, покупок', 'fas fa-shipping-fast', '#673AB7', 9, 1],
+                ['repair', 'Ремонт', 'Мелкий ремонт, сборка мебели, техническая помощь', 'fas fa-tools', '#607D8B', 10, 1]
+            ];
+
+            for (const cat of categories) {
+                await db.run(
+                    `INSERT INTO categories 
+                    (name, display_name, description, icon, color, sort_order, is_active) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    cat
+                );
+            }
+            console.log('✅ Категории услуг созданы (10 категорий)');
+        }
+
+        // 5. Услуги (расширенные)
+        const servicesExist = await db.get("SELECT 1 FROM services WHERE name = 'Уборка квартиры'");
+        if (!servicesExist) {
+            const categories = await db.all("SELECT id, name FROM categories");
+            const categoryMap = {};
+            categories.forEach(cat => categoryMap[cat.name] = cat.id);
+
+            const services = [
+                // Уборка
+                [categoryMap.cleaning, 'Уборка квартиры', 'Генеральная или поддерживающая уборка квартиры любой площади', 0, '2-6 часов', 1, 1, 1],
+                [categoryMap.cleaning, 'Уборка после ремонта', 'Тщательная уборка помещения после строительных работ', 0, '4-8 часов', 1, 2, 0],
+                [categoryMap.cleaning, 'Еженедельная уборка', 'Регулярная уборка по заданному графику', 0, '2-3 часа', 1, 3, 0],
+                
+                // Готовка
+                [categoryMap.cooking, 'Приготовление ужина', 'Приготовление ужина на 2-6 персон', 0, '2-3 часа', 1, 4, 1],
+                [categoryMap.cooking, 'Праздничный стол', 'Организация и приготовление блюд для праздника', 0, '4-6 часов', 1, 5, 0],
+                [categoryMap.cooking, 'Диетическое питание', 'Приготовление блюд по диетическому меню', 0, '2-3 часа', 1, 6, 0],
+                
+                // Покупки
+                [categoryMap.shopping, 'Покупка продуктов', 'Закупка продуктов по списку', 0, '1-3 часа', 1, 7, 1],
+                [categoryMap.shopping, 'Шопинг-сопровождение', 'Помощь в выборе одежды, обуви, аксессуаров', 0, '2-4 часа', 1, 8, 0],
+                [categoryMap.shopping, 'Покупка подарков', 'Подбор и покупка подарков к празднику', 0, '1-2 часа', 1, 9, 0],
+                
+                // Красота
+                [categoryMap.beauty, 'Маникюр на дому', 'Профессиональный маникюр с выездом', 0, '1-2 часа', 1, 10, 1],
+                [categoryMap.beauty, 'Стрижка и укладка', 'Парикмахерские услуги на дому', 0, '2-3 часа', 1, 11, 0],
+                [categoryMap.beauty, 'Макияж', 'Профессиональный макияж для любого случая', 0, '1-2 часа', 1, 12, 0],
+                
+                // Образование
+                [categoryMap.education, 'Репетиторство', 'Индивидуальные занятия по школьным предметам', 0, '1-2 часа', 1, 13, 1],
+                [categoryMap.education, 'Подготовка к экзаменам', 'Интенсивная подготовка к ОГЭ, ЕГЭ', 0, '1-3 часа', 1, 14, 0],
+                [categoryMap.education, 'Иностранные языки', 'Обучение иностранным языкам с нуля', 0, '1-2 часа', 1, 15, 0],
+                
+                // Уход за детьми
+                [categoryMap.childcare, 'Няня на час', 'Присмотр за детьми на несколько часов', 0, '1-4 часа', 1, 16, 1],
+                [categoryMap.childcare, 'Сопровождение ребенка', 'Сопровождение в школу, кружки, поликлинику', 0, '1-2 часа', 1, 17, 0],
+                [categoryMap.childcare, 'Помощь с уроками', 'Помощь в выполнении домашних заданий', 0, '1-2 часа', 1, 18, 0],
+                
+                // Уход за питомцами
+                [categoryMap.petcare, 'Выгул собак', 'Прогулка с собакой в удобное время', 0, '30-60 минут', 1, 19, 1],
+                [categoryMap.petcare, 'Присмотр за питомцем', 'Кормление и уход за животным во время вашего отсутствия', 0, '1-2 раза в день', 1, 20, 0],
+                [categoryMap.petcare, 'Груминг', 'Стрижка и гигиенический уход за питомцами', 0, '1-2 часа', 1, 21, 0],
+                
+                // Доставка
+                [categoryMap.delivery, 'Доставка документов', 'Срочная доставка документов по городу', 0, '30-90 минут', 1, 22, 1],
+                [categoryMap.delivery, 'Доставка еды', 'Доставка готовой еды из ресторанов', 0, '30-60 минут', 1, 23, 0],
+                [categoryMap.delivery, 'Курьерские услуги', 'Доставка покупок, посылок, корреспонденции', 0, '1-2 часа', 1, 24, 0],
+                
+                // Ремонт
+                [categoryMap.repair, 'Мелкий бытовой ремонт', 'Ремонт мелкой бытовой техники, мебели', 0, '1-3 часа', 1, 25, 1],
+                [categoryMap.repair, 'Сборка мебели', 'Сборка мебели из IKEA и других магазинов', 0, '2-5 часов', 1, 26, 0],
+                [categoryMap.repair, 'Установка техники', 'Установка и подключение бытовой техники', 0, '1-2 часа', 1, 27, 0]
+            ];
+
+            for (const service of services) {
+                await db.run(
+                    `INSERT INTO services 
+                    (category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    service
+                );
+            }
+            console.log('✅ Услуги созданы (27 услуг)');
+        }
+
+        // 6. Тестовые пользователи с Telegram ID -898508164 как администратор
+        const adminExists = await db.get("SELECT 1 FROM users WHERE telegram_id = ?", [-898508164]);
+        if (!adminExists) {
+            const passwordHash = await bcrypt.hash('admin123', 10);
+            const clientPasswordHash = await bcrypt.hash('client123', 10);
+            const performerPasswordHash = await bcrypt.hash('performer123', 10);
+            
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+            const users = [
+                // 👑 Суперадмин с Telegram ID -898508164
+                ['admin@test.com', passwordHash, 'Александр', 'Иванов', '+79991112233', -898508164, '@admin_telegram', 'superadmin', 'premium', 'active', expiryDate.toISOString().split('T')[0], 'https://ui-avatars.com/api/?name=Александр+Иванов&background=9B59B6&color=fff&bold=true', 100000, 1, 0, 9999, 0, 5.0, 100, 10000, 'Главный администратор системы', 'Москва', '1985-05-15', 'Системный администратор', 'МГТУ им. Баумана', 'Опыт работы 10+ лет', '["Управление проектами", "Разработка", "Администрирование"]', 'https://vk.com/admin', 'https://instagram.com/admin', 'https://admin-portfolio.ru', 1, 1],
+                
+                // 👨‍💼 Менеджер
+                ['manager@test.com', passwordHash, 'Мария', 'Петрова', '+79992223344', null, null, 'manager', 'premium', 'active', expiryDate.toISOString().split('T')[0], 'https://ui-avatars.com/api/?name=Мария+Петрова&background=2ECC71&color=fff&bold=true', 50000, 1, 0, 9999, 0, 4.8, 50, 5000, 'Менеджер по работе с клиентами', 'Санкт-Петербург', '1990-08-20', 'Менеджер', 'СПбГУ', 'Опыт работы 5 лет', '["Работа с клиентами", "Управление командой", "Аналитика"]', 'https://vk.com/maria', 'https://instagram.com/maria', null, 1, 1],
+                
+                // 👩‍🏫 Исполнители
+                ['performer@test.com', performerPasswordHash, 'Анна', 'Кузнецова', '+79994445566', null, null, 'performer', 'premium', 'active', expiryDate.toISOString().split('T')[0], 'https://ui-avatars.com/api/?name=Анна+Кузнецова&background=3498DB&color=fff&bold=true', 25000, 1, 0, 999, 42, 4.8, 42, 125400, 'Профессиональная помощница с опытом работы 5 лет. Специализируюсь на уборке, организации пространства и бытовых задачах. Ответственная, аккуратная, с рекомендациями.', 'Москва', '1988-03-10', 'Помощница по хозяйству', 'Курсы профессиональной уборки', 'Опыт работы 5+ лет', '["Уборка", "Организация", "Готовка", "Уход за детьми"]', 'https://vk.com/anna_performer', 'https://instagram.com/anna_performer', null, 1, 1],
+                
+                // 👩 Клиенты
+                ['client@test.com', clientPasswordHash, 'Елена', 'Васильева', '+79997778899', null, null, 'client', 'premium', 'active', expiryDate.toISOString().split('T')[0], 'https://ui-avatars.com/api/?name=Елена+Васильева&background=FF6B8B&color=fff&bold=true', 15000, 1, 0, 999, 12, 4.5, 12, 36000, 'Предпринимательница, мама двоих детей. Ценю свое время и качество услуг. Люблю, когда все организовано и работает как часы.', 'Москва', '1985-12-03', 'Предприниматель', 'ВШЭ', 'Собственный бизнес 8 лет', '["Организация", "Тайм-менеджмент", "Бизнес"]', 'https://vk.com/elena_client', 'https://instagram.com/elena_client', 'https://mybusiness.ru', 1, 1]
+            ];
+
+            for (const user of users) {
+                await db.run(
+                    `INSERT INTO users 
+                    (email, password, first_name, last_name, phone, telegram_id, telegram_username, role, 
+                     subscription_plan, subscription_status, subscription_expires,
+                     avatar_url, balance, initial_fee_paid, initial_fee_amount, 
+                     tasks_limit, tasks_used, user_rating, completed_tasks, total_spent,
+                     bio, city, birth_date, profession, education, experience, skills,
+                     vk_url, instagram_url, website_url,
+                     is_active, email_verified) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    user
+                );
+            }
+            console.log('✅ Тестовые пользователи созданы (с Telegram ID -898508164 как админ)');
+        }
 
         console.log('🎉 Все начальные данные созданы!');
         
-        // Отправляем уведомление в Telegram о запуске системы
-        if (bot && TELEGRAM_ADMIN_ID) {
-            try {
-                await bot.sendMessage(
-                    TELEGRAM_ADMIN_ID,
-                    `🚀 *Система запущена!*\n\n` +
-                    `📍 Сервер: http://localhost:${PORT}\n` +
-                    `📊 БД: SQLite (concierge.db)\n` +
-                    `👥 Пользователей: 8\n` +
-                    `📋 Задач: 15\n` +
-                    `🕐 Время: ${new Date().toLocaleString('ru-RU')}`,
-                    { parse_mode: 'Markdown' }
-                );
-            } catch (error) {
-                console.error('Ошибка отправки уведомления:', error);
-            }
-        }
+        console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
+        console.log('='.repeat(60));
+        console.log('👑 Суперадмин (Telegram ID -898508164): admin@test.com / admin123');
+        console.log('👨‍💼 Менеджер: manager@test.com / admin123');
+        console.log('👩‍🏫 Исполнитель: performer@test.com / performer123');
+        console.log('👩 Клиент Премиум: client@test.com / client123');
+        console.log('='.repeat(60));
+        
+        console.log('\n🔗 ДОСТУПНЫЕ ИНТЕРФЕЙСЫ:');
+        console.log('='.repeat(60));
+        console.log('🌐 Основное приложение: http://localhost:' + PORT + '/index.html');
+        console.log('👑 Админ-панель: http://localhost:' + PORT + '/admin.html');
+        console.log('💼 Панель менеджера: http://localhost:' + PORT + '/manager.html');
+        console.log('='.repeat(60));
         
     } catch (error) {
         console.error('⚠️ Ошибка создания начальных данных:', error.message);
+        console.error('Stack trace:', error.stack);
     }
+};
+
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+const generateTaskNumber = () => {
+    const now = new Date();
+    const datePart = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+    const randomPart = Math.random().toString(36).substr(2, 6).toUpperCase();
+    return `TASK-${datePart}-${randomPart}`;
+};
+
+const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+};
+
+const validatePhone = (phone) => {
+    if (!phone) return true;
+    const re = /^\+?[1-9]\d{10,14}$/;
+    return re.test(phone.replace(/\D/g, ''));
+};
+
+// ==================== JWT МИДЛВАР ====================
+const authMiddleware = (roles = []) => {
+    return async (req, res, next) => {
+        try {
+            const authHeader = req.headers.authorization;
+            
+            // Публичные маршруты
+            const publicRoutes = [
+                'GET /',
+                'GET /health',
+                'GET /api/health',
+                'GET /api/subscriptions',
+                'GET /api/categories',
+                'GET /api/categories/*',
+                'GET /api/services',
+                'GET /api/faq',
+                'GET /api/reviews',
+                'GET /api/reviews/*',
+                'POST /api/auth/register',
+                'POST /api/auth/login',
+                'POST /api/auth/telegram',
+                'OPTIONS /*'
+            ];
+            
+            const currentRoute = `${req.method} ${req.path}`;
+            const isPublicRoute = publicRoutes.some(route => {
+                if (route.includes('*')) {
+                    const pattern = route.replace('*', '.*');
+                    return new RegExp(`^${pattern}$`).test(currentRoute);
+                }
+                return currentRoute === route;
+            });
+            
+            if (isPublicRoute) {
+                return next();
+            }
+            
+            if (!authHeader || !authHeader.startsWith('Bearer ')) {
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Требуется авторизация' 
+                });
+            }
+            
+            const token = authHeader.replace('Bearer ', '').trim();
+            
+            try {
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key');
+                
+                const user = await db.get(
+                    `SELECT id, email, first_name, last_name, phone, telegram_id, role, 
+                            subscription_plan, subscription_status, subscription_expires,
+                            initial_fee_paid, initial_fee_amount, is_active, avatar_url,
+                            balance, user_rating, completed_tasks, tasks_limit, tasks_used,
+                            total_spent, last_login, email_verified, bio, city,
+                            birth_date, profession, education, experience, skills,
+                            vk_url, instagram_url, website_url
+                     FROM users WHERE id = ? AND is_active = 1`,
+                    [decoded.id]
+                );
+                
+                if (!user) {
+                    return res.status(401).json({ 
+                        success: false, 
+                        error: 'Пользователь не найден' 
+                    });
+                }
+                
+                // Переименовываем user_rating в rating для совместимости с фронтендом
+                req.user = {
+                    id: user.id,
+                    email: user.email,
+                    telegram_id: user.telegram_id,
+                    role: user.role,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    phone: user.phone,
+                    subscription_plan: user.subscription_plan,
+                    subscription_status: user.subscription_status,
+                    subscription_expires: user.subscription_expires,
+                    initial_fee_paid: user.initial_fee_paid,
+                    initial_fee_amount: user.initial_fee_amount,
+                    avatar_url: user.avatar_url,
+                    balance: user.balance,
+                    rating: user.user_rating,
+                    completed_tasks: user.completed_tasks,
+                    tasks_limit: user.tasks_limit,
+                    tasks_used: user.tasks_used,
+                    total_spent: user.total_spent,
+                    last_login: user.last_login,
+                    email_verified: user.email_verified,
+                    bio: user.bio,
+                    city: user.city,
+                    birth_date: user.birth_date,
+                    profession: user.profession,
+                    education: user.education,
+                    experience: user.experience,
+                    skills: user.skills ? JSON.parse(user.skills) : [],
+                    vk_url: user.vk_url,
+                    instagram_url: user.instagram_url,
+                    website_url: user.website_url
+                };
+                
+                if (roles.length > 0 && !roles.includes(user.role)) {
+                    return res.status(403).json({ 
+                        success: false, 
+                        error: 'Недостаточно прав' 
+                    });
+                }
+                
+                next();
+                
+            } catch (jwtError) {
+                console.error('JWT Error:', jwtError);
+                return res.status(401).json({ 
+                    success: false, 
+                    error: 'Неверный токен' 
+                });
+            }
+            
+        } catch (error) {
+            console.error('Ошибка authMiddleware:', error);
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Внутренняя ошибка сервера' 
+            });
+        }
+    };
 };
 
 // ==================== API МАРШРУТЫ ====================
 
-// Главная страница с информацией о боте
+// Главная
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: '🌸 Женский Консьерж API v7.0.0',
+        message: '🌸 Добро пожаловать в Женский Консьерж API',
         version: '7.0.0',
         status: '🟢 Работает',
-        features: ['Telegram Bot Integration', 'Подписки', 'Задачи', 'Чат', 'Отзывы', 'Админ панель', 'Управление услугами'],
-        telegram_bot: bot ? '🟢 Активен' : '🔴 Не активен',
-        admin_telegram_id: TELEGRAM_ADMIN_ID,
+        telegram_admin_id: -898508164,
+        features: ['Подписки', 'Задачи', 'Чат', 'Отзывы', 'Админ панель', 'Управление услугами', 'Финансы', 'Уведомления'],
         interfaces: [
             { name: 'Основное приложение', url: '/index.html' },
             { name: 'Админ-панель', url: '/admin.html' },
             { name: 'Панель менеджера', url: '/manager.html' }
         ],
-        endpoints: {
-            auth: '/api/auth/*',
-            tasks: '/api/tasks/*',
-            users: '/api/users/*',
-            admin: '/api/admin/*',
-            telegram: '/api/telegram/*'
-        },
         timestamp: new Date().toISOString()
     });
 });
 
-// Health check с информацией о боте
+// Health check
+app.get('/health', async (req, res) => {
+    try {
+        await db.get('SELECT 1 as status');
+        
+        // Проверяем доступность основных таблиц
+        const tables = ['users', 'categories', 'services', 'tasks', 'subscriptions'];
+        const tableStatus = {};
+        
+        for (const table of tables) {
+            try {
+                await db.get(`SELECT 1 FROM ${table} LIMIT 1`);
+                tableStatus[table] = 'OK';
+            } catch (error) {
+                tableStatus[table] = 'ERROR';
+            }
+        }
+        
+        res.json({
+            success: true,
+            status: 'OK',
+            database: 'connected',
+            tables: tableStatus,
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            interfaces: {
+                main: `http://localhost:${PORT}/index.html`,
+                admin: `http://localhost:${PORT}/admin.html`,
+                manager: `http://localhost:${PORT}/manager.html`
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            status: 'ERROR',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 app.get('/api/health', async (req, res) => {
     try {
         await db.get('SELECT 1 as status');
         
         const usersCount = await db.get('SELECT COUNT(*) as count FROM users');
         const tasksCount = await db.get('SELECT COUNT(*) as count FROM tasks');
-        const telegramUsers = await db.get('SELECT COUNT(*) as count FROM users WHERE telegram_id IS NOT NULL');
+        const categoriesCount = await db.get('SELECT COUNT(*) as count FROM categories');
         
         res.json({
             success: true,
             status: 'OK',
-            telegram_bot: bot ? 'active' : 'inactive',
             stats: {
-                total_users: usersCount?.count || 0,
-                telegram_users: telegramUsers?.count || 0,
+                users: usersCount?.count || 0,
                 tasks: tasksCount?.count || 0,
-                admin_id: TELEGRAM_ADMIN_ID
+                categories: categoriesCount?.count || 0
             },
-            interfaces: {
+            timestamp: new Date().toISOString(),
+            links: {
                 main: `http://localhost:${PORT}/index.html`,
                 admin: `http://localhost:${PORT}/admin.html`,
                 manager: `http://localhost:${PORT}/manager.html`
-            },
-            timestamp: new Date().toISOString(),
-            uptime: process.uptime()
+            }
         });
     } catch (error) {
         res.status(500).json({
@@ -811,46 +817,8 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// Telegram Webhook для получения уведомлений
-app.post('/api/telegram/webhook', express.json(), async (req, res) => {
-    try {
-        const { event, data } = req.body;
-        
-        if (bot && TELEGRAM_ADMIN_ID) {
-            let message = '';
-            
-            switch (event) {
-                case 'task_created':
-                    message = `📋 Новая задача: "${data.title}"\n💰 Бюджет: ${data.budget}₽\n👤 Клиент: ${data.client_name}`;
-                    break;
-                case 'task_completed':
-                    message = `✅ Задача завершена: "${data.title}"\n⭐ Оценка: ${data.rating}/5\n👩‍💼 Исполнитель: ${data.performer_name}`;
-                    break;
-                case 'new_user':
-                    message = `👤 Новый пользователь: ${data.name}\n📧 Email: ${data.email}\n👑 Роль: ${data.role}`;
-                    break;
-                case 'payment_received':
-                    message = `💰 Платеж получен: ${data.amount}₽\n👤 От: ${data.user_name}\n📝 Тип: ${data.type}`;
-                    break;
-                case 'error':
-                    message = `🚨 Ошибка: ${data.message}\n📁 Файл: ${data.file}\n📍 Строка: ${data.line}`;
-                    break;
-                default:
-                    message = `ℹ️ Событие: ${event}\n📊 Данные: ${JSON.stringify(data, null, 2)}`;
-            }
-            
-            await bot.sendMessage(TELEGRAM_ADMIN_ID, message, { parse_mode: 'Markdown' });
-        }
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Ошибка Telegram webhook:', error);
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Получение ссылок для Telegram бота
-app.get('/api/telegram/links', (req, res) => {
+// Получение всех ссылок для интерфейсов
+app.get('/api/links', (req, res) => {
     res.json({
         success: true,
         data: {
@@ -865,28 +833,32 @@ app.get('/api/telegram/links', (req, res) => {
                     name: 'Админ-панель',
                     description: 'Управление системой',
                     url: `http://localhost:${PORT}/admin.html`,
-                    icon: '👑'
+                    icon: '👑',
+                    roles: ['admin', 'superadmin']
                 },
                 {
                     name: 'Панель менеджера',
                     description: 'Управление задачами',
                     url: `http://localhost:${PORT}/manager.html`,
-                    icon: '💼'
+                    icon: '💼',
+                    roles: ['manager', 'admin', 'superadmin']
                 }
             ],
-            api_endpoints: {
-                main: `http://localhost:${PORT}/api`,
-                health: `http://localhost:${PORT}/api/health`,
-                auth: `http://localhost:${PORT}/api/auth`
-            }
+            telegram_admin_id: -898508164,
+            test_accounts: [
+                { email: 'admin@test.com', password: 'admin123', role: 'superadmin' },
+                { email: 'manager@test.com', password: 'admin123', role: 'manager' },
+                { email: 'client@test.com', password: 'client123', role: 'client' },
+                { email: 'performer@test.com', password: 'performer123', role: 'performer' }
+            ]
         }
     });
 });
 
-// Авторизация через Telegram
+// Авторизация через Telegram ID
 app.post('/api/auth/telegram', async (req, res) => {
     try {
-        const { telegram_id, first_name, last_name, username } = req.body;
+        const { telegram_id } = req.body;
         
         if (!telegram_id) {
             return res.status(400).json({
@@ -895,43 +867,42 @@ app.post('/api/auth/telegram', async (req, res) => {
             });
         }
         
-        // Проверяем существующего пользователя
-        let user = await db.get(
+        // Ищем пользователя по Telegram ID
+        const user = await db.get(
             `SELECT id, email, first_name, last_name, role, 
                     subscription_plan, subscription_status, avatar_url,
                     balance, user_rating, telegram_id
-             FROM users WHERE telegram_id = ?`,
+             FROM users WHERE telegram_id = ? AND is_active = 1`,
             [telegram_id]
         );
         
-        // Если пользователь не найден, создаем нового
         if (!user) {
-            const hashedPassword = await bcrypt.hash(`telegram_${telegram_id}_${Date.now()}`, 10);
+            // Если пользователь не найден, создаем нового клиента
+            const hashedPassword = await bcrypt.hash(`telegram_${telegram_id}`, 10);
             const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + 30);
             
-            // Определяем роль по Telegram ID
+            // Если это администратор (ID -898508164), создаем как суперадмина
             let role = 'client';
             let subscription = 'free';
             
-            if (telegram_id === TELEGRAM_ADMIN_ID) {
+            if (telegram_id == -898508164) {
                 role = 'superadmin';
                 subscription = 'premium';
             }
             
             const result = await db.run(`
                 INSERT INTO users 
-                (email, password, first_name, last_name, telegram_id, telegram_username,
+                (email, password, first_name, last_name, telegram_id,
                  role, subscription_plan, subscription_status, subscription_expires,
                  initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     `telegram_${telegram_id}@concierge.local`,
                     hashedPassword,
-                    first_name || 'Telegram',
-                    last_name || 'User',
+                    'Telegram',
+                    'User',
                     telegram_id,
-                    username || null,
                     role,
                     subscription,
                     'active',
@@ -939,7 +910,7 @@ app.post('/api/auth/telegram', async (req, res) => {
                     1,
                     0,
                     role === 'client' ? 5 : 9999,
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(first_name || 'Telegram')}+${encodeURIComponent(last_name || 'User')}&background=7289DA&color=fff&bold=true`,
+                    `https://ui-avatars.com/api/?name=Telegram+User&background=7289DA&color=fff&bold=true`,
                     1000
                 ]
             );
@@ -953,21 +924,6 @@ app.post('/api/auth/telegram', async (req, res) => {
                  FROM users WHERE id = ?`,
                 [userId]
             );
-            
-            // Отправляем уведомление в Telegram
-            if (bot) {
-                await bot.sendMessage(
-                    telegram_id,
-                    `👋 Добро пожаловать в *Женский Консьерж*!\n\n` +
-                    `✅ Вы успешно зарегистрированы через Telegram.\n` +
-                    `👑 Ваша роль: ${role === 'superadmin' ? 'Суперадминистратор' : 'Клиент'}\n` +
-                    `💰 Начальный баланс: 1000₽\n\n` +
-                    `🔗 Ссылки для доступа:\n` +
-                    `• Основное приложение: http://localhost:${PORT}/index.html\n` +
-                    `• Админ-панель: http://localhost:${PORT}/admin.html`,
-                    { parse_mode: 'Markdown' }
-                );
-            }
         }
         
         // Обновляем время последнего входа
@@ -985,7 +941,7 @@ app.post('/api/auth/telegram', async (req, res) => {
                 first_name: user.first_name,
                 last_name: user.last_name
             },
-            process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
+            process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
             { expiresIn: '30d' }
         );
         
@@ -997,7 +953,12 @@ app.post('/api/auth/telegram', async (req, res) => {
                     ...user,
                     rating: user.user_rating
                 },
-                token
+                token,
+                links: {
+                    main: `http://localhost:${PORT}/index.html`,
+                    admin: `http://localhost:${PORT}/admin.html`,
+                    manager: `http://localhost:${PORT}/manager.html`
+                }
             }
         });
         
@@ -1010,10 +971,175 @@ app.post('/api/auth/telegram', async (req, res) => {
     }
 });
 
-// ... [остальные API маршруты остаются без изменений, как в предыдущем примере]
-// ==================== ОСНОВНЫЕ API МАРШРУТЫ ====================
+// ==================== АУТЕНТИФИКАЦИЯ ====================
 
-// Аутентификация
+// Регистрация
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { email, password, first_name, last_name, phone, subscription_plan = 'free', role = 'client' } = req.body;
+        
+        // Валидация
+        if (!email || !password || !first_name || !last_name) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                error: 'Пароль должен содержать не менее 6 символов'
+            });
+        }
+        
+        if (!validateEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный email адрес'
+            });
+        }
+        
+        if (phone && !validatePhone(phone)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный номер телефона'
+            });
+        }
+        
+        // Проверяем существующего пользователя
+        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                error: 'Пользователь с таким email уже существует'
+            });
+        }
+        
+        // Проверяем существование подписки
+        const subscription = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ? AND is_active = 1',
+            [subscription_plan]
+        );
+        
+        if (!subscription) {
+            return res.status(400).json({
+                success: false,
+                error: `Подписка "${subscription_plan}" не найдена`
+            });
+        }
+        
+        // Хеширование пароля
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        // Дата истечения подписки
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30);
+        const expiryDateStr = expiryDate.toISOString().split('T')[0];
+        
+        // Определяем лимит задач
+        let tasksLimit = subscription.tasks_limit;
+        if (role === 'performer') {
+            tasksLimit = 999;
+        } else if (role === 'admin' || role === 'manager' || role === 'superadmin') {
+            tasksLimit = 9999;
+        }
+        
+        // Аватар по умолчанию
+        let avatarBgColor = 'FF6B8B';
+        if (role === 'performer') {
+            avatarBgColor = '3498DB';
+        } else if (role === 'admin' || role === 'manager') {
+            avatarBgColor = '2ECC71';
+        } else if (role === 'superadmin') {
+            avatarBgColor = '9B59B6';
+        }
+        
+        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(first_name)}+${encodeURIComponent(last_name)}&background=${avatarBgColor}&color=fff&bold=true`;
+        
+        // Создание пользователя
+        const result = await db.run(
+            `INSERT INTO users 
+            (email, password, first_name, last_name, phone, role, 
+             subscription_plan, subscription_status, subscription_expires,
+             initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url,
+             balance) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                email,
+                hashedPassword,
+                first_name,
+                last_name,
+                phone || null,
+                role,
+                subscription_plan,
+                'active',
+                expiryDateStr,
+                1,
+                0,
+                tasksLimit,
+                avatarUrl,
+                1000
+            ]
+        );
+        
+        const userId = result.lastID;
+        
+        // Получаем созданного пользователя
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, tasks_used,
+                    user_rating, balance, telegram_id
+             FROM users WHERE id = ?`,
+            [userId]
+        );
+        
+        // Переименовываем user_rating в rating для фронтенда
+        const userForResponse = {
+            ...user,
+            rating: user.user_rating
+        };
+        
+        // Создаем JWT токен
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                email: user.email, 
+                role: user.role,
+                first_name: user.first_name,
+                last_name: user.last_name,
+                subscription_plan: user.subscription_plan,
+                initial_fee_paid: user.initial_fee_paid
+            },
+            process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
+            { expiresIn: '30d' }
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Регистрация успешно завершена!',
+            data: { 
+                user: userForResponse,
+                token,
+                links: {
+                    main: `http://localhost:${PORT}/index.html`,
+                    admin: `http://localhost:${PORT}/admin.html`,
+                    manager: `http://localhost:${PORT}/manager.html`
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Внутренняя ошибка сервера при регистрации'
+        });
+    }
+});
+
+// Вход
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -1073,8 +1199,7 @@ app.post('/api/auth/login', async (req, res) => {
             tasks_limit: user.tasks_limit,
             tasks_used: user.tasks_used,
             total_spent: user.total_spent,
-            telegram_id: user.telegram_id,
-            telegram_username: user.telegram_username
+            telegram_id: user.telegram_id
         };
         
         // Создаем токен
@@ -1088,34 +1213,21 @@ app.post('/api/auth/login', async (req, res) => {
                 subscription_plan: user.subscription_plan,
                 initial_fee_paid: user.initial_fee_paid
             },
-            process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
+            process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
             { expiresIn: '30d' }
         );
-        
-        // Если это администратор (Telegram ID -898508164), отправляем уведомление
-        if (bot && user.telegram_id === TELEGRAM_ADMIN_ID) {
-            try {
-                await bot.sendMessage(
-                    TELEGRAM_ADMIN_ID,
-                    `🔐 *Вход в систему*\n\n` +
-                    `👤 Пользователь: ${user.first_name} ${user.last_name}\n` +
-                    `📧 Email: ${user.email}\n` +
-                    `👑 Роль: ${user.role}\n` +
-                    `🌐 IP: ${req.ip}\n` +
-                    `🕐 Время: ${new Date().toLocaleString('ru-RU')}`,
-                    { parse_mode: 'Markdown' }
-                );
-            } catch (error) {
-                console.error('Ошибка отправки уведомления:', error);
-            }
-        }
         
         res.json({
             success: true,
             message: 'Вход выполнен успешно!',
             data: { 
                 user: userForResponse,
-                token 
+                token,
+                links: {
+                    main: `http://localhost:${PORT}/index.html`,
+                    admin: `http://localhost:${PORT}/admin.html`,
+                    manager: `http://localhost:${PORT}/manager.html`
+                }
             }
         });
         
@@ -1129,27 +1241,15 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // Получение текущего пользователя
-app.get('/api/auth/me', async (req, res) => {
+app.get('/api/auth/me', authMiddleware(), async (req, res) => {
     try {
-        const token = req.headers.authorization?.replace('Bearer ', '');
-        
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                error: 'Требуется авторизация'
-            });
-        }
-        
-        // Проверяем токен
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'concierge-secret-key-2024-prod');
-        
         const user = await db.get(
             `SELECT id, email, first_name, last_name, phone, role, 
                     subscription_plan, subscription_status, subscription_expires,
                     avatar_url, balance, user_rating, completed_tasks,
                     tasks_limit, tasks_used, total_spent, telegram_id
              FROM users WHERE id = ? AND is_active = 1`,
-            [decoded.id]
+            [req.user.id]
         );
         
         if (!user) {
@@ -1165,6 +1265,11 @@ app.get('/api/auth/me', async (req, res) => {
                 user: {
                     ...user,
                     rating: user.user_rating
+                },
+                links: {
+                    main: `http://localhost:${PORT}/index.html`,
+                    admin: `http://localhost:${PORT}/admin.html`,
+                    manager: `http://localhost:${PORT}/manager.html`
                 }
             }
         });
@@ -1178,24 +1283,813 @@ app.get('/api/auth/me', async (req, res) => {
     }
 });
 
-// ==================== СТАТИЧЕСКИЕ ФАЙЛЫ ====================
+// ==================== КАТЕГОРИИ И УСЛУГИ ====================
 
-// Отдаем HTML файлы
-app.get('/admin.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+// Получение всех категорий
+app.get('/api/categories', async (req, res) => {
+    try {
+        const categories = await db.all(
+            `SELECT c.*, 
+                    COUNT(s.id) as services_count
+             FROM categories c
+             LEFT JOIN services s ON c.id = s.category_id AND s.is_active = 1
+             WHERE c.is_active = 1
+             GROUP BY c.id
+             ORDER BY c.sort_order ASC`
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                categories,
+                count: categories.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения категорий:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения категорий'
+        });
+    }
 });
 
-app.get('/manager.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'manager.html'));
+// Получение всех услуг
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = await db.all(
+            `SELECT s.*, c.display_name as category_name, c.icon as category_icon
+             FROM services s
+             LEFT JOIN categories c ON s.category_id = c.id
+             WHERE s.is_active = 1
+             ORDER BY s.sort_order ASC, s.name ASC`
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения услуг:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
+        });
+    }
 });
 
-app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ==================== ПОДПИСКИ ====================
+
+// Получение всех подписок
+app.get('/api/subscriptions', async (req, res) => {
+    try {
+        const subscriptions = await db.all(
+            'SELECT * FROM subscriptions WHERE is_active = 1 ORDER BY sort_order ASC, price_monthly ASC'
+        );
+        
+        // Парсим features из JSON строки
+        const subscriptionsWithParsedFeatures = subscriptions.map(sub => ({
+            ...sub,
+            features: typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                subscriptions: subscriptionsWithParsedFeatures,
+                count: subscriptions.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения подписок:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения подписок'
+        });
+    }
+});
+
+// ==================== FAQ ====================
+app.get('/api/faq', async (req, res) => {
+    try {
+        const { category } = req.query;
+        
+        let query = 'SELECT * FROM faq WHERE is_active = 1';
+        const params = [];
+        
+        if (category && category !== 'all') {
+            query += ' AND category = ?';
+            params.push(category);
+        }
+        
+        query += ' ORDER BY sort_order ASC, category ASC';
+        
+        const faq = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: { 
+                faq,
+                count: faq.length
+            }
+        });
+    } catch (error) {
+        console.error('Ошибка получения FAQ:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения FAQ'
+        });
+    }
+});
+
+// ==================== ОТЗЫВЫ ====================
+app.get('/api/reviews', async (req, res) => {
+    try {
+        const { featured, limit = 10, offset = 0 } = req.query;
+        
+        let query = `
+            SELECT r.*, 
+                   u1.first_name as client_first_name,
+                   u1.last_name as client_last_name,
+                   u2.first_name as performer_first_name,
+                   u2.last_name as performer_last_name,
+                   t.title as task_title
+            FROM reviews r
+            LEFT JOIN users u1 ON r.client_id = u1.id
+            LEFT JOIN users u2 ON r.performer_id = u2.id
+            LEFT JOIN tasks t ON r.task_id = t.id
+            WHERE r.admin_approved = 1
+        `;
+        
+        const params = [];
+        
+        if (featured === 'true') {
+            query += ' AND r.is_featured = 1';
+        }
+        
+        query += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const reviews = await db.all(query, params);
+        
+        // Анонимизируем отзывы если нужно
+        const processedReviews = reviews.map(review => {
+            if (review.is_anonymous) {
+                review.client_first_name = 'Аноним';
+                review.client_last_name = '';
+            }
+            return review;
+        });
+        
+        res.json({
+            success: true,
+            data: {
+                reviews: processedReviews,
+                count: reviews.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения отзывов:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения отзывов'
+        });
+    }
+});
+
+// ==================== ЗАДАЧИ ====================
+
+// Создание задачи
+app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { 
+            title, 
+            description, 
+            category_id, 
+            service_id,
+            priority = 'medium', 
+            budget,
+            deadline, 
+            address,
+            additional_requirements
+        } = req.body;
+        
+        // Валидация
+        if (!title || !description || !category_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        // Проверяем существование категории
+        const category = await db.get(
+            'SELECT * FROM categories WHERE id = ? AND is_active = 1',
+            [category_id]
+        );
+        
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        // Проверяем подписку пользователя (только для клиентов)
+        if (req.user.role === 'client') {
+            const user = await db.get(
+                'SELECT subscription_status, tasks_limit, tasks_used FROM users WHERE id = ?',
+                [req.user.id]
+            );
+            
+            if (!user || user.subscription_status !== 'active') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Ваша подписка не активна'
+                });
+            }
+            
+            // Проверяем лимит задач
+            if (user.tasks_used >= user.tasks_limit) {
+                return res.status(403).json({
+                    success: false,
+                    error: 'Превышен лимит задач по вашей подписке',
+                    tasks_limit: user.tasks_limit,
+                    tasks_used: user.tasks_used
+                });
+            }
+        }
+        
+        // Проверяем дату дедлайна
+        if (deadline) {
+            const deadlineDate = new Date(deadline);
+            if (deadlineDate < new Date()) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Дата дедлайна не может быть в прошлом'
+                });
+            }
+        }
+        
+        // Генерируем номер задачи
+        const taskNumber = generateTaskNumber();
+        
+        // Создаем задачу
+        const result = await db.run(
+            `INSERT INTO tasks 
+            (task_number, title, description, client_id, category_id, service_id, 
+             priority, budget, address, deadline, additional_requirements) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                taskNumber,
+                title,
+                description,
+                req.user.id,
+                category_id,
+                service_id || null,
+                priority,
+                budget || null,
+                address || null,
+                deadline || null,
+                additional_requirements || null
+            ]
+        );
+        
+        const taskId = result.lastID;
+        
+        // Увеличиваем счетчик использованных задач (только для клиентов)
+        if (req.user.role === 'client') {
+            await db.run(
+                'UPDATE users SET tasks_used = tasks_used + 1 WHERE id = ?',
+                [req.user.id]
+            );
+        }
+        
+        // Добавляем запись в историю статусов
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'new', req.user.id, 'Задача создана']
+        );
+        
+        // Получаем созданную задачу
+        const task = await db.get(
+            `SELECT t.*, c.display_name as category_name, c.icon as category_icon
+             FROM tasks t 
+             LEFT JOIN categories c ON t.category_id = c.id 
+             WHERE t.id = ?`,
+            [taskId]
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Задача успешно создана!',
+            data: { 
+                task,
+                tasks_used: req.user.role === 'client' ? req.user.tasks_used + 1 : 0,
+                tasks_remaining: req.user.role === 'client' ? req.user.tasks_limit - (req.user.tasks_used + 1) : 999
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка создания задачи:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка создания задачи'
+        });
+    }
+});
+
+// Получение задач пользователя
+app.get('/api/tasks', authMiddleware(), async (req, res) => {
+    try {
+        const { status, category_id, limit = 50, offset = 0, search } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   s.name as service_name,
+                   u1.first_name as client_first_name, 
+                   u1.last_name as client_last_name,
+                   u1.avatar_url as client_avatar,
+                   u2.first_name as performer_first_name,
+                   u2.last_name as performer_last_name,
+                   u2.avatar_url as performer_avatar,
+                   u2.user_rating as performer_rating
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN services s ON t.service_id = s.id
+            LEFT JOIN users u1 ON t.client_id = u1.id
+            LEFT JOIN users u2 ON t.performer_id = u2.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        // Разные права доступа для разных ролей
+        if (req.user.role === 'client') {
+            query += ' AND t.client_id = ?';
+            params.push(req.user.id);
+        } else if (req.user.role === 'performer') {
+            query += ' AND (t.performer_id = ? OR t.status = "searching")';
+            params.push(req.user.id);
+        }
+        // Админы и менеджеры видят все задачи
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        if (category_id && category_id !== 'all') {
+            query += ' AND t.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (search) {
+            query += ' AND (t.title LIKE ? OR t.description LIKE ? OR t.task_number LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const tasks = await db.all(query, params);
+        
+        // Получаем общее количество задач для пагинации
+        let countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1`;
+        let countParams = [];
+        
+        if (req.user.role === 'client') {
+            countQuery += ' AND client_id = ?';
+            countParams.push(req.user.id);
+        } else if (req.user.role === 'performer') {
+            countQuery += ' AND (performer_id = ? OR status = "searching")';
+            countParams.push(req.user.id);
+        }
+        
+        if (status && status !== 'all') {
+            countQuery += ' AND status = ?';
+            countParams.push(status);
+        }
+        
+        if (search) {
+            countQuery += ' AND (title LIKE ? OR description LIKE ? OR task_number LIKE ?)';
+            const searchTerm = `%${search}%`;
+            countParams.push(searchTerm, searchTerm, searchTerm);
+        }
+        
+        const countResult = await db.get(countQuery, countParams);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks,
+                pagination: {
+                    total: countResult?.total || 0,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset),
+                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения задач:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Получение деталей задачи
+app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
+    const taskId = req.params.id;
+    
+    try {
+        const task = await db.get(
+            `SELECT t.*, 
+                    c.display_name as category_name,
+                    c.icon as category_icon,
+                    s.name as service_name,
+                    s.description as service_description,
+                    u1.first_name as client_first_name, 
+                    u1.last_name as client_last_name, 
+                    u1.phone as client_phone,
+                    u1.avatar_url as client_avatar,
+                    u1.user_rating as client_rating,
+                    u2.first_name as performer_first_name,
+                    u2.last_name as performer_last_name,
+                    u2.phone as performer_phone,
+                    u2.avatar_url as performer_avatar,
+                    u2.user_rating as performer_rating
+             FROM tasks t
+             LEFT JOIN categories c ON t.category_id = c.id
+             LEFT JOIN services s ON t.service_id = s.id
+             LEFT JOIN users u1 ON t.client_id = u1.id
+             LEFT JOIN users u2 ON t.performer_id = u2.id
+             WHERE t.id = ?`,
+            [taskId]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        // Проверяем права доступа
+        if (req.user.id !== task.client_id && 
+            req.user.id !== task.performer_id && 
+            !['admin', 'manager', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Нет доступа к этой задаче'
+            });
+        }
+        
+        // Получаем историю статусов
+        const statusHistory = await db.all(
+            `SELECT tsh.*, u.first_name, u.last_name, u.avatar_url
+             FROM task_status_history tsh
+             LEFT JOIN users u ON tsh.changed_by = u.id
+             WHERE tsh.task_id = ?
+             ORDER BY tsh.created_at ASC`,
+            [taskId]
+        );
+        
+        // Получаем количество непрочитанных сообщений
+        const unreadMessagesCount = await db.get(
+            'SELECT COUNT(*) as count FROM task_messages WHERE task_id = ? AND user_id != ? AND is_read = 0',
+            [taskId, req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                task: {
+                    ...task,
+                    status_history: statusHistory,
+                    unread_messages_count: unreadMessagesCount?.count || 0
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения задачи:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задачи'
+        });
+    }
+});
+
+// ==================== АДМИН ПАНЕЛЬ API ====================
+
+// Получение статистики системы (только для админов)
+app.get('/api/admin/stats', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
+    try {
+        // Общая статистика
+        const totalStats = await db.get(`
+            SELECT 
+                (SELECT COUNT(*) FROM users) as total_users,
+                (SELECT COUNT(*) FROM users WHERE role = 'client') as total_clients,
+                (SELECT COUNT(*) FROM users WHERE role = 'performer') as total_performers,
+                (SELECT COUNT(*) FROM tasks) as total_tasks,
+                (SELECT COUNT(*) FROM tasks WHERE status = 'completed') as completed_tasks,
+                (SELECT COUNT(*) FROM tasks WHERE status = 'searching') as searching_tasks,
+                (SELECT COALESCE(SUM(budget), 0) FROM tasks) as total_revenue,
+                (SELECT COALESCE(SUM(budget), 0) FROM tasks WHERE status = 'completed') as confirmed_revenue
+        `);
+        
+        // Статистика по подпискам
+        const subscriptionStats = await db.all(`
+            SELECT 
+                subscription_plan,
+                COUNT(*) as user_count
+            FROM users 
+            WHERE subscription_plan IS NOT NULL 
+            GROUP BY subscription_plan
+            ORDER BY user_count DESC
+        `);
+        
+        // Статистика по дням (последние 7 дней)
+        const dailyStats = await db.all(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as tasks_created,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as tasks_completed
+            FROM tasks 
+            WHERE created_at >= DATE('now', '-7 days')
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        `);
+        
+        // Недавняя активность
+        const recentActivity = await db.all(`
+            SELECT 
+                'task_created' as type,
+                t.title,
+                u.first_name,
+                u.last_name,
+                t.created_at
+            FROM tasks t
+            JOIN users u ON t.client_id = u.id
+            WHERE t.created_at >= DATE('now', '-1 day')
+            UNION ALL
+            SELECT 
+                'task_completed' as type,
+                t.title,
+                u.first_name,
+                u.last_name,
+                t.completed_at
+            FROM tasks t
+            JOIN users u ON t.client_id = u.id
+            WHERE t.status = 'completed' AND t.completed_at >= DATE('now', '-1 day')
+            ORDER BY created_at DESC
+            LIMIT 10
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                total_stats: totalStats,
+                subscription_stats: subscriptionStats,
+                daily_stats: dailyStats,
+                recent_activity: recentActivity
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения статистики:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
+        });
+    }
+});
+
+// Получение всех пользователей (админ)
+app.get('/api/admin/users', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
+    try {
+        const { role, is_active, limit = 50, offset = 0, search } = req.query;
+        
+        let query = `
+            SELECT 
+                id, email, first_name, last_name, phone, role, 
+                subscription_plan, subscription_status, subscription_expires,
+                is_active, balance, user_rating, completed_tasks,
+                created_at, last_login, telegram_id
+            FROM users 
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (role && role !== 'all') {
+            query += ' AND role = ?';
+            params.push(role);
+        }
+        
+        if (is_active !== undefined) {
+            query += ' AND is_active = ?';
+            params.push(is_active === 'true' ? 1 : 0);
+        }
+        
+        if (search) {
+            query += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const users = await db.all(query, params);
+        
+        // Получаем общее количество
+        let countQuery = 'SELECT COUNT(*) as total FROM users WHERE 1=1';
+        const countParams = [];
+        
+        if (role && role !== 'all') {
+            countQuery += ' AND role = ?';
+            countParams.push(role);
+        }
+        
+        if (is_active !== undefined) {
+            countQuery += ' AND is_active = ?';
+            countParams.push(is_active === 'true' ? 1 : 0);
+        }
+        
+        if (search) {
+            countQuery += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            countParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        const countResult = await db.get(countQuery, countParams);
+        
+        res.json({
+            success: true,
+            data: {
+                users,
+                pagination: {
+                    total: countResult?.total || 0,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset),
+                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения пользователей:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения пользователей'
+        });
+    }
+});
+
+// Получение всех задач (админ)
+app.get('/api/admin/tasks', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
+    try {
+        const { status, priority, category_id, limit = 50, offset = 0, search } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   u1.first_name as client_first_name, 
+                   u1.last_name as client_last_name,
+                   u2.first_name as performer_first_name,
+                   u2.last_name as performer_last_name
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u1 ON t.client_id = u1.id
+            LEFT JOIN users u2 ON t.performer_id = u2.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        if (priority && priority !== 'all') {
+            query += ' AND t.priority = ?';
+            params.push(priority);
+        }
+        
+        if (category_id && category_id !== 'all') {
+            query += ' AND t.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (search) {
+            query += ' AND (t.title LIKE ? OR t.description LIKE ? OR t.task_number LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const tasks = await db.all(query, params);
+        
+        // Получаем общее количество
+        let countQuery = 'SELECT COUNT(*) as total FROM tasks WHERE 1=1';
+        const countParams = [];
+        
+        if (status && status !== 'all') {
+            countQuery += ' AND status = ?';
+            countParams.push(status);
+        }
+        
+        if (priority && priority !== 'all') {
+            countQuery += ' AND priority = ?';
+            countParams.push(priority);
+        }
+        
+        if (category_id && category_id !== 'all') {
+            countQuery += ' AND category_id = ?';
+            countParams.push(category_id);
+        }
+        
+        if (search) {
+            countQuery += ' AND (title LIKE ? OR description LIKE ? OR task_number LIKE ?)';
+            const searchTerm = `%${search}%`;
+            countParams.push(searchTerm, searchTerm, searchTerm);
+        }
+        
+        const countResult = await db.get(countQuery, countParams);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks,
+                pagination: {
+                    total: countResult?.total || 0,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset),
+                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения задач (админ):', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач (админ)'
+        });
+    }
+});
+
+// ==================== ОБРАБОТКА ОШИБОК ====================
+
+// 404 - Маршрут не найден
+app.use('*', (req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'Маршрут не найден',
+        available_routes: {
+            main: '/',
+            health: '/health',
+            api_health: '/api/health',
+            links: '/api/links',
+            auth: '/api/auth/*',
+            tasks: '/api/tasks/*',
+            admin: '/api/admin/*'
+        }
+    });
+});
+
+// Обработчик ошибок
+app.use((err, req, res, next) => {
+    console.error('🚨 Ошибка сервера:', err.stack);
+    
+    res.status(err.status || 500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'production' ? 'Внутренняя ошибка сервера' : err.message,
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
 });
 
 // ==================== ЗАПУСК СЕРВЕРА ====================
-
-const PORT = process.env.PORT || 3000;
 
 const startServer = async () => {
     try {
@@ -1206,11 +2100,10 @@ const startServer = async () => {
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
 ║   🌸 Женский Консьерж API v7.0.0                         ║
-║                  с Telegram Bot Integration               ║
+║                  Полная версия без Telegram Bot           ║
 ║                                                            ║
 ║   🚀 Сервер запущен на порту ${PORT}                      ║
-║   🤖 Telegram бот: ${bot ? '🟢 Активен' : '🔴 Не активен'}║
-║   👑 Админ Telegram ID: ${TELEGRAM_ADMIN_ID}              ║
+║   👑 Админ Telegram ID: -898508164                        ║
 ║                                                            ║
 ║   🔗 Основные интерфейсы:                                 ║
 ║   • http://localhost:${PORT}/ - API                       ║
@@ -1218,37 +2111,35 @@ const startServer = async () => {
 ║   • http://localhost:${PORT}/admin.html - Админ-панель    ║
 ║   • http://localhost:${PORT}/manager.html - Менеджер      ║
 ║                                                            ║
-║   🤖 Команды Telegram бота:                               ║
-║   • /start - Получить ссылки                              ║
-║   • /links - Быстрые ссылки                               ║
-║   • /status - Статус системы                              ║
+║   🔑 Тестовые аккаунты:                                   ║
+║   • Админ: admin@test.com / admin123                      ║
+║   • Менеджер: manager@test.com / admin123                 ║
+║   • Клиент: client@test.com / client123                   ║
+║                                                            ║
+║   📊 API эндпоинты:                                       ║
+║   • /api/links - Все ссылки                               ║
+║   • /api/auth/* - Аутентификация                          ║
+║   • /api/tasks/* - Задачи                                 ║
+║   • /api/admin/* - Админ API                              ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
             `);
             
-            // Отправляем стартовое сообщение в Telegram
-            if (bot && TELEGRAM_ADMIN_ID) {
-                setTimeout(async () => {
-                    try {
-                        await bot.sendMessage(
-                            TELEGRAM_ADMIN_ID,
-                            `🎉 *Сервер запущен!*\n\n` +
-                            `📍 *Доступные интерфейсы:*\n` +
-                            `• 🌐 Основное приложение: http://localhost:${PORT}/index.html\n` +
-                            `• 👑 Админ-панель: http://localhost:${PORT}/admin.html\n` +
-                            `• 💼 Панель менеджера: http://localhost:${PORT}/manager.html\n\n` +
-                            `🔐 *Тестовые аккаунты:*\n` +
-                            `• Админ: admin@test.com / admin123\n` +
-                            `• Менеджер: manager@test.com / admin123\n` +
-                            `• Клиент: client@test.com / client123\n\n` +
-                            `🚀 *Система готова к работе!*`,
-                            { parse_mode: 'Markdown' }
-                        );
-                    } catch (error) {
-                        console.error('Ошибка отправки стартового сообщения:', error);
-                    }
-                }, 2000);
-            }
+            console.log('\n📋 БЫСТРЫЕ КОМАНДЫ:');
+            console.log('='.repeat(60));
+            console.log('🔗 Получить все ссылки:');
+            console.log(`curl http://localhost:${PORT}/api/links`);
+            console.log('');
+            console.log('🔐 Войти как админ:');
+            console.log(`curl -X POST http://localhost:${PORT}/api/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"admin@test.com","password":"admin123"}'`);
+            console.log('');
+            console.log('👑 Войти через Telegram ID админа:');
+            console.log(`curl -X POST http://localhost:${PORT}/api/auth/telegram \\
+  -H "Content-Type: application/json" \\
+  -d '{"telegram_id":-898508164}'`);
+            console.log('='.repeat(60));
         });
         
     } catch (error) {
@@ -1263,26 +2154,9 @@ startServer();
 process.on('SIGINT', async () => {
     console.log('🔄 Завершение работы...');
     
-    // Отправляем уведомление в Telegram
-    if (bot && TELEGRAM_ADMIN_ID) {
-        try {
-            await bot.sendMessage(
-                TELEGRAM_ADMIN_ID,
-                '🔴 *Сервер останавливается...*\n\n' +
-                'Система будет недоступна до следующего запуска.',
-                { parse_mode: 'Markdown' }
-            );
-        } catch (error) {
-            console.error('Ошибка отправки уведомления:', error);
-        }
-    }
-    
     // Закрываем соединения
     if (db) {
         await db.close();
-    }
-    if (bot) {
-        bot.stopPolling();
     }
     
     console.log('👋 Сервер остановлен');
@@ -1293,9 +2167,6 @@ process.on('SIGINT', async () => {
 module.exports = {
     app,
     db,
-    bot,
     initDatabase,
-    createInitialData,
-    createOrUpdateTelegramUser,
-    getSystemStats
+    createInitialData
 };
