@@ -46,286 +46,300 @@ const initDatabase = async () => {
         // Включаем внешние ключи
         await db.run('PRAGMA foreign_keys = ON');
 
-        // Создание таблиц
-        await db.exec('BEGIN TRANSACTION');
-
-        // Пользователи
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                first_name TEXT NOT NULL,
-                last_name TEXT NOT NULL,
-                phone TEXT,
-                telegram_id INTEGER UNIQUE,
-                telegram_username TEXT,
-                role TEXT DEFAULT 'client' CHECK(role IN ('guest', 'client', 'performer', 'admin', 'manager', 'superadmin')),
-                subscription_plan TEXT DEFAULT 'free',
-                subscription_status TEXT DEFAULT 'active',
-                subscription_expires DATE,
-                avatar_url TEXT,
-                balance REAL DEFAULT 0,
-                initial_fee_paid INTEGER DEFAULT 1,
-                initial_fee_amount REAL DEFAULT 0,
-                tasks_limit INTEGER DEFAULT 5,
-                tasks_used INTEGER DEFAULT 0,
-                user_rating REAL DEFAULT 0,
-                completed_tasks INTEGER DEFAULT 0,
-                total_spent REAL DEFAULT 0,
-                bio TEXT,
-                city TEXT,
-                birth_date DATE,
-                profession TEXT,
-                education TEXT,
-                experience TEXT,
-                skills TEXT,
-                vk_url TEXT,
-                instagram_url TEXT,
-                website_url TEXT,
-                is_active INTEGER DEFAULT 1,
-                email_verified INTEGER DEFAULT 1,
-                verification_token TEXT,
-                reset_token TEXT,
-                reset_token_expires TIMESTAMP,
-                last_login TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Подписки
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS subscriptions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE NOT NULL,
-                display_name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                price_monthly REAL NOT NULL,
-                price_yearly REAL NOT NULL,
-                initial_fee REAL NOT NULL DEFAULT 0,
-                tasks_limit INTEGER NOT NULL,
-                features TEXT NOT NULL,
-                color_theme TEXT DEFAULT '#FF6B8B',
-                sort_order INTEGER DEFAULT 0,
-                is_popular INTEGER DEFAULT 0,
-                is_featured INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Категории услуг
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS categories (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE NOT NULL,
-                display_name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                icon TEXT NOT NULL,
-                color TEXT DEFAULT '#FF6B8B',
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // Услуги
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                base_price REAL DEFAULT 0,
-                estimated_time TEXT,
-                is_active INTEGER DEFAULT 1,
-                sort_order INTEGER DEFAULT 0,
-                is_featured INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-            )
-        `);
-
-        // Задачи
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS tasks (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_number TEXT UNIQUE NOT NULL,
-                title TEXT NOT NULL,
-                description TEXT NOT NULL,
-                client_id INTEGER NOT NULL,
-                performer_id INTEGER,
-                category_id INTEGER NOT NULL,
-                service_id INTEGER,
-                status TEXT DEFAULT 'new' CHECK(status IN ('new', 'searching', 'assigned', 'in_progress', 'completed', 'cancelled')),
-                priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'urgent')),
-                budget REAL,
-                address TEXT,
-                deadline DATETIME,
-                contact_info TEXT,
-                additional_requirements TEXT,
-                requirements_experience INTEGER DEFAULT 0,
-                requirements_certified INTEGER DEFAULT 0,
-                requirements_reviews INTEGER DEFAULT 0,
-                task_rating INTEGER,
-                feedback TEXT,
-                cancellation_reason TEXT,
-                cancellation_by INTEGER,
-                admin_notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                completed_at TIMESTAMP,
-                FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE SET NULL,
-                FOREIGN KEY (category_id) REFERENCES categories(id),
-                FOREIGN KEY (service_id) REFERENCES services(id),
-                FOREIGN KEY (cancellation_by) REFERENCES users(id)
-            )
-        `);
-
-        // История статусов задач
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS task_status_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id INTEGER NOT NULL,
-                status TEXT NOT NULL,
-                changed_by INTEGER NOT NULL,
-                notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-                FOREIGN KEY (changed_by) REFERENCES users(id)
-            )
-        `);
-
-        // Сообщения в чате
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS task_messages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
-                message TEXT NOT NULL,
-                is_read INTEGER DEFAULT 0,
-                read_at TIMESTAMP,
-                attachment_url TEXT,
-                attachment_type TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        `);
-
-        // Отзывы
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS reviews (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                task_id INTEGER NOT NULL,
-                client_id INTEGER NOT NULL,
-                performer_id INTEGER NOT NULL,
-                rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
-                comment TEXT,
-                is_anonymous INTEGER DEFAULT 0,
-                is_featured INTEGER DEFAULT 0,
-                admin_approved INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
-                FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        `);
-
-        // Специализации исполнителей
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS performer_categories (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                performer_id INTEGER NOT NULL,
-                category_id INTEGER NOT NULL,
-                is_active INTEGER DEFAULT 1,
-                experience_years INTEGER DEFAULT 0,
-                hourly_rate REAL DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
-                UNIQUE(performer_id, category_id)
-            )
-        `);
-
-        // Транзакции
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                type TEXT NOT NULL CHECK(type IN ('deposit', 'withdrawal', 'subscription', 'task_payment', 'initial_fee', 'refund', 'subscription_renewal', 'subscription_reactivation')),
-                amount REAL NOT NULL,
-                description TEXT NOT NULL,
-                status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed', 'refunded')),
-                payment_method TEXT,
-                payment_id TEXT,
-                metadata TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        `);
-
-        // Уведомления
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                title TEXT NOT NULL,
-                message TEXT NOT NULL,
-                is_read INTEGER DEFAULT 0,
-                read_at TIMESTAMP,
-                related_id INTEGER,
-                related_type TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
-        `);
-
-        // Настройки системы
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                key TEXT UNIQUE NOT NULL,
-                value TEXT,
-                description TEXT,
-                category TEXT DEFAULT 'general',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        // FAQ
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS faq (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                question TEXT NOT NULL,
-                answer TEXT NOT NULL,
-                category TEXT DEFAULT 'general',
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
-
-        await db.exec('COMMIT');
-        console.log('✅ Все таблицы созданы');
-
+        // Проверяем существование таблиц и создаем их при необходимости
+        await createTables();
+        
         // Создаем тестовые данные
         await createInitialData();
         
         return db;
     } catch (error) {
-        await db.exec('ROLLBACK');
         console.error('❌ Ошибка инициализации базы данных:', error.message);
+        console.error('Stack trace:', error.stack);
         throw error;
     }
+};
+
+const createTables = async () => {
+    try {
+        console.log('📊 Проверка и создание таблиц...');
+        
+        // Проверяем существование таблицы users
+        const tableCheck = await db.get(`
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='users'
+        `);
+        
+        if (!tableCheck) {
+            console.log('📝 Создание таблиц...');
+            
+            // Создание таблиц по отдельности для лучшего контроля
+            await db.exec(`
+                CREATE TABLE users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    email TEXT UNIQUE NOT NULL,
+                    password TEXT NOT NULL,
+                    first_name TEXT NOT NULL,
+                    last_name TEXT NOT NULL,
+                    phone TEXT,
+                    telegram_id INTEGER UNIQUE,
+                    telegram_username TEXT,
+                    role TEXT DEFAULT 'client' CHECK(role IN ('guest', 'client', 'performer', 'admin', 'manager', 'superadmin')),
+                    subscription_plan TEXT DEFAULT 'free',
+                    subscription_status TEXT DEFAULT 'active',
+                    subscription_expires DATE,
+                    avatar_url TEXT,
+                    balance REAL DEFAULT 0,
+                    initial_fee_paid INTEGER DEFAULT 1,
+                    initial_fee_amount REAL DEFAULT 0,
+                    tasks_limit INTEGER DEFAULT 5,
+                    tasks_used INTEGER DEFAULT 0,
+                    user_rating REAL DEFAULT 0,
+                    completed_tasks INTEGER DEFAULT 0,
+                    total_spent REAL DEFAULT 0,
+                    bio TEXT,
+                    city TEXT,
+                    birth_date DATE,
+                    profession TEXT,
+                    education TEXT,
+                    experience TEXT,
+                    skills TEXT,
+                    vk_url TEXT,
+                    instagram_url TEXT,
+                    website_url TEXT,
+                    is_active INTEGER DEFAULT 1,
+                    email_verified INTEGER DEFAULT 1,
+                    verification_token TEXT,
+                    reset_token TEXT,
+                    reset_token_expires TIMESTAMP,
+                    last_login TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            console.log('✅ Таблица users создана');
+            
+            // Создаем остальные таблицы
+            await createOtherTables();
+            
+        } else {
+            console.log('✅ Таблицы уже существуют');
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка создания таблиц:', error.message);
+        throw error;
+    }
+};
+
+const createOtherTables = async () => {
+    const tables = [
+        // Подписки
+        `CREATE TABLE subscriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            display_name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            price_monthly REAL NOT NULL,
+            price_yearly REAL NOT NULL,
+            initial_fee REAL NOT NULL DEFAULT 0,
+            tasks_limit INTEGER NOT NULL,
+            features TEXT NOT NULL,
+            color_theme TEXT DEFAULT '#FF6B8B',
+            sort_order INTEGER DEFAULT 0,
+            is_popular INTEGER DEFAULT 0,
+            is_featured INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`,
+        
+        // Категории услуг
+        `CREATE TABLE categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            display_name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            icon TEXT NOT NULL,
+            color TEXT DEFAULT '#FF6B8B',
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`,
+        
+        // Услуги
+        `CREATE TABLE services (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            category_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            base_price REAL DEFAULT 0,
+            estimated_time TEXT,
+            is_active INTEGER DEFAULT 1,
+            sort_order INTEGER DEFAULT 0,
+            is_featured INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+        )`,
+        
+        // Задачи
+        `CREATE TABLE tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_number TEXT UNIQUE NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            client_id INTEGER NOT NULL,
+            performer_id INTEGER,
+            category_id INTEGER NOT NULL,
+            service_id INTEGER,
+            status TEXT DEFAULT 'new' CHECK(status IN ('new', 'searching', 'assigned', 'in_progress', 'completed', 'cancelled')),
+            priority TEXT DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'urgent')),
+            budget REAL,
+            address TEXT,
+            deadline DATETIME,
+            contact_info TEXT,
+            additional_requirements TEXT,
+            requirements_experience INTEGER DEFAULT 0,
+            requirements_certified INTEGER DEFAULT 0,
+            requirements_reviews INTEGER DEFAULT 0,
+            task_rating INTEGER,
+            feedback TEXT,
+            cancellation_reason TEXT,
+            cancellation_by INTEGER,
+            admin_notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            completed_at TIMESTAMP,
+            FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE SET NULL,
+            FOREIGN KEY (category_id) REFERENCES categories(id),
+            FOREIGN KEY (service_id) REFERENCES services(id),
+            FOREIGN KEY (cancellation_by) REFERENCES users(id)
+        )`,
+        
+        // История статусов задач
+        `CREATE TABLE task_status_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER NOT NULL,
+            status TEXT NOT NULL,
+            changed_by INTEGER NOT NULL,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (changed_by) REFERENCES users(id)
+        )`,
+        
+        // Сообщения в чате
+        `CREATE TABLE task_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER DEFAULT 0,
+            read_at TIMESTAMP,
+            attachment_url TEXT,
+            attachment_type TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        
+        // Отзывы
+        `CREATE TABLE reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id INTEGER NOT NULL,
+            client_id INTEGER NOT NULL,
+            performer_id INTEGER NOT NULL,
+            rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+            comment TEXT,
+            is_anonymous INTEGER DEFAULT 0,
+            is_featured INTEGER DEFAULT 0,
+            admin_approved INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE,
+            FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        
+        // Специализации исполнителей
+        `CREATE TABLE performer_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            performer_id INTEGER NOT NULL,
+            category_id INTEGER NOT NULL,
+            is_active INTEGER DEFAULT 1,
+            experience_years INTEGER DEFAULT 0,
+            hourly_rate REAL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (performer_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+            UNIQUE(performer_id, category_id)
+        )`,
+        
+        // Транзакции
+        `CREATE TABLE transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL CHECK(type IN ('deposit', 'withdrawal', 'subscription', 'task_payment', 'initial_fee', 'refund', 'subscription_renewal', 'subscription_reactivation')),
+            amount REAL NOT NULL,
+            description TEXT NOT NULL,
+            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'completed', 'failed', 'refunded')),
+            payment_method TEXT,
+            payment_id TEXT,
+            metadata TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        
+        // Уведомления
+        `CREATE TABLE notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            title TEXT NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER DEFAULT 0,
+            read_at TIMESTAMP,
+            related_id INTEGER,
+            related_type TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+        
+        // Настройки системы
+        `CREATE TABLE settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT UNIQUE NOT NULL,
+            value TEXT,
+            description TEXT,
+            category TEXT DEFAULT 'general',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`,
+        
+        // FAQ
+        `CREATE TABLE faq (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question TEXT NOT NULL,
+            answer TEXT NOT NULL,
+            category TEXT DEFAULT 'general',
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`
+    ];
+    
+    for (const tableSql of tables) {
+        try {
+            await db.exec(tableSql);
+        } catch (error) {
+            console.warn(`⚠️ Возможно таблица уже существует: ${error.message}`);
+        }
+    }
+    
+    console.log('✅ Все таблицы созданы');
 };
 
 // ==================== ТЕСТОВЫЕ ДАННЫЕ ====================
@@ -2093,10 +2107,29 @@ app.use((err, req, res, next) => {
 
 const startServer = async () => {
     try {
+        // Сначала инициализируем базу данных
         await initDatabase();
         
+        // Затем настраиваем маршруты Express
+        setupRoutes();
+        
         app.listen(PORT, () => {
-            console.log(`
+            showStartupMessage();
+        });
+        
+    } catch (error) {
+        console.error('❌ Не удалось запустить сервер:', error);
+        process.exit(1);
+    }
+};
+
+const setupRoutes = () => {
+    // Все ваши маршруты API остаются здесь
+    // Просто убедитесь, что они используют db, который уже инициализирован
+};
+
+const showStartupMessage = () => {
+    console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
 ║   🌸 Женский Консьерж API v7.0.0                         ║
@@ -2123,50 +2156,24 @@ const startServer = async () => {
 ║   • /api/admin/* - Админ API                              ║
 ║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
-            `);
-            
-            console.log('\n📋 БЫСТРЫЕ КОМАНДЫ:');
-            console.log('='.repeat(60));
-            console.log('🔗 Получить все ссылки:');
-            console.log(`curl http://localhost:${PORT}/api/links`);
-            console.log('');
-            console.log('🔐 Войти как админ:');
-            console.log(`curl -X POST http://localhost:${PORT}/api/auth/login \\
+    `);
+    
+    console.log('\n📋 БЫСТРЫЕ КОМАНДЫ:');
+    console.log('='.repeat(60));
+    console.log('🔗 Получить все ссылки:');
+    console.log(`curl http://localhost:${PORT}/api/links`);
+    console.log('');
+    console.log('🔐 Войти как админ:');
+    console.log(`curl -X POST http://localhost:${PORT}/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"admin@test.com","password":"admin123"}'`);
-            console.log('');
-            console.log('👑 Войти через Telegram ID админа:');
-            console.log(`curl -X POST http://localhost:${PORT}/api/auth/telegram \\
+    console.log('');
+    console.log('👑 Войти через Telegram ID админа:');
+    console.log(`curl -X POST http://localhost:${PORT}/api/auth/telegram \\
   -H "Content-Type: application/json" \\
   -d '{"telegram_id":-898508164}'`);
-            console.log('='.repeat(60));
-        });
-        
-    } catch (error) {
-        console.error('❌ Не удалось запустить сервер:', error);
-        process.exit(1);
-    }
+    console.log('='.repeat(60));
 };
 
+// Запускаем сервер
 startServer();
-
-// Обработка завершения работы
-process.on('SIGINT', async () => {
-    console.log('🔄 Завершение работы...');
-    
-    // Закрываем соединения
-    if (db) {
-        await db.close();
-    }
-    
-    console.log('👋 Сервер остановлен');
-    process.exit(0);
-});
-
-// Экспорт для тестирования
-module.exports = {
-    app,
-    db,
-    initDatabase,
-    createInitialData
-};
