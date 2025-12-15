@@ -7,9 +7,8 @@ const jwt = require('jsonwebtoken');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
-const fs = require('fs');
-const os = require('os');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
@@ -31,6 +30,13 @@ app.use(express.static('public'));
 // ==================== БАЗА ДАННЫХ ====================
 let db;
 
+const ensureDbDirectory = () => {
+    const dbDir = __dirname;
+    if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
+};
+
 const initDatabase = async () => {
     try {
         console.log('🔄 Инициализация базы данных...');
@@ -42,16 +48,6 @@ const initDatabase = async () => {
             ? `${__dirname}/concierge.db`
             : './concierge.db';
             
-        console.log(`📁 Путь к базе данных: ${dbPath}`);
-        console.log(`📂 Текущая директория: ${__dirname}`);
-        console.log(`💻 Платформа: ${os.platform()}`);
-        
-        db = await open({
-            filename: dbPath,
-            driver: sqlite3.Database
-        });
-        
-        const dbPath = './concierge.db';
         console.log(`📁 Путь к базе данных: ${dbPath}`);
         
         db = await open({
@@ -91,7 +87,7 @@ const createTables = async () => {
         if (!tableCheck) {
             console.log('📝 Создание таблиц...');
             
-            // Создание таблиц по отдельности для лучшего контроля
+            // Создание таблиц по отдельности
             await db.exec(`
                 CREATE TABLE users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -353,7 +349,10 @@ const createOtherTables = async () => {
         try {
             await db.exec(tableSql);
         } catch (error) {
-            console.warn(`⚠️ Возможно таблица уже существует: ${error.message}`);
+            // Игнорируем ошибку "таблица уже существует"
+            if (!error.message.includes('already exists')) {
+                console.warn(`⚠️ Ошибка создания таблицы: ${error.message}`);
+            }
         }
     }
     
@@ -756,9 +755,9 @@ const authMiddleware = (roles = []) => {
     };
 };
 
-// ==================== API МАРШРУТЫ ====================
+// ==================== ОСНОВНЫЕ МАРШРУТЫ ====================
 
-// Главная
+// Главная страница API
 app.get('/', (req, res) => {
     res.json({
         success: true,
@@ -776,36 +775,35 @@ app.get('/', (req, res) => {
     });
 });
 
-// Health check
+// Health check для платформы
 app.get('/health', async (req, res) => {
     try {
+        if (!db) {
+            return res.status(500).json({
+                success: false,
+                status: 'DATABASE_NOT_CONNECTED',
+                error: 'База данных не подключена'
+            });
+        }
+        
         await db.get('SELECT 1 as status');
         
-        // Проверяем доступность основных таблиц
-        const tables = ['users', 'categories', 'services', 'tasks', 'subscriptions'];
-        const tableStatus = {};
-        
-        for (const table of tables) {
-            try {
-                await db.get(`SELECT 1 FROM ${table} LIMIT 1`);
-                tableStatus[table] = 'OK';
-            } catch (error) {
-                tableStatus[table] = 'ERROR';
-            }
-        }
+        // Простая статистика
+        const usersCount = await db.get('SELECT COUNT(*) as count FROM users');
+        const tasksCount = await db.get('SELECT COUNT(*) as count FROM tasks');
         
         res.json({
             success: true,
             status: 'OK',
             database: 'connected',
-            tables: tableStatus,
+            stats: {
+                users: usersCount?.count || 0,
+                tasks: tasksCount?.count || 0
+            },
             timestamp: new Date().toISOString(),
             uptime: process.uptime(),
-            interfaces: {
-                main: `http://localhost:${PORT}/index.html`,
-                admin: `http://localhost:${PORT}/admin.html`,
-                manager: `http://localhost:${PORT}/manager.html`
-            }
+            port: PORT,
+            node_version: process.version
         });
     } catch (error) {
         res.status(500).json({
@@ -835,9 +833,9 @@ app.get('/api/health', async (req, res) => {
             },
             timestamp: new Date().toISOString(),
             links: {
-                main: `http://localhost:${PORT}/index.html`,
-                admin: `http://localhost:${PORT}/admin.html`,
-                manager: `http://localhost:${PORT}/manager.html`
+                main: `/index.html`,
+                admin: `/admin.html`,
+                manager: `/manager.html`
             }
         });
     } catch (error) {
@@ -858,20 +856,20 @@ app.get('/api/links', (req, res) => {
                 {
                     name: 'Основное приложение',
                     description: 'Для клиентов и исполнителей',
-                    url: `http://localhost:${PORT}/index.html`,
+                    url: `/index.html`,
                     icon: '🌐'
                 },
                 {
                     name: 'Админ-панель',
                     description: 'Управление системой',
-                    url: `http://localhost:${PORT}/admin.html`,
+                    url: `/admin.html`,
                     icon: '👑',
                     roles: ['admin', 'superadmin']
                 },
                 {
                     name: 'Панель менеджера',
                     description: 'Управление задачами',
-                    url: `http://localhost:${PORT}/manager.html`,
+                    url: `/manager.html`,
                     icon: '💼',
                     roles: ['manager', 'admin', 'superadmin']
                 }
@@ -887,130 +885,13 @@ app.get('/api/links', (req, res) => {
     });
 });
 
-// Авторизация через Telegram ID
-app.post('/api/auth/telegram', async (req, res) => {
-    try {
-        const { telegram_id } = req.body;
-        
-        if (!telegram_id) {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указан Telegram ID'
-            });
-        }
-        
-        // Ищем пользователя по Telegram ID
-        const user = await db.get(
-            `SELECT id, email, first_name, last_name, role, 
-                    subscription_plan, subscription_status, avatar_url,
-                    balance, user_rating, telegram_id
-             FROM users WHERE telegram_id = ? AND is_active = 1`,
-            [telegram_id]
-        );
-        
-        if (!user) {
-            // Если пользователь не найден, создаем нового клиента
-            const hashedPassword = await bcrypt.hash(`telegram_${telegram_id}`, 10);
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            
-            // Если это администратор (ID -898508164), создаем как суперадмина
-            let role = 'client';
-            let subscription = 'free';
-            
-            if (telegram_id == -898508164) {
-                role = 'superadmin';
-                subscription = 'premium';
-            }
-            
-            const result = await db.run(`
-                INSERT INTO users 
-                (email, password, first_name, last_name, telegram_id,
-                 role, subscription_plan, subscription_status, subscription_expires,
-                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [
-                    `telegram_${telegram_id}@concierge.local`,
-                    hashedPassword,
-                    'Telegram',
-                    'User',
-                    telegram_id,
-                    role,
-                    subscription,
-                    'active',
-                    expiryDate.toISOString().split('T')[0],
-                    1,
-                    0,
-                    role === 'client' ? 5 : 9999,
-                    `https://ui-avatars.com/api/?name=Telegram+User&background=7289DA&color=fff&bold=true`,
-                    1000
-                ]
-            );
-            
-            const userId = result.lastID;
-            
-            user = await db.get(
-                `SELECT id, email, first_name, last_name, role, 
-                        subscription_plan, subscription_status, avatar_url,
-                        balance, user_rating, telegram_id
-                 FROM users WHERE id = ?`,
-                [userId]
-            );
-        }
-        
-        // Обновляем время последнего входа
-        await db.run(
-            'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
-            [user.id]
-        );
-        
-        // Создаем JWT токен
-        const token = jwt.sign(
-            { 
-                id: user.id, 
-                telegram_id: user.telegram_id,
-                role: user.role,
-                first_name: user.first_name,
-                last_name: user.last_name
-            },
-            process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
-            { expiresIn: '30d' }
-        );
-        
-        res.json({
-            success: true,
-            message: 'Авторизация через Telegram успешна',
-            data: { 
-                user: {
-                    ...user,
-                    rating: user.user_rating
-                },
-                token,
-                links: {
-                    main: `http://localhost:${PORT}/index.html`,
-                    admin: `http://localhost:${PORT}/admin.html`,
-                    manager: `http://localhost:${PORT}/manager.html`
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка авторизации через Telegram:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка авторизации через Telegram'
-        });
-    }
-});
-
-// ==================== АУТЕНТИФИКАЦИЯ ====================
+// ==================== ПРОСТЫЕ API МАРШРУТЫ ====================
 
 // Регистрация
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { email, password, first_name, last_name, phone, subscription_plan = 'free', role = 'client' } = req.body;
+        const { email, password, first_name, last_name } = req.body;
         
-        // Валидация
         if (!email || !password || !first_name || !last_name) {
             return res.status(400).json({
                 success: false,
@@ -1018,131 +899,25 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
-        if (password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                error: 'Пароль должен содержать не менее 6 символов'
-            });
-        }
-        
-        if (!validateEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Некорректный email адрес'
-            });
-        }
-        
-        if (phone && !validatePhone(phone)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Некорректный номер телефона'
-            });
-        }
-        
-        // Проверяем существующего пользователя
-        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                error: 'Пользователь с таким email уже существует'
-            });
-        }
-        
-        // Проверяем существование подписки
-        const subscription = await db.get(
-            'SELECT * FROM subscriptions WHERE name = ? AND is_active = 1',
-            [subscription_plan]
-        );
-        
-        if (!subscription) {
-            return res.status(400).json({
-                success: false,
-                error: `Подписка "${subscription_plan}" не найдена`
-            });
-        }
-        
         // Хеширование пароля
         const hashedPassword = await bcrypt.hash(password, 10);
         
-        // Дата истечения подписки
-        const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
-        const expiryDateStr = expiryDate.toISOString().split('T')[0];
-        
-        // Определяем лимит задач
-        let tasksLimit = subscription.tasks_limit;
-        if (role === 'performer') {
-            tasksLimit = 999;
-        } else if (role === 'admin' || role === 'manager' || role === 'superadmin') {
-            tasksLimit = 9999;
-        }
-        
-        // Аватар по умолчанию
-        let avatarBgColor = 'FF6B8B';
-        if (role === 'performer') {
-            avatarBgColor = '3498DB';
-        } else if (role === 'admin' || role === 'manager') {
-            avatarBgColor = '2ECC71';
-        } else if (role === 'superadmin') {
-            avatarBgColor = '9B59B6';
-        }
-        
-        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(first_name)}+${encodeURIComponent(last_name)}&background=${avatarBgColor}&color=fff&bold=true`;
-        
         // Создание пользователя
         const result = await db.run(
-            `INSERT INTO users 
-            (email, password, first_name, last_name, phone, role, 
-             subscription_plan, subscription_status, subscription_expires,
-             initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url,
-             balance) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                email,
-                hashedPassword,
-                first_name,
-                last_name,
-                phone || null,
-                role,
-                subscription_plan,
-                'active',
-                expiryDateStr,
-                1,
-                0,
-                tasksLimit,
-                avatarUrl,
-                1000
-            ]
+            `INSERT INTO users (email, password, first_name, last_name) 
+             VALUES (?, ?, ?, ?)`,
+            [email, hashedPassword, first_name, last_name]
         );
         
         const userId = result.lastID;
         
-        // Получаем созданного пользователя
-        const user = await db.get(
-            `SELECT id, email, first_name, last_name, phone, role, 
-                    subscription_plan, subscription_status, subscription_expires,
-                    initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, tasks_used,
-                    user_rating, balance, telegram_id
-             FROM users WHERE id = ?`,
-            [userId]
-        );
-        
-        // Переименовываем user_rating в rating для фронтенда
-        const userForResponse = {
-            ...user,
-            rating: user.user_rating
-        };
-        
         // Создаем JWT токен
         const token = jwt.sign(
             { 
-                id: user.id, 
-                email: user.email, 
-                role: user.role,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                subscription_plan: user.subscription_plan,
-                initial_fee_paid: user.initial_fee_paid
+                id: userId, 
+                email: email,
+                first_name: first_name,
+                last_name: last_name
             },
             process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
             { expiresIn: '30d' }
@@ -1152,13 +927,14 @@ app.post('/api/auth/register', async (req, res) => {
             success: true,
             message: 'Регистрация успешно завершена!',
             data: { 
-                user: userForResponse,
-                token,
-                links: {
-                    main: `http://localhost:${PORT}/index.html`,
-                    admin: `http://localhost:${PORT}/admin.html`,
-                    manager: `http://localhost:${PORT}/manager.html`
-                }
+                user: {
+                    id: userId,
+                    email,
+                    first_name,
+                    last_name,
+                    role: 'client'
+                },
+                token
             }
         });
         
@@ -1205,35 +981,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
-        // Обновляем время последнего входа
-        await db.run(
-            'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
-            [user.id]
-        );
-        
-        // Подготавливаем ответ
-        const userForResponse = {
-            id: user.id,
-            email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            phone: user.phone,
-            role: user.role,
-            subscription_plan: user.subscription_plan,
-            subscription_status: user.subscription_status,
-            subscription_expires: user.subscription_expires,
-            avatar_url: user.avatar_url,
-            balance: user.balance,
-            initial_fee_paid: user.initial_fee_paid,
-            initial_fee_amount: user.initial_fee_amount,
-            rating: user.user_rating,
-            completed_tasks: user.completed_tasks,
-            tasks_limit: user.tasks_limit,
-            tasks_used: user.tasks_used,
-            total_spent: user.total_spent,
-            telegram_id: user.telegram_id
-        };
-        
         // Создаем токен
         const token = jwt.sign(
             { 
@@ -1241,9 +988,7 @@ app.post('/api/auth/login', async (req, res) => {
                 email: user.email, 
                 role: user.role,
                 first_name: user.first_name,
-                last_name: user.last_name,
-                subscription_plan: user.subscription_plan,
-                initial_fee_paid: user.initial_fee_paid
+                last_name: user.last_name
             },
             process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
             { expiresIn: '30d' }
@@ -1253,13 +998,17 @@ app.post('/api/auth/login', async (req, res) => {
             success: true,
             message: 'Вход выполнен успешно!',
             data: { 
-                user: userForResponse,
-                token,
-                links: {
-                    main: `http://localhost:${PORT}/index.html`,
-                    admin: `http://localhost:${PORT}/admin.html`,
-                    manager: `http://localhost:${PORT}/manager.html`
-                }
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    role: user.role,
+                    avatar_url: user.avatar_url,
+                    balance: user.balance,
+                    rating: user.user_rating
+                },
+                token
             }
         });
         
@@ -1268,6 +1017,108 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Внутренняя ошибка сервера при входе'
+        });
+    }
+});
+
+// Авторизация через Telegram ID
+app.post('/api/auth/telegram', async (req, res) => {
+    try {
+        const { telegram_id } = req.body;
+        
+        if (!telegram_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан Telegram ID'
+            });
+        }
+        
+        // Ищем пользователя по Telegram ID
+        let user = await db.get(
+            `SELECT id, email, first_name, last_name, role, 
+                    subscription_plan, subscription_status, avatar_url,
+                    balance, user_rating, telegram_id
+             FROM users WHERE telegram_id = ? AND is_active = 1`,
+            [telegram_id]
+        );
+        
+        if (!user) {
+            // Если пользователь не найден, создаем нового клиента
+            const hashedPassword = await bcrypt.hash(`telegram_${telegram_id}`, 10);
+            
+            // Если это администратор (ID -898508164), создаем как суперадмина
+            let role = 'client';
+            let subscription = 'free';
+            
+            if (telegram_id == -898508164) {
+                role = 'superadmin';
+                subscription = 'premium';
+            }
+            
+            const result = await db.run(`
+                INSERT INTO users 
+                (email, password, first_name, last_name, telegram_id,
+                 role, subscription_plan, subscription_status,
+                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url, balance) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    `telegram_${telegram_id}@concierge.local`,
+                    hashedPassword,
+                    'Telegram',
+                    'User',
+                    telegram_id,
+                    role,
+                    subscription,
+                    'active',
+                    1,
+                    0,
+                    role === 'client' ? 5 : 9999,
+                    `https://ui-avatars.com/api/?name=Telegram+User&background=7289DA&color=fff&bold=true`,
+                    1000
+                ]
+            );
+            
+            const userId = result.lastID;
+            
+            user = await db.get(
+                `SELECT id, email, first_name, last_name, role, 
+                        subscription_plan, subscription_status, avatar_url,
+                        balance, user_rating, telegram_id
+                 FROM users WHERE id = ?`,
+                [userId]
+            );
+        }
+        
+        // Создаем JWT токен
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                telegram_id: user.telegram_id,
+                role: user.role,
+                first_name: user.first_name,
+                last_name: user.last_name
+            },
+            process.env.JWT_SECRET || 'concierge-pink-secret-2024-prod-safe-key',
+            { expiresIn: '30d' }
+        );
+        
+        res.json({
+            success: true,
+            message: 'Авторизация через Telegram успешна',
+            data: { 
+                user: {
+                    ...user,
+                    rating: user.user_rating
+                },
+                token
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка авторизации через Telegram:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка авторизации через Telegram'
         });
     }
 });
@@ -1297,11 +1148,6 @@ app.get('/api/auth/me', authMiddleware(), async (req, res) => {
                 user: {
                     ...user,
                     rating: user.user_rating
-                },
-                links: {
-                    main: `http://localhost:${PORT}/index.html`,
-                    admin: `http://localhost:${PORT}/admin.html`,
-                    manager: `http://localhost:${PORT}/manager.html`
                 }
             }
         });
@@ -1440,62 +1286,6 @@ app.get('/api/faq', async (req, res) => {
     }
 });
 
-// ==================== ОТЗЫВЫ ====================
-app.get('/api/reviews', async (req, res) => {
-    try {
-        const { featured, limit = 10, offset = 0 } = req.query;
-        
-        let query = `
-            SELECT r.*, 
-                   u1.first_name as client_first_name,
-                   u1.last_name as client_last_name,
-                   u2.first_name as performer_first_name,
-                   u2.last_name as performer_last_name,
-                   t.title as task_title
-            FROM reviews r
-            LEFT JOIN users u1 ON r.client_id = u1.id
-            LEFT JOIN users u2 ON r.performer_id = u2.id
-            LEFT JOIN tasks t ON r.task_id = t.id
-            WHERE r.admin_approved = 1
-        `;
-        
-        const params = [];
-        
-        if (featured === 'true') {
-            query += ' AND r.is_featured = 1';
-        }
-        
-        query += ' ORDER BY r.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const reviews = await db.all(query, params);
-        
-        // Анонимизируем отзывы если нужно
-        const processedReviews = reviews.map(review => {
-            if (review.is_anonymous) {
-                review.client_first_name = 'Аноним';
-                review.client_last_name = '';
-            }
-            return review;
-        });
-        
-        res.json({
-            success: true,
-            data: {
-                reviews: processedReviews,
-                count: reviews.length
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения отзывов:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения отзывов'
-        });
-    }
-});
-
 // ==================== ЗАДАЧИ ====================
 
 // Создание задачи
@@ -1505,12 +1295,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager
             title, 
             description, 
             category_id, 
-            service_id,
-            priority = 'medium', 
-            budget,
-            deadline, 
-            address,
-            additional_requirements
+            budget
         } = req.body;
         
         // Валидация
@@ -1521,95 +1306,25 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager
             });
         }
         
-        // Проверяем существование категории
-        const category = await db.get(
-            'SELECT * FROM categories WHERE id = ? AND is_active = 1',
-            [category_id]
-        );
-        
-        if (!category) {
-            return res.status(404).json({
-                success: false,
-                error: 'Категория не найдена'
-            });
-        }
-        
-        // Проверяем подписку пользователя (только для клиентов)
-        if (req.user.role === 'client') {
-            const user = await db.get(
-                'SELECT subscription_status, tasks_limit, tasks_used FROM users WHERE id = ?',
-                [req.user.id]
-            );
-            
-            if (!user || user.subscription_status !== 'active') {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Ваша подписка не активна'
-                });
-            }
-            
-            // Проверяем лимит задач
-            if (user.tasks_used >= user.tasks_limit) {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Превышен лимит задач по вашей подписке',
-                    tasks_limit: user.tasks_limit,
-                    tasks_used: user.tasks_used
-                });
-            }
-        }
-        
-        // Проверяем дату дедлайна
-        if (deadline) {
-            const deadlineDate = new Date(deadline);
-            if (deadlineDate < new Date()) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Дата дедлайна не может быть в прошлом'
-                });
-            }
-        }
-        
         // Генерируем номер задачи
         const taskNumber = generateTaskNumber();
         
         // Создаем задачу
         const result = await db.run(
             `INSERT INTO tasks 
-            (task_number, title, description, client_id, category_id, service_id, 
-             priority, budget, address, deadline, additional_requirements) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (task_number, title, description, client_id, category_id, budget) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 taskNumber,
                 title,
                 description,
                 req.user.id,
                 category_id,
-                service_id || null,
-                priority,
-                budget || null,
-                address || null,
-                deadline || null,
-                additional_requirements || null
+                budget || null
             ]
         );
         
         const taskId = result.lastID;
-        
-        // Увеличиваем счетчик использованных задач (только для клиентов)
-        if (req.user.role === 'client') {
-            await db.run(
-                'UPDATE users SET tasks_used = tasks_used + 1 WHERE id = ?',
-                [req.user.id]
-            );
-        }
-        
-        // Добавляем запись в историю статусов
-        await db.run(
-            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
-             VALUES (?, ?, ?, ?)`,
-            [taskId, 'new', req.user.id, 'Задача создана']
-        );
         
         // Получаем созданную задачу
         const task = await db.get(
@@ -1624,9 +1339,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager
             success: true,
             message: 'Задача успешно создана!',
             data: { 
-                task,
-                tasks_used: req.user.role === 'client' ? req.user.tasks_used + 1 : 0,
-                tasks_remaining: req.user.role === 'client' ? req.user.tasks_limit - (req.user.tasks_used + 1) : 999
+                task
             }
         });
         
@@ -1635,458 +1348,6 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin', 'manager
         res.status(500).json({
             success: false,
             error: 'Ошибка создания задачи'
-        });
-    }
-});
-
-// Получение задач пользователя
-app.get('/api/tasks', authMiddleware(), async (req, res) => {
-    try {
-        const { status, category_id, limit = 50, offset = 0, search } = req.query;
-        
-        let query = `
-            SELECT t.*, 
-                   c.display_name as category_name,
-                   c.icon as category_icon,
-                   s.name as service_name,
-                   u1.first_name as client_first_name, 
-                   u1.last_name as client_last_name,
-                   u1.avatar_url as client_avatar,
-                   u2.first_name as performer_first_name,
-                   u2.last_name as performer_last_name,
-                   u2.avatar_url as performer_avatar,
-                   u2.user_rating as performer_rating
-            FROM tasks t
-            LEFT JOIN categories c ON t.category_id = c.id
-            LEFT JOIN services s ON t.service_id = s.id
-            LEFT JOIN users u1 ON t.client_id = u1.id
-            LEFT JOIN users u2 ON t.performer_id = u2.id
-            WHERE 1=1
-        `;
-        
-        const params = [];
-        
-        // Разные права доступа для разных ролей
-        if (req.user.role === 'client') {
-            query += ' AND t.client_id = ?';
-            params.push(req.user.id);
-        } else if (req.user.role === 'performer') {
-            query += ' AND (t.performer_id = ? OR t.status = "searching")';
-            params.push(req.user.id);
-        }
-        // Админы и менеджеры видят все задачи
-        
-        if (status && status !== 'all') {
-            query += ' AND t.status = ?';
-            params.push(status);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            query += ' AND t.category_id = ?';
-            params.push(category_id);
-        }
-        
-        if (search) {
-            query += ' AND (t.title LIKE ? OR t.description LIKE ? OR t.task_number LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm);
-        }
-        
-        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const tasks = await db.all(query, params);
-        
-        // Получаем общее количество задач для пагинации
-        let countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1`;
-        let countParams = [];
-        
-        if (req.user.role === 'client') {
-            countQuery += ' AND client_id = ?';
-            countParams.push(req.user.id);
-        } else if (req.user.role === 'performer') {
-            countQuery += ' AND (performer_id = ? OR status = "searching")';
-            countParams.push(req.user.id);
-        }
-        
-        if (status && status !== 'all') {
-            countQuery += ' AND status = ?';
-            countParams.push(status);
-        }
-        
-        if (search) {
-            countQuery += ' AND (title LIKE ? OR description LIKE ? OR task_number LIKE ?)';
-            const searchTerm = `%${search}%`;
-            countParams.push(searchTerm, searchTerm, searchTerm);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
-        
-        res.json({
-            success: true,
-            data: {
-                tasks,
-                pagination: {
-                    total: countResult?.total || 0,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения задач:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения задач'
-        });
-    }
-});
-
-// Получение деталей задачи
-app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
-    const taskId = req.params.id;
-    
-    try {
-        const task = await db.get(
-            `SELECT t.*, 
-                    c.display_name as category_name,
-                    c.icon as category_icon,
-                    s.name as service_name,
-                    s.description as service_description,
-                    u1.first_name as client_first_name, 
-                    u1.last_name as client_last_name, 
-                    u1.phone as client_phone,
-                    u1.avatar_url as client_avatar,
-                    u1.user_rating as client_rating,
-                    u2.first_name as performer_first_name,
-                    u2.last_name as performer_last_name,
-                    u2.phone as performer_phone,
-                    u2.avatar_url as performer_avatar,
-                    u2.user_rating as performer_rating
-             FROM tasks t
-             LEFT JOIN categories c ON t.category_id = c.id
-             LEFT JOIN services s ON t.service_id = s.id
-             LEFT JOIN users u1 ON t.client_id = u1.id
-             LEFT JOIN users u2 ON t.performer_id = u2.id
-             WHERE t.id = ?`,
-            [taskId]
-        );
-        
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        // Проверяем права доступа
-        if (req.user.id !== task.client_id && 
-            req.user.id !== task.performer_id && 
-            !['admin', 'manager', 'superadmin'].includes(req.user.role)) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нет доступа к этой задаче'
-            });
-        }
-        
-        // Получаем историю статусов
-        const statusHistory = await db.all(
-            `SELECT tsh.*, u.first_name, u.last_name, u.avatar_url
-             FROM task_status_history tsh
-             LEFT JOIN users u ON tsh.changed_by = u.id
-             WHERE tsh.task_id = ?
-             ORDER BY tsh.created_at ASC`,
-            [taskId]
-        );
-        
-        // Получаем количество непрочитанных сообщений
-        const unreadMessagesCount = await db.get(
-            'SELECT COUNT(*) as count FROM task_messages WHERE task_id = ? AND user_id != ? AND is_read = 0',
-            [taskId, req.user.id]
-        );
-        
-        res.json({
-            success: true,
-            data: {
-                task: {
-                    ...task,
-                    status_history: statusHistory,
-                    unread_messages_count: unreadMessagesCount?.count || 0
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения задачи:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения задачи'
-        });
-    }
-});
-
-// ==================== АДМИН ПАНЕЛЬ API ====================
-
-// Получение статистики системы (только для админов)
-app.get('/api/admin/stats', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
-    try {
-        // Общая статистика
-        const totalStats = await db.get(`
-            SELECT 
-                (SELECT COUNT(*) FROM users) as total_users,
-                (SELECT COUNT(*) FROM users WHERE role = 'client') as total_clients,
-                (SELECT COUNT(*) FROM users WHERE role = 'performer') as total_performers,
-                (SELECT COUNT(*) FROM tasks) as total_tasks,
-                (SELECT COUNT(*) FROM tasks WHERE status = 'completed') as completed_tasks,
-                (SELECT COUNT(*) FROM tasks WHERE status = 'searching') as searching_tasks,
-                (SELECT COALESCE(SUM(budget), 0) FROM tasks) as total_revenue,
-                (SELECT COALESCE(SUM(budget), 0) FROM tasks WHERE status = 'completed') as confirmed_revenue
-        `);
-        
-        // Статистика по подпискам
-        const subscriptionStats = await db.all(`
-            SELECT 
-                subscription_plan,
-                COUNT(*) as user_count
-            FROM users 
-            WHERE subscription_plan IS NOT NULL 
-            GROUP BY subscription_plan
-            ORDER BY user_count DESC
-        `);
-        
-        // Статистика по дням (последние 7 дней)
-        const dailyStats = await db.all(`
-            SELECT 
-                DATE(created_at) as date,
-                COUNT(*) as tasks_created,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as tasks_completed
-            FROM tasks 
-            WHERE created_at >= DATE('now', '-7 days')
-            GROUP BY DATE(created_at)
-            ORDER BY date DESC
-        `);
-        
-        // Недавняя активность
-        const recentActivity = await db.all(`
-            SELECT 
-                'task_created' as type,
-                t.title,
-                u.first_name,
-                u.last_name,
-                t.created_at
-            FROM tasks t
-            JOIN users u ON t.client_id = u.id
-            WHERE t.created_at >= DATE('now', '-1 day')
-            UNION ALL
-            SELECT 
-                'task_completed' as type,
-                t.title,
-                u.first_name,
-                u.last_name,
-                t.completed_at
-            FROM tasks t
-            JOIN users u ON t.client_id = u.id
-            WHERE t.status = 'completed' AND t.completed_at >= DATE('now', '-1 day')
-            ORDER BY created_at DESC
-            LIMIT 10
-        `);
-        
-        res.json({
-            success: true,
-            data: {
-                total_stats: totalStats,
-                subscription_stats: subscriptionStats,
-                daily_stats: dailyStats,
-                recent_activity: recentActivity
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения статистики:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения статистики'
-        });
-    }
-});
-
-// Получение всех пользователей (админ)
-app.get('/api/admin/users', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
-    try {
-        const { role, is_active, limit = 50, offset = 0, search } = req.query;
-        
-        let query = `
-            SELECT 
-                id, email, first_name, last_name, phone, role, 
-                subscription_plan, subscription_status, subscription_expires,
-                is_active, balance, user_rating, completed_tasks,
-                created_at, last_login, telegram_id
-            FROM users 
-            WHERE 1=1
-        `;
-        
-        const params = [];
-        
-        if (role && role !== 'all') {
-            query += ' AND role = ?';
-            params.push(role);
-        }
-        
-        if (is_active !== undefined) {
-            query += ' AND is_active = ?';
-            params.push(is_active === 'true' ? 1 : 0);
-        }
-        
-        if (search) {
-            query += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
-        }
-        
-        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const users = await db.all(query, params);
-        
-        // Получаем общее количество
-        let countQuery = 'SELECT COUNT(*) as total FROM users WHERE 1=1';
-        const countParams = [];
-        
-        if (role && role !== 'all') {
-            countQuery += ' AND role = ?';
-            countParams.push(role);
-        }
-        
-        if (is_active !== undefined) {
-            countQuery += ' AND is_active = ?';
-            countParams.push(is_active === 'true' ? 1 : 0);
-        }
-        
-        if (search) {
-            countQuery += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
-            const searchTerm = `%${search}%`;
-            countParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
-        
-        res.json({
-            success: true,
-            data: {
-                users,
-                pagination: {
-                    total: countResult?.total || 0,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения пользователей:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения пользователей'
-        });
-    }
-});
-
-// Получение всех задач (админ)
-app.get('/api/admin/tasks', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
-    try {
-        const { status, priority, category_id, limit = 50, offset = 0, search } = req.query;
-        
-        let query = `
-            SELECT t.*, 
-                   c.display_name as category_name,
-                   c.icon as category_icon,
-                   u1.first_name as client_first_name, 
-                   u1.last_name as client_last_name,
-                   u2.first_name as performer_first_name,
-                   u2.last_name as performer_last_name
-            FROM tasks t
-            LEFT JOIN categories c ON t.category_id = c.id
-            LEFT JOIN users u1 ON t.client_id = u1.id
-            LEFT JOIN users u2 ON t.performer_id = u2.id
-            WHERE 1=1
-        `;
-        
-        const params = [];
-        
-        if (status && status !== 'all') {
-            query += ' AND t.status = ?';
-            params.push(status);
-        }
-        
-        if (priority && priority !== 'all') {
-            query += ' AND t.priority = ?';
-            params.push(priority);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            query += ' AND t.category_id = ?';
-            params.push(category_id);
-        }
-        
-        if (search) {
-            query += ' AND (t.title LIKE ? OR t.description LIKE ? OR t.task_number LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm);
-        }
-        
-        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const tasks = await db.all(query, params);
-        
-        // Получаем общее количество
-        let countQuery = 'SELECT COUNT(*) as total FROM tasks WHERE 1=1';
-        const countParams = [];
-        
-        if (status && status !== 'all') {
-            countQuery += ' AND status = ?';
-            countParams.push(status);
-        }
-        
-        if (priority && priority !== 'all') {
-            countQuery += ' AND priority = ?';
-            countParams.push(priority);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            countQuery += ' AND category_id = ?';
-            countParams.push(category_id);
-        }
-        
-        if (search) {
-            countQuery += ' AND (title LIKE ? OR description LIKE ? OR task_number LIKE ?)';
-            const searchTerm = `%${search}%`;
-            countParams.push(searchTerm, searchTerm, searchTerm);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
-        
-        res.json({
-            success: true,
-            data: {
-                tasks,
-                pagination: {
-                    total: countResult?.total || 0,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения задач (админ):', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения задач (админ)'
         });
     }
 });
@@ -2104,8 +1365,10 @@ app.use('*', (req, res) => {
             api_health: '/api/health',
             links: '/api/links',
             auth: '/api/auth/*',
-            tasks: '/api/tasks/*',
-            admin: '/api/admin/*'
+            categories: '/api/categories',
+            services: '/api/services',
+            subscriptions: '/api/subscriptions',
+            faq: '/api/faq'
         }
     });
 });
@@ -2125,29 +1388,12 @@ app.use((err, req, res, next) => {
 
 const startServer = async () => {
     try {
-        // Сначала инициализируем базу данных
+        // Инициализируем базу данных
         await initDatabase();
         
-        // Затем настраиваем маршруты Express
-        setupRoutes();
-        
+        // Запускаем сервер
         app.listen(PORT, () => {
-            showStartupMessage();
-        });
-        
-    } catch (error) {
-        console.error('❌ Не удалось запустить сервер:', error);
-        process.exit(1);
-    }
-};
-
-const setupRoutes = () => {
-    // Все ваши маршруты API остаются здесь
-    // Просто убедитесь, что они используют db, который уже инициализирован
-};
-
-const showStartupMessage = () => {
-    console.log(`
+            console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║                                                            ║
 ║   🌸 Женский Консьерж API v7.0.0                         ║
@@ -2157,7 +1403,6 @@ const showStartupMessage = () => {
 ║   👑 Админ Telegram ID: -898508164                        ║
 ║                                                            ║
 ║   🔗 Основные интерфейсы:                                 ║
-║   • http://localhost:${PORT}/ - API                       ║
 ║   • http://localhost:${PORT}/index.html - Основное прилож.║
 ║   • http://localhost:${PORT}/admin.html - Админ-панель    ║
 ║   • http://localhost:${PORT}/manager.html - Менеджер      ║
@@ -2167,31 +1412,52 @@ const showStartupMessage = () => {
 ║   • Менеджер: manager@test.com / admin123                 ║
 ║   • Клиент: client@test.com / client123                   ║
 ║                                                            ║
-║   📊 API эндпоинты:                                       ║
-║   • /api/links - Все ссылки                               ║
-║   • /api/auth/* - Аутентификация                          ║
-║   • /api/tasks/* - Задачи                                 ║
-║   • /api/admin/* - Админ API                              ║
-║                                                            ║
 ╚════════════════════════════════════════════════════════════╝
-    `);
-    
-    console.log('\n📋 БЫСТРЫЕ КОМАНДЫ:');
-    console.log('='.repeat(60));
-    console.log('🔗 Получить все ссылки:');
-    console.log(`curl http://localhost:${PORT}/api/links`);
-    console.log('');
-    console.log('🔐 Войти как админ:');
-    console.log(`curl -X POST http://localhost:${PORT}/api/auth/login \\
+            `);
+            
+            console.log('\n📋 БЫСТРЫЕ КОМАНДЫ:');
+            console.log('='.repeat(60));
+            console.log('🔗 Получить все ссылки:');
+            console.log(`curl http://localhost:${PORT}/api/links`);
+            console.log('');
+            console.log('🔐 Войти как админ:');
+            console.log(`curl -X POST http://localhost:${PORT}/api/auth/login \\
   -H "Content-Type: application/json" \\
   -d '{"email":"admin@test.com","password":"admin123"}'`);
-    console.log('');
-    console.log('👑 Войти через Telegram ID админа:');
-    console.log(`curl -X POST http://localhost:${PORT}/api/auth/telegram \\
+            console.log('');
+            console.log('👑 Войти через Telegram ID админа:');
+            console.log(`curl -X POST http://localhost:${PORT}/api/auth/telegram \\
   -H "Content-Type: application/json" \\
   -d '{"telegram_id":-898508164}'`);
-    console.log('='.repeat(60));
+            console.log('='.repeat(60));
+        });
+        
+    } catch (error) {
+        console.error('❌ Не удалось запустить сервер:', error);
+        process.exit(1);
+    }
 };
 
 // Запускаем сервер
 startServer();
+
+// Обработка завершения работы
+process.on('SIGINT', async () => {
+    console.log('🔄 Завершение работы...');
+    
+    // Закрываем соединения
+    if (db) {
+        await db.close();
+    }
+    
+    console.log('👋 Сервер остановлен');
+    process.exit(0);
+});
+
+// Экспорт для тестирования
+module.exports = {
+    app,
+    db,
+    initDatabase,
+    createInitialData
+};
