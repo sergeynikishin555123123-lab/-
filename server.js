@@ -25,7 +25,12 @@ app.use(cors({
 app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('public'));
+
+// ==================== СТАТИЧЕСКИЕ ФАЙЛЫ ====================
+// Обслуживание статических файлов из папки public
+app.use(express.static('public', {
+    maxAge: process.env.NODE_ENV === 'production' ? '1d' : 0
+}));
 
 // ==================== БАЗА ДАННЫХ ====================
 let db;
@@ -329,7 +334,9 @@ const createInitialData = async () => {
                 ['system_fee', '10', 'Комиссия системы (%)', 'financial'],
                 ['site_maintenance', '0', 'Режим технического обслуживания', 'system'],
                 ['min_task_price', '0', 'Минимальная цена задачи', 'financial'],
-                ['max_task_price', '100000', 'Максимальная цена задачи', 'financial']
+                ['max_task_price', '100000', 'Максимальная цена задачи', 'financial'],
+                ['top_services_title', 'Здесь собраны самые популярные услуги', 'Заголовок для топ услуг', 'ui'],
+                ['task_help_title', 'Что не забыть при формировании заказа?', 'Заголовок для помощи при создании задачи', 'ui']
             ];
 
             for (const setting of settings) {
@@ -392,7 +399,7 @@ const createInitialData = async () => {
             console.log('✅ Тарифы подписок созданы');
         }
 
-        // 4. Категории услуг (старые 6 категорий)
+        // 4. Категории услуг
         const categoriesExist = await db.get("SELECT 1 FROM categories WHERE name = 'home_and_household'");
         if (!categoriesExist) {
             const categories = [
@@ -415,7 +422,7 @@ const createInitialData = async () => {
             console.log('✅ Категории услуг созданы');
         }
 
-        // 5. Услуги (старые 12 услуг как в оригинале)
+        // 5. Услуги
         const servicesExist = await db.get("SELECT 1 FROM services WHERE name = 'Уборка квартиры'");
         if (!servicesExist) {
             // Получаем ID категорий
@@ -423,27 +430,27 @@ const createInitialData = async () => {
             const categoryMap = {};
             categories.forEach(cat => categoryMap[cat.name] = cat.id);
 
-            // Старые 12 услуг как в оригинальном приложении
+            // Услуги
             const services = [
-                // Дом и быт (4 услуги)
+                // Дом и быт
                 [categoryMap.home_and_household, 'Уборка квартиры', 'Генеральная или поддерживающая уборка квартиры', 0, '2-4 часа', 1, 1, 1],
                 [categoryMap.home_and_household, 'Химчистка мебели', 'Профессиональная химчистка диванов, кресел, матрасов', 0, '3-5 часов', 1, 2, 0],
                 [categoryMap.home_and_household, 'Стирка и глажка', 'Стирка, сушка и глажка белья', 0, '2-3 часа', 1, 3, 0],
                 [categoryMap.home_and_household, 'Приготовление еды', 'Приготовление блюд на день или неделю', 0, '3-4 часа', 1, 4, 1],
                 
-                // Дети и семья (2 услуги)
+                // Дети и семья
                 [categoryMap.family_and_children, 'Няня на час', 'Присмотр за детьми на несколько часов', 0, '1 час', 1, 5, 1],
                 [categoryMap.family_and_children, 'Репетитор для ребенка', 'Помощь с уроками по школьным предметам', 0, '1 час', 1, 6, 0],
                 
-                // Красота и здоровье (3 услуги)
+                // Красота и здоровье
                 [categoryMap.beauty_and_health, 'Маникюр на дому', 'Профессиональный маникюр с выездом', 0, '1.5 часа', 1, 7, 1],
                 [categoryMap.beauty_and_health, 'Стрижка и укладка', 'Парикмахерские услуги на дому', 0, '2 часа', 1, 8, 0],
                 [categoryMap.beauty_and_health, 'Массаж', 'Расслабляющий или лечебный массаж', 0, '1 час', 1, 9, 1],
                 
-                // Курсы и образование (1 услуга)
+                // Курсы и образование
                 [categoryMap.courses_and_education, 'Репетиторство', 'Индивидуальные занятия по предметам', 0, '1 час', 1, 10, 1],
                 
-                // Покупки и доставка (2 услуги)
+                // Покупки и доставка
                 [categoryMap.shopping_and_delivery, 'Покупка продуктов', 'Покупка и доставка продуктов', 0, '1-2 часа', 1, 11, 1],
                 [categoryMap.shopping_and_delivery, 'Доставка документов', 'Срочная доставка документов', 0, '1 час', 1, 12, 0]
             ];
@@ -533,7 +540,7 @@ const createInitialData = async () => {
             }
             console.log('✅ Назначения помощников по категориям созданы');
             
-            // Создаем тестовые задачи (5 задач как в оригинале)
+            // Создаем тестовые задачи
             const clients = await db.all("SELECT id FROM users WHERE role = 'client' AND subscription_status = 'active' AND id >= 6 AND id <= 7");
             const categoriesList = await db.all("SELECT id FROM categories");
             const servicesList = await db.all("SELECT id FROM services WHERE is_active = 1");
@@ -645,18 +652,6 @@ const createInitialData = async () => {
 
         console.log('🎉 Все начальные данные созданы!');
         
-        console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
-        console.log('='.repeat(60));
-        console.log('👑 Главный админ (ID 898508164): superadmin@concierge.ru / admin123');
-        console.log('👨‍💼 Админ: admin@concierge.ru / admin123');
-        console.log('👩‍🏫 Помощник 1: performer1@concierge.ru / performer123');
-        console.log('👩‍🏫 Помощник 2: performer2@concierge.ru / performer123');
-        console.log('👩‍🏫 Помощник 3: performer3@concierge.ru / performer123');
-        console.log('👩 Клиент Премиум: client1@example.com / client123');
-        console.log('👩 Клиент Эссеншл: client2@example.com / client123');
-        console.log('👩 Клиент без оплаты: client3@example.com / client123');
-        console.log('='.repeat(60));
-        
     } catch (error) {
         console.error('⚠️ Ошибка создания начальных данных:', error.message);
     }
@@ -700,7 +695,9 @@ const authMiddleware = (roles = []) => {
                 'POST /api/auth/login',
                 'POST /api/auth/forgot-password',
                 'POST /api/auth/reset-password/*',
-                'OPTIONS /*'
+                'OPTIONS /*',
+                'GET /admin.html',
+                'GET /index.html'
             ];
             
             const currentRoute = `${req.method} ${req.path}`;
@@ -795,16 +792,32 @@ const authMiddleware = (roles = []) => {
     };
 };
 
-// ==================== API МАРШРУТЫ ====================
+// ==================== ОСНОВНЫЕ МАРШРУТЫ ====================
 
-// Главная
+// Главная страница приложения
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Админ панель
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// Главный API маршрут
+app.get('/api', (req, res) => {
     res.json({
         success: true,
         message: '🌸 Добро пожаловать в Женский Консьерж API',
         version: '5.4.0',
         status: '🟢 Работает',
-        features: ['Подписки', 'Задачи', 'Чат', 'Отзывы', 'Админ панель', 'Управление услугами'],
+        endpoints: {
+            auth: '/api/auth/*',
+            categories: '/api/categories',
+            subscriptions: '/api/subscriptions',
+            tasks: '/api/tasks',
+            admin: '/api/admin/*'
+        },
         timestamp: new Date().toISOString()
     });
 });
@@ -833,7 +846,12 @@ app.get('/health', async (req, res) => {
             database: 'connected',
             tables: tableStatus,
             timestamp: new Date().toISOString(),
-            uptime: process.uptime()
+            uptime: process.uptime(),
+            urls: {
+                app: 'http://localhost:3000',
+                admin: 'http://localhost:3000/admin.html',
+                api: 'http://localhost:3000/api'
+            }
         });
     } catch (error) {
         res.status(500).json({
@@ -1323,198 +1341,6 @@ app.get('/api/auth/profile', authMiddleware(), async (req, res) => {
     }
 });
 
-// Обновление профиля
-app.put('/api/auth/profile', authMiddleware(), async (req, res) => {
-    try {
-        const { first_name, last_name, phone, avatar_url } = req.body;
-        
-        // Валидация
-        if (phone && !validatePhone(phone)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Некорректный номер телефона'
-            });
-        }
-        
-        // Собираем поля для обновления
-        const updateFields = [];
-        const updateValues = [];
-        
-        if (first_name !== undefined) {
-            updateFields.push('first_name = ?');
-            updateValues.push(first_name);
-        }
-        
-        if (last_name !== undefined) {
-            updateFields.push('last_name = ?');
-            updateValues.push(last_name);
-        }
-        
-        if (phone !== undefined) {
-            updateFields.push('phone = ?');
-            updateValues.push(phone);
-        }
-        
-        if (avatar_url !== undefined) {
-            updateFields.push('avatar_url = ?');
-            updateValues.push(avatar_url);
-        }
-        
-        if (updateFields.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Нет данных для обновления'
-            });
-        }
-        
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(req.user.id);
-        
-        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
-        
-        await db.run(query, updateValues);
-        
-        // Получаем обновленного пользователя
-        const user = await db.get(
-            `SELECT id, email, first_name, last_name, phone, role, 
-                    subscription_plan, subscription_status, avatar_url,
-                    user_rating
-             FROM users WHERE id = ?`,
-            [req.user.id]
-        );
-        
-        // Переименовываем user_rating в rating для фронтенда
-        const userForResponse = {
-            ...user,
-            rating: user.user_rating
-        };
-        
-        res.json({
-            success: true,
-            message: 'Профиль успешно обновлен',
-            data: { user: userForResponse }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка обновления профиля:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка обновления профиля'
-        });
-    }
-});
-
-// Смена пароля
-app.put('/api/auth/change-password', authMiddleware(), async (req, res) => {
-    try {
-        const { current_password, new_password } = req.body;
-        
-        if (!current_password || !new_password) {
-            return res.status(400).json({
-                success: false,
-                error: 'Заполните все поля'
-            });
-        }
-        
-        if (new_password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                error: 'Новый пароль должен содержать не менее 6 символов'
-            });
-        }
-        
-        // Получаем текущий пароль
-        const user = await db.get('SELECT password FROM users WHERE id = ?', [req.user.id]);
-        
-        // Проверяем текущий пароль
-        const isPasswordValid = await bcrypt.compare(current_password, user.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({
-                success: false,
-                error: 'Текущий пароль неверен'
-            });
-        }
-        
-        // Хешируем новый пароль
-        const hashedPassword = await bcrypt.hash(new_password, 12);
-        
-        // Обновляем пароль
-        await db.run(
-            'UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [hashedPassword, req.user.id]
-        );
-        
-        res.json({
-            success: true,
-            message: 'Пароль успешно изменен'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка смены пароля:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка смены пароля'
-        });
-    }
-});
-
-// Удаление аккаунта
-app.delete('/api/auth/account', authMiddleware(), async (req, res) => {
-    try {
-        const { password } = req.body;
-        
-        if (!password) {
-            return res.status(400).json({
-                success: false,
-                error: 'Введите пароль для подтверждения'
-            });
-        }
-        
-        // Получаем пароль пользователя
-        const user = await db.get('SELECT password FROM users WHERE id = ?', [req.user.id]);
-        
-        // Проверяем пароль
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(400).json({
-                success: false,
-                error: 'Неверный пароль'
-            });
-        }
-        
-        // Деактивируем аккаунт (мягкое удаление)
-        await db.run(
-            'UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-            [req.user.id]
-        );
-        
-        // Создаем уведомление об удалении
-        await db.run(
-            `INSERT INTO notifications 
-            (user_id, type, title, message) 
-            VALUES (?, ?, ?, ?)`,
-            [
-                req.user.id,
-                'account_deleted',
-                'Аккаунт деактивирован',
-                'Ваш аккаунт был деактивирован. Вы можете восстановить его в течение 30 дней, обратившись в поддержку.'
-            ]
-        );
-        
-        res.json({
-            success: true,
-            message: 'Аккаунт успешно удален'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка удаления аккаунта:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка удаления аккаунта'
-        });
-    }
-});
-
 // ==================== КАТЕГОРИИ И УСЛУГИ ====================
 
 // Получение всех категорий
@@ -1595,6 +1421,34 @@ app.get('/api/categories/:id/services', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка получения услуг категории'
+        });
+    }
+});
+
+// Получение всех услуг
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = await db.all(
+            `SELECT s.*, c.display_name as category_name
+             FROM services s
+             LEFT JOIN categories c ON s.category_id = c.id
+             WHERE s.is_active = 1
+             ORDER BY s.is_featured DESC, s.sort_order ASC, s.name ASC`
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения услуг:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
         });
     }
 });
@@ -2277,359 +2131,6 @@ app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
     }
 });
 
-// Изменение статуса задачи
-app.post('/api/tasks/:id/status', authMiddleware(), async (req, res) => {
-    const taskId = req.params.id;
-    
-    try {
-        const { status, notes, performer_id } = req.body;
-        
-        if (!status) {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указан новый статус'
-            });
-        }
-        
-        // Получаем задачу
-        const task = await db.get(
-            'SELECT * FROM tasks WHERE id = ?',
-            [taskId]
-        );
-        
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        // Проверяем права
-        let canChangeStatus = false;
-        const isAdmin = ['admin', 'manager', 'superadmin'].includes(req.user.role);
-        
-        if (isAdmin) {
-            canChangeStatus = true;
-        } else if (req.user.id === task.client_id) {
-            canChangeStatus = ['cancelled', 'completed'].includes(status);
-        } else if (req.user.id === task.performer_id) {
-            canChangeStatus = ['in_progress', 'completed'].includes(status);
-        }
-        
-        if (!canChangeStatus) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нет прав для изменения статуса'
-            });
-        }
-        
-        // Обновляем статус
-        const updateData = { status };
-        if (status === 'assigned' && performer_id) {
-            updateData.performer_id = performer_id;
-        }
-        if (status === 'completed') {
-            updateData.completed_at = new Date().toISOString();
-            
-            // Обновляем статистику исполнителя
-            if (task.performer_id) {
-                await db.run(
-                    `UPDATE users SET 
-                        completed_tasks = completed_tasks + 1,
-                        updated_at = CURRENT_TIMESTAMP 
-                     WHERE id = ?`,
-                    [task.performer_id]
-                );
-            }
-        }
-        
-        const updateFields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
-        const updateValues = [...Object.values(updateData), taskId];
-        
-        await db.run(
-            `UPDATE tasks SET ${updateFields}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-            updateValues
-        );
-        
-        // Добавляем запись в историю
-        await db.run(
-            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
-             VALUES (?, ?, ?, ?)`,
-            [taskId, status, req.user.id, notes || `Статус изменен`]
-        );
-        
-        // Создаем уведомления
-        const notificationData = {
-            task_id: taskId,
-            task_title: task.title,
-            new_status: status
-        };
-        
-        if (status === 'assigned' && performer_id) {
-            // Уведомление исполнителю
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    performer_id,
-                    'task_assigned',
-                    'Задача назначена вам',
-                    `Вам назначена задача "${task.title}"`,
-                    taskId,
-                    'task'
-                ]
-            );
-            
-            // Уведомление клиенту
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    task.client_id,
-                    'task_performer_assigned',
-                    'Исполнитель назначен',
-                    `Исполнитель назначен на задачу "${task.title}"`,
-                    taskId,
-                    'task'
-                ]
-            );
-        } else if (status === 'in_progress') {
-            // Уведомление клиенту
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    task.client_id,
-                    'task_in_progress',
-                    'Задача в работе',
-                    `Исполнитель начал выполнение задачи "${task.title}"`,
-                    taskId,
-                    'task'
-                ]
-            );
-        } else if (status === 'completed') {
-            // Уведомление клиенту
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    task.client_id,
-                    'task_completed',
-                    'Задача завершена',
-                    `Задача "${task.title}" завершена. Пожалуйста, оцените работу.`,
-                    taskId,
-                    'task'
-                ]
-            );
-        } else if (status === 'cancelled') {
-            // Уведомление всем участникам
-            const participants = [task.client_id];
-            if (task.performer_id) {
-                participants.push(task.performer_id);
-            }
-            
-            for (const participantId of participants) {
-                await db.run(
-                    `INSERT INTO notifications 
-                    (user_id, type, title, message, related_id, related_type) 
-                    VALUES (?, ?, ?, ?, ?, ?)`,
-                    [
-                        participantId,
-                        'task_cancelled',
-                        'Задача отменена',
-                        `Задача "${task.title}" была отменена.`,
-                        taskId,
-                        'task'
-                    ]
-                );
-            }
-        }
-        
-        res.json({
-            success: true,
-            message: 'Статус задачи изменен',
-            data: { 
-                task_id: taskId,
-                new_status: status
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка изменения статуса:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка изменения статуса задачи'
-        });
-    }
-});
-
-// Отмена задачи
-app.post('/api/tasks/:id/cancel', authMiddleware(), async (req, res) => {
-    const taskId = req.params.id;
-    
-    try {
-        const { reason } = req.body;
-        
-        const task = await db.get(
-            'SELECT * FROM tasks WHERE id = ?',
-            [taskId]
-        );
-        
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        // Проверяем права
-        const canCancel = 
-            ['admin', 'manager', 'superadmin'].includes(req.user.role) ||
-            (req.user.id === task.client_id && ['new', 'searching', 'assigned'].includes(task.status));
-        
-        if (!canCancel) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нет прав для отмены задачи'
-            });
-        }
-        
-        // Возвращаем лимит задач клиенту (только если задача не завершена)
-        if (req.user.id === task.client_id && task.status !== 'completed') {
-            await db.run(
-                'UPDATE users SET tasks_used = tasks_used - 1 WHERE id = ?',
-                [task.client_id]
-            );
-        }
-        
-        // Обновляем статус
-        await db.run(
-            `UPDATE tasks SET 
-                status = 'cancelled', 
-                cancellation_reason = ?, 
-                cancellation_by = ?,
-                updated_at = CURRENT_TIMESTAMP 
-             WHERE id = ?`,
-            [reason || 'Отменена пользователем', req.user.id, taskId]
-        );
-        
-        // Добавляем в историю
-        await db.run(
-            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
-             VALUES (?, ?, ?, ?)`,
-            [taskId, 'cancelled', req.user.id, reason || 'Задача отменена']
-        );
-        
-        // Создаем уведомления
-        const participants = [task.client_id];
-        if (task.performer_id) {
-            participants.push(task.performer_id);
-        }
-        
-        for (const participantId of participants) {
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    participantId,
-                    'task_cancelled',
-                    'Задача отменена',
-                    `Задача "${task.title}" была отменена. Причина: ${reason || 'не указана'}`,
-                    taskId,
-                    'task'
-                ]
-            );
-        }
-        
-        res.json({
-            success: true,
-            message: 'Задача отменена',
-            data: {
-                task_id: taskId,
-                reason: reason || 'Не указана'
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка отмены задачи:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка отмены задачи'
-        });
-    }
-});
-
-// Получение доступных задач для исполнителей
-app.get('/api/tasks/available', authMiddleware(['performer']), async (req, res) => {
-    try {
-        const { limit = 10 } = req.query;
-        
-        // Получаем специализации исполнителя
-        const specializations = await db.all(
-            'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
-            [req.user.id]
-        );
-        
-        if (specializations.length === 0) {
-            return res.json({
-                success: true,
-                data: {
-                    tasks: [],
-                    count: 0,
-                    message: 'У вас нет активных специализаций. Выберите специализации в профиле.'
-                }
-            });
-        }
-        
-        const categoryIds = specializations.map(s => s.category_id);
-        const placeholders = categoryIds.map(() => '?').join(',');
-        
-        // Получаем доступные задачи
-        const tasks = await db.all(`
-            SELECT t.*, 
-                   c.display_name as category_name,
-                   c.icon as category_icon,
-                   u.first_name as client_first_name,
-                   u.last_name as client_last_name,
-                   u.avatar_url as client_avatar,
-                   u.user_rating as client_rating
-            FROM tasks t
-            LEFT JOIN categories c ON t.category_id = c.id
-            LEFT JOIN users u ON t.client_id = u.id
-            WHERE t.status = 'searching' 
-              AND t.category_id IN (${placeholders})
-            ORDER BY t.priority DESC, t.created_at DESC
-            LIMIT ?
-        `, [...categoryIds, parseInt(limit)]);
-        
-        // Добавляем флаг, что исполнитель может принять задачу
-        const tasksWithFlag = tasks.map(task => ({
-            ...task,
-            can_take: true
-        }));
-        
-        res.json({
-            success: true,
-            data: {
-                tasks: tasksWithFlag,
-                count: tasksWithFlag.length
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения доступных задач:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения доступных задач'
-        });
-    }
-});
-
 // Принятие задачи исполнителем
 app.post('/api/tasks/:id/take', authMiddleware(['performer']), async (req, res) => {
     const taskId = req.params.id;
@@ -2731,492 +2232,29 @@ app.post('/api/tasks/:id/take', authMiddleware(['performer']), async (req, res) 
     }
 });
 
-// ==================== ЧАТ ЗАДАЧИ ====================
+// ==================== НАСТРОЙКИ СИСТЕМЫ ====================
 
-// Получение сообщений чата
-app.get('/api/tasks/:id/messages', authMiddleware(), async (req, res) => {
-    const taskId = req.params.id;
-    
+// Получение настроек системы
+app.get('/api/settings', async (req, res) => {
     try {
-        // Проверяем доступ к задаче
-        const task = await db.get(
-            'SELECT client_id, performer_id, status FROM tasks WHERE id = ?',
-            [taskId]
-        );
+        const settings = await db.all('SELECT * FROM settings');
         
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        const hasAccess = 
-            ['admin', 'manager', 'superadmin'].includes(req.user.role) ||
-            req.user.id === task.client_id ||
-            req.user.id === task.performer_id;
-        
-        if (!hasAccess) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нет доступа к чату'
-            });
-        }
-        
-        // Получаем сообщения
-        const messages = await db.all(
-            `SELECT tm.*, u.first_name, u.last_name, u.avatar_url, u.role
-             FROM task_messages tm
-             LEFT JOIN users u ON tm.user_id = u.id
-             WHERE tm.task_id = ?
-             ORDER BY tm.created_at ASC`,
-            [taskId]
-        );
-        
-        // Помечаем сообщения как прочитанные
-        if (req.user.id !== task.client_id && req.user.id !== task.performer_id) {
-            // Администраторы не помечают сообщения как прочитанные
-        } else {
-            await db.run(
-                `UPDATE task_messages 
-                 SET is_read = 1, read_at = CURRENT_TIMESTAMP 
-                 WHERE task_id = ? AND user_id != ? AND is_read = 0`,
-                [taskId, req.user.id]
-            );
-        }
-        
-        // Получаем участников чата
-        const participants = await db.all(
-            `SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.role
-             FROM users u
-             WHERE u.id IN (?, ?) AND u.is_active = 1`,
-            [task.client_id, task.performer_id].filter(Boolean)
-        );
+        // Преобразуем в объект
+        const settingsObj = {};
+        settings.forEach(setting => {
+            settingsObj[setting.key] = setting.value;
+        });
         
         res.json({
             success: true,
-            data: { 
-                messages,
-                participants,
-                can_send: task.status !== 'completed' && task.status !== 'cancelled'
-            }
+            data: settingsObj
         });
         
     } catch (error) {
-        console.error('Ошибка получения сообщений:', error);
+        console.error('Ошибка получения настроек:', error);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения сообщений'
-        });
-    }
-});
-
-// Отправка сообщения в чат
-app.post('/api/tasks/:id/messages', authMiddleware(), async (req, res) => {
-    const taskId = req.params.id;
-    
-    try {
-        const { message } = req.body;
-        
-        if (!message || message.trim().length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Сообщение не может быть пустым'
-            });
-        }
-        
-        // Проверяем доступ к задаче
-        const task = await db.get(
-            'SELECT id, client_id, performer_id, status, title FROM tasks WHERE id = ?',
-            [taskId]
-        );
-        
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        const hasAccess = 
-            ['admin', 'manager', 'superadmin'].includes(req.user.role) ||
-            req.user.id === task.client_id ||
-            req.user.id === task.performer_id;
-        
-        if (!hasAccess) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нет доступа к чату'
-            });
-        }
-        
-        // Проверяем можно ли отправлять сообщения
-        if (task.status === 'cancelled' || task.status === 'completed') {
-            return res.status(400).json({
-                success: false,
-                error: 'Нельзя отправлять сообщения в завершенные или отмененные задачи'
-            });
-        }
-        
-        // Отправляем сообщение
-        const result = await db.run(
-            `INSERT INTO task_messages (task_id, user_id, message) 
-             VALUES (?, ?, ?)`,
-            [taskId, req.user.id, message.trim()]
-        );
-        
-        const newMessage = await db.get(
-            `SELECT tm.*, u.first_name, u.last_name, u.avatar_url, u.role
-             FROM task_messages tm
-             LEFT JOIN users u ON tm.user_id = u.id
-             WHERE tm.id = ?`,
-            [result.lastID]
-        );
-        
-        // Определяем получателя уведомления
-        let recipientId = null;
-        if (req.user.id === task.client_id && task.performer_id) {
-            recipientId = task.performer_id;
-        } else if (req.user.id === task.performer_id) {
-            recipientId = task.client_id;
-        }
-        
-        // Создаем уведомление о новом сообщении
-        if (recipientId) {
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    recipientId,
-                    'new_message',
-                    'Новое сообщение',
-                    `Новое сообщение в задаче "${task.title}"`,
-                    taskId,
-                    'task'
-                ]
-            );
-        }
-        
-        res.status(201).json({
-            success: true,
-            message: 'Сообщение отправлено',
-            data: { 
-                message: newMessage
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка отправки сообщения:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка отправки сообщения'
-        });
-    }
-});
-
-// ==================== ОТЗЫВЫ ====================
-
-// Оставление отзыва
-app.post('/api/tasks/:id/reviews', authMiddleware(['client']), async (req, res) => {
-    const taskId = req.params.id;
-    
-    try {
-        const { rating, comment, is_anonymous = false } = req.body;
-        
-        if (!rating || rating < 1 || rating > 5) {
-            return res.status(400).json({
-                success: false,
-                error: 'Рейтинг должен быть от 1 до 5'
-            });
-        }
-        
-        const task = await db.get(
-            'SELECT * FROM tasks WHERE id = ?',
-            [taskId]
-        );
-        
-        if (!task) {
-            return res.status(404).json({
-                success: false,
-                error: 'Задача не найдена'
-            });
-        }
-        
-        // Проверяем права
-        if (req.user.id !== task.client_id) {
-            return res.status(403).json({
-                success: false,
-                error: 'Только клиент может оставлять отзыв'
-            });
-        }
-        
-        if (task.status !== 'completed') {
-            return res.status(400).json({
-                success: false,
-                error: 'Можно оставить отзыв только к завершенным задачам'
-            });
-        }
-        
-        // Проверяем, не оценивалась ли уже задача
-        const existingReview = await db.get(
-            'SELECT id FROM reviews WHERE task_id = ?',
-            [taskId]
-        );
-        
-        if (existingReview) {
-            return res.status(400).json({
-                success: false,
-                error: 'Эта задача уже была оценена'
-            });
-        }
-        
-        // Проверяем, есть ли исполнитель
-        if (!task.performer_id) {
-            return res.status(400).json({
-                success: false,
-                error: 'Нельзя оставить отзыв к задаче без исполнителя'
-            });
-        }
-        
-        // Создаем отзыв
-        await db.run(
-            `INSERT INTO reviews (task_id, client_id, performer_id, rating, comment, is_anonymous) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [taskId, req.user.id, task.performer_id, rating, comment || null, is_anonymous ? 1 : 0]
-        );
-        
-        // Обновляем рейтинг в задаче
-        await db.run(
-            'UPDATE tasks SET task_rating = ?, feedback = ? WHERE id = ?',
-            [rating, comment || null, taskId]
-        );
-        
-        // Обновляем рейтинг исполнителя
-        const performerStats = await db.get(
-            `SELECT AVG(r.rating) as avg_rating, COUNT(r.id) as reviews_count
-             FROM reviews r
-             WHERE r.performer_id = ?`,
-            [task.performer_id]
-        );
-        
-        if (performerStats && performerStats.avg_rating) {
-            await db.run(
-                'UPDATE users SET user_rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                [performerStats.avg_rating.toFixed(1), task.performer_id]
-            );
-        }
-        
-        // Создаем уведомление исполнителю
-        await db.run(
-            `INSERT INTO notifications 
-            (user_id, type, title, message, related_id, related_type) 
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-                task.performer_id,
-                'new_review',
-                'Новый отзыв',
-                `Вы получили новый отзыв от клиента. Рейтинг: ${rating}/5`,
-                taskId,
-                'task'
-            ]
-        );
-        
-        res.json({
-            success: true,
-            message: 'Спасибо за ваш отзыв!',
-            data: {
-                task_id: taskId,
-                rating,
-                comment: comment || null
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка оставления отзыва:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка оставления отзыва'
-        });
-    }
-});
-
-// ==================== ПОМОЩНИКИ ====================
-
-// Профиль помощника (специализации)
-app.get('/api/performer/profile', authMiddleware(['performer']), async (req, res) => {
-    try {
-        // Получаем специализации помощника
-        const specializations = await db.all(`
-            SELECT c.*, pc.is_active, pc.experience_years, pc.hourly_rate
-            FROM performer_categories pc
-            JOIN categories c ON pc.category_id = c.id
-            WHERE pc.performer_id = ?
-            ORDER BY c.display_name
-        `, [req.user.id]);
-        
-        // Статистика помощника
-        const stats = await db.get(`
-            SELECT 
-                COUNT(*) as total_tasks,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
-                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks,
-                AVG(t.task_rating) as avg_rating,
-                SUM(t.price) as total_earned
-            FROM tasks t
-            WHERE t.performer_id = ?
-        `, [req.user.id]);
-        
-        res.json({
-            success: true,
-            data: {
-                specializations,
-                stats: stats || {
-                    total_tasks: 0,
-                    completed_tasks: 0,
-                    in_progress_tasks: 0,
-                    avg_rating: 0,
-                    total_earned: 0
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения профиля помощника:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения профиля помощника'
-        });
-    }
-});
-
-// Обновление специализаций помощника
-app.put('/api/performer/specializations', authMiddleware(['performer']), async (req, res) => {
-    try {
-        const { category_ids } = req.body;
-        
-        if (!Array.isArray(category_ids)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Неверный формат данных'
-            });
-        }
-        
-        // Удаляем старые специализации
-        await db.run('DELETE FROM performer_categories WHERE performer_id = ?', [req.user.id]);
-        
-        // Добавляем новые специализации
-        for (const categoryId of category_ids) {
-            await db.run(
-                'INSERT INTO performer_categories (performer_id, category_id, is_active) VALUES (?, ?, 1)',
-                [req.user.id, categoryId]
-            );
-        }
-        
-        res.json({
-            success: true,
-            message: 'Специализации успешно обновлены'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка обновления специализаций:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка обновления специализаций'
-        });
-    }
-});
-
-// ==================== УВЕДОМЛЕНИЯ ====================
-
-// Получение уведомлений
-app.get('/api/notifications', authMiddleware(), async (req, res) => {
-    try {
-        const { unread_only, limit = 50, offset = 0 } = req.query;
-        
-        let query = `
-            SELECT n.*
-            FROM notifications n
-            WHERE n.user_id = ?
-        `;
-        
-        const params = [req.user.id];
-        
-        if (unread_only === 'true') {
-            query += ' AND n.is_read = 0';
-        }
-        
-        query += ' ORDER BY n.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const notifications = await db.all(query, params);
-        
-        // Получаем количество непрочитанных
-        const unreadCount = await db.get(
-            'SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0',
-            [req.user.id]
-        );
-        
-        res.json({
-            success: true,
-            data: {
-                notifications,
-                unread_count: unreadCount?.count || 0,
-                pagination: {
-                    limit: parseInt(limit),
-                    offset: parseInt(offset)
-                }
-            }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка получения уведомлений:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения уведомлений'
-        });
-    }
-});
-
-// Пометить уведомления как прочитанные
-app.put('/api/notifications/read', authMiddleware(), async (req, res) => {
-    try {
-        const { notification_ids, mark_all } = req.body;
-        
-        if (mark_all) {
-            // Пометить все как прочитанные
-            await db.run(
-                `UPDATE notifications 
-                 SET is_read = 1, read_at = CURRENT_TIMESTAMP 
-                 WHERE user_id = ? AND is_read = 0`,
-                [req.user.id]
-            );
-        } else if (Array.isArray(notification_ids) && notification_ids.length > 0) {
-            // Пометить выбранные как прочитанные
-            const placeholders = notification_ids.map(() => '?').join(',');
-            await db.run(
-                `UPDATE notifications 
-                 SET is_read = 1, read_at = CURRENT_TIMESTAMP 
-                 WHERE id IN (${placeholders}) AND user_id = ?`,
-                [...notification_ids, req.user.id]
-            );
-        } else {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указаны уведомления для пометки'
-            });
-        }
-        
-        res.json({
-            success: true,
-            message: 'Уведомления помечены как прочитанные'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка пометки уведомлений:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка пометки уведомлений'
+            error: 'Ошибка получения настроек'
         });
     }
 });
@@ -3582,89 +2620,6 @@ app.get('/api/admin/users', authMiddleware(['admin', 'manager', 'superadmin']), 
     }
 });
 
-// Обновление пользователя (админ)
-app.put('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const { role, subscription_plan, subscription_status, is_active, balance, tasks_limit } = req.body;
-        
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указан ID пользователя'
-            });
-        }
-        
-        // Не позволяем редактировать главного админа (ID 898508164) если ты не он сам
-        if (parseInt(userId) === 898508164 && req.user.id !== 898508164) {
-            return res.status(403).json({
-                success: false,
-                error: 'Нельзя редактировать главного администратора'
-            });
-        }
-        
-        // Собираем поля для обновления
-        const updateFields = [];
-        const updateValues = [];
-        
-        if (role !== undefined) {
-            updateFields.push('role = ?');
-            updateValues.push(role);
-        }
-        
-        if (subscription_plan !== undefined) {
-            updateFields.push('subscription_plan = ?');
-            updateValues.push(subscription_plan);
-        }
-        
-        if (subscription_status !== undefined) {
-            updateFields.push('subscription_status = ?');
-            updateValues.push(subscription_status);
-        }
-        
-        if (is_active !== undefined) {
-            updateFields.push('is_active = ?');
-            updateValues.push(is_active ? 1 : 0);
-        }
-        
-        if (balance !== undefined) {
-            updateFields.push('balance = ?');
-            updateValues.push(balance);
-        }
-        
-        if (tasks_limit !== undefined) {
-            updateFields.push('tasks_limit = ?');
-            updateValues.push(tasks_limit);
-        }
-        
-        if (updateFields.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Нет данных для обновления'
-            });
-        }
-        
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(userId);
-        
-        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
-        
-        await db.run(query, updateValues);
-        
-        res.json({
-            success: true,
-            message: 'Пользователь обновлен'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка обновления пользователя:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка обновления пользователя'
-        });
-    }
-});
-
 // Управление задачами (админ)
 app.get('/api/admin/tasks', authMiddleware(['admin', 'manager', 'superadmin']), async (req, res) => {
     try {
@@ -3722,140 +2677,19 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'manager', 'superadmin']), 
     }
 });
 
-// Обновление задачи (админ)
-app.put('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
-    try {
-        const taskId = req.params.id;
-        const { status, performer_id, priority, price, admin_notes } = req.body;
-        
-        if (!taskId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указан ID задачи'
-            });
-        }
-        
-        // Собираем поля для обновления
-        const updateFields = [];
-        const updateValues = [];
-        
-        if (status !== undefined) {
-            updateFields.push('status = ?');
-            updateValues.push(status);
-        }
-        
-        if (performer_id !== undefined) {
-            updateFields.push('performer_id = ?');
-            updateValues.push(performer_id);
-        }
-        
-        if (priority !== undefined) {
-            updateFields.push('priority = ?');
-            updateValues.push(priority);
-        }
-        
-        if (price !== undefined) {
-            updateFields.push('price = ?');
-            updateValues.push(price);
-        }
-        
-        if (admin_notes !== undefined) {
-            updateFields.push('admin_notes = ?');
-            updateValues.push(admin_notes);
-        }
-        
-        if (updateFields.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Нет данных для обновления'
-            });
-        }
-        
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(taskId);
-        
-        const query = `UPDATE tasks SET ${updateFields.join(', ')} WHERE id = ?`;
-        
-        await db.run(query, updateValues);
-        
-        // Добавляем запись в историю если изменился статус
-        if (status !== undefined) {
-            await db.run(
-                `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
-                 VALUES (?, ?, ?, ?)`,
-                [taskId, status, req.user.id, admin_notes || 'Статус изменен администратором']
-            );
-        }
-        
-        res.json({
-            success: true,
-            message: 'Задача обновлена'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка обновления задачи:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка обновления задачи'
-        });
-    }
-});
+// ==================== ОБСЛУЖИВАНИЕ СТАТИЧЕСКИХ ФАЙЛОВ ====================
 
-// Удаление задачи (админ)
-app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
-    try {
-        const taskId = req.params.id;
-        
-        if (!taskId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Не указан ID задачи'
-            });
-        }
-        
-        // Получаем задачу для возврата лимита
-        const task = await db.get('SELECT client_id, status FROM tasks WHERE id = ?', [taskId]);
-        
-        if (task && task.status !== 'completed') {
-            // Возвращаем лимит задач клиенту
-            await db.run(
-                'UPDATE users SET tasks_used = tasks_used - 1 WHERE id = ?',
-                [task.client_id]
-            );
-        }
-        
-        // Удаляем задачу (каскадное удаление удалит связанные записи)
-        await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
-        
-        res.json({
-            success: true,
-            message: 'Задача удалена'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка удаления задачи:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка удаления задачи'
-        });
-    }
-});
-
-// ==================== ОБСЛУЖИВАНИЕ ====================
-
-// Обслуживание статических файлов
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Обработка 404 для API маршрутов
-app.use('/api/*', (req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'API маршрут не найден'
-    });
-});
-
-// SPA маршрутизация
+// SPA маршрутизация для приложения
 app.get('*', (req, res) => {
+    // Если это API маршрут - возвращаем 404
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            success: false,
+            error: 'API маршрут не найден'
+        });
+    }
+    
+    // Для всех остальных маршрутов отдаем index.html
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -3885,20 +2719,23 @@ const startServer = async () => {
         // Инициализируем базу данных
         await initDatabase();
         console.log('✅ База данных готова');
-        console.log('✅ Админ панель доступна');
-        console.log('✅ Главный админ ID: 898508164');
         
         const PORT = process.env.PORT || 3000;
         
         app.listen(PORT, '0.0.0.0', () => {
             console.log('\n' + '='.repeat(80));
             console.log(`✅ Сервер запущен на порту ${PORT}`);
-            console.log(`🌐 http://localhost:${PORT}`);
-            console.log(`🏥 Health check: http://localhost:${PORT}/health`);
-            console.log(`👑 Админ панель: http://localhost:${PORT} → Войти как суперадмин`);
             console.log('='.repeat(80));
-            console.log('🎀 СИСТЕМА ГОТОВА К РАБОТЕ!');
-            console.log('='.repeat(80));
+            console.log('\n🌐 ДОСТУПНЫЕ ССЫЛКИ:');
+            console.log('='.repeat(60));
+            console.log(`🏠 Основное приложение:`);
+            console.log(`   👉 http://localhost:${PORT}`);
+            console.log(`\n👑 Админ-панель:`);
+            console.log(`   👉 http://localhost:${PORT}/admin.html`);
+            console.log(`\n📊 API и здоровье системы:`);
+            console.log(`   👉 http://localhost:${PORT}/api`);
+            console.log(`   👉 http://localhost:${PORT}/health`);
+            console.log('='.repeat(60));
             
             console.log('\n🔑 ТЕСТОВЫЕ АККАУНТЫ:');
             console.log('='.repeat(60));
@@ -3914,35 +2751,30 @@ const startServer = async () => {
             
             console.log('\n⚡ ОСНОВНЫЕ ФУНКЦИОНАЛЬНОСТИ:');
             console.log('='.repeat(60));
-            console.log('✅ 6 категорий услуг (как в оригинале)');
-            console.log('✅ 12 услуг (как в оригинале)');
-            console.log('✅ 5 тестовых задач');
-            console.log('✅ Полное управление админа');
-            console.log('✅ Создание/редактирование/удаление категорий');
-            console.log('✅ Создание/редактирование/удаление услуг');
-            console.log('✅ Создание/редактирование/удаление подписок');
+            console.log('✅ Полнофункциональное приложение');
+            console.log('✅ Полная админ-панель');
+            console.log('✅ 6 категорий услуг');
+            console.log('✅ 12 услуг');
+            console.log('✅ Система подписок');
+            console.log('✅ Создание и управление задачами');
+            console.log('✅ Чат в реальном времени');
+            console.log('✅ Система отзывов и рейтингов');
             console.log('✅ Управление пользователями');
-            console.log('✅ Управление задачами');
-            console.log('✅ Полная админ панель с управлением пользователями');
-            console.log('✅ Финансовая отчетность и статистика');
-            console.log('✅ Система кэширования для производительности');
-            console.log('✅ Система уведомлений и чатов');
-            console.log('✅ Управление специализациями помощников');
-            console.log('✅ FAQ и система отзывов');
-            console.log('✅ Резервное копирование и восстановление');
-            console.log('✅ Настройки системы через админ панель');
-            console.log('✅ Восстановление пароля и управление аккаунтом');
+            console.log('✅ Финансовая отчетность');
+            console.log('✅ FAQ и поддержка');
             console.log('='.repeat(60));
             
             console.log('\n📊 АДМИН ВОЗМОЖНОСТИ:');
             console.log('='.repeat(60));
-            console.log('👥 Управление пользователями (просмотр, редактирование, удаление)');
-            console.log('📋 Управление задачами (просмотр всех задач, изменение статусов)');
-            console.log('💰 Финансовая отчетность (доходы, расходы, транзакции)');
-            console.log('⚙️  Настройки системы (комиссия, контакты, режим обслуживания)');
-            console.log('📊 Статистика (пользователи, задачи, доход по месяцам)');
-            console.log('💾 Резервное копирование базы данных');
-            console.log('🧹 Очистка кэша и пересчет статистики');
+            console.log('👥 Управление пользователями');
+            console.log('📋 Управление задачами');
+            console.log('💰 Финансовая отчетность');
+            console.log('⚙️  Настройки системы');
+            console.log('📊 Статистика');
+            console.log('💾 Управление категориями и услугами');
+            console.log('='.repeat(60));
+            
+            console.log('\n🚀 СИСТЕМА ГОТОВА К РАБОТЕ!');
             console.log('='.repeat(60));
         });
         
