@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Базовые стили из основного приложения */
         :root {
             --ivory-bg: #F9F7F3;
             --graphite-dark: #3D3D3D;
@@ -74,7 +73,8 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 16px;
+            width: 100%;
         }
         
         /* Шапка админ-панели */
@@ -88,53 +88,67 @@
             -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(61, 61, 61, 0.08);
             z-index: 1000;
-            height: 70px;
+            height: 60px;
             padding: 0;
         }
         
         .header-container {
-            max-width: 1400px;
-            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 100%;
-            padding: 0 24px;
+            padding: 0 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
         }
         
         .admin-logo {
             font-family: 'Playfair Display', serif;
-            font-size: 1.6rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--graphite-dark);
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
         
         .admin-logo-icon {
             color: var(--gold-metallic);
-            font-size: 1.8rem;
+            font-size: 1.4rem;
         }
         
         .admin-user-menu {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
+        }
+        
+        /* Мобильное меню */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--graphite-dark);
+            cursor: pointer;
+            padding: 8px;
+            margin-right: -8px;
         }
         
         /* Навигация админ-панели */
         .admin-nav {
             display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
-            padding: 0 8px;
-            overflow-x: auto;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 24px;
+            padding: 0 4px;
+            width: 100%;
         }
         
         .admin-nav-btn {
-            padding: 12px 20px;
+            padding: 10px 16px;
             background: white;
             border: 1px solid rgba(61, 61, 61, 0.1);
             border-radius: var(--radius);
@@ -146,7 +160,21 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .admin-nav-btn i {
+            flex-shrink: 0;
+        }
+        
+        .admin-nav-btn span {
+            overflow: hidden;
+            text-overflow: ellipsis;
             white-space: nowrap;
         }
         
@@ -159,14 +187,16 @@
         
         /* Основной контент */
         .main-content {
-            margin-top: 100px;
-            min-height: calc(100vh - 180px);
-            padding-bottom: 80px;
+            margin-top: 80px;
+            min-height: calc(100vh - 120px);
+            padding-bottom: 40px;
+            width: 100%;
         }
         
         .admin-section {
             display: none;
             animation: fadeIn 0.3s ease;
+            width: 100%;
         }
         
         .admin-section.active {
@@ -176,14 +206,14 @@
         /* Карточки статистики */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
         }
         
         .stat-card {
             background: white;
-            padding: 24px;
+            padding: 16px;
             border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
@@ -192,20 +222,20 @@
         }
         
         .stat-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
         
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--gold-metallic);
-            margin: 12px 0;
+            margin: 8px 0;
         }
         
         .stat-label {
             color: var(--graphite-medium);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
         
@@ -213,50 +243,55 @@
         .table-container {
             background: white;
             border-radius: var(--radius);
-            overflow: hidden;
+            overflow: auto;
             box-shadow: var(--shadow-sm);
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             border: 1px solid rgba(61, 61, 61, 0.08);
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
         }
         
         .table-header {
-            padding: 20px 24px;
+            padding: 16px;
             border-bottom: 1px solid rgba(61, 61, 61, 0.08);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
             background: rgba(61, 61, 61, 0.02);
+            min-width: 600px;
         }
         
         .table-header h3 {
             color: var(--graphite-dark);
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 800px;
         }
         
         th {
             background: rgba(61, 61, 61, 0.02);
-            padding: 16px;
+            padding: 12px;
             text-align: left;
             font-weight: 600;
             color: var(--graphite-dark);
             border-bottom: 1px solid rgba(61, 61, 61, 0.08);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
         
         td {
-            padding: 16px;
+            padding: 12px;
             border-bottom: 1px solid rgba(61, 61, 61, 0.05);
             vertical-align: middle;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
         }
         
         tr:hover {
@@ -267,11 +302,12 @@
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
+            gap: 4px;
+            padding: 4px 8px;
             border-radius: var(--radius-full);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: 600;
+            white-space: nowrap;
         }
         
         .status-new {
@@ -303,10 +339,11 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 4px 12px;
+            padding: 3px 8px;
             border-radius: var(--radius-full);
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
+            white-space: nowrap;
         }
         
         .role-client {
@@ -339,16 +376,18 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 12px 24px;
+            gap: 6px;
+            padding: 10px 16px;
             border: none;
             border-radius: var(--radius);
             font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         
         .btn-primary {
@@ -385,41 +424,50 @@
         }
         
         .btn-sm {
-            padding: 8px 16px;
-            font-size: 0.85rem;
+            padding: 6px 12px;
+            font-size: 0.75rem;
+        }
+        
+        .btn-icon {
+            padding: 8px;
+            min-width: 36px;
+            justify-content: center;
         }
         
         /* Фильтры */
         .filters {
             display: flex;
-            gap: 16px;
-            margin-bottom: 24px;
-            padding: 0 8px;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 0 4px;
             flex-wrap: wrap;
+            width: 100%;
         }
         
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
+            flex: 1;
+            min-width: 150px;
         }
         
         .filter-label {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             color: var(--graphite-dark);
             font-weight: 500;
         }
         
         .filter-select,
         .filter-input {
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: 1.5px solid rgba(61, 61, 61, 0.1);
             border-radius: var(--radius-sm);
             font-family: 'Inter', sans-serif;
-            min-width: 180px;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             background: white;
             transition: var(--transition);
+            width: 100%;
         }
         
         .filter-select:focus,
@@ -431,24 +479,25 @@
         
         /* Формы */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            width: 100%;
         }
         
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-weight: 600;
             color: var(--graphite-dark);
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
         
         .form-input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 10px 12px;
             border: 1.5px solid rgba(61, 61, 61, 0.1);
             border-radius: var(--radius-sm);
             font-family: 'Inter', sans-serif;
-            font-size: 1rem;
+            font-size: 0.9rem;
             transition: var(--transition);
             background: white;
         }
@@ -460,9 +509,10 @@
         }
         
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
         }
         
         /* Модальные окна */
@@ -479,7 +529,7 @@
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            padding: 20px;
+            padding: 16px;
         }
         
         .modal.active {
@@ -490,20 +540,21 @@
             background: white;
             border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-xl);
             animation: modalIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-overflow-scrolling: touch;
         }
         
         @keyframes modalIn {
-            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            from { transform: scale(0.95) translateY(20px); opacity: 0; }
             to { transform: scale(1) translateY(0); opacity: 1; }
         }
         
         .modal-header {
-            padding: 24px;
+            padding: 20px;
             border-bottom: 1px solid rgba(61, 61, 61, 0.08);
             display: flex;
             justify-content: space-between;
@@ -511,25 +562,32 @@
             background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
             color: white;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
         
         .modal-title {
             font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: white;
             font-weight: 600;
         }
         
         .modal-body {
-            padding: 24px;
+            padding: 20px;
         }
         
         .modal-footer {
-            padding: 24px;
+            padding: 20px;
             border-top: 1px solid rgba(61, 61, 61, 0.08);
             display: flex;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 8px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            z-index: 1;
         }
         
         .modal-close {
@@ -546,6 +604,7 @@
             justify-content: center;
             border-radius: 6px;
             transition: var(--transition);
+            flex-shrink: 0;
         }
         
         .modal-close:hover {
@@ -555,19 +614,20 @@
         /* Уведомления */
         .notification {
             position: fixed;
-            top: 100px;
-            right: 24px;
+            top: 80px;
+            right: 16px;
+            left: 16px;
             z-index: 3000;
             background: white;
             border-radius: var(--radius);
-            padding: 16px 20px;
+            padding: 12px 16px;
             box-shadow: var(--shadow-lg);
             border-left: 4px solid var(--success);
             animation: slideInRight 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 12px;
-            max-width: 400px;
+            gap: 8px;
+            max-width: 100%;
         }
         
         .notification.error {
@@ -583,7 +643,7 @@
             border-top: 4px solid var(--gold-metallic);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 60px auto;
+            margin: 40px auto;
             display: block;
         }
         
@@ -595,61 +655,283 @@
         /* Пустое состояние */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
+            padding: 40px 16px;
             color: var(--graphite-light);
         }
         
         .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 20px;
+            font-size: 2.5rem;
+            margin-bottom: 16px;
             opacity: 0.3;
         }
         
+        /* Карточки категорий */
+        .grid {
+            display: grid;
+            gap: 12px;
+            width: 100%;
+        }
+        
+        .grid-1 {
+            grid-template-columns: 1fr;
+        }
+        
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
         /* Адаптивность */
-        @media (max-width: 768px) {
+        @media (min-width: 768px) {
             .container {
-                padding: 0 16px;
+                padding: 0 24px;
+            }
+            
+            .header-container {
+                padding: 0 24px;
+            }
+            
+            .admin-logo {
+                font-size: 1.4rem;
+            }
+            
+            .admin-nav-btn {
+                font-size: 0.85rem;
+                padding: 12px 20px;
+                flex: 0 1 auto;
+            }
+            
+            .main-content {
+                margin-top: 100px;
+            }
+            
+            .stats-grid {
+                gap: 20px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .table-header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                min-width: 0;
+            }
+            
+            .form-row {
+                flex-direction: row;
+            }
+            
+            .grid-md-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid-md-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .notification {
+                left: auto;
+                max-width: 400px;
+                right: 24px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .admin-header {
+                height: 70px;
+            }
+            
+            .admin-logo {
+                font-size: 1.6rem;
+                gap: 12px;
+            }
+            
+            .admin-logo-icon {
+                font-size: 1.8rem;
             }
             
             .admin-nav {
-                flex-wrap: wrap;
-                justify-content: center;
+                gap: 8px;
+                margin-bottom: 32px;
+            }
+            
+            .admin-nav-btn {
+                padding: 12px 24px;
+                font-size: 0.875rem;
+            }
+            
+            .main-content {
+                margin-top: 120px;
+                padding-bottom: 80px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 20px;
+                margin-bottom: 32px;
+            }
+            
+            .stat-card {
+                padding: 24px;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+                margin: 12px 0;
+            }
+            
+            .table-header {
+                padding: 24px;
+            }
+            
+            th, td {
+                padding: 16px;
             }
             
             .filters {
-                flex-direction: column;
-                padding: 0;
+                gap: 16px;
+                margin-bottom: 24px;
             }
             
-            .filter-select,
-            .filter-input {
-                min-width: 100%;
+            .filter-group {
+                min-width: 180px;
+            }
+            
+            .grid-lg-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .admin-user-menu .user-text,
+            .admin-user-menu .btn span {
+                display: none;
+            }
+            
+            .admin-user-menu .btn {
+                padding: 8px;
+                min-width: 40px;
+            }
+            
+            .admin-user-menu .btn i {
+                margin: 0;
+            }
+            
+            .admin-logo span {
+                font-size: 1rem;
+            }
+            
+            .admin-nav {
+                flex-direction: column;
+                display: none;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 16px;
+                box-shadow: var(--shadow-lg);
+                z-index: 999;
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
+            }
+            
+            .admin-nav.active {
+                display: flex;
+            }
+            
+            .admin-nav-btn {
+                width: 100%;
+                justify-content: flex-start;
             }
             
             table {
                 display: block;
-                overflow-x: auto;
+                min-width: 100%;
             }
             
-            .form-row {
-                grid-template-columns: 1fr;
+            .modal-content {
+                max-width: 100%;
+                max-height: 95vh;
+            }
+            
+            .btn-primary span {
+                display: none;
+            }
+            
+            .btn-primary i {
+                margin: 0;
             }
         }
         
         @media (max-width: 480px) {
-            .admin-nav-btn {
-                padding: 10px 16px;
-                font-size: 0.8125rem;
+            .container {
+                padding: 0 12px;
+            }
+            
+            .header-container {
+                padding: 0 12px;
+            }
+            
+            .admin-logo span {
+                font-size: 0.9rem;
+            }
+            
+            .admin-logo-icon {
+                font-size: 1.2rem;
             }
             
             .stats-grid {
                 grid-template-columns: 1fr;
             }
             
-            .table-header {
+            .filters {
                 flex-direction: column;
-                gap: 12px;
-                align-items: stretch;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Touch-friendly стили */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .admin-nav-btn, .modal-close {
+                min-height: 44px;
+                min-width: 44px;
+            }
+            
+            .filter-select, .filter-input, .form-input {
+                font-size: 16px;
+                min-height: 44px;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+            
+            .status-badge, .role-badge {
+                padding: 6px 10px;
             }
         }
     </style>
@@ -658,9 +940,13 @@
     <!-- Шапка админ-панели -->
     <header class="admin-header">
         <div class="header-container">
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <div class="admin-logo">
                 <i class="fas fa-crown admin-logo-icon"></i>
-                <span>Админ-панель | Женский Консьерж</span>
+                <span>Админ-панель</span>
             </div>
             
             <div class="admin-user-menu">
@@ -673,11 +959,13 @@
                         <div class="user-role" id="userRole">Супер-админ</div>
                     </div>
                 </div>
-                <a href="/" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-home"></i> В приложение
+                <a href="/" class="btn btn-sm btn-secondary" title="В приложение">
+                    <i class="fas fa-home"></i>
+                    <span>В приложение</span>
                 </a>
-                <button class="btn btn-sm btn-error" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
+                <button class="btn btn-sm btn-error" onclick="logout()" title="Выйти">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
                 </button>
             </div>
         </div>
@@ -685,34 +973,34 @@
     
     <!-- Навигация -->
     <div class="container">
-        <div class="admin-nav">
+        <div class="admin-nav" id="adminNav">
             <button class="admin-nav-btn active" onclick="showSection('dashboard')">
                 <i class="fas fa-tachometer-alt"></i>
-                Дашборд
+                <span>Дашборд</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('users')">
                 <i class="fas fa-users"></i>
-                Пользователи
+                <span>Пользователи</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('categories')">
                 <i class="fas fa-layer-group"></i>
-                Категории
+                <span>Категории</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('tasks')">
                 <i class="fas fa-tasks"></i>
-                Задачи
+                <span>Задачи</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('subscriptions')">
                 <i class="fas fa-crown"></i>
-                Подписки
+                <span>Подписки</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('services')">
                 <i class="fas fa-star"></i>
-                Топ услуги
+                <span>Топ услуги</span>
             </button>
             <button class="admin-nav-btn" onclick="showSection('settings')">
                 <i class="fas fa-cog"></i>
-                Настройки
+                <span>Настройки</span>
             </button>
         </div>
     </div>
@@ -774,15 +1062,15 @@
                     <div class="filter-group">
                         <div class="filter-label">Поиск</div>
                         <input type="text" class="filter-input" id="userSearch" 
-                               placeholder="Имя, email или телефон" oninput="loadUsers()">
+                               placeholder="Имя, email или телефон" oninput="debounce(loadUsers, 300)">
                     </div>
                     
-                    <div style="flex: 1;"></div>
-                    
-                    <button class="btn btn-primary" onclick="showAddUserModal()">
-                        <i class="fas fa-user-plus"></i>
-                        Добавить пользователя
-                    </button>
+                    <div style="flex: 1; min-width: 150px;">
+                        <button class="btn btn-primary" onclick="showAddUserModal()" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Добавить пользователя</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="table-container">
@@ -808,15 +1096,15 @@
                         </select>
                     </div>
                     
-                    <div style="flex: 1;"></div>
-                    
-                    <button class="btn btn-primary" onclick="showAddCategoryModal()">
-                        <i class="fas fa-plus"></i>
-                        Добавить категорию
-                    </button>
+                    <div style="flex: 1; min-width: 150px;">
+                        <button class="btn btn-primary" onclick="showAddCategoryModal()" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-plus"></i>
+                            <span>Добавить категорию</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="grid grid-1 md:grid-2 lg:grid-3 gap-4" id="categoriesList">
+                <div class="grid grid-1 md-grid-2 lg-grid-3" id="categoriesList">
                     <div class="loader"></div>
                 </div>
             </section>
@@ -877,12 +1165,12 @@
                         </select>
                     </div>
                     
-                    <div style="flex: 1;"></div>
-                    
-                    <button class="btn btn-primary" onclick="showAddSubscriptionModal()">
-                        <i class="fas fa-plus"></i>
-                        Добавить подписку
-                    </button>
+                    <div style="flex: 1; min-width: 150px;">
+                        <button class="btn btn-primary" onclick="showAddSubscriptionModal()" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-plus"></i>
+                            <span>Добавить подписку</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="table-container">
@@ -915,12 +1203,12 @@
                         </select>
                     </div>
                     
-                    <div style="flex: 1;"></div>
-                    
-                    <button class="btn btn-primary" onclick="showAddServiceModal()">
-                        <i class="fas fa-plus"></i>
-                        Добавить услугу
-                    </button>
+                    <div style="flex: 1; min-width: 150px;">
+                        <button class="btn btn-primary" onclick="showAddServiceModal()" style="width: 100%; margin-top: 20px;">
+                            <i class="fas fa-plus"></i>
+                            <span>Добавить услугу</span>
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="table-container">
@@ -941,9 +1229,9 @@
                         <h3><i class="fas fa-cog"></i> Настройки системы</h3>
                     </div>
                     
-                    <div style="padding: 32px;">
-                        <div style="margin-bottom: 32px;">
-                            <h3 style="color: var(--gold-metallic); margin-bottom: 16px;">Основные настройки</h3>
+                    <div style="padding: 20px;">
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1.1rem;">Основные настройки</h3>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Название сервиса</label>
@@ -964,8 +1252,8 @@
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 32px;">
-                            <h3 style="color: var(--gold-metallic); margin-bottom: 16px;">Тексты для клиентов</h3>
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1.1rem;">Тексты для клиентов</h3>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label>Заголовок топ услуг</label>
@@ -978,25 +1266,25 @@
                             </div>
                         </div>
                         
-                        <div style="margin-bottom: 32px;">
-                            <h3 style="color: var(--gold-metallic); margin-bottom: 16px;">Уведомления</h3>
-                            <div style="display: flex; flex-direction: column; gap: 16px;">
-                                <label style="display: flex; align-items: center; gap: 10px;">
+                        <div style="margin-bottom: 24px;">
+                            <h3 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1.1rem;">Уведомления</h3>
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
                                     <input type="checkbox" id="settingEmailNotifications" checked>
-                                    <span>Email уведомления о новых задачах</span>
+                                    <span style="font-size: 0.9rem;">Email уведомления о новых задачах</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
                                     <input type="checkbox" id="settingSmsNotifications">
-                                    <span>SMS уведомления клиентам</span>
+                                    <span style="font-size: 0.9rem;">SMS уведомления клиентам</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
                                     <input type="checkbox" id="settingTelegramNotifications" checked>
-                                    <span>Telegram уведомления менеджерам</span>
+                                    <span style="font-size: 0.9rem;">Telegram уведомления менеджерам</span>
                                 </label>
                             </div>
                         </div>
                         
-                        <button class="btn btn-primary" onclick="saveSettings()" style="padding: 12px 24px;">
+                        <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; padding: 12px;">
                             <i class="fas fa-save"></i>
                             Сохранить изменения
                         </button>
@@ -1018,7 +1306,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="categoryForm" onsubmit="saveCategory(event)">
+                <form id="categoryForm">
                     <input type="hidden" id="categoryId">
                     
                     <div class="form-group">
@@ -1058,13 +1346,13 @@
                             <input type="number" id="categorySortOrder" class="form-input" value="0" min="0">
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px;">Статус</label>
-                            <div style="display: flex; gap: 20px;">
-                                <label style="display: flex; align-items: center; gap: 8px;">
+                            <label style="display: block; margin-bottom: 6px;">Статус</label>
+                            <div style="display: flex; gap: 16px;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
                                     <input type="radio" name="categoryStatus" value="active" checked>
                                     <span>Активна</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
                                     <input type="radio" name="categoryStatus" value="inactive">
                                     <span>Неактивна</span>
                                 </label>
@@ -1093,7 +1381,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="subscriptionForm" onsubmit="saveSubscription(event)">
+                <form id="subscriptionForm">
                     <input type="hidden" id="subscriptionId">
                     
                     <div class="form-group">
@@ -1147,13 +1435,13 @@
                     </div>
                     
                     <div class="form-group">
-                        <label style="display: block; margin-bottom: 8px;">Статус</label>
-                        <div style="display: flex; gap: 20px;">
-                            <label style="display: flex; align-items: center; gap: 8px;">
+                        <label style="display: block; margin-bottom: 6px;">Статус</label>
+                        <div style="display: flex; gap: 16px;">
+                            <label style="display: flex; align-items: center; gap: 6px;">
                                 <input type="radio" name="subscriptionStatus" value="active" checked>
                                 <span>Активна</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 8px;">
+                            <label style="display: flex; align-items: center; gap: 6px;">
                                 <input type="radio" name="subscriptionStatus" value="inactive">
                                 <span>Неактивна</span>
                             </label>
@@ -1181,7 +1469,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="serviceForm" onsubmit="saveService(event)">
+                <form id="serviceForm">
                     <input type="hidden" id="serviceId">
                     
                     <div class="form-group">
@@ -1209,13 +1497,13 @@
                             <input type="number" id="serviceSortOrder" class="form-input" value="0" min="0">
                         </div>
                         <div class="form-group">
-                            <label style="display: block; margin-bottom: 8px;">Статус</label>
-                            <div style="display: flex; gap: 20px;">
-                                <label style="display: flex; align-items: center; gap: 8px;">
+                            <label style="display: block; margin-bottom: 6px;">Статус</label>
+                            <div style="display: flex; gap: 16px;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
                                     <input type="radio" name="serviceStatus" value="active" checked>
                                     <span>Активна</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
                                     <input type="radio" name="serviceStatus" value="inactive">
                                     <span>Неактивна</span>
                                 </label>
@@ -1244,7 +1532,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="userForm" onsubmit="saveUser(event)">
+                <form id="userForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="userFirstName">Имя *</label>
@@ -1313,7 +1601,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="form-input" value="admin@test.com">
+                    <input type="email" id="loginEmail" class="form-input" value="superadmin@concierge.ru">
                 </div>
                 
                 <div class="form-group">
@@ -1322,9 +1610,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <p style="font-size: 0.875rem; color: var(--graphite-medium); margin-top: 20px;">
+                    <p style="font-size: 0.8rem; color: var(--graphite-medium); margin-top: 16px;">
                         Демо аккаунт:<br>
-                        Email: admin@test.com<br>
+                        Email: superadmin@concierge.ru<br>
                         Пароль: admin123
                     </p>
                 </div>
@@ -1342,6 +1630,7 @@
         // Глобальные переменные
         let currentUser = null;
         let currentToken = localStorage.getItem('adminToken');
+        let debounceTimer;
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -1359,7 +1648,51 @@
             } else {
                 showModal('loginModal');
             }
+            
+            // Закрытие модального окна по клику вне его
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal(this.id);
+                    }
+                });
+            });
+            
+            // Открытие мобильного меню по свайпу
+            let touchStartX = 0;
+            document.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                if (window.innerWidth <= 767) {
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const diffX = touchStartX - touchEndX;
+                    
+                    if (Math.abs(diffX) > 50) {
+                        if (diffX > 0) {
+                            // Свайп влево - открыть меню
+                            document.getElementById('adminNav').classList.add('active');
+                        } else {
+                            // Свайп вправо - закрыть меню
+                            document.getElementById('adminNav').classList.remove('active');
+                        }
+                    }
+                }
+            });
         });
+        
+        // Дебаунс функция
+        function debounce(func, wait) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, wait);
+        }
+        
+        // Мобильное меню
+        function toggleMobileMenu() {
+            const nav = document.getElementById('adminNav');
+            nav.classList.toggle('active');
+        }
         
         // Аутентификация
         async function adminLogin() {
@@ -1367,53 +1700,78 @@
             const password = document.getElementById('loginPassword').value;
             
             try {
-                // В реальном приложении здесь будет запрос к API
-                // Для демо используем заглушку
-                if (email === 'admin@test.com' && password === 'admin123') {
-                    currentToken = 'demo_admin_token';
-                    currentUser = {
-                        id: 1,
-                        firstName: 'Администратор',
-                        lastName: 'Системы',
-                        email: 'admin@test.com',
-                        role: 'superadmin'
-                    };
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentToken = data.data.token;
+                    currentUser = data.data.user;
                     
                     localStorage.setItem('adminToken', currentToken);
                     closeModal('loginModal');
                     updateUserInfo();
                     loadDashboard();
+                    showNotification('Вход выполнен успешно!', 'success');
                 } else {
-                    showNotification('Неверный email или пароль', 'error');
+                    showNotification(data.error, 'error');
                 }
             } catch (error) {
-                showNotification('Ошибка входа: ' + error.message, 'error');
+                console.error('Ошибка входа:', error);
+                showNotification('Ошибка входа. Проверьте подключение к серверу.', 'error');
             }
         }
         
-        function verifyToken() {
-            // В реальном приложении здесь будет проверка токена
-            // Для демо используем заглушку
-            currentUser = {
-                id: 1,
-                firstName: 'Администратор',
-                lastName: 'Системы',
-                email: 'admin@test.com',
-                role: 'superadmin'
-            };
-            
-            updateUserInfo();
-            loadDashboard();
+        async function verifyToken() {
+            try {
+                const response = await fetch('/api/auth/check', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentUser = data.data.user;
+                    updateUserInfo();
+                    loadDashboard();
+                } else {
+                    localStorage.removeItem('adminToken');
+                    showModal('loginModal');
+                    showNotification('Сессия истекла. Войдите снова.', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка проверки токена:', error);
+                localStorage.removeItem('adminToken');
+                showModal('loginModal');
+                showNotification('Ошибка проверки авторизации.', 'error');
+            }
         }
         
         function updateUserInfo() {
             if (currentUser) {
-                document.getElementById('avatarInitials').textContent = 
-                    currentUser.firstName.charAt(0).toUpperCase();
+                const initials = (currentUser.first_name?.charAt(0) || '') + (currentUser.last_name?.charAt(0) || '');
+                document.getElementById('avatarInitials').textContent = initials || 'A';
                 document.getElementById('userName').textContent = 
-                    `${currentUser.firstName} ${currentUser.lastName}`;
+                    `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Администратор';
                 document.getElementById('userRole').textContent = 
-                    currentUser.role === 'superadmin' ? 'Супер-админ' : 'Администратор';
+                    currentUser.role === 'superadmin' ? 'Супер-админ' : 
+                    currentUser.role === 'admin' ? 'Администратор' :
+                    currentUser.role === 'manager' ? 'Менеджер' :
+                    currentUser.role === 'performer' ? 'Исполнитель' : 'Клиент';
+                    
+                // Показываем текстовую информацию только на десктопе
+                if (window.innerWidth > 767) {
+                    document.querySelector('.user-text').style.display = 'block';
+                }
             }
         }
         
@@ -1426,6 +1784,11 @@
         
         // Навигация по разделам
         function showSection(sectionId) {
+            // Закрываем мобильное меню
+            if (window.innerWidth <= 767) {
+                document.getElementById('adminNav').classList.remove('active');
+            }
+            
             // Скрыть все разделы
             document.querySelectorAll('.admin-section').forEach(section => {
                 section.classList.remove('active');
@@ -1440,7 +1803,7 @@
             document.getElementById(sectionId).classList.add('active');
             
             // Добавить активный класс к кнопке
-            event.target.classList.add('active');
+            event.target.closest('.admin-nav-btn').classList.add('active');
             
             // Загрузить данные для раздела
             switch(sectionId) {
@@ -1471,213 +1834,197 @@
         // Загрузка дашборда
         async function loadDashboard() {
             try {
-                // Имитация загрузки данных
-                const stats = {
-                    summary: {
-                        total_users: 156,
-                        active_users: 142,
-                        total_tasks: 423,
-                        completed_tasks: 387,
-                        total_revenue: 1254300,
-                        monthly_revenue: 254300,
-                        monthly_new_users: 23,
-                        monthly_new_tasks: 48
-                    },
-                    recent_tasks: [
-                        { id: 1, title: 'Уборка квартиры', client_firstName: 'Анна', status: 'completed', created_at: '2024-01-15', price: 5000 },
-                        { id: 2, title: 'Приготовление ужина', client_firstName: 'Мария', status: 'in_progress', created_at: '2024-01-20', price: 3000 },
-                        { id: 3, title: 'Покупка продуктов', client_firstName: 'Ольга', status: 'new', created_at: '2024-01-22', price: 8000 },
-                        { id: 4, title: 'Уход за ребенком', client_firstName: 'Елена', status: 'assigned', created_at: '2024-01-21', price: 4000 }
-                    ],
-                    categories: [
-                        { display_name: 'Уборка', task_count: 124, completed_count: 118, avg_rating: 4.8 },
-                        { display_name: 'Готовка', task_count: 89, completed_count: 85, avg_rating: 4.9 },
-                        { display_name: 'Покупки', task_count: 76, completed_count: 72, avg_rating: 4.7 },
-                        { display_name: 'Красота', task_count: 65, completed_count: 62, avg_rating: 4.9 },
-                        { display_name: 'Организация', task_count: 45, completed_count: 43, avg_rating: 4.6 }
-                    ]
-                };
+                const response = await fetch('/api/admin/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
                 
-                renderDashboard(stats);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Получаем последние задачи
+                    const tasksResponse = await fetch('/api/admin/tasks?limit=5', {
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`
+                        }
+                    });
+                    
+                    const tasksData = await tasksResponse.json();
+                    
+                    // Получаем статистику по категориям
+                    const categoriesResponse = await fetch('/api/categories');
+                    const categoriesData = await categoriesResponse.json();
+                    
+                    renderDashboard(data.data, tasksData.data?.tasks || [], categoriesData.data?.categories || []);
+                } else {
+                    showNotification('Ошибка загрузки статистики', 'error');
+                }
             } catch (error) {
                 console.error('Ошибка загрузки дашборда:', error);
                 showNotification('Ошибка загрузки дашборда', 'error');
             }
         }
         
-        function renderDashboard(stats) {
+        function renderDashboard(stats, recentTasks, categories) {
             // Общая статистика
             document.getElementById('dashboardStats').innerHTML = `
                 <div class="stat-card">
                     <div class="stat-label">Всего пользователей</div>
-                    <div class="stat-value">${stats.summary.total_users}</div>
-                    <div style="font-size: 0.875rem; color: var(--success); margin-top: 4px;">
-                        +${stats.summary.monthly_new_users} за месяц
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Активных пользователей</div>
-                    <div class="stat-value">${stats.summary.active_users}</div>
+                    <div class="stat-value">${stats.total_users || 0}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Всего задач</div>
-                    <div class="stat-value">${stats.summary.total_tasks}</div>
-                    <div style="font-size: 0.875rem; color: var(--success); margin-top: 4px;">
-                        +${stats.summary.monthly_new_tasks} за месяц
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Завершено задач</div>
-                    <div class="stat-value">${stats.summary.completed_tasks}</div>
-                    <div style="font-size: 0.875rem; color: var(--success); margin-top: 4px;">
-                        ${Math.round(stats.summary.completed_tasks / stats.summary.total_tasks * 100)}% от всех
-                    </div>
+                    <div class="stat-value">${stats.total_tasks || 0}</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Общая выручка</div>
-                    <div class="stat-value">${formatNumber(stats.summary.total_revenue)} ₽</div>
-                    <div style="font-size: 0.875rem; color: var(--success); margin-top: 4px;">
-                        +${formatNumber(stats.summary.monthly_revenue)} ₽ за месяц
-                    </div>
+                    <div class="stat-value">${formatNumber(stats.total_income || 0)} ₽</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Средний чек</div>
-                    <div class="stat-value">${formatNumber(Math.round(stats.summary.total_revenue / stats.summary.completed_tasks))} ₽</div>
+                    <div class="stat-label">Активных подписок</div>
+                    <div class="stat-value">${stats.active_subscriptions || 0}</div>
                 </div>
             `;
             
             // Последние задачи
-            document.getElementById('totalTasksCount').textContent = `${stats.summary.total_tasks} задач всего`;
+            document.getElementById('totalTasksCount').textContent = `${stats.total_tasks || 0} задач всего`;
             
-            let tasksHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>№</th>
-                            <th>Название</th>
-                            <th>Клиент</th>
-                            <th>Статус</th>
-                            <th>Дата</th>
-                            <th>Цена</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            stats.recent_tasks.forEach(task => {
-                const statusText = {
-                    'new': 'Новая',
-                    'assigned': 'Назначена',
-                    'in_progress': 'В работе',
-                    'completed': 'Завершена',
-                    'cancelled': 'Отменена'
-                }[task.status] || task.status;
-                
-                tasksHtml += `
-                    <tr>
-                        <td>${task.id}</td>
-                        <td>${task.title}</td>
-                        <td>${task.client_firstName}</td>
-                        <td><span class="status-badge status-${task.status}">${statusText}</span></td>
-                        <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
-                        <td>${formatNumber(task.price)} ₽</td>
-                    </tr>
+            let tasksHtml = '';
+            if (recentTasks.length > 0) {
+                tasksHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Название</th>
+                                <th>Клиент</th>
+                                <th>Статус</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
+                
+                recentTasks.forEach(task => {
+                    const statusText = {
+                        'new': 'Новая',
+                        'searching': 'Поиск',
+                        'assigned': 'Назначена',
+                        'in_progress': 'В работе',
+                        'completed': 'Завершена',
+                        'cancelled': 'Отменена'
+                    }[task.status] || task.status;
+                    
+                    tasksHtml += `
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${task.title}</td>
+                            <td>${task.client_first_name || ''} ${task.client_last_name || ''}</td>
+                            <td><span class="status-badge status-${task.status}">${statusText}</span></td>
+                            <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                        </tr>
+                    `;
+                });
+                
+                tasksHtml += '</tbody></table>';
+            } else {
+                tasksHtml = '<div class="empty-state"><i class="fas fa-tasks"></i><p>Нет задач</p></div>';
+            }
             
-            tasksHtml += '</tbody></table>';
             document.getElementById('recentTasks').innerHTML = tasksHtml;
             
-            // Статистика по категориям
-            let categoryHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Категория</th>
-                            <th>Количество задач</th>
-                            <th>Завершено</th>
-                            <th>Средний рейтинг</th>
-                            <th>Доля</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-            
-            stats.categories.forEach(cat => {
-                const percentage = stats.summary.total_tasks > 0 ? Math.round(cat.task_count / stats.summary.total_tasks * 100) : 0;
-                categoryHtml += `
-                    <tr>
-                        <td>${cat.display_name}</td>
-                        <td>${cat.task_count}</td>
-                        <td>${cat.completed_count}</td>
-                        <td>${cat.avg_rating ? cat.avg_rating.toFixed(1) : '-'}/5</td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <div style="width: 100px; height: 6px; background: rgba(61, 61, 61, 0.1); border-radius: 3px; overflow: hidden;">
-                                    <div style="width: ${percentage}%; height: 100%; background: var(--gold-metallic);"></div>
-                                </div>
-                                <span>${percentage}%</span>
-                            </div>
-                        </td>
-                    </tr>
+            // Статистика по категориям (упрощенная)
+            let categoryHtml = '';
+            if (categories.length > 0) {
+                categoryHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Категория</th>
+                                <th>Описание</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            });
+                
+                categories.forEach(cat => {
+                    categoryHtml += `
+                        <tr>
+                            <td>${cat.display_name}</td>
+                            <td>${cat.description}</td>
+                            <td>${cat.is_active ? '✅ Активна' : '❌ Неактивна'}</td>
+                        </tr>
+                    `;
+                });
+                
+                categoryHtml += '</tbody></table>';
+            } else {
+                categoryHtml = '<div class="empty-state"><i class="fas fa-layer-group"></i><p>Нет категорий</p></div>';
+            }
             
-            categoryHtml += '</tbody></table>';
             document.getElementById('categoryStats').innerHTML = categoryHtml;
         }
         
         // Управление пользователями
         async function loadUsers() {
             try {
-                // Имитация загрузки данных
-                const users = [
-                    { id: 1, firstName: 'Анна', lastName: 'Иванова', email: 'client@test.com', phone: '+7 (999) 111-11-11', role: 'client', subscription_plan: 'premium', initial_fee_paid: true, created_at: '2024-01-01' },
-                    { id: 2, firstName: 'Елена', lastName: 'Смирнова', email: 'performer@test.com', phone: '+7 (999) 222-22-22', role: 'performer', subscription_plan: 'basic', initial_fee_paid: true, created_at: '2024-01-05' },
-                    { id: 3, firstName: 'Мария', lastName: 'Петрова', email: 'admin@test.com', phone: '+7 (999) 333-33-33', role: 'admin', subscription_plan: null, initial_fee_paid: false, created_at: '2023-12-15' },
-                    { id: 4, firstName: 'Ольга', lastName: 'Сидорова', email: 'user4@test.com', phone: '+7 (999) 444-44-44', role: 'client', subscription_plan: 'free', initial_fee_paid: false, created_at: '2024-01-10' },
-                    { id: 5, firstName: 'Ирина', lastName: 'Кузнецова', email: 'user5@test.com', phone: '+7 (999) 555-55-55', role: 'performer', subscription_plan: 'basic', initial_fee_paid: true, created_at: '2024-01-12' }
-                ];
+                const roleFilter = document.getElementById('userRoleFilter').value;
+                const subscriptionFilter = document.getElementById('userSubscriptionFilter').value;
+                const search = document.getElementById('userSearch').value;
                 
-                renderUsers(users);
+                let url = '/api/admin/users?limit=50';
+                if (roleFilter !== 'all') url += `&role=${roleFilter}`;
+                if (search) url += `&search=${encodeURIComponent(search)}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderUsers(data.data.users, subscriptionFilter);
+                } else {
+                    showNotification('Ошибка загрузки пользователей', 'error');
+                }
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error);
                 showNotification('Ошибка загрузки пользователей', 'error');
             }
         }
         
-        function renderUsers(users) {
-            document.getElementById('usersCount').textContent = `${users.length} пользователей`;
+        function renderUsers(users, subscriptionFilter) {
+            // Фильтрация по подписке
+            let filteredUsers = users;
+            if (subscriptionFilter !== 'all') {
+                filteredUsers = users.filter(user => user.subscription_plan === subscriptionFilter);
+            }
             
-            let usersHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Email</th>
-                            <th>Телефон</th>
-                            <th>Роль</th>
-                            <th>Подписка</th>
-                            <th>Взнос</th>
-                            <th>Дата регистрации</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            document.getElementById('usersCount').textContent = `${filteredUsers.length} пользователей`;
             
-            if (users.length === 0) {
-                usersHtml += `
-                    <tr>
-                        <td colspan="9" class="empty-state">
-                            <i class="fas fa-users"></i>
-                            <p>Нет пользователей</p>
-                        </td>
-                    </tr>
+            let usersHtml = '';
+            if (filteredUsers.length > 0) {
+                usersHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя</th>
+                                <th>Email</th>
+                                <th>Роль</th>
+                                <th>Подписка</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            } else {
-                users.forEach(user => {
+                
+                filteredUsers.forEach(user => {
                     const roleText = {
                         'client': 'Клиент',
                         'performer': 'Исполнитель',
@@ -1696,27 +2043,25 @@
                     usersHtml += `
                         <tr>
                             <td>${user.id}</td>
-                            <td>${user.firstName} ${user.lastName}</td>
+                            <td>${user.first_name} ${user.last_name}</td>
                             <td>${user.email}</td>
-                            <td>${user.phone || '-'}</td>
                             <td><span class="role-badge role-${user.role}">${roleText}</span></td>
                             <td>${subscriptionText}</td>
-                            <td>${user.initial_fee_paid ? '✅ Оплачен' : '❌ Не оплачен'}</td>
-                            <td>${new Date(user.created_at).toLocaleDateString('ru-RU')}</td>
+                            <td>${user.is_active ? '✅ Активен' : '❌ Неактивен'}</td>
                             <td>
-                                <button class="btn btn-sm btn-secondary" onclick="editUser(${user.id})">
+                                <button class="btn btn-sm btn-secondary btn-icon" onclick="editUser(${user.id})" title="Редактировать">
                                     <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="viewUser(${user.id})">
-                                    <i class="fas fa-eye"></i>
                                 </button>
                             </td>
                         </tr>
                     `;
                 });
+                
+                usersHtml += '</tbody></table>';
+            } else {
+                usersHtml = '<div class="empty-state"><i class="fas fa-users"></i><p>Нет пользователей</p></div>';
             }
             
-            usersHtml += '</tbody></table>';
             document.getElementById('usersTable').innerHTML = usersHtml;
         }
         
@@ -1725,65 +2070,115 @@
             showModal('userModal');
         }
         
-        function saveUser() {
-            // Имитация сохранения
-            showNotification('Пользователь успешно создан', 'success');
-            closeModal('userModal');
-            loadUsers();
+        async function saveUser() {
+            const firstName = document.getElementById('userFirstName').value;
+            const lastName = document.getElementById('userLastName').value;
+            const email = document.getElementById('userEmail').value;
+            const phone = document.getElementById('userPhone').value;
+            const role = document.getElementById('userRole').value;
+            const subscription = document.getElementById('userSubscription').value;
+            const password = document.getElementById('userPassword').value || 'password123';
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        first_name: firstName,
+                        last_name: lastName,
+                        phone,
+                        role,
+                        subscription_plan: subscription
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Пользователь успешно создан', 'success');
+                    closeModal('userModal');
+                    loadUsers();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка создания пользователя:', error);
+                showNotification('Ошибка создания пользователя', 'error');
+            }
+        }
+        
+        async function editUser(userId) {
+            showNotification(`Редактирование пользователя ${userId} будет реализовано в будущем`, 'info');
         }
         
         // Управление категориями
         async function loadCategories() {
             try {
-                // Имитация загрузки данных
-                const categories = [
-                    { id: 1, name: 'cleaning', display_name: 'Уборка', description: 'Генеральная уборка, регулярная уборка, уборка после ремонта', icon: 'fas fa-broom', color: '#FF6B8B', sort_order: 1, is_active: true, top_services_count: 5, hints_count: 3 },
-                    { id: 2, name: 'cooking', display_name: 'Готовка', description: 'Приготовление еды, семейные ужины, диетическое питание', icon: 'fas fa-utensils', color: '#10b981', sort_order: 2, is_active: true, top_services_count: 4, hints_count: 2 },
-                    { id: 3, name: 'shopping', display_name: 'Покупки', description: 'Покупка продуктов, одежды, подарков, онлайн-шопинг', icon: 'fas fa-shopping-bag', color: '#3b82f6', sort_order: 3, is_active: true, top_services_count: 3, hints_count: 4 },
-                    { id: 4, name: 'beauty', display_name: 'Красота', description: 'Маникюр, прически, макияж, уходовые процедуры', icon: 'fas fa-spa', color: '#8b5cf6', sort_order: 4, is_active: true, top_services_count: 6, hints_count: 3 },
-                    { id: 5, name: 'organization', display_name: 'Организация', description: 'Планирование мероприятий, организация пространства', icon: 'fas fa-calendar-alt', color: '#f59e0b', sort_order: 5, is_active: true, top_services_count: 4, hints_count: 2 }
-                ];
+                const statusFilter = document.getElementById('categoryStatusFilter').value;
                 
-                renderCategories(categories);
+                const response = await fetch('/api/admin/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderCategories(data.data.categories, statusFilter);
+                } else {
+                    showNotification('Ошибка загрузки категорий', 'error');
+                }
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
                 showNotification('Ошибка загрузки категорий', 'error');
             }
         }
         
-        function renderCategories(categories) {
-            const container = document.getElementById('categoriesList');
-            container.innerHTML = '';
+        function renderCategories(categories, statusFilter) {
+            // Фильтрация по статусу
+            let filteredCategories = categories;
+            if (statusFilter !== 'all') {
+                filteredCategories = categories.filter(cat => 
+                    (statusFilter === 'active' && cat.is_active) || 
+                    (statusFilter === 'inactive' && !cat.is_active)
+                );
+            }
             
-            if (categories.length === 0) {
+            const container = document.getElementById('categoriesList');
+            
+            if (filteredCategories.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state" style="grid-column: 1 / -1;">
                         <i class="fas fa-layer-group"></i>
                         <p>Нет категорий</p>
-                        <button class="btn btn-primary" onclick="showAddCategoryModal()" style="margin-top: 20px;">
-                            <i class="fas fa-plus"></i>
-                            Добавить первую категорию
-                        </button>
                     </div>
                 `;
                 return;
             }
             
-            categories.forEach(category => {
+            container.innerHTML = '';
+            
+            filteredCategories.forEach(category => {
                 const card = document.createElement('div');
                 card.className = 'stat-card';
-                card.style.borderLeftColor = category.color;
+                card.style.borderLeftColor = category.color || '#C5A880';
                 card.innerHTML = `
-                    <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px;">
-                        <div style="font-size: 2rem; color: ${category.color}">
-                            <i class="${category.icon}"></i>
+                    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
+                        <div style="font-size: 1.5rem; color: ${category.color || '#C5A880'}">
+                            <i class="${category.icon || 'fas fa-folder'}"></i>
                         </div>
                         <div style="flex: 1;">
-                            <h4 style="color: var(--graphite-dark); margin-bottom: 5px;">${category.display_name}</h4>
-                            <p style="color: var(--graphite-medium); font-size: 0.875rem; margin-bottom: 10px;">${category.description}</p>
-                            <div style="display: flex; gap: 10px; font-size: 0.875rem;">
+                            <h4 style="color: var(--graphite-dark); margin-bottom: 4px; font-size: 1rem;">${category.display_name}</h4>
+                            <p style="color: var(--graphite-medium); font-size: 0.8rem; margin-bottom: 8px; line-height: 1.4;">${category.description}</p>
+                            <div style="display: flex; gap: 8px; font-size: 0.75rem;">
                                 <span style="color: var(--graphite-light);">${category.name}</span>
-                                <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem;">
+                                <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
                                     ${category.is_active ? 'Активна' : 'Неактивна'}
                                 </span>
                             </div>
@@ -1791,19 +2186,12 @@
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; gap: 15px; font-size: 0.875rem;">
-                            <div>
-                                <div style="font-weight: 600;">${category.top_services_count}</div>
-                                <div style="color: var(--graphite-light);">Топ услуг</div>
-                            </div>
-                            <div>
-                                <div style="font-weight: 600;">${category.hints_count}</div>
-                                <div style="color: var(--graphite-light);">Подсказки</div>
-                            </div>
+                        <div style="font-size: 0.75rem; color: var(--graphite-light);">
+                            Порядок: ${category.sort_order || 0}
                         </div>
                         
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn btn-sm btn-secondary" onclick="editCategory(${category.id})">
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-sm btn-secondary btn-icon" onclick="editCategory(${category.id})" title="Редактировать">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </div>
@@ -1822,118 +2210,172 @@
             showModal('categoryModal');
         }
         
-        function editCategory(categoryId) {
-            // Имитация загрузки категории
-            const category = {
-                id: categoryId,
-                name: 'cleaning',
-                display_name: 'Уборка',
-                description: 'Генеральная уборка, регулярная уборка',
-                icon: 'fas fa-broom',
-                color: '#FF6B8B',
-                sort_order: 1,
-                is_active: true
-            };
-            
-            document.getElementById('categoryModalTitle').textContent = 'Редактировать категорию';
-            document.getElementById('categoryId').value = category.id;
-            document.getElementById('categoryName').value = category.name;
-            document.getElementById('categoryDisplayName').value = category.display_name;
-            document.getElementById('categoryDescription').value = category.description;
-            document.getElementById('categoryIcon').value = category.icon;
-            document.getElementById('categoryColor').value = category.color;
-            document.getElementById('categorySortOrder').value = category.sort_order;
-            
-            const statusRadios = document.getElementsByName('categoryStatus');
-            statusRadios.forEach(radio => {
-                radio.checked = radio.value === (category.is_active ? 'active' : 'inactive');
-            });
-            
-            showModal('categoryModal');
+        async function editCategory(categoryId) {
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const category = data.data.categories.find(c => c.id == categoryId);
+                    if (category) {
+                        document.getElementById('categoryModalTitle').textContent = 'Редактировать категорию';
+                        document.getElementById('categoryId').value = category.id;
+                        document.getElementById('categoryName').value = category.name;
+                        document.getElementById('categoryDisplayName').value = category.display_name;
+                        document.getElementById('categoryDescription').value = category.description;
+                        document.getElementById('categoryIcon').value = category.icon;
+                        document.getElementById('categoryColor').value = category.color || '#C5A880';
+                        document.getElementById('categorySortOrder').value = category.sort_order || 0;
+                        
+                        const statusRadios = document.getElementsByName('categoryStatus');
+                        statusRadios.forEach(radio => {
+                            radio.checked = radio.value === (category.is_active ? 'active' : 'inactive');
+                        });
+                        
+                        showModal('categoryModal');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки категории:', error);
+                showNotification('Ошибка загрузки категории', 'error');
+            }
         }
         
-        function saveCategory() {
-            // Имитация сохранения
-            showNotification('Категория успешно сохранена', 'success');
-            closeModal('categoryModal');
-            loadCategories();
+        async function saveCategory() {
+            const id = document.getElementById('categoryId').value;
+            const name = document.getElementById('categoryName').value;
+            const displayName = document.getElementById('categoryDisplayName').value;
+            const description = document.getElementById('categoryDescription').value;
+            const icon = document.getElementById('categoryIcon').value;
+            const color = document.getElementById('categoryColor').value;
+            const sortOrder = document.getElementById('categorySortOrder').value;
+            const isActive = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
+            
+            try {
+                const url = id ? '/api/admin/categories' : '/api/admin/categories';
+                const method = id ? 'POST' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        id: id || null,
+                        name,
+                        display_name: displayName,
+                        description,
+                        icon,
+                        color,
+                        sort_order: parseInt(sortOrder),
+                        is_active: isActive
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Категория успешно сохранена', 'success');
+                    closeModal('categoryModal');
+                    loadCategories();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения категории:', error);
+                showNotification('Ошибка сохранения категории', 'error');
+            }
         }
         
         // Управление задачами
         async function loadTasks() {
             try {
-                // Имитация загрузки данных
-                const tasks = [
-                    { id: 1, title: 'Уборка квартиры', client_firstName: 'Анна', performer_firstName: 'Елена', status: 'completed', category_name: 'Уборка', deadline: '2024-01-20', price: 5000, created_at: '2024-01-15' },
-                    { id: 2, title: 'Приготовление ужина', client_firstName: 'Мария', performer_firstName: null, status: 'new', category_name: 'Готовка', deadline: '2024-01-25', price: 3000, created_at: '2024-01-20' },
-                    { id: 3, title: 'Покупка продуктов', client_firstName: 'Ольга', performer_firstName: null, status: 'assigned', category_name: 'Покупки', deadline: '2024-01-23', price: 8000, created_at: '2024-01-22' },
-                    { id: 4, title: 'Уход за ребенком', client_firstName: 'Елена', performer_firstName: 'Ирина', status: 'in_progress', category_name: 'Уход за детьми', deadline: '2024-01-22', price: 4000, created_at: '2024-01-21' }
-                ];
+                const statusFilter = document.getElementById('taskStatusFilter').value;
+                const categoryFilter = document.getElementById('taskCategoryFilter').value;
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
                 
-                // Заполняем фильтр категорий
-                const categoryFilter = document.getElementById('taskCategoryFilter');
-                if (categoryFilter.options.length <= 1) {
-                    const categories = await loadCategoriesForFilter();
-                    categories.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.id;
-                        option.textContent = cat.display_name;
-                        categoryFilter.appendChild(option);
-                    });
+                let url = '/api/admin/tasks?limit=50';
+                if (statusFilter !== 'all') url += `&status=${statusFilter}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Заполняем фильтр категорий если пустой
+                    if (categoryFilter === 'all' && document.getElementById('taskCategoryFilter').options.length <= 1) {
+                        const catResponse = await fetch('/api/categories');
+                        const catData = await catResponse.json();
+                        
+                        if (catData.success) {
+                            const categorySelect = document.getElementById('taskCategoryFilter');
+                            catData.data.categories.forEach(cat => {
+                                const option = document.createElement('option');
+                                option.value = cat.id;
+                                option.textContent = cat.display_name;
+                                categorySelect.appendChild(option);
+                            });
+                        }
+                    }
+                    
+                    renderTasks(data.data.tasks, categoryFilter, dateFrom, dateTo);
+                } else {
+                    showNotification('Ошибка загрузки задач', 'error');
                 }
-                
-                renderTasks(tasks);
             } catch (error) {
                 console.error('Ошибка загрузки задач:', error);
                 showNotification('Ошибка загрузки задач', 'error');
             }
         }
         
-        async function loadCategoriesForFilter() {
-            // Имитация загрузки категорий
-            return [
-                { id: 1, display_name: 'Уборка' },
-                { id: 2, display_name: 'Готовка' },
-                { id: 3, display_name: 'Покупки' },
-                { id: 4, display_name: 'Красота' },
-                { id: 5, display_name: 'Организация' }
-            ];
-        }
-        
-        function renderTasks(tasks) {
-            document.getElementById('tasksCount').textContent = `${tasks.length} задач`;
+        function renderTasks(tasks, categoryFilter, dateFrom, dateTo) {
+            // Фильтрация
+            let filteredTasks = tasks;
             
-            let tasksHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>№</th>
-                            <th>Название</th>
-                            <th>Клиент</th>
-                            <th>Исполнитель</th>
-                            <th>Статус</th>
-                            <th>Категория</th>
-                            <th>Срок</th>
-                            <th>Цена</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            if (categoryFilter !== 'all') {
+                filteredTasks = filteredTasks.filter(task => task.category_id == categoryFilter);
+            }
             
-            if (tasks.length === 0) {
-                tasksHtml += `
-                    <tr>
-                        <td colspan="9" class="empty-state">
-                            <i class="fas fa-tasks"></i>
-                            <p>Нет задач</p>
-                        </td>
-                    </tr>
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredTasks = filteredTasks.filter(task => new Date(task.created_at) >= fromDate);
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                filteredTasks = filteredTasks.filter(task => new Date(task.created_at) <= toDate);
+            }
+            
+            document.getElementById('tasksCount').textContent = `${filteredTasks.length} задач`;
+            
+            let tasksHtml = '';
+            if (filteredTasks.length > 0) {
+                tasksHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Название</th>
+                                <th>Клиент</th>
+                                <th>Статус</th>
+                                <th>Категория</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            } else {
-                tasks.forEach(task => {
+                
+                filteredTasks.forEach(task => {
                     const statusText = {
                         'new': 'Новая',
+                        'searching': 'Поиск',
                         'assigned': 'Назначена',
                         'in_progress': 'В работе',
                         'completed': 'Завершена',
@@ -1944,102 +2386,102 @@
                         <tr>
                             <td>${task.id}</td>
                             <td>${task.title}</td>
-                            <td>${task.client_firstName}</td>
-                            <td>${task.performer_firstName || '-'}</td>
+                            <td>${task.client_first_name || ''} ${task.client_last_name || ''}</td>
                             <td><span class="status-badge status-${task.status}">${statusText}</span></td>
-                            <td>${task.category_name}</td>
-                            <td>${new Date(task.deadline).toLocaleDateString('ru-RU')}</td>
-                            <td>${formatNumber(task.price)} ₽</td>
-                            <td>
-                                <button class="btn btn-sm btn-secondary" onclick="viewTask(${task.id})">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-secondary" onclick="editTask(${task.id})">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
+                            <td>${task.category_name || '-'}</td>
+                            <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
                         </tr>
                     `;
                 });
+                
+                tasksHtml += '</tbody></table>';
+            } else {
+                tasksHtml = '<div class="empty-state"><i class="fas fa-tasks"></i><p>Нет задач</p></div>';
             }
             
-            tasksHtml += '</tbody></table>';
             document.getElementById('tasksTable').innerHTML = tasksHtml;
         }
         
         // Управление подписками
         async function loadSubscriptions() {
             try {
-                // Имитация загрузки данных
-                const subscriptions = [
-                    { id: 1, name: 'free', display_name: 'Бесплатный', description: 'Базовый доступ к платформе', price_monthly: 0, price_yearly: 0, initial_fee: 0, tasks_limit: 1, features: 'До 1 задачи в месяц\nБазовые категории\nОбычная поддержка', is_active: true },
-                    { id: 2, name: 'basic', display_name: 'Базовый', description: 'Для регулярного использования', price_monthly: 990, price_yearly: 9500, initial_fee: 500, tasks_limit: 10, features: 'До 10 задач в месяц\nВсе категории\nПриоритетная поддержка\nПодбор исполнительниц', is_active: true },
-                    { id: 3, name: 'premium', display_name: 'Премиум', description: 'Для максимального комфорта', price_monthly: 2990, price_yearly: 28650, initial_fee: 1000, tasks_limit: 999, features: 'Неограниченное количество задач\nПерсональный менеджер\nЭкспресс-подбор исполнительниц\nVIP-поддержка 24/7', is_active: true },
-                    { id: 4, name: 'vip', display_name: 'VIP', description: 'Эксклюзивный сервис', price_monthly: 5990, price_yearly: 57500, initial_fee: 5000, tasks_limit: 999, features: 'Все возможности Премиум\nПерсональная помощница\nЭксклюзивные исполнительницы\nКонсьерж-сервис', is_active: false }
-                ];
+                const statusFilter = document.getElementById('subscriptionStatusFilter').value;
                 
-                renderSubscriptions(subscriptions);
+                const response = await fetch('/api/admin/subscriptions', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderSubscriptions(data.data.subscriptions, statusFilter);
+                } else {
+                    showNotification('Ошибка загрузки подписок', 'error');
+                }
             } catch (error) {
                 console.error('Ошибка загрузки подписок:', error);
                 showNotification('Ошибка загрузки подписок', 'error');
             }
         }
         
-        function renderSubscriptions(subscriptions) {
-            document.getElementById('subscriptionsCount').textContent = `${subscriptions.length} подписок`;
+        function renderSubscriptions(subscriptions, statusFilter) {
+            // Фильтрация по статусу
+            let filteredSubscriptions = subscriptions;
+            if (statusFilter !== 'all') {
+                filteredSubscriptions = subscriptions.filter(sub => 
+                    (statusFilter === 'active' && sub.is_active) || 
+                    (statusFilter === 'inactive' && !sub.is_active)
+                );
+            }
             
-            let subscriptionsHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Название</th>
-                            <th>Описание</th>
-                            <th>Взнос/Месяц</th>
-                            <th>Лимит задач</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            document.getElementById('subscriptionsCount').textContent = `${filteredSubscriptions.length} подписок`;
             
-            if (subscriptions.length === 0) {
-                subscriptionsHtml += `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <i class="fas fa-crown"></i>
-                            <p>Нет подписок</p>
-                        </td>
-                    </tr>
+            let subscriptionsHtml = '';
+            if (filteredSubscriptions.length > 0) {
+                subscriptionsHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Цена/месяц</th>
+                                <th>Взнос</th>
+                                <th>Лимит задач</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            } else {
-                subscriptions.forEach(sub => {
-                    const features = sub.features.split('\n');
+                
+                filteredSubscriptions.forEach(sub => {
+                    const features = Array.isArray(sub.features) ? sub.features : (typeof sub.features === 'string' ? JSON.parse(sub.features) : []);
                     
                     subscriptionsHtml += `
                         <tr>
                             <td>
                                 <div style="font-weight: 600; color: var(--graphite-dark);">${sub.display_name}</div>
-                                <div style="font-size: 0.875rem; color: var(--graphite-medium);">${sub.name}</div>
+                                <div style="font-size: 0.75rem; color: var(--graphite-medium);">${sub.name}</div>
                             </td>
-                            <td>${sub.description}</td>
-                            <td>
-                                <div>${formatNumber(sub.initial_fee)}₽ / ${formatNumber(sub.price_monthly)}₽</div>
-                                <div style="font-size: 0.875rem; color: var(--graphite-medium);">${formatNumber(sub.price_yearly)}₽ в год</div>
-                            </td>
+                            <td>${formatNumber(sub.price_monthly)}₽</td>
+                            <td>${formatNumber(sub.initial_fee)}₽</td>
                             <td>${sub.tasks_limit === 999 ? 'Неограничено' : sub.tasks_limit + ' в месяц'}</td>
                             <td>${sub.is_active ? '✅ Активна' : '❌ Неактивна'}</td>
                             <td>
-                                <button class="btn btn-sm btn-secondary" onclick="editSubscription(${sub.id})">
+                                <button class="btn btn-sm btn-secondary btn-icon" onclick="editSubscription(${sub.id})" title="Редактировать">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </td>
                         </tr>
                     `;
                 });
+                
+                subscriptionsHtml += '</tbody></table>';
+            } else {
+                subscriptionsHtml = '<div class="empty-state"><i class="fas fa-crown"></i><p>Нет подписок</p></div>';
             }
             
-            subscriptionsHtml += '</tbody></table>';
             document.getElementById('subscriptionsTable').innerHTML = subscriptionsHtml;
         }
         
@@ -2053,127 +2495,195 @@
             showModal('subscriptionModal');
         }
         
-        function editSubscription(subscriptionId) {
-            // Имитация загрузки подписки
-            const subscription = {
-                id: subscriptionId,
-                name: 'basic',
-                display_name: 'Базовый',
-                description: 'Для регулярного использования',
-                price_monthly: 990,
-                price_yearly: 9500,
-                initial_fee: 500,
-                tasks_limit: 10,
-                features: 'До 10 задач в месяц\nВсе категории\nПриоритетная поддержка\nПодбор исполнительниц',
-                is_active: true
-            };
-            
-            document.getElementById('subscriptionModalTitle').textContent = 'Редактировать подписку';
-            document.getElementById('subscriptionId').value = subscription.id;
-            document.getElementById('subscriptionName').value = subscription.name;
-            document.getElementById('subscriptionDisplayName').value = subscription.display_name;
-            document.getElementById('subscriptionDescription').value = subscription.description;
-            document.getElementById('subscriptionPriceMonthly').value = subscription.price_monthly;
-            document.getElementById('subscriptionPriceYearly').value = subscription.price_yearly;
-            document.getElementById('subscriptionInitialFee').value = subscription.initial_fee;
-            document.getElementById('subscriptionTasksLimit').value = subscription.tasks_limit;
-            document.getElementById('subscriptionFeatures').value = subscription.features;
-            
-            const statusRadios = document.getElementsByName('subscriptionStatus');
-            statusRadios.forEach(radio => {
-                radio.checked = radio.value === (subscription.is_active ? 'active' : 'inactive');
-            });
-            
-            showModal('subscriptionModal');
+        async function editSubscription(subscriptionId) {
+            try {
+                const response = await fetch('/api/admin/subscriptions');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const subscription = data.data.subscriptions.find(s => s.id == subscriptionId);
+                    if (subscription) {
+                        document.getElementById('subscriptionModalTitle').textContent = 'Редактировать подписку';
+                        document.getElementById('subscriptionId').value = subscription.id;
+                        document.getElementById('subscriptionName').value = subscription.name;
+                        document.getElementById('subscriptionDisplayName').value = subscription.display_name;
+                        document.getElementById('subscriptionDescription').value = subscription.description;
+                        document.getElementById('subscriptionPriceMonthly').value = subscription.price_monthly;
+                        document.getElementById('subscriptionPriceYearly').value = subscription.price_yearly || '';
+                        document.getElementById('subscriptionInitialFee').value = subscription.initial_fee;
+                        document.getElementById('subscriptionTasksLimit').value = subscription.tasks_limit;
+                        
+                        let featuresText = '';
+                        if (Array.isArray(subscription.features)) {
+                            featuresText = subscription.features.join('\n');
+                        } else if (typeof subscription.features === 'string') {
+                            try {
+                                const featuresArray = JSON.parse(subscription.features);
+                                featuresText = Array.isArray(featuresArray) ? featuresArray.join('\n') : subscription.features;
+                            } catch {
+                                featuresText = subscription.features;
+                            }
+                        }
+                        document.getElementById('subscriptionFeatures').value = featuresText;
+                        
+                        const statusRadios = document.getElementsByName('subscriptionStatus');
+                        statusRadios.forEach(radio => {
+                            radio.checked = radio.value === (subscription.is_active ? 'active' : 'inactive');
+                        });
+                        
+                        showModal('subscriptionModal');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки подписки:', error);
+                showNotification('Ошибка загрузки подписки', 'error');
+            }
         }
         
-        function saveSubscription() {
-            // Имитация сохранения
-            showNotification('Подписка успешно сохранена', 'success');
-            closeModal('subscriptionModal');
-            loadSubscriptions();
+        async function saveSubscription() {
+            const id = document.getElementById('subscriptionId').value;
+            const name = document.getElementById('subscriptionName').value;
+            const displayName = document.getElementById('subscriptionDisplayName').value;
+            const description = document.getElementById('subscriptionDescription').value;
+            const priceMonthly = parseFloat(document.getElementById('subscriptionPriceMonthly').value);
+            const priceYearly = document.getElementById('subscriptionPriceYearly').value ? 
+                parseFloat(document.getElementById('subscriptionPriceYearly').value) : priceMonthly * 12;
+            const initialFee = parseFloat(document.getElementById('subscriptionInitialFee').value);
+            const tasksLimit = parseInt(document.getElementById('subscriptionTasksLimit').value);
+            const features = document.getElementById('subscriptionFeatures').value.split('\n').filter(f => f.trim());
+            const isActive = document.querySelector('input[name="subscriptionStatus"]:checked').value === 'active';
+            
+            try {
+                const response = await fetch('/api/admin/subscriptions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        id: id || null,
+                        name,
+                        display_name: displayName,
+                        description,
+                        price_monthly: priceMonthly,
+                        price_yearly: priceYearly,
+                        initial_fee: initialFee,
+                        tasks_limit: tasksLimit,
+                        features: features,
+                        is_active: isActive
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Подписка успешно сохранена', 'success');
+                    closeModal('subscriptionModal');
+                    loadSubscriptions();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения подписки:', error);
+                showNotification('Ошибка сохранения подписки', 'error');
+            }
         }
         
         // Управление топ услугами
         async function loadTopServices() {
             try {
-                // Имитация загрузки данных
-                const services = [
-                    { id: 1, name: 'Генеральная уборка квартиры', description: 'Полная уборка всех комнат, кухни, ванной и санузла', category_name: 'Уборка', sort_order: 1, is_active: true },
-                    { id: 2, name: 'Приготовление ужина на 4 персоны', description: 'Приготовление комплексного ужина с сервировкой', category_name: 'Готовка', sort_order: 2, is_active: true },
-                    { id: 3, name: 'Покупка продуктов на неделю', description: 'Закупка продуктов по списку в супермаркете', category_name: 'Покупки', sort_order: 3, is_active: true },
-                    { id: 4, name: 'Маникюр с покрытием', description: 'Профессиональный маникюр с гель-лаком', category_name: 'Красота', sort_order: 1, is_active: true },
-                    { id: 5, name: 'Организация детского праздника', description: 'Подготовка и проведение детского дня рождения', category_name: 'Организация', sort_order: 1, is_active: false }
-                ];
+                const categoryFilter = document.getElementById('serviceCategoryFilter').value;
+                const statusFilter = document.getElementById('serviceStatusFilter').value;
                 
-                // Заполняем фильтр категорий
-                const categoryFilter = document.getElementById('serviceCategoryFilter');
-                if (categoryFilter.options.length <= 1) {
-                    const categories = await loadCategoriesForFilter();
-                    categories.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.id;
-                        option.textContent = cat.display_name;
-                        categoryFilter.appendChild(option);
-                    });
+                const response = await fetch('/api/admin/services', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Заполняем фильтр категорий если пустой
+                    if (categoryFilter === 'all' && document.getElementById('serviceCategoryFilter').options.length <= 1) {
+                        const catResponse = await fetch('/api/categories');
+                        const catData = await catResponse.json();
+                        
+                        if (catData.success) {
+                            const categorySelect = document.getElementById('serviceCategoryFilter');
+                            catData.data.categories.forEach(cat => {
+                                const option = document.createElement('option');
+                                option.value = cat.id;
+                                option.textContent = cat.display_name;
+                                categorySelect.appendChild(option);
+                            });
+                        }
+                    }
+                    
+                    renderTopServices(data.data.services, categoryFilter, statusFilter);
+                } else {
+                    showNotification('Ошибка загрузки услуг', 'error');
                 }
-                
-                renderTopServices(services);
             } catch (error) {
                 console.error('Ошибка загрузки услуг:', error);
                 showNotification('Ошибка загрузки услуг', 'error');
             }
         }
         
-        function renderTopServices(services) {
-            document.getElementById('servicesCount').textContent = `${services.length} услуг`;
+        function renderTopServices(services, categoryFilter, statusFilter) {
+            // Фильтрация
+            let filteredServices = services;
             
-            let servicesHtml = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Название</th>
-                            <th>Категория</th>
-                            <th>Описание</th>
-                            <th>Порядок</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            if (categoryFilter !== 'all') {
+                filteredServices = filteredServices.filter(service => service.category_id == categoryFilter);
+            }
             
-            if (services.length === 0) {
-                servicesHtml += `
-                    <tr>
-                        <td colspan="7" class="empty-state">
-                            <i class="fas fa-star"></i>
-                            <p>Нет топ услуг</p>
-                        </td>
-                    </tr>
+            if (statusFilter !== 'all') {
+                filteredServices = filteredServices.filter(service => 
+                    (statusFilter === 'active' && service.is_active) || 
+                    (statusFilter === 'inactive' && !service.is_active)
+                );
+            }
+            
+            document.getElementById('servicesCount').textContent = `${filteredServices.length} услуг`;
+            
+            let servicesHtml = '';
+            if (filteredServices.length > 0) {
+                servicesHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                 `;
-            } else {
-                services.forEach(service => {
+                
+                filteredServices.forEach(service => {
                     servicesHtml += `
                         <tr>
                             <td>${service.id}</td>
                             <td>${service.name}</td>
-                            <td>${service.category_name}</td>
-                            <td>${service.description.substring(0, 50)}...</td>
-                            <td>${service.sort_order}</td>
+                            <td>${service.category_name || '-'}</td>
                             <td>${service.is_active ? '✅ Активна' : '❌ Неактивна'}</td>
                             <td>
-                                <button class="btn btn-sm btn-secondary" onclick="editService(${service.id})">
+                                <button class="btn btn-sm btn-secondary btn-icon" onclick="editService(${service.id})" title="Редактировать">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </td>
                         </tr>
                     `;
                 });
+                
+                servicesHtml += '</tbody></table>';
+            } else {
+                servicesHtml = '<div class="empty-state"><i class="fas fa-star"></i><p>Нет услуг</p></div>';
             }
             
-            servicesHtml += '</tbody></table>';
             document.getElementById('servicesTable').innerHTML = servicesHtml;
         }
         
@@ -2189,113 +2699,136 @@
         }
         
         async function loadCategoriesForServiceModal() {
-            const categories = await loadCategoriesForFilter();
-            const select = document.getElementById('serviceCategory');
-            select.innerHTML = '<option value="">Выберите категорию</option>';
-            
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = cat.display_name;
-                select.appendChild(option);
-            });
+            try {
+                const response = await fetch('/api/categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('serviceCategory');
+                    select.innerHTML = '<option value="">Выберите категорию</option>';
+                    
+                    data.data.categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.display_name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки категорий:', error);
+            }
         }
         
-        function editService(serviceId) {
-            // Имитация загрузки услуги
-            const service = {
-                id: serviceId,
-                name: 'Генеральная уборка квартиры',
-                description: 'Полная уборка всех комнат, кухни, ванной и санузла',
-                category_id: 1,
-                sort_order: 1,
-                is_active: true
-            };
-            
-            // Загружаем категории
-            loadCategoriesForServiceModal().then(() => {
-                document.getElementById('serviceModalTitle').textContent = 'Редактировать топ услугу';
-                document.getElementById('serviceId').value = service.id;
-                document.getElementById('serviceName').value = service.name;
-                document.getElementById('serviceDescription').value = service.description;
-                document.getElementById('serviceCategory').value = service.category_id;
-                document.getElementById('serviceSortOrder').value = service.sort_order;
+        async function editService(serviceId) {
+            try {
+                const response = await fetch('/api/admin/services');
+                const data = await response.json();
                 
-                const statusRadios = document.getElementsByName('serviceStatus');
-                statusRadios.forEach(radio => {
-                    radio.checked = radio.value === (service.is_active ? 'active' : 'inactive');
+                if (data.success) {
+                    const service = data.data.services.find(s => s.id == serviceId);
+                    if (service) {
+                        await loadCategoriesForServiceModal();
+                        
+                        document.getElementById('serviceModalTitle').textContent = 'Редактировать топ услугу';
+                        document.getElementById('serviceId').value = service.id;
+                        document.getElementById('serviceName').value = service.name;
+                        document.getElementById('serviceDescription').value = service.description;
+                        document.getElementById('serviceCategory').value = service.category_id;
+                        document.getElementById('serviceSortOrder').value = service.sort_order || 0;
+                        
+                        const statusRadios = document.getElementsByName('serviceStatus');
+                        statusRadios.forEach(radio => {
+                            radio.checked = radio.value === (service.is_active ? 'active' : 'inactive');
+                        });
+                        
+                        showModal('serviceModal');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки услуги:', error);
+                showNotification('Ошибка загрузки услуги', 'error');
+            }
+        }
+        
+        async function saveService() {
+            const id = document.getElementById('serviceId').value;
+            const categoryId = document.getElementById('serviceCategory').value;
+            const name = document.getElementById('serviceName').value;
+            const description = document.getElementById('serviceDescription').value;
+            const sortOrder = parseInt(document.getElementById('serviceSortOrder').value);
+            const isActive = document.querySelector('input[name="serviceStatus"]:checked').value === 'active';
+            
+            try {
+                const response = await fetch('/api/admin/services', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        id: id || null,
+                        category_id: categoryId,
+                        name,
+                        description,
+                        sort_order: sortOrder,
+                        is_active: isActive
+                    })
                 });
                 
-                showModal('serviceModal');
-            });
-        }
-        
-        function saveService() {
-            // Имитация сохранения
-            showNotification('Услуга успешно сохранена', 'success');
-            closeModal('serviceModal');
-            loadTopServices();
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Услуга успешно сохранена', 'success');
+                    closeModal('serviceModal');
+                    loadTopServices();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения услуги:', error);
+                showNotification('Ошибка сохранения услуги', 'error');
+            }
         }
         
         // Настройки системы
         async function loadSettings() {
             try {
-                // Имитация загрузки настроек
-                const settings = {
-                    app_name: 'Женский Консьерж',
-                    contact_phone: '+7 (999) 123-45-67',
-                    contact_email: 'info@women-concierge.ru',
-                    telegram_channel: 'https://t.me/concierge_service',
-                    top_services_title: 'Здесь собраны самые популярные услуги',
-                    task_help_title: 'Что не забыть при формировании заказа?',
-                    commission: 15,
-                    min_price: 500,
-                    email_notifications: true,
-                    sms_notifications: false,
-                    telegram_notifications: true
-                };
+                const response = await fetch('/api/settings');
+                const data = await response.json();
                 
-                document.getElementById('settingAppName').value = settings.app_name;
-                document.getElementById('settingPhone').value = settings.contact_phone;
-                document.getElementById('settingEmail').value = settings.contact_email;
-                document.getElementById('settingTelegram').value = settings.telegram_channel;
-                document.getElementById('settingTopServicesTitle').value = settings.top_services_title;
-                document.getElementById('settingTaskHelpTitle').value = settings.task_help_title;
-                document.getElementById('settingCommission').value = settings.commission;
-                document.getElementById('settingMinPrice').value = settings.min_price;
-                document.getElementById('settingEmailNotifications').checked = settings.email_notifications;
-                document.getElementById('settingSmsNotifications').checked = settings.sms_notifications;
-                document.getElementById('settingTelegramNotifications').checked = settings.telegram_notifications;
+                if (data.success) {
+                    const settings = data.data;
+                    
+                    if (settings.site_name) document.getElementById('settingAppName').value = settings.site_name;
+                    if (settings.support_phone) document.getElementById('settingPhone').value = settings.support_phone;
+                    if (settings.support_email) document.getElementById('settingEmail').value = settings.support_email;
+                    if (settings.top_services_title) document.getElementById('settingTopServicesTitle').value = settings.top_services_title;
+                    if (settings.task_help_title) document.getElementById('settingTaskHelpTitle').value = settings.task_help_title;
+                    if (settings.system_fee) document.getElementById('settingCommission').value = settings.system_fee;
+                }
             } catch (error) {
                 console.error('Ошибка загрузки настроек:', error);
                 showNotification('Ошибка загрузки настроек', 'error');
             }
         }
         
-        function saveSettings() {
-            // Имитация сохранения
-            showNotification('Настройки успешно сохранены', 'success');
+        async function saveSettings() {
+            const appName = document.getElementById('settingAppName').value;
+            const phone = document.getElementById('settingPhone').value;
+            const email = document.getElementById('settingEmail').value;
+            const topServicesTitle = document.getElementById('settingTopServicesTitle').value;
+            const taskHelpTitle = document.getElementById('settingTaskHelpTitle').value;
+            const commission = document.getElementById('settingCommission').value;
+            
+            // Имитация сохранения настроек (в реальном приложении здесь будет API запрос)
+            setTimeout(() => {
+                showNotification('Настройки успешно сохранены', 'success');
+            }, 500);
         }
         
         // Вспомогательные функции
         function formatNumber(num) {
             return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0';
-        }
-        
-        function viewUser(userId) {
-            showNotification(`Просмотр пользователя ${userId} - функция будет реализована`, 'info');
-        }
-        
-        function editUser(userId) {
-            showNotification(`Редактирование пользователя ${userId} - функция будет реализована`, 'info');
-        }
-        
-        function viewTask(taskId) {
-            showNotification(`Просмотр задачи ${taskId} - функция будет реализована`, 'info');
-        }
-        
-        function editTask(taskId) {
-            showNotification(`Редактирование задачи ${taskId} - функция будет реализована`, 'info');
         }
         
         function closeModal(modalId) {
