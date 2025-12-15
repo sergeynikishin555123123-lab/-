@@ -333,6 +333,7 @@
         .category-card {
             text-align: center;
             padding: 20px 16px;
+            cursor: pointer;
         }
         
         .category-icon {
@@ -356,6 +357,7 @@
         /* Услуги */
         .service-card {
             padding: 16px;
+            cursor: pointer;
         }
         
         .service-header {
@@ -396,9 +398,12 @@
         }
         
         .service-price {
-            color: var(--gold-metallic);
+            color: var(--success);
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
+            background: rgba(56, 178, 172, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
         }
         
         /* Профиль */
@@ -472,6 +477,7 @@
             text-align: center;
             border: 2px solid rgba(61, 61, 61, 0.1);
             position: relative;
+            cursor: pointer;
         }
         
         .subscription-card.popular {
@@ -526,6 +532,20 @@
         .subscription-features i {
             color: var(--success);
             font-size: 0.9rem;
+        }
+        
+        /* Страница подписок */
+        .subscription-screen {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .subscription-content {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         /* Уведомления */
@@ -832,58 +852,22 @@
                     <div class="hero-content">
                         <h1>Женский Консьерж</h1>
                         <p>Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.</p>
-                        <button class="btn btn-primary" onclick="startOrder()">
+                        <button class="btn btn-primary" onclick="checkSubscription()">
                             <i class="fas fa-plus-circle"></i>
                             Создать задачу
                         </button>
                     </div>
                 </section>
                 
-                <!-- Популярные услуги -->
+                <!-- Популярные категории -->
                 <section class="section">
-                    <h2 class="section-title">Популярные услуги</h2>
-                    <p class="section-subtitle">Самые востребованные услуги среди наших клиенток</p>
+                    <h2 class="section-title">Популярные категории</h2>
+                    <p class="section-subtitle">Выберите категорию для создания задачи</p>
                     
-                    <div class="grid grid-2" id="popularServices">
-                        <div class="card service-card">
-                            <div class="service-header">
-                                <h4>Уборка квартиры</h4>
-                                <span class="service-category">Уборка</span>
-                            </div>
-                            <p class="service-description">Генеральная уборка всех комнат, кухни и санузла</p>
-                            <div class="service-footer">
-                                <span class="service-price">от 2000₽</span>
-                                <button class="btn btn-primary btn-sm" onclick="startOrderWithCategory(1)">
-                                    Заказать
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="card service-card">
-                            <div class="service-header">
-                                <h4>Маникюр с выездом</h4>
-                                <span class="service-category">Красота</span>
-                            </div>
-                            <p class="service-description">Профессиональный маникюр с покрытием у вас дома</p>
-                            <div class="service-footer">
-                                <span class="service-price">от 1500₽</span>
-                                <button class="btn btn-primary btn-sm" onclick="startOrderWithCategory(4)">
-                                    Заказать
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <!-- Все категории -->
-                <section class="section">
-                    <h2 class="section-title">Все категории</h2>
-                    <p class="section-subtitle">Выберите категорию, чтобы найти подходящую услугу</p>
-                    
-                    <div class="grid grid-4" id="categoriesGrid">
-                        <!-- Категории загружаются динамически -->
+                    <div class="grid grid-2" id="categoriesGrid">
                         <div class="loader" style="grid-column: 1 / -1; text-align: center;">
                             <div class="spinner"></div>
+                            <p>Загрузка категорий...</p>
                         </div>
                     </div>
                 </section>
@@ -891,20 +875,22 @@
                 <!-- О сервисе -->
                 <section class="section">
                     <div class="card">
-                        <h2 class="section-title">О нашем сервисе</h2>
-                        <p class="section-subtitle">Женский Консьерж — это сообщество проверенных помощниц, готовых взять на себя ваши бытовые задачи.</p>
-                        
+                        <h2 class="section-title">Как это работает</h2>
                         <div class="grid grid-2" style="margin-top: 20px;">
                             <div style="text-align: center; padding: 20px;">
-                                <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: var(--gold-metallic); margin-bottom: 16px;"></i>
-                                <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Безопасно</h3>
-                                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Все помощницы проходят проверку и обучение</p>
+                                <div style="width: 60px; height: 60px; background: var(--pastel-pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                                    <i class="fas fa-user-plus" style="font-size: 1.5rem; color: var(--gold-metallic);"></i>
+                                </div>
+                                <h3 style="font-size: 1.2rem; margin-bottom: 10px;">1. Выберите подписку</h3>
+                                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Оплатите вступительный взнос и получите доступ ко всем услугам</p>
                             </div>
                             
                             <div style="text-align: center; padding: 20px;">
-                                <i class="fas fa-clock" style="font-size: 2.5rem; color: var(--gold-metallic); margin-bottom: 16px;"></i>
-                                <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Удобно</h3>
-                                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Быстрый подбор исполнителя в удобное время</p>
+                                <div style="width: 60px; height: 60px; background: var(--lavender-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                                    <i class="fas fa-tasks" style="font-size: 1.5rem; color: var(--gold-metallic);"></i>
+                                </div>
+                                <h3 style="font-size: 1.2rem; margin-bottom: 10px;">2. Создайте задачу</h3>
+                                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Опишите задачу в выбранной категории</p>
                             </div>
                         </div>
                     </div>
@@ -912,32 +898,37 @@
             </div>
         </div>
         
-        <!-- Страница услуг -->
+        <!-- Страница выбора категории -->
+        <div id="categories-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Выберите категорию</h2>
+                    </div>
+                    
+                    <div class="grid grid-2" id="allCategoriesGrid">
+                        <!-- Категории загружаются динамически -->
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница выбора услуги -->
         <div id="services-page" class="page">
             <div class="container">
                 <section class="section">
-                    <h2 class="section-title">Все услуги</h2>
-                    <p class="section-subtitle">Полный каталог услуг, доступных для заказа</p>
-                    
-                    <div class="grid grid-3" id="servicesGrid">
-                        <!-- Услуги загружаются динамически -->
-                        <div class="loader" style="grid-column: 1 / -1; text-align: center;">
-                            <div class="spinner"></div>
-                            <p>Загрузка услуг...</p>
-                        </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="navigateToPage('categories')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title" id="servicesCategoryTitle">Услуги</h2>
                     </div>
-                </section>
-                
-                <!-- Подписки -->
-                <section class="section">
-                    <h2 class="section-title">Тарифные планы</h2>
-                    <p class="section-subtitle">Выберите подходящую подписку для комфортного использования</p>
                     
-                    <div id="subscriptionsGrid">
-                        <!-- Подписки загружаются динамически -->
-                        <div class="loader" style="text-align: center;">
-                            <div class="spinner"></div>
-                        </div>
+                    <div class="grid grid-2" id="servicesList">
+                        <!-- Услуги загружаются динамически -->
                     </div>
                 </section>
             </div>
@@ -947,16 +938,27 @@
         <div id="create-task-page" class="page">
             <div class="container">
                 <section class="section">
-                    <h2 class="section-title">Создание задачи</h2>
-                    <p class="section-subtitle">Опишите задачу, которую нужно выполнить</p>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="cancelTask()" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Создание задачи</h2>
+                    </div>
                     
                     <div class="card">
                         <form id="createTaskForm" class="create-task-form">
                             <div class="form-group">
-                                <label class="form-label" for="taskCategory">Категория</label>
-                                <select id="taskCategory" class="form-input" required>
-                                    <option value="">Выберите категорию</option>
-                                </select>
+                                <label class="form-label">Категория</label>
+                                <div class="form-input" style="background: #f9f9f9; padding: 12px; border-radius: var(--radius-sm);" id="selectedCategoryDisplay">
+                                    Не выбрана
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Услуга</label>
+                                <div class="form-input" style="background: #f9f9f9; padding: 12px; border-radius: var(--radius-sm);" id="selectedServiceDisplay">
+                                    Не выбрана
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -1032,7 +1034,7 @@
                         <div class="card" style="text-align: center; padding: 40px;">
                             <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
                             <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
-                            <button class="btn btn-primary" onclick="startOrder()">
+                            <button class="btn btn-primary" onclick="checkSubscription()">
                                 <i class="fas fa-plus"></i>
                                 Создать первую задачу
                             </button>
@@ -1059,6 +1061,31 @@
                 </section>
             </div>
         </div>
+        
+        <!-- Страница подписок -->
+        <div id="subscription-page" class="page">
+            <div class="container subscription-screen">
+                <div class="subscription-content">
+                    <div class="card" style="padding: 40px 20px;">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <i class="fas fa-crown" style="font-size: 3.5rem; color: var(--gold-metallic); margin-bottom: 20px;"></i>
+                            <h2 class="section-title">Выберите подписку</h2>
+                            <p class="section-subtitle">Для создания задач необходимо активировать подписку</p>
+                        </div>
+                        
+                        <div class="grid grid-2" id="subscriptionSelection">
+                            <!-- Подписки загружаются динамически -->
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 30px;">
+                            <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                                <i class="fas fa-info-circle"></i> Все услуги включены в подписку, дополнительная оплата не требуется
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
     
     <!-- Нижняя навигация -->
@@ -1067,11 +1094,11 @@
             <i class="fas fa-home"></i>
             <span>Главная</span>
         </a>
-        <a href="#" class="nav-item" onclick="navigateToPage('services')" data-page="services">
+        <a href="#" class="nav-item" onclick="navigateToPage('categories')" data-page="categories">
             <i class="fas fa-list-alt"></i>
-            <span>Услуги</span>
+            <span>Категории</span>
         </a>
-        <a href="#" class="nav-item" onclick="startOrder()" id="createTaskBtn">
+        <a href="#" class="nav-item" onclick="checkSubscription()" id="createTaskBtn">
             <i class="fas fa-plus-circle"></i>
             <span>Создать</span>
         </a>
@@ -1158,6 +1185,11 @@
         let services = [];
         let subscriptions = [];
         let userTasks = [];
+        let selectedCategory = null;
+        let selectedService = null;
+        
+        // API базовый URL
+        const API_BASE_URL = window.location.origin;
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -1165,9 +1197,11 @@
         });
         
         async function init() {
+            // Проверяем авторизацию
+            await checkAuth();
+            
             // Загружаем данные
             await loadCategories();
-            await loadServices();
             await loadSubscriptions();
             
             // Обновляем интерфейс
@@ -1181,9 +1215,6 @@
             
             // Настраиваем обработчики форм
             setupEventListeners();
-            
-            // Устанавливаем начальную страницу
-            navigateToPage('home');
         }
         
         function setupEventListeners() {
@@ -1206,6 +1237,35 @@
             });
         }
         
+        // Проверка авторизации
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        currentUser = data.data.user;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+                } else {
+                    // Если токен невалидный, удаляем его
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('currentUser');
+                    currentUser = null;
+                }
+            } catch (error) {
+                console.error('Ошибка проверки авторизации:', error);
+            }
+        }
+        
         // Навигация по страницам
         function navigateToPage(pageId) {
             // Скрываем все страницы
@@ -1214,14 +1274,17 @@
             });
             
             // Показываем нужную страницу
-            document.getElementById(pageId + '-page').classList.add('active');
+            const pageElement = document.getElementById(pageId + '-page');
+            if (pageElement) {
+                pageElement.classList.add('active');
+            }
             
             // Обновляем активную кнопку в навигации
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            if (pageId !== 'create-task') {
+            if (pageId !== 'create-task' && pageId !== 'subscription' && pageId !== 'categories' && pageId !== 'services') {
                 document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
             }
             
@@ -1230,89 +1293,148 @@
                 case 'profile':
                     loadUserProfile();
                     break;
-                case 'services':
-                    loadServicesPage();
+                case 'categories':
+                    loadAllCategories();
+                    break;
+                case 'home':
+                    loadHomePage();
                     break;
             }
+        }
+        
+        // Загрузка главной страницы
+        async function loadHomePage() {
+            await loadCategories();
+            renderHomeCategories();
         }
         
         // Загрузка категорий
         async function loadCategories() {
             try {
-                // Имитация загрузки из API
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const response = await fetch(`${API_BASE_URL}/api/categories`);
+                if (!response.ok) throw new Error('Ошибка загрузки категорий');
                 
-                categories = [
-                    { id: 1, name: 'Уборка', description: 'Генеральная уборка, регулярная уборка', icon: 'fas fa-broom', color: '#FF6B8B' },
-                    { id: 2, name: 'Готовка', description: 'Приготовление еды, диетическое питание', icon: 'fas fa-utensils', color: '#10b981' },
-                    { id: 3, name: 'Покупки', description: 'Покупка продуктов, одежды, подарков', icon: 'fas fa-shopping-bag', color: '#3b82f6' },
-                    { id: 4, name: 'Красота', description: 'Маникюр, прически, макияж', icon: 'fas fa-spa', color: '#8b5cf6' },
-                    { id: 5, name: 'Организация', description: 'Планирование мероприятий', icon: 'fas fa-calendar-alt', color: '#f59e0b' },
-                    { id: 6, name: 'Уход за детьми', description: 'Присмотр за детьми, помощь с уроками', icon: 'fas fa-baby', color: '#ec4899' }
-                ];
-                
-                renderCategories();
+                const data = await response.json();
+                if (data.success) {
+                    categories = data.data.categories;
+                    renderHomeCategories();
+                }
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
                 showNotification('Ошибка загрузки категорий', 'error');
             }
         }
         
-        function renderCategories() {
+        function renderHomeCategories() {
             const container = document.getElementById('categoriesGrid');
-            container.innerHTML = '';
+            if (!container) return;
             
-            categories.forEach(category => {
+            // Берем первые 4 категории для главной страницы
+            const homeCategories = categories.slice(0, 4);
+            
+            container.innerHTML = '';
+            homeCategories.forEach(category => {
                 const card = document.createElement('div');
                 card.className = 'card category-card';
-                card.onclick = () => startOrderWithCategory(category.id);
+                card.onclick = () => selectCategory(category);
                 card.innerHTML = `
                     <div class="category-icon">
                         <i class="${category.icon}"></i>
                     </div>
-                    <h3>${category.name}</h3>
+                    <h3>${category.display_name}</h3>
                     <p>${category.description}</p>
+                    <span class="service-price">Включено в подписку</span>
                 `;
                 container.appendChild(card);
             });
         }
         
-        // Загрузка услуг
-        async function loadServices() {
+        // Загрузка всех категорий
+        async function loadAllCategories() {
             try {
-                // Имитация загрузки из API
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const response = await fetch(`${API_BASE_URL}/api/categories`);
+                if (!response.ok) throw new Error('Ошибка загрузки категорий');
                 
-                services = [
-                    { id: 1, name: 'Уборка квартиры', description: 'Генеральная уборка всех комнат', category: 'Уборка', price: 'от 2000₽' },
-                    { id: 2, name: 'Приготовление ужина', description: 'Ужин на 4 персоны', category: 'Готовка', price: 'от 1500₽' },
-                    { id: 3, name: 'Маникюр с покрытием', description: 'Профессиональный маникюр', category: 'Красота', price: 'от 1500₽' },
-                    { id: 4, name: 'Покупка продуктов', description: 'Закупка продуктов на неделю', category: 'Покупки', price: 'от 1000₽' },
-                    { id: 5, name: 'Организация праздника', description: 'Подготовка детского дня рождения', category: 'Организация', price: 'от 5000₽' },
-                    { id: 6, name: 'Няня на несколько часов', description: 'Присмотр за ребенком', category: 'Уход за детьми', price: 'от 500₽/час' }
-                ];
+                const data = await response.json();
+                if (data.success) {
+                    const container = document.getElementById('allCategoriesGrid');
+                    container.innerHTML = '';
+                    
+                    data.data.categories.forEach(category => {
+                        const card = document.createElement('div');
+                        card.className = 'card category-card';
+                        card.onclick = () => selectCategory(category);
+                        card.innerHTML = `
+                            <div class="category-icon">
+                                <i class="${category.icon}"></i>
+                            </div>
+                            <h3>${category.display_name}</h3>
+                            <p>${category.description}</p>
+                            <span class="service-price">${category.services_count || 0} услуг</span>
+                        `;
+                        container.appendChild(card);
+                    });
+                }
             } catch (error) {
-                console.error('Ошибка загрузки услуг:', error);
+                console.error('Ошибка загрузки категорий:', error);
+                showNotification('Ошибка загрузки категорий', 'error');
             }
         }
         
-        function loadServicesPage() {
-            const container = document.getElementById('servicesGrid');
+        // Выбор категории
+        function selectCategory(category) {
+            if (!currentUser) {
+                showLoginModal();
+                return;
+            }
+            
+            selectedCategory = category;
+            loadServicesForCategory(category.id);
+        }
+        
+        // Загрузка услуг для категории
+        async function loadServicesForCategory(categoryId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}/services`);
+                if (!response.ok) throw new Error('Ошибка загрузки услуг');
+                
+                const data = await response.json();
+                if (data.success) {
+                    selectedCategory = data.data.category;
+                    services = data.data.services;
+                    
+                    navigateToPage('services');
+                    renderServices();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки услуг:', error);
+                showNotification('Ошибка загрузки услуг', 'error');
+            }
+        }
+        
+        function renderServices() {
+            const container = document.getElementById('servicesList');
+            const title = document.getElementById('servicesCategoryTitle');
+            
+            if (selectedCategory) {
+                title.textContent = selectedCategory.display_name;
+            }
+            
             container.innerHTML = '';
             
             services.forEach(service => {
                 const card = document.createElement('div');
                 card.className = 'card service-card';
+                card.onclick = () => selectService(service);
                 card.innerHTML = `
                     <div class="service-header">
                         <h4>${service.name}</h4>
-                        <span class="service-category">${service.category}</span>
                     </div>
                     <p class="service-description">${service.description}</p>
                     <div class="service-footer">
-                        <span class="service-price">${service.price}</span>
-                        <button class="btn btn-primary btn-sm" onclick="startOrderWithService(${service.id})">
-                            Заказать
+                        <span class="service-price">Включено в подписку</span>
+                        <button class="btn btn-primary btn-sm">
+                            Выбрать
                         </button>
                     </div>
                 `;
@@ -1320,38 +1442,241 @@
             });
         }
         
+        // Выбор услуги
+        function selectService(service) {
+            selectedService = service;
+            navigateToPage('create-task');
+            updateTaskForm();
+        }
+        
+        function updateTaskForm() {
+            if (selectedCategory) {
+                document.getElementById('selectedCategoryDisplay').textContent = selectedCategory.display_name;
+            }
+            
+            if (selectedService) {
+                document.getElementById('selectedServiceDisplay').textContent = selectedService.name;
+            }
+            
+            // Автозаполнение контакта
+            if (currentUser && currentUser.phone) {
+                document.getElementById('taskContact').value = currentUser.phone;
+            }
+        }
+        
+        // Проверка подписки перед созданием задачи
+        function checkSubscription() {
+            if (!currentUser) {
+                showLoginModal();
+                return;
+            }
+            
+            if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+                navigateToPage('subscription');
+            } else {
+                navigateToPage('categories');
+            }
+        }
+        
+        // Отмена создания задачи
+        function cancelTask() {
+            navigateToPage('home');
+            selectedCategory = null;
+            selectedService = null;
+            
+            // Сбрасываем форму
+            document.getElementById('createTaskForm').reset();
+            
+            // Обновляем дедлайн
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
+        }
+        
+        // Создание задачи
+        async function createTask() {
+            if (!currentUser) {
+                showNotification('Для создания задачи необходимо войти в систему', 'error');
+                return;
+            }
+            
+            if (!selectedCategory || !selectedService) {
+                showNotification('Выберите категорию и услугу', 'error');
+                return;
+            }
+            
+            try {
+                const taskData = {
+                    title: document.getElementById('taskTitle').value,
+                    description: document.getElementById('taskDescription').value,
+                    category_id: selectedCategory.id,
+                    service_id: selectedService.id,
+                    deadline: document.getElementById('taskDeadline').value,
+                    address: document.getElementById('taskAddress').value,
+                    contact_info: document.getElementById('taskContact').value,
+                    priority: 'medium'
+                };
+                
+                // Валидация
+                if (!taskData.title || !taskData.description || !taskData.address || 
+                    !taskData.deadline || !taskData.contact_info) {
+                    showNotification('Заполните все обязательные поля', 'error');
+                    return;
+                }
+                
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showNotification('Требуется авторизация', 'error');
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка создания задачи');
+                }
+                
+                if (data.success) {
+                    showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
+                    
+                    // Возвращаемся на главную
+                    cancelTask();
+                    
+                    // Обновляем задачи пользователя
+                    if (currentUser) {
+                        currentUser.tasks_used = (currentUser.tasks_used || 0) + 1;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updateUserInterface();
+                    }
+                    
+                    // Если мы на странице профиля, обновляем задачи
+                    if (document.getElementById('profile-page').classList.contains('active')) {
+                        loadUserProfile();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Ошибка создания задачи:', error);
+                showNotification(error.message, 'error');
+            }
+        }
+        
         // Загрузка подписок
         async function loadSubscriptions() {
             try {
-                // Имитация загрузки из API
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const response = await fetch(`${API_BASE_URL}/api/subscriptions`);
+                if (!response.ok) throw new Error('Ошибка загрузки подписок');
                 
-                subscriptions = [
-                    { 
-                        id: 1, 
-                        name: 'essential', 
-                        display_name: 'Эссеншл', 
-                        description: 'Базовый набор услуг',
-                        price_monthly: 0,
-                        price_yearly: 0,
-                        initial_fee: 500,
-                        features: ['До 5 задач в месяц', 'Все базовые услуги', 'Поддержка по email'],
-                        is_popular: false
-                    },
-                    { 
-                        id: 2, 
-                        name: 'premium', 
-                        display_name: 'Премиум', 
-                        description: 'Полный доступ ко всем услугам',
-                        price_monthly: 1990,
-                        price_yearly: 19900,
-                        initial_fee: 1000,
-                        features: ['Неограниченные задачи', 'Все услуги премиум-класса', 'Приоритетная поддержка'],
-                        is_popular: true
-                    }
-                ];
+                const data = await response.json();
+                if (data.success) {
+                    subscriptions = data.data.subscriptions;
+                    renderSubscriptions();
+                }
             } catch (error) {
                 console.error('Ошибка загрузки подписок:', error);
+            }
+        }
+        
+        function renderSubscriptions() {
+            // Страница подписок
+            const subscriptionContainer = document.getElementById('subscriptionSelection');
+            if (subscriptionContainer) {
+                subscriptionContainer.innerHTML = '';
+                subscriptions.forEach(sub => {
+                    const card = document.createElement('div');
+                    card.className = `card subscription-card ${sub.is_popular ? 'popular' : ''}`;
+                    
+                    if (sub.is_popular) {
+                        card.innerHTML += '<div class="popular-badge">Популярный</div>';
+                    }
+                    
+                    card.innerHTML += `
+                        <h3>${sub.display_name}</h3>
+                        <p style="color: var(--graphite-medium); margin-bottom: 15px;">${sub.description}</p>
+                        
+                        <div class="subscription-price">
+                            ${formatNumber(sub.price_monthly)}<span>₽/мес</span>
+                        </div>
+                        
+                        <div style="color: var(--graphite-light); font-size: 0.9rem; margin-bottom: 15px;">
+                            Вступительный взнос: ${formatNumber(sub.initial_fee)}₽
+                        </div>
+                        
+                        <ul class="subscription-features">
+                            ${Array.isArray(sub.features) ? 
+                                sub.features.map(feature => `<li><i class="fas fa-check"></i> ${feature}</li>`).join('') : 
+                                ''}
+                        </ul>
+                        
+                        <button class="btn ${sub.is_popular ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; margin-top: 20px;" onclick="selectSubscription('${sub.name}')">
+                            Выбрать тариф
+                        </button>
+                    `;
+                    
+                    subscriptionContainer.appendChild(card);
+                });
+            }
+        }
+        
+        // Выбор подписки
+        async function selectSubscription(subscriptionName) {
+            if (!currentUser) {
+                showNotification('Для выбора подписки необходимо войти в систему', 'error');
+                showLoginModal();
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showNotification('Требуется авторизация', 'error');
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/api/subscriptions/subscribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        plan: subscriptionName,
+                        initial_fee_paid: false // Пользователь должен подтвердить оплату
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка выбора подписки');
+                }
+                
+                if (data.success) {
+                    if (data.data.requires_initial_fee) {
+                        showNotification(`Для активации подписки необходимо оплатить вступительный взнос: ${data.data.initial_fee_amount}₽`, 'warning');
+                        // Здесь должна быть интеграция с платежной системой
+                    } else {
+                        showNotification('Подписка успешно активирована!', 'success');
+                        currentUser = data.data.user;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updateUserInterface();
+                        navigateToPage('home');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Ошибка выбора подписки:', error);
+                showNotification(error.message, 'error');
             }
         }
         
@@ -1372,7 +1697,7 @@
                 document.getElementById('logoutMenuBtn').style.display = 'block';
                 
                 // Показываем кнопку админ-панели для администраторов
-                if (currentUser.role === 'admin' || currentUser.role === 'superadmin') {
+                if (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager') {
                     document.getElementById('adminAccessBtn').style.display = 'flex';
                 }
                 
@@ -1402,7 +1727,6 @@
         function updateProfileStats() {
             if (!currentUser) return;
             
-            // В реальном приложении здесь будет запрос к API
             document.getElementById('statTasks').textContent = currentUser.tasks_used || '0';
             document.getElementById('statRating').textContent = currentUser.rating || '0';
             document.getElementById('statBalance').textContent = (currentUser.balance || '0') + '₽';
@@ -1411,7 +1735,6 @@
         // Загрузка профиля пользователя
         async function loadUserProfile() {
             if (!currentUser) {
-                // Если пользователь не авторизован, показываем приглашение войти
                 document.getElementById('userTasksList').innerHTML = `
                     <div class="card" style="text-align: center; padding: 40px;">
                         <i class="fas fa-user" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
@@ -1426,17 +1749,51 @@
             }
             
             try {
-                // Имитация загрузки задач пользователя
-                userTasks = [
-                    { id: 1, title: 'Уборка квартиры', status: 'completed', date: '2024-12-15' },
-                    { id: 2, title: 'Маникюр с выездом', status: 'in_progress', date: '2024-12-20' }
-                ];
+                const token = localStorage.getItem('token');
+                if (!token) return;
                 
-                renderUserTasks();
+                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        currentUser = data.data.user;
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        updateUserInterface();
+                        
+                        // Загружаем задачи пользователя
+                        await loadUserTasks();
+                    }
+                }
             } catch (error) {
                 console.error('Ошибка загрузки профиля:', error);
-                showNotification('Ошибка загрузки профиля', 'error');
+            }
+        }
+        
+        // Загрузка задач пользователя
+        async function loadUserTasks() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+                
+                const response = await fetch(`${API_BASE_URL}/api/tasks?limit=10`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.data.tasks.length > 0) {
+                    userTasks = data.data.tasks;
+                    renderUserTasks();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки задач:', error);
             }
         }
         
@@ -1448,7 +1805,7 @@
                     <div class="card" style="text-align: center; padding: 40px;">
                         <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
                         <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
-                        <button class="btn btn-primary" onclick="startOrder()">
+                        <button class="btn btn-primary" onclick="checkSubscription()">
                             <i class="fas fa-plus"></i>
                             Создать первую задачу
                         </button>
@@ -1467,9 +1824,12 @@
                         <div class="task-title">${task.title}</div>
                         <span class="task-status ${task.status}">${getStatusText(task.status)}</span>
                     </div>
-                    <div style="color: var(--graphite-medium); font-size: 0.9rem;">
+                    <div style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 8px;">
+                        ${task.category_name || ''}
+                    </div>
+                    <div style="color: var(--graphite-light); font-size: 0.8rem;">
                         <i class="far fa-calendar" style="margin-right: 8px;"></i>
-                        ${task.date}
+                        ${new Date(task.created_at).toLocaleDateString('ru-RU')}
                     </div>
                 `;
                 container.appendChild(taskElement);
@@ -1488,129 +1848,6 @@
             return statusMap[status] || status;
         }
         
-        // Создание задачи
-        function startOrder() {
-            if (!currentUser) {
-                showLoginModal();
-                return;
-            }
-            
-            navigateToPage('create-task');
-            
-            // Заполняем селект категорий
-            const select = document.getElementById('taskCategory');
-            select.innerHTML = '<option value="">Выберите категорию</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                select.appendChild(option);
-            });
-            
-            // Автозаполнение контакта
-            if (currentUser.phone) {
-                document.getElementById('taskContact').value = currentUser.phone;
-            }
-        }
-        
-        function startOrderWithCategory(categoryId) {
-            if (!currentUser) {
-                showLoginModal();
-                return;
-            }
-            
-            startOrder();
-            
-            // Устанавливаем выбранную категорию
-            setTimeout(() => {
-                document.getElementById('taskCategory').value = categoryId;
-            }, 100);
-        }
-        
-        function startOrderWithService(serviceId) {
-            if (!currentUser) {
-                showLoginModal();
-                return;
-            }
-            
-            const service = services.find(s => s.id === serviceId);
-            if (service) {
-                startOrder();
-                
-                setTimeout(() => {
-                    document.getElementById('taskTitle').value = service.name;
-                    document.getElementById('taskDescription').value = service.description;
-                }, 100);
-            }
-        }
-        
-        function cancelTask() {
-            navigateToPage('home');
-            
-            // Сбрасываем форму
-            document.getElementById('createTaskForm').reset();
-            
-            // Обновляем дедлайн
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
-        }
-        
-        async function createTask() {
-            if (!currentUser) {
-                showNotification('Для создания задачи необходимо войти в систему', 'error');
-                return;
-            }
-            
-            try {
-                // Собираем данные
-                const taskData = {
-                    category_id: document.getElementById('taskCategory').value,
-                    title: document.getElementById('taskTitle').value,
-                    description: document.getElementById('taskDescription').value,
-                    address: document.getElementById('taskAddress').value,
-                    deadline: document.getElementById('taskDeadline').value,
-                    contact_info: document.getElementById('taskContact').value,
-                    client_id: currentUser.id
-                };
-                
-                // Валидация
-                if (!taskData.category_id || !taskData.title || !taskData.description || 
-                    !taskData.address || !taskData.deadline || !taskData.contact_info) {
-                    showNotification('Заполните все обязательные поля', 'error');
-                    return;
-                }
-                
-                // Имитация создания задачи
-                console.log('Создание задачи:', taskData);
-                
-                showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
-                
-                // Возвращаемся на главную
-                cancelTask();
-                
-                // Добавляем задачу в список
-                const newTask = {
-                    id: Date.now(),
-                    title: taskData.title,
-                    status: 'new',
-                    date: new Date().toISOString().split('T')[0]
-                };
-                
-                if (!userTasks) userTasks = [];
-                userTasks.unshift(newTask);
-                
-                if (document.getElementById('profile-page').classList.contains('active')) {
-                    renderUserTasks();
-                }
-                
-            } catch (error) {
-                console.error('Ошибка создания задачи:', error);
-                showNotification('Ошибка создания задачи: ' + error.message, 'error');
-            }
-        }
-        
         // Авторизация
         async function login() {
             try {
@@ -1622,36 +1859,40 @@
                     return;
                 }
                 
-                // Имитация входа
-                // В реальном приложении здесь будет запрос к API
-                if (email && password) {
-                    currentUser = {
-                        id: 1,
-                        firstName: 'Анна',
-                        email: email,
-                        phone: '+7 (999) 123-45-67',
-                        role: email.includes('admin') ? 'admin' : 'client',
-                        tasks_used: 2,
-                        rating: 4.8,
-                        balance: 1500
-                    };
-                    
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка входа');
+                }
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+                    currentUser = data.data.user;
                     
                     showNotification('Успешный вход!', 'success');
                     closeModal('loginModal');
                     updateUserInterface();
-                    loadUserProfile();
                     
-                    // Если мы на странице профиля, обновляем её
-                    if (document.getElementById('profile-page').classList.contains('active')) {
-                        loadUserProfile();
+                    // Проверяем подписку
+                    if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+                        navigateToPage('subscription');
+                    } else {
+                        navigateToPage('home');
                     }
                 }
                 
             } catch (error) {
                 console.error('Ошибка входа:', error);
-                showNotification('Ошибка входа: ' + error.message, 'error');
+                showNotification(error.message, 'error');
             }
         }
         
@@ -1672,36 +1913,51 @@
                     return;
                 }
                 
-                // Имитация регистрации
-                currentUser = {
-                    id: Date.now(),
-                    firstName: firstName,
-                    email: email,
-                    phone: phone,
-                    role: 'client',
-                    tasks_used: 0,
-                    rating: 0,
-                    balance: 0
-                };
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        first_name: firstName,
+                        last_name: '',
+                        phone,
+                        subscription_plan: 'essential'
+                    })
+                });
                 
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                const data = await response.json();
                 
-                showNotification('Регистрация успешна! Добро пожаловать!', 'success');
-                closeModal('registerModal');
-                updateUserInterface();
-                loadUserProfile();
+                if (!response.ok) {
+                    throw new Error(data.error || 'Ошибка регистрации');
+                }
+                
+                if (data.success) {
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+                    currentUser = data.data.user;
+                    
+                    showNotification('Регистрация успешна!', 'success');
+                    closeModal('registerModal');
+                    updateUserInterface();
+                    
+                    // Перенаправляем на страницу подписок
+                    navigateToPage('subscription');
+                }
                 
             } catch (error) {
                 console.error('Ошибка регистрации:', error);
-                showNotification('Ошибка регистрации: ' + error.message, 'error');
+                showNotification(error.message, 'error');
             }
         }
         
         function logout() {
-            currentUser = null;
+            localStorage.removeItem('token');
             localStorage.removeItem('currentUser');
+            currentUser = null;
             updateUserInterface();
-            loadUserProfile();
             showNotification('Вы успешно вышли из системы', 'success');
             navigateToPage('home');
         }
@@ -1720,55 +1976,8 @@
         }
         
         function showSubscriptionModal() {
-            const container = document.getElementById('subscriptionModalContent');
-            container.innerHTML = '';
-            
-            subscriptions.forEach(sub => {
-                const subscriptionElement = document.createElement('div');
-                subscriptionElement.className = `card subscription-card ${sub.is_popular ? 'popular' : ''}`;
-                
-                if (sub.is_popular) {
-                    subscriptionElement.innerHTML += '<div class="popular-badge">Популярный</div>';
-                }
-                
-                subscriptionElement.innerHTML += `
-                    <h3>${sub.display_name}</h3>
-                    <p style="color: var(--graphite-medium); margin-bottom: 15px;">${sub.description}</p>
-                    
-                    <div class="subscription-price">
-                        ${formatNumber(sub.price_monthly)}<span>₽/мес</span>
-                    </div>
-                    
-                    <div style="color: var(--graphite-light); font-size: 0.9rem; margin-bottom: 15px;">
-                        Вступительный взнос: ${formatNumber(sub.initial_fee)}₽
-                    </div>
-                    
-                    <ul class="subscription-features">
-                        ${sub.features.map(feature => `<li><i class="fas fa-check"></i> ${feature}</li>`).join('')}
-                    </ul>
-                    
-                    <button class="btn ${sub.is_popular ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; margin-top: 20px;" onclick="selectSubscription(${sub.id})">
-                        Выбрать тариф
-                    </button>
-                `;
-                
-                container.appendChild(subscriptionElement);
-            });
-            
-            document.getElementById('subscriptionModal').style.display = 'flex';
             closeUserMenu();
-        }
-        
-        function selectSubscription(subscriptionId) {
-            const subscription = subscriptions.find(s => s.id === subscriptionId);
-            if (subscription) {
-                const message = `Вы выбрали тариф "${subscription.display_name}"\n\n` +
-                              `Цена: ${formatNumber(subscription.price_monthly)}₽/мес\n` +
-                              `Вступительный взнос: ${formatNumber(subscription.initial_fee)}₽`;
-                
-                showNotification('Тариф успешно выбран!', 'success');
-                closeModal('subscriptionModal');
-            }
+            navigateToPage('subscription');
         }
         
         function closeModal(modalId) {
