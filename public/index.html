@@ -62,6 +62,7 @@
             font-weight: 400;
             padding-top: var(--nav-height);
             padding-bottom: var(--bottom-nav-height);
+            overflow-x: hidden;
         }
         
         /* Контейнер */
@@ -69,6 +70,7 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 16px;
+            width: 100%;
         }
         
         /* Основная навигация сверху */
@@ -118,6 +120,43 @@
             border: 2px solid rgba(255, 255, 255, 0.8);
             font-size: 1rem;
             cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Меню пользователя */
+        .user-menu {
+            display: none;
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-xl);
+            padding: 10px;
+            min-width: 200px;
+            z-index: 1001;
+            border: 1px solid rgba(61, 61, 61, 0.1);
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            text-decoration: none;
+            color: var(--graphite-dark);
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .nav-menu-item:hover {
+            background: rgba(61, 61, 61, 0.05);
         }
         
         /* Нижняя навигация */
@@ -149,6 +188,7 @@
             border-radius: var(--radius);
             transition: var(--transition-fast);
             min-width: 70px;
+            cursor: pointer;
         }
         
         .nav-item.active {
@@ -172,6 +212,7 @@
             animation: fadeIn 0.3s ease;
             min-height: calc(100vh - var(--nav-height) - var(--bottom-nav-height));
             padding: 20px 0;
+            width: 100%;
         }
         
         .page.active {
@@ -181,6 +222,7 @@
         /* Секции */
         .section {
             margin-bottom: 30px;
+            width: 100%;
         }
         
         .section-title {
@@ -206,6 +248,7 @@
             border: 1px solid rgba(61, 61, 61, 0.08);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
+            width: 100%;
         }
         
         .card:hover {
@@ -315,6 +358,7 @@
         .grid {
             display: grid;
             gap: 16px;
+            width: 100%;
         }
         
         .grid-2 {
@@ -334,12 +378,20 @@
             text-align: center;
             padding: 20px 16px;
             cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         
         .category-icon {
             font-size: 2.5rem;
             color: var(--gold-metallic);
             margin-bottom: 12px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .category-card h3 {
@@ -352,12 +404,16 @@
             color: var(--graphite-medium);
             font-size: 0.85rem;
             margin-bottom: 16px;
+            flex-grow: 1;
         }
         
         /* Услуги */
         .service-card {
             padding: 16px;
             cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .service-header {
@@ -389,12 +445,14 @@
             font-size: 0.9rem;
             margin-bottom: 16px;
             line-height: 1.4;
+            flex-grow: 1;
         }
         
         .service-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: auto;
         }
         
         .service-price {
@@ -478,6 +536,9 @@
             border: 2px solid rgba(61, 61, 61, 0.1);
             position: relative;
             cursor: pointer;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         
         .subscription-card.popular {
@@ -518,6 +579,7 @@
         .subscription-features {
             text-align: left;
             margin: 20px 0;
+            flex-grow: 1;
         }
         
         .subscription-features li {
@@ -546,6 +608,7 @@
             text-align: center;
             max-width: 600px;
             margin: 0 auto;
+            width: 100%;
         }
         
         /* Уведомления */
@@ -573,6 +636,10 @@
         
         .notification.warning {
             border-left-color: var(--warning);
+        }
+        
+        .notification.info {
+            border-left-color: var(--info);
         }
         
         /* Загрузка */
@@ -606,6 +673,10 @@
             padding: 20px;
         }
         
+        .modal.active {
+            display: flex;
+        }
+        
         .modal-content {
             background: white;
             padding: 30px;
@@ -613,6 +684,8 @@
             max-width: 400px;
             width: 100%;
             animation: modalSlideIn 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal-title {
@@ -624,6 +697,7 @@
         
         .form-group {
             margin-bottom: 20px;
+            width: 100%;
         }
         
         .form-label {
@@ -640,11 +714,13 @@
             border-radius: var(--radius-sm);
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
+            transition: var(--transition);
         }
         
         .form-input:focus {
             outline: none;
             border-color: var(--gold-metallic);
+            box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.15);
         }
         
         /* Создание задачи */
@@ -773,6 +849,10 @@
                 width: 90%;
                 right: 5%;
             }
+            
+            .modal-content {
+                padding: 20px;
+            }
         }
         
         /* Админ кнопка */
@@ -805,12 +885,70 @@
             70% { box-shadow: 0 0 0 10px rgba(197, 168, 128, 0); }
             100% { box-shadow: 0 0 0 0 rgba(197, 168, 128, 0); }
         }
+        
+        /* Утилиты */
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-20 {
+            margin-top: 20px;
+        }
+        
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+        
+        .w-100 {
+            width: 100%;
+        }
+        
+        /* Исправления для текста */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        button {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Плейсхолдеры */
+        ::placeholder {
+            color: var(--graphite-light);
+            opacity: 0.7;
+        }
+        
+        /* Фокус состояния */
+        :focus {
+            outline: 2px solid var(--gold-metallic);
+            outline-offset: 2px;
+        }
+        
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--ivory-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold-metallic);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-dark);
+        }
     </style>
 </head>
 <body>
     <!-- Верхняя навигация -->
     <nav class="top-nav">
-        <a href="#" class="logo">
+        <a href="#" class="logo" onclick="navigateToPage('home')">
             <i class="fas fa-crown logo-icon"></i>
             <span>Консьерж</span>
         </a>
@@ -820,23 +958,23 @@
         </div>
         
         <!-- Меню пользователя -->
-        <div class="user-menu" id="userMenu" style="display: none; position: absolute; top: 70px; right: 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 10px; min-width: 200px; z-index: 1001;">
+        <div class="user-menu" id="userMenu">
             <div style="padding: 10px; border-bottom: 1px solid rgba(61, 61, 61, 0.1);">
                 <div style="font-weight: 600;" id="menuUserName">Гость</div>
                 <div style="font-size: 0.9rem; color: var(--graphite-medium);" id="menuUserEmail"></div>
             </div>
             <div style="padding: 5px 0;">
-                <a href="#" class="nav-menu-item" onclick="navigateToPage('profile')" style="display: block; padding: 10px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">
-                    <i class="fas fa-user" style="margin-right: 10px;"></i>Профиль
+                <a href="#" class="nav-menu-item" onclick="navigateToPage('profile')">
+                    <i class="fas fa-user"></i>Профиль
                 </a>
-                <a href="#" class="nav-menu-item" onclick="showTasksPage()" style="display: block; padding: 10px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">
-                    <i class="fas fa-tasks" style="margin-right: 10px;"></i>Мои задачи
+                <a href="#" class="nav-menu-item" onclick="navigateToPage('tasks')">
+                    <i class="fas fa-tasks"></i>Мои задачи
                 </a>
-                <a href="#" class="nav-menu-item" onclick="showLoginModal()" id="loginMenuBtn" style="display: block; padding: 10px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">
-                    <i class="fas fa-sign-in-alt" style="margin-right: 10px;"></i>Войти
+                <a href="#" class="nav-menu-item" onclick="showLoginModal()" id="loginMenuBtn">
+                    <i class="fas fa-sign-in-alt"></i>Войти
                 </a>
-                <a href="#" class="nav-menu-item" onclick="logout()" id="logoutMenuBtn" style="display: none; padding: 10px; text-decoration: none; color: var(--error); border-radius: var(--radius-sm); transition: var(--transition-fast);">
-                    <i class="fas fa-sign-out-alt" style="margin-right: 10px;"></i>Выйти
+                <a href="#" class="nav-menu-item" onclick="logout()" id="logoutMenuBtn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>Выйти
                 </a>
             </div>
         </div>
@@ -879,7 +1017,7 @@
                         <div class="grid grid-2" style="margin-top: 20px;">
                             <div style="text-align: center; padding: 20px;">
                                 <div style="width: 60px; height: 60px; background: var(--pastel-pink); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                                    <i class="fas fa-user-plus" style="font-size: 1.5rem; color: var(--gold-metallic);"></i>
+                                    <i class="fas fa-crown" style="font-size: 1.5rem; color: var(--gold-metallic);"></i>
                                 </div>
                                 <h3 style="font-size: 1.2rem; margin-bottom: 10px;">1. Выберите подписку</h3>
                                 <p style="color: var(--graphite-medium); font-size: 0.9rem;">Оплатите вступительный взнос и получите доступ ко всем услугам</p>
@@ -898,7 +1036,7 @@
             </div>
         </div>
         
-        <!-- Страница выбора категории -->
+        <!-- Страница категорий -->
         <div id="categories-page" class="page">
             <div class="container">
                 <section class="section">
@@ -916,7 +1054,7 @@
             </div>
         </div>
         
-        <!-- Страница выбора услуги -->
+        <!-- Страница услуг -->
         <div id="services-page" class="page">
             <div class="container">
                 <section class="section">
@@ -962,27 +1100,27 @@
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="taskTitle">Название задачи</label>
+                                <label class="form-label" for="taskTitle">Название задачи *</label>
                                 <input type="text" id="taskTitle" class="form-input" placeholder="Например: Уборка 2-комнатной квартиры" required>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="taskDescription">Подробное описание</label>
+                                <label class="form-label" for="taskDescription">Подробное описание *</label>
                                 <textarea id="taskDescription" class="form-input" rows="4" placeholder="Опишите детали задачи..." required></textarea>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="taskAddress">Адрес</label>
+                                <label class="form-label" for="taskAddress">Адрес *</label>
                                 <input type="text" id="taskAddress" class="form-input" placeholder="Где нужно выполнить задачу" required>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="taskDeadline">Срок выполнения</label>
+                                <label class="form-label" for="taskDeadline">Срок выполнения *</label>
                                 <input type="date" id="taskDeadline" class="form-input" required>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="taskContact">Контакт для связи</label>
+                                <label class="form-label" for="taskContact">Контакт для связи *</label>
                                 <input type="text" id="taskContact" class="form-input" placeholder="Телефон или Telegram" required>
                             </div>
                             
@@ -995,6 +1133,31 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница задач пользователя -->
+        <div id="tasks-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Мои задачи</h2>
+                    </div>
+                    
+                    <div class="task-list" id="userTasksList">
+                        <div class="card" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
+                            <button class="btn btn-primary" onclick="checkSubscription()">
+                                <i class="fas fa-plus"></i>
+                                Создать первую задачу
+                            </button>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -1030,7 +1193,7 @@
                 <!-- Мои задачи -->
                 <section class="section">
                     <h2 class="section-title">Мои задачи</h2>
-                    <div class="task-list" id="userTasksList">
+                    <div class="task-list" id="profileTasksList">
                         <div class="card" style="text-align: center; padding: 40px;">
                             <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
                             <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
@@ -1047,7 +1210,7 @@
                     <h2 class="section-title">Настройки</h2>
                     <div class="card">
                         <div style="padding: 10px 0;">
-                            <a href="#" class="nav-menu-item" onclick="showSubscriptionModal()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
+                            <a href="#" class="nav-menu-item" onclick="navigateToPage('subscription')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
                                 <i class="fas fa-crown" style="margin-right: 12px; color: var(--gold-metallic);"></i>Управление подпиской
                             </a>
                             <a href="#" class="nav-menu-item" onclick="showNotificationsSettings()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
@@ -1146,19 +1309,24 @@
             <h3 class="modal-title">Регистрация</h3>
             <form id="registerForm">
                 <div class="form-group">
-                    <label class="form-label">Имя</label>
+                    <label class="form-label">Имя *</label>
                     <input type="text" id="registerFirstName" class="form-input" placeholder="Ваше имя" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="registerEmail" class="form-input" placeholder="ваш@email.com" required>
+                    <label class="form-label">Фамилия</label>
+                    <input type="text" id="registerLastName" class="form-input" placeholder="Ваша фамилия">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Телефон</label>
+                    <label class="form-label">Email *</label>
+                    <input type="email" id="registerEmail" class="form-input" placeholder="ваш@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Телефон *</label>
                     <input type="tel" id="registerPhone" class="form-input" placeholder="+7 (999) 123-45-67" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Пароль</label>
+                    <label class="form-label">Пароль *</label>
                     <input type="password" id="registerPassword" class="form-input" placeholder="Не менее 6 символов" required>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
@@ -1177,10 +1345,11 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // Глобальные переменные
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+        let currentToken = localStorage.getItem('token') || null;
         let categories = [];
         let services = [];
         let subscriptions = [];
@@ -1192,11 +1361,9 @@
         const API_BASE_URL = window.location.origin;
         
         // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            init();
-        });
-        
-        async function init() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Инициализация приложения...');
+            
             // Проверяем авторизацию
             await checkAuth();
             
@@ -1211,41 +1378,83 @@
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
+            const deadlineInput = document.getElementById('taskDeadline');
+            if (deadlineInput) {
+                deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                deadlineInput.min = new Date().toISOString().split('T')[0];
+            }
             
             // Настраиваем обработчики форм
             setupEventListeners();
-        }
+            
+            console.log('Приложение инициализировано');
+        });
         
         function setupEventListeners() {
             // Форма входа
-            document.getElementById('loginForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await login();
-            });
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await login();
+                });
+            }
             
             // Форма регистрации
-            document.getElementById('registerForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await register();
-            });
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await register();
+                });
+            }
             
             // Форма создания задачи
-            document.getElementById('createTaskForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await createTask();
+            const taskForm = document.getElementById('createTaskForm');
+            if (taskForm) {
+                taskForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await createTask();
+                });
+            }
+            
+            // Закрытие меню пользователя при клике вне его
+            document.addEventListener('click', function(event) {
+                const userMenu = document.getElementById('userMenu');
+                const userAvatar = document.getElementById('userAvatar');
+                
+                if (userMenu && userMenu.style.display === 'block') {
+                    if (!userMenu.contains(event.target) && !userAvatar.contains(event.target)) {
+                        userMenu.style.display = 'none';
+                    }
+                }
+                
+                // Закрытие модальных окон при клике вне их
+                const modals = document.querySelectorAll('.modal.active');
+                modals.forEach(modal => {
+                    if (event.target === modal) {
+                        closeModal(modal.id);
+                    }
+                });
+            });
+            
+            // Обработка Escape для закрытия модальных окон
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeAllModals();
+                    closeUserMenu();
+                }
             });
         }
         
         // Проверка авторизации
         async function checkAuth() {
-            const token = localStorage.getItem('token');
-            if (!token) return;
+            if (!currentToken) return;
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/check`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${currentToken}`
                     }
                 });
                 
@@ -1254,20 +1463,30 @@
                     if (data.success) {
                         currentUser = data.data.user;
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        console.log('Пользователь авторизован:', currentUser.email);
                     }
                 } else {
                     // Если токен невалидный, удаляем его
                     localStorage.removeItem('token');
                     localStorage.removeItem('currentUser');
+                    currentToken = null;
                     currentUser = null;
+                    console.log('Токен невалиден, пользователь разлогинен');
                 }
             } catch (error) {
                 console.error('Ошибка проверки авторизации:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('currentUser');
+                currentToken = null;
+                currentUser = null;
             }
         }
         
         // Навигация по страницам
         function navigateToPage(pageId) {
+            // Закрываем меню пользователя
+            closeUserMenu();
+            
             // Скрываем все страницы
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -1277,6 +1496,11 @@
             const pageElement = document.getElementById(pageId + '-page');
             if (pageElement) {
                 pageElement.classList.add('active');
+            } else {
+                console.error('Страница не найдена:', pageId);
+                // Если страница не найдена, показываем главную
+                document.getElementById('home-page').classList.add('active');
+                pageId = 'home';
             }
             
             // Обновляем активную кнопку в навигации
@@ -1284,8 +1508,11 @@
                 item.classList.remove('active');
             });
             
-            if (pageId !== 'create-task' && pageId !== 'subscription' && pageId !== 'categories' && pageId !== 'services') {
-                document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
+            if (pageId !== 'create-task' && pageId !== 'subscription' && pageId !== 'categories' && pageId !== 'services' && pageId !== 'tasks') {
+                const navItem = document.querySelector(`.nav-item[data-page="${pageId}"]`);
+                if (navItem) {
+                    navItem.classList.add('active');
+                }
             }
             
             // Загружаем данные для страницы
@@ -1299,29 +1526,47 @@
                 case 'home':
                     loadHomePage();
                     break;
+                case 'tasks':
+                    loadUserTasks();
+                    break;
+                case 'subscription':
+                    loadSubscriptionPage();
+                    break;
             }
         }
         
         // Загрузка главной страницы
         async function loadHomePage() {
-            await loadCategories();
-            renderHomeCategories();
+            try {
+                await loadCategories();
+                renderHomeCategories();
+            } catch (error) {
+                console.error('Ошибка загрузки главной страницы:', error);
+                showNotification('Ошибка загрузки главной страницы', 'error');
+            }
         }
         
         // Загрузка категорий
         async function loadCategories() {
             try {
+                console.log('Загрузка категорий...');
                 const response = await fetch(`${API_BASE_URL}/api/categories`);
-                if (!response.ok) throw new Error('Ошибка загрузки категорий');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 
                 const data = await response.json();
                 if (data.success) {
                     categories = data.data.categories;
-                    renderHomeCategories();
+                    console.log(`Загружено ${categories.length} категорий`);
+                    return categories;
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки категорий');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
                 showNotification('Ошибка загрузки категорий', 'error');
+                return [];
             }
         }
         
@@ -1331,6 +1576,16 @@
             
             // Берем первые 4 категории для главной страницы
             const homeCategories = categories.slice(0, 4);
+            
+            if (homeCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                        <p style="color: var(--graphite-medium);">Категории не найдены</p>
+                    </div>
+                `;
+                return;
+            }
             
             container.innerHTML = '';
             homeCategories.forEach(category => {
@@ -1352,29 +1607,38 @@
         // Загрузка всех категорий
         async function loadAllCategories() {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/categories`);
-                if (!response.ok) throw new Error('Ошибка загрузки категорий');
+                const container = document.getElementById('allCategoriesGrid');
+                if (!container) return;
                 
-                const data = await response.json();
-                if (data.success) {
-                    const container = document.getElementById('allCategoriesGrid');
-                    container.innerHTML = '';
-                    
-                    data.data.categories.forEach(category => {
-                        const card = document.createElement('div');
-                        card.className = 'card category-card';
-                        card.onclick = () => selectCategory(category);
-                        card.innerHTML = `
-                            <div class="category-icon">
-                                <i class="${category.icon}"></i>
-                            </div>
-                            <h3>${category.display_name}</h3>
-                            <p>${category.description}</p>
-                            <span class="service-price">${category.services_count || 0} услуг</span>
-                        `;
-                        container.appendChild(card);
-                    });
+                container.innerHTML = '<div class="loader" style="grid-column: 1 / -1; text-align: center;"><div class="spinner"></div><p>Загрузка категорий...</p></div>';
+                
+                await loadCategories();
+                
+                if (categories.length === 0) {
+                    container.innerHTML = `
+                        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <p style="color: var(--graphite-medium);">Категории не найдены</p>
+                        </div>
+                    `;
+                    return;
                 }
+                
+                container.innerHTML = '';
+                categories.forEach(category => {
+                    const card = document.createElement('div');
+                    card.className = 'card category-card';
+                    card.onclick = () => selectCategory(category);
+                    card.innerHTML = `
+                        <div class="category-icon">
+                            <i class="${category.icon}"></i>
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <p>${category.description}</p>
+                        <span class="service-price">${category.services_count || 0} услуг</span>
+                    `;
+                    container.appendChild(card);
+                });
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
                 showNotification('Ошибка загрузки категорий', 'error');
@@ -1382,20 +1646,19 @@
         }
         
         // Выбор категории
-        function selectCategory(category) {
+        async function selectCategory(category) {
+            console.log('Выбрана категория:', category);
+            
             if (!currentUser) {
+                showNotification('Для выбора категории необходимо войти в систему', 'warning');
                 showLoginModal();
                 return;
             }
             
             selectedCategory = category;
-            loadServicesForCategory(category.id);
-        }
-        
-        // Загрузка услуг для категории
-        async function loadServicesForCategory(categoryId) {
+            
             try {
-                const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}/services`);
+                const response = await fetch(`${API_BASE_URL}/api/categories/${category.id}/services`);
                 if (!response.ok) throw new Error('Ошибка загрузки услуг');
                 
                 const data = await response.json();
@@ -1405,6 +1668,8 @@
                     
                     navigateToPage('services');
                     renderServices();
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки услуг');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки услуг:', error);
@@ -1416,8 +1681,24 @@
             const container = document.getElementById('servicesList');
             const title = document.getElementById('servicesCategoryTitle');
             
-            if (selectedCategory) {
+            if (selectedCategory && title) {
                 title.textContent = selectedCategory.display_name;
+            }
+            
+            if (!container) return;
+            
+            if (!services || services.length === 0) {
+                container.innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                        <p style="color: var(--graphite-medium);">Услуги не найдены</p>
+                        <button class="btn btn-secondary" onclick="navigateToPage('categories')">
+                            <i class="fas fa-arrow-left"></i>
+                            Назад к категориям
+                        </button>
+                    </div>
+                `;
+                return;
             }
             
             container.innerHTML = '';
@@ -1433,9 +1714,9 @@
                     <p class="service-description">${service.description}</p>
                     <div class="service-footer">
                         <span class="service-price">Включено в подписку</span>
-                        <button class="btn btn-primary btn-sm">
+                        <span class="btn btn-primary btn-sm">
                             Выбрать
-                        </button>
+                        </span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -1444,6 +1725,14 @@
         
         // Выбор услуги
         function selectService(service) {
+            console.log('Выбрана услуга:', service);
+            
+            if (!currentUser) {
+                showNotification('Для выбора услуги необходимо войти в систему', 'warning');
+                showLoginModal();
+                return;
+            }
+            
             selectedService = service;
             navigateToPage('create-task');
             updateTaskForm();
@@ -1451,22 +1740,32 @@
         
         function updateTaskForm() {
             if (selectedCategory) {
-                document.getElementById('selectedCategoryDisplay').textContent = selectedCategory.display_name;
+                const categoryDisplay = document.getElementById('selectedCategoryDisplay');
+                if (categoryDisplay) {
+                    categoryDisplay.textContent = selectedCategory.display_name;
+                    categoryDisplay.style.color = 'var(--graphite-dark)';
+                }
             }
             
             if (selectedService) {
-                document.getElementById('selectedServiceDisplay').textContent = selectedService.name;
+                const serviceDisplay = document.getElementById('selectedServiceDisplay');
+                if (serviceDisplay) {
+                    serviceDisplay.textContent = selectedService.name;
+                    serviceDisplay.style.color = 'var(--graphite-dark)';
+                }
             }
             
             // Автозаполнение контакта
-            if (currentUser && currentUser.phone) {
-                document.getElementById('taskContact').value = currentUser.phone;
+            const contactInput = document.getElementById('taskContact');
+            if (contactInput && currentUser && currentUser.phone) {
+                contactInput.value = currentUser.phone;
             }
         }
         
         // Проверка подписки перед созданием задачи
         function checkSubscription() {
             if (!currentUser) {
+                showNotification('Для создания задачи необходимо войти в систему', 'warning');
                 showLoginModal();
                 return;
             }
@@ -1480,18 +1779,39 @@
         
         // Отмена создания задачи
         function cancelTask() {
-            navigateToPage('home');
             selectedCategory = null;
             selectedService = null;
             
             // Сбрасываем форму
-            document.getElementById('createTaskForm').reset();
+            const taskForm = document.getElementById('createTaskForm');
+            if (taskForm) {
+                taskForm.reset();
+            }
             
             // Обновляем дедлайн
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            document.getElementById('taskDeadline').value = tomorrow.toISOString().split('T')[0];
+            const deadlineInput = document.getElementById('taskDeadline');
+            if (deadlineInput) {
+                deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                deadlineInput.min = new Date().toISOString().split('T')[0];
+            }
+            
+            // Обновляем отображение категории и услуги
+            const categoryDisplay = document.getElementById('selectedCategoryDisplay');
+            if (categoryDisplay) {
+                categoryDisplay.textContent = 'Не выбрана';
+                categoryDisplay.style.color = 'var(--graphite-medium)';
+            }
+            
+            const serviceDisplay = document.getElementById('selectedServiceDisplay');
+            if (serviceDisplay) {
+                serviceDisplay.textContent = 'Не выбрана';
+                serviceDisplay.style.color = 'var(--graphite-medium)';
+            }
+            
+            navigateToPage('home');
         }
         
         // Создание задачи
@@ -1506,36 +1826,44 @@
                 return;
             }
             
+            const taskTitle = document.getElementById('taskTitle')?.value;
+            const taskDescription = document.getElementById('taskDescription')?.value;
+            const taskAddress = document.getElementById('taskAddress')?.value;
+            const taskDeadline = document.getElementById('taskDeadline')?.value;
+            const taskContact = document.getElementById('taskContact')?.value;
+            
+            // Валидация
+            if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
+                showNotification('Заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            // Проверка даты
+            const deadlineDate = new Date(taskDeadline);
+            if (deadlineDate < new Date()) {
+                showNotification('Дата дедлайна не может быть в прошлом', 'error');
+                return;
+            }
+            
             try {
                 const taskData = {
-                    title: document.getElementById('taskTitle').value,
-                    description: document.getElementById('taskDescription').value,
+                    title: taskTitle,
+                    description: taskDescription,
                     category_id: selectedCategory.id,
                     service_id: selectedService.id,
-                    deadline: document.getElementById('taskDeadline').value,
-                    address: document.getElementById('taskAddress').value,
-                    contact_info: document.getElementById('taskContact').value,
+                    deadline: taskDeadline,
+                    address: taskAddress,
+                    contact_info: taskContact,
                     priority: 'medium'
                 };
                 
-                // Валидация
-                if (!taskData.title || !taskData.description || !taskData.address || 
-                    !taskData.deadline || !taskData.contact_info) {
-                    showNotification('Заполните все обязательные поля', 'error');
-                    return;
-                }
-                
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    showNotification('Требуется авторизация', 'error');
-                    return;
-                }
+                console.log('Отправка задачи:', taskData);
                 
                 const response = await fetch(`${API_BASE_URL}/api/tasks`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${currentToken}`
                     },
                     body: JSON.stringify(taskData)
                 });
@@ -1543,26 +1871,23 @@
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка создания задачи');
+                    throw new Error(data.error || `HTTP ${response.status}: Ошибка создания задачи`);
                 }
                 
                 if (data.success) {
                     showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
                     
-                    // Возвращаемся на главную
-                    cancelTask();
-                    
-                    // Обновляем задачи пользователя
+                    // Обновляем статистику пользователя
                     if (currentUser) {
                         currentUser.tasks_used = (currentUser.tasks_used || 0) + 1;
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
                         updateUserInterface();
                     }
                     
-                    // Если мы на странице профиля, обновляем задачи
-                    if (document.getElementById('profile-page').classList.contains('active')) {
-                        loadUserProfile();
-                    }
+                    // Возвращаемся на главную
+                    cancelTask();
+                } else {
+                    throw new Error(data.error || 'Ошибка создания задачи');
                 }
                 
             } catch (error) {
@@ -1574,16 +1899,35 @@
         // Загрузка подписок
         async function loadSubscriptions() {
             try {
+                console.log('Загрузка подписок...');
                 const response = await fetch(`${API_BASE_URL}/api/subscriptions`);
-                if (!response.ok) throw new Error('Ошибка загрузки подписок');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 
                 const data = await response.json();
                 if (data.success) {
                     subscriptions = data.data.subscriptions;
-                    renderSubscriptions();
+                    console.log(`Загружено ${subscriptions.length} подписок`);
+                    return subscriptions;
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки подписок');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки подписок:', error);
+                showNotification('Ошибка загрузки подписок', 'error');
+                return [];
+            }
+        }
+        
+        // Загрузка страницы подписок
+        async function loadSubscriptionPage() {
+            try {
+                await loadSubscriptions();
+                renderSubscriptions();
+            } catch (error) {
+                console.error('Ошибка загрузки страницы подписок:', error);
+                showNotification('Ошибка загрузки подписок', 'error');
             }
         }
         
@@ -1591,6 +1935,16 @@
             // Страница подписок
             const subscriptionContainer = document.getElementById('subscriptionSelection');
             if (subscriptionContainer) {
+                if (!subscriptions || subscriptions.length === 0) {
+                    subscriptionContainer.innerHTML = `
+                        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <p style="color: var(--graphite-medium);">Подписки не найдены</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
                 subscriptionContainer.innerHTML = '';
                 subscriptions.forEach(sub => {
                     const card = document.createElement('div');
@@ -1599,6 +1953,8 @@
                     if (sub.is_popular) {
                         card.innerHTML += '<div class="popular-badge">Популярный</div>';
                     }
+                    
+                    const features = Array.isArray(sub.features) ? sub.features : JSON.parse(sub.features || '[]');
                     
                     card.innerHTML += `
                         <h3>${sub.display_name}</h3>
@@ -1613,13 +1969,11 @@
                         </div>
                         
                         <ul class="subscription-features">
-                            ${Array.isArray(sub.features) ? 
-                                sub.features.map(feature => `<li><i class="fas fa-check"></i> ${feature}</li>`).join('') : 
-                                ''}
+                            ${features.map(feature => `<li><i class="fas fa-check"></i> ${feature}</li>`).join('')}
                         </ul>
                         
                         <button class="btn ${sub.is_popular ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; margin-top: 20px;" onclick="selectSubscription('${sub.name}')">
-                            Выбрать тариф
+                            ${currentUser && currentUser.subscription_plan === sub.name ? 'Текущий тариф' : 'Выбрать тариф'}
                         </button>
                     `;
                     
@@ -1650,8 +2004,7 @@
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        plan: subscriptionName,
-                        initial_fee_paid: false // Пользователь должен подтвердить оплату
+                        plan: subscriptionName
                     })
                 });
                 
@@ -1662,16 +2015,19 @@
                 }
                 
                 if (data.success) {
-                    if (data.data.requires_initial_fee) {
-                        showNotification(`Для активации подписки необходимо оплатить вступительный взнос: ${data.data.initial_fee_amount}₽`, 'warning');
-                        // Здесь должна быть интеграция с платежной системой
-                    } else {
-                        showNotification('Подписка успешно активирована!', 'success');
+                    showNotification('Подписка успешно активирована!', 'success');
+                    
+                    // Обновляем пользователя
+                    if (data.data.user) {
                         currentUser = data.data.user;
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
                         updateUserInterface();
-                        navigateToPage('home');
                     }
+                    
+                    // Переходим на главную
+                    navigateToPage('home');
+                } else {
+                    throw new Error(data.error || 'Ошибка выбора подписки');
                 }
                 
             } catch (error) {
@@ -1682,23 +2038,34 @@
         
         // Обновление интерфейса пользователя
         function updateUserInterface() {
+            const userAvatar = document.getElementById('userAvatar');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+            const menuUserName = document.getElementById('menuUserName');
+            const menuUserEmail = document.getElementById('menuUserEmail');
+            const loginMenuBtn = document.getElementById('loginMenuBtn');
+            const logoutMenuBtn = document.getElementById('logoutMenuBtn');
+            const adminAccessBtn = document.getElementById('adminAccessBtn');
+            
             if (currentUser) {
                 // Обновляем аватар и имя
                 const firstLetter = currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'Г';
-                document.getElementById('userAvatar').textContent = firstLetter;
-                document.getElementById('profileAvatar').textContent = firstLetter;
-                document.getElementById('profileName').textContent = currentUser.first_name || 'Пользователь';
-                document.getElementById('profileEmail').textContent = currentUser.email || '';
-                document.getElementById('menuUserName').textContent = currentUser.first_name || 'Пользователь';
-                document.getElementById('menuUserEmail').textContent = currentUser.email || '';
+                
+                if (userAvatar) userAvatar.textContent = firstLetter;
+                if (profileAvatar) profileAvatar.textContent = firstLetter;
+                if (profileName) profileName.textContent = currentUser.first_name || 'Пользователь';
+                if (profileEmail) profileEmail.textContent = currentUser.email || '';
+                if (menuUserName) menuUserName.textContent = currentUser.first_name || 'Пользователь';
+                if (menuUserEmail) menuUserEmail.textContent = currentUser.email || '';
                 
                 // Показываем/скрываем элементы меню
-                document.getElementById('loginMenuBtn').style.display = 'none';
-                document.getElementById('logoutMenuBtn').style.display = 'block';
+                if (loginMenuBtn) loginMenuBtn.style.display = 'none';
+                if (logoutMenuBtn) logoutMenuBtn.style.display = 'block';
                 
                 // Показываем кнопку админ-панели для администраторов
-                if (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager') {
-                    document.getElementById('adminAccessBtn').style.display = 'flex';
+                if (adminAccessBtn && (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager')) {
+                    adminAccessBtn.style.display = 'flex';
                 }
                 
                 // Обновляем статистику профиля
@@ -1706,45 +2073,56 @@
                 
             } else {
                 // Гостевой режим
-                document.getElementById('userAvatar').textContent = 'Г';
-                document.getElementById('profileAvatar').textContent = 'Г';
-                document.getElementById('profileName').textContent = 'Гость';
-                document.getElementById('profileEmail').textContent = 'Войдите в аккаунт';
-                document.getElementById('menuUserName').textContent = 'Гость';
-                document.getElementById('menuUserEmail').textContent = '';
+                if (userAvatar) userAvatar.textContent = 'Г';
+                if (profileAvatar) profileAvatar.textContent = 'Г';
+                if (profileName) profileName.textContent = 'Гость';
+                if (profileEmail) profileEmail.textContent = 'Войдите в аккаунт';
+                if (menuUserName) menuUserName.textContent = 'Гость';
+                if (menuUserEmail) menuUserEmail.textContent = '';
                 
-                document.getElementById('loginMenuBtn').style.display = 'block';
-                document.getElementById('logoutMenuBtn').style.display = 'none';
-                document.getElementById('adminAccessBtn').style.display = 'none';
+                if (loginMenuBtn) loginMenuBtn.style.display = 'block';
+                if (logoutMenuBtn) logoutMenuBtn.style.display = 'none';
+                if (adminAccessBtn) adminAccessBtn.style.display = 'none';
                 
                 // Сбрасываем статистику
-                document.getElementById('statTasks').textContent = '0';
-                document.getElementById('statRating').textContent = '0';
-                document.getElementById('statBalance').textContent = '0₽';
+                const statTasks = document.getElementById('statTasks');
+                const statRating = document.getElementById('statRating');
+                const statBalance = document.getElementById('statBalance');
+                
+                if (statTasks) statTasks.textContent = '0';
+                if (statRating) statRating.textContent = '0';
+                if (statBalance) statBalance.textContent = '0₽';
             }
         }
         
         function updateProfileStats() {
             if (!currentUser) return;
             
-            document.getElementById('statTasks').textContent = currentUser.tasks_used || '0';
-            document.getElementById('statRating').textContent = currentUser.rating || '0';
-            document.getElementById('statBalance').textContent = (currentUser.balance || '0') + '₽';
+            const statTasks = document.getElementById('statTasks');
+            const statRating = document.getElementById('statRating');
+            const statBalance = document.getElementById('statBalance');
+            
+            if (statTasks) statTasks.textContent = currentUser.tasks_used || '0';
+            if (statRating) statRating.textContent = currentUser.rating || '0';
+            if (statBalance) statBalance.textContent = (currentUser.balance || '0') + '₽';
         }
         
         // Загрузка профиля пользователя
         async function loadUserProfile() {
             if (!currentUser) {
-                document.getElementById('userTasksList').innerHTML = `
-                    <div class="card" style="text-align: center; padding: 40px;">
-                        <i class="fas fa-user" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                        <p style="color: var(--graphite-medium); margin-bottom: 20px;">Войдите в аккаунт, чтобы видеть свои задачи</p>
-                        <button class="btn btn-primary" onclick="showLoginModal()">
-                            <i class="fas fa-sign-in-alt"></i>
-                            Войти в аккаунт
-                        </button>
-                    </div>
-                `;
+                const container = document.getElementById('profileTasksList');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="card" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-user" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <p style="color: var(--graphite-medium); margin-bottom: 20px;">Войдите в аккаунт, чтобы видеть свои задачи</p>
+                            <button class="btn btn-primary" onclick="showLoginModal()">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Войти в аккаунт
+                            </button>
+                        </div>
+                    `;
+                }
                 return;
             }
             
@@ -1788,41 +2166,44 @@
                 
                 const data = await response.json();
                 
-                if (data.success && data.data.tasks.length > 0) {
+                const container = document.getElementById('userTasksList') || document.getElementById('profileTasksList');
+                
+                if (data.success && data.data.tasks && data.data.tasks.length > 0) {
                     userTasks = data.data.tasks;
-                    renderUserTasks();
+                    renderUserTasks(container);
+                } else if (container) {
+                    container.innerHTML = `
+                        <div class="card" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
+                            <button class="btn btn-primary" onclick="checkSubscription()">
+                                <i class="fas fa-plus"></i>
+                                Создать первую задачу
+                            </button>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Ошибка загрузки задач:', error);
             }
         }
         
-        function renderUserTasks() {
-            const container = document.getElementById('userTasksList');
-            
-            if (!userTasks || userTasks.length === 0) {
-                container.innerHTML = `
-                    <div class="card" style="text-align: center; padding: 40px;">
-                        <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                        <p style="color: var(--graphite-medium); margin-bottom: 20px;">У вас пока нет задач</p>
-                        <button class="btn btn-primary" onclick="checkSubscription()">
-                            <i class="fas fa-plus"></i>
-                            Создать первую задачу
-                        </button>
-                    </div>
-                `;
-                return;
-            }
+        function renderUserTasks(container) {
+            if (!container || !userTasks || userTasks.length === 0) return;
             
             container.innerHTML = '';
             
             userTasks.forEach(task => {
                 const taskElement = document.createElement('div');
                 taskElement.className = 'card task-item';
+                
+                const statusText = getStatusText(task.status);
+                const statusClass = task.status ? `task-status ${task.status}` : 'task-status';
+                
                 taskElement.innerHTML = `
                     <div class="task-header">
                         <div class="task-title">${task.title}</div>
-                        <span class="task-status ${task.status}">${getStatusText(task.status)}</span>
+                        <span class="${statusClass}">${statusText}</span>
                     </div>
                     <div style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 8px;">
                         ${task.category_name || ''}
@@ -1876,6 +2257,7 @@
                 if (data.success) {
                     localStorage.setItem('token', data.data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+                    currentToken = data.data.token;
                     currentUser = data.data.user;
                     
                     showNotification('Успешный вход!', 'success');
@@ -1899,12 +2281,13 @@
         async function register() {
             try {
                 const firstName = document.getElementById('registerFirstName').value;
+                const lastName = document.getElementById('registerLastName').value;
                 const email = document.getElementById('registerEmail').value;
                 const phone = document.getElementById('registerPhone').value;
                 const password = document.getElementById('registerPassword').value;
                 
                 if (!firstName || !email || !phone || !password) {
-                    showNotification('Заполните все поля', 'error');
+                    showNotification('Заполните все обязательные поля', 'error');
                     return;
                 }
                 
@@ -1922,7 +2305,7 @@
                         email,
                         password,
                         first_name: firstName,
-                        last_name: '',
+                        last_name: lastName || '',
                         phone,
                         subscription_plan: 'essential'
                     })
@@ -1937,14 +2320,19 @@
                 if (data.success) {
                     localStorage.setItem('token', data.data.token);
                     localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+                    currentToken = data.data.token;
                     currentUser = data.data.user;
                     
                     showNotification('Регистрация успешна!', 'success');
                     closeModal('registerModal');
                     updateUserInterface();
                     
-                    // Перенаправляем на страницу подписок
-                    navigateToPage('subscription');
+                    // Перенаправляем на страницу подписок, если нужно оплатить взнос
+                    if (data.data.requires_initial_fee) {
+                        navigateToPage('subscription');
+                    } else {
+                        navigateToPage('home');
+                    }
                 }
                 
             } catch (error) {
@@ -1956,45 +2344,57 @@
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('currentUser');
+            currentToken = null;
             currentUser = null;
             updateUserInterface();
             showNotification('Вы успешно вышли из системы', 'success');
             navigateToPage('home');
+            closeUserMenu();
         }
         
         // Модальные окна
         function showLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-            document.getElementById('registerModal').style.display = 'none';
+            closeAllModals();
+            const modal = document.getElementById('loginModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.getElementById('loginEmailInput')?.focus();
+            }
             closeUserMenu();
         }
         
         function showRegisterModal() {
-            document.getElementById('registerModal').style.display = 'flex';
-            document.getElementById('loginModal').style.display = 'none';
-            closeUserMenu();
-        }
-        
-        function showSubscriptionModal() {
-            closeUserMenu();
-            navigateToPage('subscription');
+            closeAllModals();
+            const modal = document.getElementById('registerModal');
+            if (modal) {
+                modal.classList.add('active');
+                document.getElementById('registerFirstName')?.focus();
+            }
         }
         
         function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+        
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.classList.remove('active');
+            });
         }
         
         // Вспомогательные функции
         function formatNumber(num) {
-            return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0';
+            if (!num && num !== 0) return '0';
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
         }
         
         function showNotification(message, type = 'success') {
             // Удаляем старые уведомления
-            const oldNotification = document.querySelector('.notification');
-            if (oldNotification) {
-                oldNotification.remove();
-            }
+            const oldNotifications = document.querySelectorAll('.notification');
+            oldNotifications.forEach(notif => notif.remove());
             
             // Создаем новое уведомление
             const notification = document.createElement('div');
@@ -2003,6 +2403,7 @@
             let icon = 'fas fa-check-circle';
             if (type === 'error') icon = 'fas fa-exclamation-circle';
             if (type === 'warning') icon = 'fas fa-exclamation-triangle';
+            if (type === 'info') icon = 'fas fa-info-circle';
             
             notification.innerHTML = `
                 <i class="${icon}"></i>
@@ -2028,38 +2429,50 @@
         // Меню пользователя
         function toggleUserMenu() {
             const menu = document.getElementById('userMenu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            if (menu) {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
         }
         
         function closeUserMenu() {
-            document.getElementById('userMenu').style.display = 'none';
-        }
-        
-        // Закрытие меню при клике вне его
-        document.addEventListener('click', function(event) {
-            const userMenu = document.getElementById('userMenu');
-            const userAvatar = document.getElementById('userAvatar');
-            
-            if (userMenu.style.display === 'block' && 
-                !userMenu.contains(event.target) && 
-                !userAvatar.contains(event.target)) {
-                userMenu.style.display = 'none';
+            const menu = document.getElementById('userMenu');
+            if (menu) {
+                menu.style.display = 'none';
             }
-        });
+        }
         
         // Вспомогательные функции для страниц
-        function showTasksPage() {
-            navigateToPage('profile');
-            closeUserMenu();
-        }
-        
         function showNotificationsSettings() {
             showNotification('Настройки уведомлений будут доступны в следующем обновлении', 'info');
+            closeUserMenu();
         }
         
         function showHelp() {
             showNotification('Раздел помощи будет доступен в следующем обновлении', 'info');
+            closeUserMenu();
         }
+        
+        // Утилиты для форматирования
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        }
+        
+        // Экспортируем функции для глобального использования
+        window.navigateToPage = navigateToPage;
+        window.checkSubscription = checkSubscription;
+        window.cancelTask = cancelTask;
+        window.showLoginModal = showLoginModal;
+        window.showRegisterModal = showRegisterModal;
+        window.logout = logout;
+        window.toggleUserMenu = toggleUserMenu;
+        window.selectSubscription = selectSubscription;
+        window.showNotificationsSettings = showNotificationsSettings;
+        window.showHelp = showHelp;
     </script>
 </body>
 </html>
