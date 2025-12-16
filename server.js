@@ -1043,7 +1043,9 @@ app.post('/api/auth/register', async (req, res) => {
         const verificationToken = crypto.randomBytes(32).toString('hex');
         
         // Для исполнителей и администраторов сразу активная подписка
-        const initialFeePaid = (role === 'performer' || role === 'admin' || role === 'manager' || role === 'superadmin') ? 1 : (subscription.initial_fee === 0 ? 1 : 0);
+        const initialFeePaid = DEMO_MODE ? 1 : ((role === 'performer' || role === 'admin' || role === 'manager' || role === 'superadmin') ? 1 : (subscription.initial_fee === 0 ? 1 : 0));
+const subscriptionStatus = initialFeePaid ? 'active' : 'pending';
+
         const subscriptionStatus = initialFeePaid ? 'active' : 'pending';
         
         // Для новых пользователей телефон не подтвержден
@@ -1201,20 +1203,20 @@ app.post('/api/auth/register', async (req, res) => {
             { expiresIn: '30d' }
         );
         
-        res.status(201).json({
-            success: true,
-            message: 'Регистрация успешно завершена! Подтвердите телефон.',
-            data: { 
-                user: userForResponse,
-                token,
-                requires_phone_verification: true,
-                phone_verification_sent: smsResult.success,
-                demo_mode: smsResult.demo || false,
-                expires_in_minutes: 10,
-                requires_initial_fee: !initialFeePaid,
-                initial_fee_amount: subscription.initial_fee
-            }
-        });
+res.status(201).json({
+    success: true,
+    message: DEMO_MODE ? 'Регистрация успешно завершена! Подтвердите телефон.' : 'Регистрация успешно завершена! Подтвердите телефон.',
+    data: { 
+        user: userForResponse,
+        token,
+        requires_phone_verification: true,
+        phone_verification_sent: smsResult.success,
+        demo_mode: smsResult.demo || false,
+        expires_in_minutes: 10,
+        requires_initial_fee: !initialFeePaid && !DEMO_MODE, // Изменено
+        initial_fee_amount: subscription.initial_fee
+    }
+});
         
     } catch (error) {
         console.error('Ошибка регистрации:', error.message);
@@ -1553,22 +1555,22 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         // Проверяем, оплачен ли вступительный взнос (только для клиентов)
-        if (user.role === 'client' && user.subscription_status === 'pending' && user.initial_fee_paid === 0) {
-            return res.status(403).json({
-                success: false,
-                error: 'Для входа необходимо оплатить вступительный взнос',
-                requires_initial_fee: true,
-                initial_fee_amount: user.initial_fee_amount,
-                user: {
-                    id: user.id,
-                    phone: user.phone,
-                    first_name: user.first_name,
-                    last_name: user.last_name,
-                    subscription_plan: user.subscription_plan,
-                    subscription_status: user.subscription_status
-                }
-            });
+if (user.role === 'client' && user.subscription_status === 'pending' && user.initial_fee_paid === 0 && !DEMO_MODE) {
+    return res.status(403).json({
+        success: false,
+        error: 'Для входа необходимо оплатить вступительный взнос',
+        requires_initial_fee: true,
+        initial_fee_amount: user.initial_fee_amount,
+        user: {
+            id: user.id,
+            phone: user.phone,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            subscription_plan: user.subscription_plan,
+            subscription_status: user.subscription_status
         }
+    });
+}
         
         // Обновляем время последнего входа
         await db.run(
@@ -2405,6 +2407,8 @@ app.get('/api/subscriptions', async (req, res) => {
     }
 });
 
+// server.js - ПОЛНЫЙ ИСПРАВЛЕННЫЙ ОБРАБОТЧИК ПОДПИСКИ
+
 // Оплата вступительного взноса и активация подписки
 app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req, res) => {
     try {
@@ -2428,7 +2432,6 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
                 user_id: req.user.id
             });
         }
-
         
         // Проверяем существование подписки
         const subscription = await db.get(
@@ -2443,7 +2446,68 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             });
         }
         
-        // Проверяем баланс для вступительного взноса
+        // ========== ИСПРАВЛЕНИЕ ДЛЯ ДЕМО-РЕЖИМА ==========
+        
+        // В демо-режиме автоматически активируем подписку без оплаты
+        if (DEMO_MODE && subscription.initial_fee > 0 && !req.user.initial_fee_paid) {
+            console.log(`📱 [DEMO MODE] Автоматическая активация подписки для пользователя: ${req.user.phone}`);
+            
+            // Активируем подписку без списания средств
+            await db.run(
+                `UPDATE users SET 
+                    subscription_plan = ?,
+                    subscription_status = 'active',
+                    initial_fee_paid = 1,
+                    initial_fee_amount = ?,
+                    tasks_limit = ?,
+                    subscription_expires = DATE('now', '+30 days')
+                 WHERE id = ?`,
+                [plan, subscription.initial_fee, subscription.tasks_limit, req.user.id]
+            );
+            
+            // Создаем уведомление
+            await db.run(
+                `INSERT INTO notifications 
+                (user_id, type, title, message) 
+                VALUES (?, ?, ?, ?)`,
+                [
+                    req.user.id,
+                    'subscription_activated',
+                    'Подписка активирована!',
+                    `Поздравляем! Вы успешно активировали подписку "${subscription.display_name}". Теперь вы можете создавать задачи.`
+                ]
+            );
+            
+            // Получаем обновленного пользователя
+            const updatedUser = await db.get(
+                `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                        subscription_plan, subscription_status, subscription_expires,
+                        initial_fee_paid, initial_fee_amount, balance, tasks_limit, tasks_used,
+                        user_rating
+                 FROM users WHERE id = ?`,
+                [req.user.id]
+            );
+            
+            // Переименовываем user_rating в rating для фронтенда
+            const userForResponse = {
+                ...updatedUser,
+                rating: updatedUser.user_rating
+            };
+            
+            return res.json({
+                success: true,
+                message: 'Подписка успешно активирована! (Демо-режим)',
+                data: {
+                    user: userForResponse,
+                    subscription,
+                    demo_mode: true
+                }
+            });
+        }
+        
+        // ========== РЕАЛЬНЫЙ РЕЖИМ (с оплатой) ==========
+        
+        // Проверяем баланс для вступительного взноса (только если не в демо-режиме)
         if (subscription.initial_fee > 0 && !req.user.initial_fee_paid) {
             if (req.user.balance < subscription.initial_fee) {
                 return res.status(400).json({
@@ -2494,7 +2558,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
                 [plan, subscription.initial_fee, subscription.tasks_limit, req.user.id]
             );
         } else {
-            // Просто активируем подписку
+            // Просто активируем подписку (если вступительный взнос уже оплачен или равен 0)
             await db.run(
                 `UPDATE users SET 
                     subscription_plan = ?,
@@ -2540,7 +2604,8 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
             message: 'Подписка успешно активирована!',
             data: {
                 user: userForResponse,
-                subscription
+                subscription,
+                demo_mode: DEMO_MODE
             }
         });
         
@@ -2613,19 +2678,19 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
                 });
             }
             
-            if (user.subscription_status !== 'active') {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Ваша подписка не активна'
-                });
-            }
-            
-            if (!user.initial_fee_paid) {
-                return res.status(403).json({
-                    success: false,
-                    error: 'Для создания задач необходимо оплатить вступительный взнос'
-                });
-            }
+if (user.subscription_status !== 'active' && !DEMO_MODE) {
+    return res.status(403).json({
+        success: false,
+        error: 'Ваша подписка не активна'
+    });
+}
+
+if (!user.initial_fee_paid && !DEMO_MODE) {
+    return res.status(403).json({
+        success: false,
+        error: 'Для создания задач необходимо оплатить вступительный взнос'
+    });
+}
             
             // Проверяем лимит задач
             if (user.tasks_used >= user.tasks_limit) {
