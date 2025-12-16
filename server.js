@@ -1204,16 +1204,18 @@ app.post('/api/auth/register', async (req, res) => {
         
 res.status(201).json({
     success: true,
-    message: DEMO_MODE ? 'Регистрация успешно завершена! Подтвердите телефон.' : 'Регистрация успешно завершена! Подтвердите телефон.',
+    message: 'Регистрация почти завершена! Подтвердите телефон для активации аккаунта.',
     data: { 
         user: userForResponse,
-        token,
+        token: null, // ← НЕ выдаем токен!
         requires_phone_verification: true,
         phone_verification_sent: smsResult.success,
         demo_mode: smsResult.demo || false,
         expires_in_minutes: 10,
-        requires_initial_fee: !initialFeePaid && !DEMO_MODE, // Изменено
-        initial_fee_amount: subscription.initial_fee
+        requires_initial_fee: !initialFeePaid && !DEMO_MODE,
+        initial_fee_amount: subscription.initial_fee,
+        phone: formattedPhone, // ← Добавляем телефон для фронтенда
+        can_verify_immediately: true // ← Флаг для фронтенда
     }
 });
         
@@ -1463,14 +1465,18 @@ app.post('/api/auth/verify-phone', async (req, res) => {
             { expiresIn: '30d' }
         );
         
-        res.json({
-            success: true,
-            message: 'Телефон успешно подтвержден!',
-            data: { 
-                user: userForResponse,
-                token
-            }
-        });
+// Определяем, была ли это регистрация (нет токена у пользователя)
+const isNewRegistration = !user.last_login && !user.email_verified && user.subscription_status === 'pending';
+
+res.json({
+    success: true,
+    message: isNewRegistration ? 'Регистрация завершена! Теперь вы можете войти в систему.' : 'Телефон успешно подтвержден!',
+    data: { 
+        user: userForResponse,
+        token,
+        is_new_registration: isNewRegistration
+    }
+});
         
     } catch (error) {
         console.error('Ошибка подтверждения телефона:', error.message);
