@@ -9,6 +9,7 @@ const { open } = require('sqlite');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const os = require('os');
 const TelegramBot = require('node-telegram-bot-api');
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
@@ -402,65 +403,72 @@ const initDatabase = async () => {
     try {
         console.log('🔄 Инициализация базы данных...');
         
-        // Определяем путь к базе данных
+        // Определяем путь к базе данных с приоритетами:
+        // 1. Переменная окружения DATABASE_PATH
+        // 2. /tmp для контейнеров
+        // 3. ./data для локальной разработки
+        
         let dbPath;
-        if (process.env.NODE_ENV === 'production') {
-            // Вместо /data используем текущую директорию или указанный путь
-            if (process.env.DATABASE_PATH) {
-                dbPath = process.env.DATABASE_PATH;
-            } else {
-                // Используем текущую директорию + /data
-                dbPath = './data/concierge_prod.db';
-            }
+        if (process.env.DATABASE_PATH) {
+            // Используем путь из переменной окружения
+            dbPath = process.env.DATABASE_PATH;
+        } else if (process.env.NODE_ENV === 'production' && require('os').platform() !== 'win32') {
+            // Для продакшена на Linux/Unix используем /tmp
+            dbPath = '/tmp/concierge_prod.db';
+        } else if (process.env.NODE_ENV === 'production') {
+            // Для Windows продакшена
+            dbPath = './concierge_prod.db';
         } else if (process.env.NODE_ENV === 'test') {
             dbPath = process.env.TEST_DATABASE_PATH || './concierge_test.db';
         } else {
-            dbPath = process.env.DATABASE_PATH || './concierge.db';
+            dbPath = './concierge.db';
         }
         
         console.log(`📁 Путь к базе данных: ${dbPath}`);
+        console.log(`📁 Абсолютный путь: ${path.resolve(dbPath)}`);
         
-        // Создаем директорию если не существует
-        const dir = path.dirname(dbPath);
+        // Проверяем доступные пути для записи
+        const possiblePaths = [
+            dbPath,
+            '/tmp/concierge_prod.db',
+            '/var/tmp/concierge_prod.db',
+            os.tmpdir() + '/concierge_prod.db',
+            './concierge_prod.db'
+        ];
         
-        // Используем абсолютный путь для проверки
-        const absoluteDir = path.resolve(dir);
-        console.log(`📁 Абсолютный путь к директории: ${absoluteDir}`);
+        let selectedPath = null;
         
-        if (dir !== '.' && dir !== '/' && !fs.existsSync(absoluteDir)) {
+        for (const testPath of possiblePaths) {
             try {
-                console.log(`📁 Создаю директорию: ${absoluteDir}`);
-                fs.mkdirSync(absoluteDir, { recursive: true });
-                console.log(`✅ Директория создана: ${absoluteDir}`);
+                const testDir = path.dirname(testPath);
                 
-                // Даем права на запись
-                fs.chmodSync(absoluteDir, 0o755);
-            } catch (mkdirError) {
-                console.error(`❌ Ошибка создания директории: ${mkdirError.message}`);
+                // Пытаемся создать директорию
+                if (!fs.existsSync(testDir)) {
+                    fs.mkdirSync(testDir, { recursive: true, mode: 0o755 });
+                }
                 
-                // Если не получается, пробуем создать в текущей директории
-                console.log('🔄 Пробую альтернативный путь...');
-                dbPath = './concierge_prod.db';
-                console.log(`📁 Новый путь к базе данных: ${dbPath}`);
+                // Пытаемся создать тестовый файл
+                const testFile = testPath + '.test';
+                fs.writeFileSync(testFile, 'test');
+                fs.unlinkSync(testFile);
+                
+                selectedPath = testPath;
+                console.log(`✅ Найден доступный путь: ${testPath}`);
+                break;
+            } catch (error) {
+                console.log(`❌ Путь недоступен: ${testPath} - ${error.message}`);
+                continue;
             }
         }
         
-        // Проверяем, можем ли мы записать в эту директорию
-        try {
-            const testFile = path.join(path.dirname(dbPath), 'test_write.tmp');
-            fs.writeFileSync(testFile, 'test');
-            fs.unlinkSync(testFile);
-            console.log('✅ Права на запись подтверждены');
-        } catch (writeError) {
-            console.error(`❌ Нет прав на запись: ${writeError.message}`);
-            
-            // Используем гарантированно доступное место
-            dbPath = './concierge_prod.db';
-            console.log(`📁 Использую гарантированный путь: ${dbPath}`);
+        if (!selectedPath) {
+            throw new Error('Не удалось найти доступное место для базы данных');
         }
         
+        dbPath = selectedPath;
+        console.log(`📁 Финальный выбранный путь: ${dbPath}`);
+        
         // Открываем базу данных
-        console.log(`📁 Финальный путь к БД: ${path.resolve(dbPath)}`);
         db = await open({
             filename: dbPath,
             driver: sqlite3.Database,
@@ -473,7 +481,7 @@ const initDatabase = async () => {
         await db.run('PRAGMA foreign_keys = ON');
         await db.run('PRAGMA journal_mode = WAL');
         await db.run('PRAGMA synchronous = NORMAL');
-        await db.run('PRAGMA cache_size = -2000'); // 2MB кэш
+        await db.run('PRAGMA cache_size = -2000');
         await db.run('PRAGMA temp_store = MEMORY');
         
         if (process.env.NODE_ENV === 'production') {
@@ -494,9 +502,7 @@ const initDatabase = async () => {
         return db;
     } catch (error) {
         console.error('❌ Ошибка инициализации базы данных:', error.message);
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Stack trace:', error.stack);
-        }
+        console.error('Stack trace:', error.stack);
         throw error;
     }
 };
@@ -4331,31 +4337,44 @@ process.on('SIGINT', () => {
 });
 
 // ==================== ЗАПУСК СЕРВЕРА ====================
-// ==================== ЗАПУСК СЕРВЕРА ====================
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v2.1.0 - ПРОДАКШЕН ВЕРСИЯ');
+        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v2.1.0');
         console.log('='.repeat(80));
         console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
         console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
         console.log(`📁 Текущая рабочая директория: ${process.cwd()}`);
         console.log(`📁 Директория скрипта: ${__dirname}`);
+        console.log(`💻 Платформа: ${os.platform()} ${os.arch()}`);
+        console.log(`📁 Временная директория системы: ${os.tmpdir()}`);
         console.log(`🤖 Telegram Bot: ${process.env.TELEGRAM_BOT_TOKEN ? '✅ Enabled' : '❌ Disabled'}`);
         console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? '✅ Set' : '⚠️ Using default'}`);
         console.log('='.repeat(80));
         
-        // Проверяем права на запись в текущую директорию
-        try {
-            const testFile = './.write_test.tmp';
-            fs.writeFileSync(testFile, 'test');
-            fs.unlinkSync(testFile);
-            console.log('✅ Права на запись в текущую директорию: ДА');
-        } catch (error) {
-            console.error('❌ Права на запись в текущую директорию: НЕТ');
-            console.error('   Ошибка:', error.message);
-            console.log('⚠️  Попробуйте запустить с правами пользователя или измените директорию');
-        }
+        // Проверяем доступные директории
+        console.log('\n🔍 Проверка доступных директорий для записи:');
+        console.log('='.repeat(60));
+        
+        const testDirs = [
+            '/tmp',
+            '/var/tmp',
+            os.tmpdir(),
+            process.cwd(),
+            __dirname
+        ];
+        
+        testDirs.forEach(dir => {
+            try {
+                const testFile = path.join(dir, '.write_test_' + Date.now() + '.tmp');
+                fs.writeFileSync(testFile, 'test');
+                fs.unlinkSync(testFile);
+                console.log(`✅ ${dir} - доступен для записи`);
+            } catch (error) {
+                console.log(`❌ ${dir} - недоступен: ${error.message}`);
+            }
+        });
+        console.log('='.repeat(60));
         
         await initDatabase();
         console.log('✅ База данных готова');
@@ -4370,14 +4389,14 @@ const startServer = async () => {
             console.log('\n🌐 ДОСТУПНЫЕ ССЫЛКИ:');
             console.log('='.repeat(60));
             console.log(`🏠 Основное приложение:`);
-            console.log(`   👉 http://${HOST}:${PORT}`);
+            console.log(`   👉 https://sergeynikishin555123123-lab--86fa.twc1.net`);
             console.log(`\n👑 Админ-панель:`);
-            console.log(`   👉 http://${HOST}:${PORT}/admin.html`);
+            console.log(`   👉 https://sergeynikishin555123123-lab--86fa.twc1.net/admin.html`);
             console.log(`\n👨‍💼 Панель исполнителя:`);
-            console.log(`   👉 http://${HOST}:${PORT}/performer.html`);
+            console.log(`   👉 https://sergeynikishin555123123-lab--86fa.twc1.net/performer.html`);
             console.log(`\n📊 API и здоровье системы:`);
-            console.log(`   👉 http://${HOST}:${PORT}/api`);
-            console.log(`   👉 http://${HOST}:${PORT}/health`);
+            console.log(`   👉 https://sergeynikishin555123123-lab--86fa.twc1.net/api`);
+            console.log(`   👉 https://sergeynikishin555123123-lab--86fa.twc1.net/health`);
             console.log('='.repeat(60));
             
             if (process.env.NODE_ENV !== 'production') {
@@ -4393,40 +4412,13 @@ const startServer = async () => {
                 console.log('='.repeat(60));
             }
             
-            console.log('\n⚡ ОСНОВНЫЕ ФУНКЦИОНАЛЬНОСТИ:');
-            console.log('='.repeat(60));
-            console.log('✅ Полноценный Telegram бот с управлением');
-            console.log('✅ Система подписок (3 тарифа)');
-            console.log('✅ 6 категорий услуг с чатом');
-            console.log('✅ 12 услуг (бесплатно в рамках подписки)');
-            console.log('✅ Контроль лимитов задач (без сброса при смене тарифа)');
-            console.log('✅ Полная система уведомлений');
-            console.log('✅ Баланс и транзакции');
-            console.log('✅ Подробная статистика');
-            console.log('✅ Поиск исполнителей с фильтрами');
-            console.log('✅ Система отзывов и рейтингов');
-            console.log('✅ Полная админ-панель');
-            console.log('✅ Адаптивный дизайн для всех устройств');
-            console.log('✅ Полная JWT аутентификация');
-            console.log('✅ Три разных экрана для разных состояний пользователя');
-            console.log('✅ Рабочий чат внутри задач с пагинацией');
-            console.log('✅ Панель исполнителя с принятием задач');
-            console.log('✅ Управление статусами задач с валидацией переходов');
-            console.log('✅ Статистика для исполнителей');
-            console.log('✅ Админ-управление исполнителями');
-            console.log('✅ Graceful shutdown');
-            console.log('✅ Оптимизация для продакшена');
-            console.log('='.repeat(60));
-            
             console.log('\n🚀 СИСТЕМА ГОТОВА К РАБОТЕ!');
             console.log('='.repeat(60));
         });
         
     } catch (error) {
         console.error('❌ Не удалось запустить сервер:', error.message);
-        if (process.env.NODE_ENV === 'development') {
-            console.error('Stack trace:', error.stack);
-        }
+        console.error('Stack trace:', error.stack);
         process.exit(1);
     }
 };
