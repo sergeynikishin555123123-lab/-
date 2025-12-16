@@ -738,16 +738,15 @@ app.get('/health', async (req, res) => {
 
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
-// Регистрация (УПРОЩЕННАЯ ВЕРСИЯ для работы с фронтендом)
 app.post('/api/auth/register', async (req, res) => {
     try {
-        const { email, password, first_name, last_name, phone, subscription_plan = 'essential', role = 'client' } = req.body;
+        const { phone, password, first_name, last_name = '', email = '', subscription_plan = 'essential', role = 'client' } = req.body;
         
-        // Валидация
-        if (!email || !password || !first_name || !last_name || !phone) {
+        // Валидация - теперь телефон обязателен, email не обязателен
+        if (!phone || !password || !first_name) {
             return res.status(400).json({
                 success: false,
-                error: 'Заполните все обязательные поля'
+                error: 'Заполните телефон, пароль и имя'
             });
         }
         
@@ -758,20 +757,34 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
-        if (!validateEmail(email)) {
+        if (!validatePhone(phone)) {
             return res.status(400).json({
                 success: false,
-                error: 'Некорректный email адрес'
+                error: 'Некорректный номер телефона'
             });
         }
         
-        // Проверка существующего пользователя
-        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        // Генерируем email из телефона, если не указан
+        const userEmail = email || `${phone.replace(/\D/g, '')}@concierge.local`;
+        
+        // Проверка существующего пользователя по телефону
+        const existingUser = await db.get('SELECT id FROM users WHERE phone = ?', [phone]);
         if (existingUser) {
             return res.status(409).json({
                 success: false,
-                error: 'Пользователь с таким email уже существует'
+                error: 'Пользователь с таким телефоном уже существует'
             });
+        }
+        
+        // Проверка существующего пользователя по email (если email указан)
+        if (email) {
+            const existingEmailUser = await db.get('SELECT id FROM users WHERE email = ? AND email != ""', [email]);
+            if (existingEmailUser) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Пользователь с таким email уже существует'
+                });
+            }
         }
         
         // Проверка подписки - если не существует, используем дефолтные значения
@@ -953,18 +966,19 @@ app.post('/api/auth/register', async (req, res) => {
 // Вход (УПРОЩЕННАЯ ВЕРСИЯ)
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { phone, email, password } = req.body;
         
-        if (!email || !password) {
+        if ((!phone && !email) || !password) {
             return res.status(400).json({
                 success: false,
-                error: 'Email и пароль обязательны'
+                error: 'Телефон/email и пароль обязательны'
             });
         }
         
+        // Ищем пользователя по телефону или email
         const user = await db.get(
-            `SELECT * FROM users WHERE email = ? AND is_active = 1`,
-            [email]
+            `SELECT * FROM users WHERE (phone = ? OR email = ?) AND is_active = 1`,
+            [phone || email, phone || email]
         );
         
         if (!user) {
@@ -2286,6 +2300,62 @@ const createInitialData = async () => {
         }
     }
 };
+
+// ==================== ИНФОРМАЦИЯ О ПОДПИСКЕ ====================
+
+app.get('/api/auth/subscription-info', authMiddleware(), async (req, res) => {
+    try {
+        const user = await db.get(
+            `SELECT subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, tasks_limit, tasks_used
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        const today = new Date();
+        const expiryDate = new Date(user.subscription_expires);
+        const daysRemaining = Math.max(0, Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24)));
+        
+        // Вычисляем дату следующего списания
+        const nextChargeDate = new Date(expiryDate);
+        nextChargeDate.setDate(expiryDate.getDate() + 1);
+        
+        // Получаем информацию о подписке
+        const subscription = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ?',
+            [user.subscription_plan || 'essential']
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                subscription_plan: user.subscription_plan,
+                subscription_status: user.subscription_status,
+                subscription_expires: user.subscription_expires,
+                days_remaining: daysRemaining,
+                next_charge_date: nextChargeDate.toISOString().split('T')[0],
+                tasks_limit: user.tasks_limit,
+                tasks_used: user.tasks_used,
+                tasks_remaining: Math.max(0, (user.tasks_limit || 0) - (user.tasks_used || 0)),
+                subscription_info: subscription || null
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения информации о подписке:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения информации о подписке'
+        });
+    }
+});
 
 // ==================== ОБСЛУЖИВАНИЕ СТАТИЧЕСКИХ ФАЙЛОВ ====================
 
