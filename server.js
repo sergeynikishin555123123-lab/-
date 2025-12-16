@@ -16,9 +16,28 @@ const app = express();
 
 // CORS настройки для продакшена
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
-        ? process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : ['https://yourdomain.com']
-        : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001', 'http://localhost:8080'],
+    origin: function (origin, callback) {
+        // Разрешаем запросы без origin (например, из мобильных приложений, Postman)
+        if (!origin) return callback(null, true);
+        
+        // Разрешенные домены
+        const allowedOrigins = process.env.ALLOWED_ORIGINS 
+            ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+            : ['https://sergeynikishin555123123-lab--86fa.twc1.net'];
+        
+        // Добавляем localhost для разработки, если NODE_ENV не production
+        if (process.env.NODE_ENV !== 'production') {
+            allowedOrigins.push('http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001');
+        }
+        
+        // Проверяем origin
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+            callback(null, true);
+        } else {
+            console.log(`❌ CORS заблокирован для origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Forwarded-For'],
@@ -80,17 +99,14 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
         return statusMap[status] || status;
     };
     
-    bot.onText(/\/start/, (msg) => {
-        const chatId = msg.chat.id;
-        const adminUrl = process.env.NODE_ENV === 'production' 
-            ? `${process.env.FRONTEND_URL || 'https://ваш-домен.com'}/admin.html`
-            : 'http://localhost:3000/admin.html';
-        const performerUrl = process.env.NODE_ENV === 'production'
-            ? `${process.env.FRONTEND_URL || 'https://ваш-домен.com'}/performer.html`
-            : 'http://localhost:3000/performer.html';
-        const appUrl = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://ваш-домен.com' : 'http://localhost:3000');
-        
-        const message = `
+   bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    // Используем ваш домен
+    const adminUrl = `${process.env.FRONTEND_URL || 'https://sergeynikishin555123123-lab--86fa.twc1.net'}/admin.html`;
+    const performerUrl = `${process.env.FRONTEND_URL || 'https://sergeynikishin555123123-lab--86fa.twc1.net'}/performer.html`;
+    const appUrl = process.env.FRONTEND_URL || 'https://sergeynikishin555123123-lab--86fa.twc1.net';
+    
+    const message = `
 🎀 *Женский Консьерж - Управление системой*
 
 *Доступные команды:*
@@ -110,13 +126,14 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
 
 *Версия системы:* 2.1.0
 *Окружение:* ${process.env.NODE_ENV || 'development'}
-        `;
-        
-        bot.sendMessage(chatId, message, { 
-            parse_mode: 'Markdown',
-            disable_web_page_preview: true
-        });
+*Домен:* sergeynikishin555123123-lab--86fa.twc1.net
+    `;
+    
+    bot.sendMessage(chatId, message, { 
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true
     });
+});
     
     bot.onText(/\/help/, (msg) => {
         const chatId = msg.chat.id;
