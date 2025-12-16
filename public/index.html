@@ -1929,29 +1929,25 @@
         </div>
     </main>
     
-    <!-- Нижняя навигация (только для авторизованных с активной подпиской) -->
-    <nav class="bottom-nav" id="bottomNav" style="display: none;">
-        <a href="#" class="nav-item active" onclick="navigateToPage('home')" data-page="home">
-            <i class="fas fa-home"></i>
-            <span>Главная</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navigateToPage('categories')" data-page="categories">
-            <i class="fas fa-list-alt"></i>
-            <span>Категории</span>
-        </a>
-        <a href="#" class="nav-item" onclick="checkSubscription()" id="createTaskBtn">
-            <i class="fas fa-plus-circle"></i>
-            <span>Создать</span>
-        </a>
-        <a href="#" class="nav-item" onclick="showTasksPopup()" id="quickTasksBtn">
-            <i class="fas fa-tasks"></i>
-            <span>Задачи</span>
-        </a>
-        <a href="#" class="nav-item" onclick="navigateToPage('profile')" data-page="profile">
-            <i class="fas fa-user"></i>
-            <span>Профиль</span>
-        </a>
-    </nav>
+<!-- Нижняя навигация (только для авторизованных с активной подпиской) -->
+<nav class="bottom-nav" id="bottomNav" style="display: none;">
+    <a href="#" class="nav-item active" onclick="navigateToPage('home')" data-page="home">
+        <i class="fas fa-home"></i>
+        <span>Главная</span>
+    </a>
+    <a href="#" class="nav-item" onclick="checkSubscription()" id="createTaskBtn">
+        <i class="fas fa-plus-circle"></i>
+        <span>Создать</span>
+    </a>
+    <a href="#" class="nav-item" onclick="showTasksPopup()" id="quickTasksBtn">
+        <i class="fas fa-tasks"></i>
+        <span>Задачи</span>
+    </a>
+    <a href="#" class="nav-item" onclick="navigateToPage('profile')" data-page="profile">
+        <i class="fas fa-user"></i>
+        <span>Профиль</span>
+    </a>
+</nav>
     
     <!-- Кнопка быстрого просмотра задач -->
     <a href="#" class="quick-tasks-btn" onclick="showTasksPopup()" id="floatingTasksBtn" style="display: none;">
@@ -1987,63 +1983,65 @@
     
     <!-- Модальные окна -->
     
-    <!-- Модалка входа -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Вход в аккаунт</h3>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="loginEmailInput" class="form-input" placeholder="ваш@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Пароль</label>
-                    <input type="password" id="loginPasswordInput" class="form-input" placeholder="Ваш пароль" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                    Войти
-                </button>
-            </form>
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Нет аккаунта? 
-                    <a href="#" onclick="showRegisterModal()" style="color: var(--gold-metallic); text-decoration: none; font-weight: 600;">Зарегистрироваться</a>
-                </p>
+<!-- Модалка входа -->
+<div class="modal" id="loginModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Вход в аккаунт</h3>
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Телефон или Email</label>
+                <input type="text" id="loginPhoneInput" class="form-input" placeholder="+79991234567 или ваш@email.com" required>
+                <small style="color: var(--graphite-light); font-size: 0.8rem;">Введите телефон или email, указанные при регистрации</small>
             </div>
+            <div class="form-group">
+                <label class="form-label">Пароль</label>
+                <input type="password" id="loginPasswordInput" class="form-input" placeholder="Ваш пароль" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                Войти
+            </button>
+        </form>
+        <div style="text-align: center; margin-top: 20px;">
+            <p style="color: var(--graphite-medium); font-size: 0.9rem;">Нет аккаунта? 
+                <a href="#" onclick="showRegisterModal()" style="color: var(--gold-metallic); text-decoration: none; font-weight: 600;">Зарегистрироваться</a>
+            </p>
         </div>
     </div>
+</div>
     
-    <!-- Модалка регистрации -->
-    <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <h3 class="modal-title">Регистрация</h3>
-            <form id="registerForm">
-                <div class="form-group">
-                    <label class="form-label">Имя *</label>
-                    <input type="text" id="registerFirstName" class="form-input" placeholder="Ваше имя" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Фамилия</label>
-                    <input type="text" id="registerLastName" class="form-input" placeholder="Ваша фамилия">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email *</label>
-                    <input type="email" id="registerEmail" class="form-input" placeholder="ваш@email.com" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Телефон *</label>
-                    <input type="tel" id="registerPhone" class="form-input" placeholder="+7 (999) 123-45-67" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Пароль *</label>
-                    <input type="password" id="registerPassword" class="form-input" placeholder="Не менее 6 символов" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-                    Зарегистрироваться
-                </button>
-            </form>
-        </div>
+  <!-- Модалка регистрации -->
+<div class="modal" id="registerModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Регистрация</h3>
+        <form id="registerForm">
+            <div class="form-group">
+                <label class="form-label">Имя *</label>
+                <input type="text" id="registerFirstName" class="form-input" placeholder="Ваше имя" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Фамилия (необязательно)</label>
+                <input type="text" id="registerLastName" class="form-input" placeholder="Ваша фамилия">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Телефон *</label>
+                <input type="tel" id="registerPhone" class="form-input" placeholder="+7 (999) 123-45-67" required>
+                <small style="color: var(--graphite-light); font-size: 0.8rem;">Телефон будет использоваться для входа</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email (необязательно)</label>
+                <input type="email" id="registerEmail" class="form-input" placeholder="ваш@email.com">
+                <small style="color: var(--graphite-light); font-size: 0.8rem;">Для восстановления пароля и уведомлений</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Пароль *</label>
+                <input type="password" id="registerPassword" class="form-input" placeholder="Не менее 6 символов" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                Зарегистрироваться
+            </button>
+        </form>
     </div>
+</div>
 
     <script>
         // Глобальные переменные
@@ -2184,6 +2182,85 @@
                 }
             });
         }
+
+// Получение информации о подписке
+async function loadSubscriptionInfo() {
+    if (!currentUser) return null;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/subscription-info`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                return data.data;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка получения информации о подписке:', error);
+    }
+    return null;
+}
+
+// Показать уведомление о подписке при входе
+async function showSubscriptionNotification() {
+    if (!currentUser || currentUser.role !== 'client') return;
+    
+    const subscriptionInfo = await loadSubscriptionInfo();
+    if (!subscriptionInfo) return;
+    
+    const { subscription_status, subscription_expires, days_remaining, next_charge_date } = subscriptionInfo;
+    
+    if (subscription_status === 'active' && subscription_expires) {
+        const expiryDate = new Date(subscription_expires);
+        const formattedDate = expiryDate.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        const nextCharge = new Date(next_charge_date);
+        const nextChargeFormatted = nextCharge.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        
+        let message = `✅ Ваша подписка активна`;
+        
+        if (days_remaining > 0) {
+            message += `\n⏰ Действует еще ${days_remaining} ${getDayWord(days_remaining)} до ${formattedDate}`;
+            message += `\n💰 Следующее списание: ${nextChargeFormatted}`;
+            
+            if (days_remaining <= 7) {
+                message += `\n⚠️ Подписка скоро закончится! Продлите вовремя.`;
+            }
+        } else {
+            message += `\n⚠️ Подписка истекает сегодня!`;
+            message += `\n💰 Следующее списание: ${nextChargeFormatted}`;
+        }
+        
+        // Показываем уведомление с задержкой, чтобы пользователь увидел его
+        setTimeout(() => {
+            showNotification(message, 'info');
+        }, 1000);
+    }
+}
+
+// Функция для правильного склонения слова "день"
+function getDayWord(days) {
+    if (days % 10 === 1 && days % 100 !== 11) {
+        return 'день';
+    } else if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100)) {
+        return 'дня';
+    } else {
+        return 'дней';
+    }
+}
         
         // Проверка авторизации
         async function checkAuth() {
@@ -3848,24 +3925,30 @@
             window.location.href = '/performer.html';
         }
         
-        // Авторизация
         async function login() {
-            try {
-                const email = document.getElementById('loginEmailInput').value;
-                const password = document.getElementById('loginPasswordInput').value;
-                
-                if (!email || !password) {
-                    showNotification('Заполните все поля', 'error');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
+    try {
+        const phoneEmail = document.getElementById('loginPhoneInput').value;
+        const password = document.getElementById('loginPasswordInput').value;
+        
+        if (!phoneEmail || !password) {
+            showNotification('Заполните все поля', 'error');
+            return;
+        }
+        
+        // Определяем, что ввел пользователь - телефон или email
+        const isPhone = /^[\+]?[0-9\s\-\(\)]+$/.test(phoneEmail.replace(/\s/g, ''));
+        
+        const loginData = isPhone 
+            ? { phone: phoneEmail, password }
+            : { email: phoneEmail, password };
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        });
                 
                 const data = await response.json();
                 
@@ -3873,19 +3956,24 @@
                     throw new Error(data.error || 'Ошибка входа');
                 }
                 
-                if (data.success) {
-                    localStorage.setItem('token', data.data.token);
-                    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
-                    currentToken = data.data.token;
-                    currentUser = data.data.user;
-                    
-                    showNotification('Успешный вход!', 'success');
-                    closeModal('loginModal');
-                    updateUserInterface();
-                    
-                    // Определяем, какой экран показать после входа
-                    determineInitialScreen();
-                }
+if (data.success) {
+    localStorage.setItem('token', data.data.token);
+    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+    currentToken = data.data.token;
+    currentUser = data.data.user;
+    
+    showNotification('Успешный вход!', 'success');
+    closeModal('loginModal');
+    updateUserInterface();
+    
+    // Определяем, какой экран показать после входа
+    determineInitialScreen();
+    
+    // Показываем информацию о подписке
+    setTimeout(() => {
+        showSubscriptionNotification();
+    }, 1500);
+}
                 
             } catch (error) {
                 console.error('Ошибка входа:', error);
@@ -3894,22 +3982,23 @@
         }
         
         async function register() {
-            try {
-                const firstName = document.getElementById('registerFirstName').value;
-                const lastName = document.getElementById('registerLastName').value;
-                const email = document.getElementById('registerEmail').value;
-                const phone = document.getElementById('registerPhone').value;
-                const password = document.getElementById('registerPassword').value;
-                
-                if (!firstName || !email || !phone || !password) {
-                    showNotification('Заполните все обязательные поля', 'error');
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    showNotification('Пароль должен содержать не менее 6 символов', 'error');
-                    return;
-                }
+    try {
+        const firstName = document.getElementById('registerFirstName').value;
+        const lastName = document.getElementById('registerLastName').value;
+        const email = document.getElementById('registerEmail').value;
+        const phone = document.getElementById('registerPhone').value;
+        const password = document.getElementById('registerPassword').value;
+        
+        // Теперь email не обязателен, обязательны только имя, телефон и пароль
+        if (!firstName || !phone || !password) {
+            showNotification('Заполните имя, телефон и пароль', 'error');
+            return;
+        }
+        
+        if (password.length < 6) {
+            showNotification('Пароль должен содержать не менее 6 символов', 'error');
+            return;
+        }
                 
                 const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
                     method: 'POST',
