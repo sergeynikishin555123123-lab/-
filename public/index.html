@@ -1883,23 +1883,28 @@
                     </div>
                 </section>
                 
-                <!-- Настройки профиля -->
-                <section class="section">
-                    <h2 class="section-title">Настройки</h2>
-                    <div class="card">
-                        <div style="padding: 10px 0;">
-                            <a href="#" class="nav-menu-item" onclick="navigateToPage('subscription')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
-                                <i class="fas fa-crown" style="margin-right: 12px; color: var(--gold-metallic);"></i>Управление подпиской
-                            </a>
-                            <a href="#" class="nav-menu-item" onclick="showHelp()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
-                                <i class="fas fa-question-circle" style="margin-right: 12px; color: var(--gold-metallic);"></i>Помощь и поддержка
-                            </a>
-                            <a href="#" class="nav-menu-item" onclick="logout()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">
-                                <i class="fas fa-sign-out-alt" style="margin-right: 12px; color: var(--error);"></i>Выйти из системы
-                            </a>
-                        </div>
-                    </div>
-                </section>
+<!-- Настройки профиля -->
+<section class="section">
+    <h2 class="section-title">Настройки</h2>
+    <div class="card">
+        <div style="padding: 10px 0;">
+            <a href="#" class="nav-menu-item" onclick="navigateToPage('subscription')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
+                <i class="fas fa-crown" style="margin-right: 12px; color: var(--gold-metallic);"></i>Управление подпиской
+            </a>
+            <!-- ДОБАВЬТЕ ЭТУ КНОПКУ -->
+            <a href="#" class="nav-menu-item" onclick="openSendCodeModal()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
+                <i class="fas fa-mobile-alt" style="margin-right: 12px; color: var(--gold-metallic);"></i>Подтвердить телефон
+            </a>
+            <!-- КОНЕЦ ДОБАВЛЕНИЯ -->
+            <a href="#" class="nav-menu-item" onclick="showHelp()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">
+                <i class="fas fa-question-circle" style="margin-right: 12px; color: var(--gold-metallic);"></i>Помощь и поддержка
+            </a>
+            <a href="#" class="nav-menu-item" onclick="logout()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">
+                <i class="fas fa-sign-out-alt" style="margin-right: 12px; color: var(--error);"></i>Выйти из системы
+            </a>
+        </div>
+    </div>
+</section>
             </div>
         </div>
         
@@ -2043,6 +2048,62 @@
     </div>
 </div>
 
+<!-- Модалка подтверждения телефона (SMS код) -->
+<div class="modal" id="verifyPhoneModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Подтверждение телефона</h3>
+        <div id="verifyPhoneContent">
+            <p style="color: var(--graphite-medium); margin-bottom: 20px;">
+                Для активации подписки необходимо подтвердить ваш номер телефона
+            </p>
+            <div class="form-group">
+                <label class="form-label">Номер телефона</label>
+                <input type="text" id="verifyPhoneNumber" class="form-input" readonly style="background: #f5f5f5;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Код из SMS</label>
+                <input type="text" id="verifyPhoneCode" class="form-input" placeholder="Введите 6-значный код" maxlength="6">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="verifyPhoneCode()" style="width: 100%; margin-top: 10px;">
+                Подтвердить
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="sendVerificationCode()" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-redo"></i> Отправить код еще раз
+            </button>
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Код действителен 10 минут
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модалка отправки кода -->
+<div class="modal" id="sendCodeModal">
+    <div class="modal-content">
+        <h3 class="modal-title">Отправка кода подтверждения</h3>
+        <div id="sendCodeContent">
+            <p style="color: var(--graphite-medium); margin-bottom: 20px;">
+                Введите ваш номер телефона для получения кода подтверждения
+            </p>
+            <div class="form-group">
+                <label class="form-label">Номер телефона</label>
+                <input type="text" id="sendCodePhone" class="form-input" placeholder="+7 (999) 123-45-67">
+                <small style="color: var(--graphite-light); font-size: 0.8rem;">Укажите телефон, который использовался при регистрации</small>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="sendVerificationCode(true)" style="width: 100%; margin-top: 10px;">
+                Отправить код
+            </button>
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Код придет в течение минуты
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+    
     <script>
         // Глобальные переменные
         let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
@@ -2864,60 +2925,209 @@ function getDayWord(days) {
                 });
             }
         }
+
+// Открыть модалку подтверждения телефона
+function openVerifyPhoneModal(phoneNumber) {
+    closeAllModals();
+    const modal = document.getElementById('verifyPhoneModal');
+    if (modal) {
+        const phoneInput = document.getElementById('verifyPhoneNumber');
+        if (phoneInput && phoneNumber) {
+            phoneInput.value = phoneNumber;
+        }
+        modal.classList.add('active');
+        document.getElementById('verifyPhoneCode')?.focus();
+    }
+}
+
+// Открыть модалку отправки кода
+function openSendCodeModal() {
+    closeAllModals();
+    const modal = document.getElementById('sendCodeModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.getElementById('sendCodePhone')?.focus();
+    }
+}
+
+// Закрыть модалку подтверждения телефона
+function closeVerifyPhoneModal() {
+    closeModal('verifyPhoneModal');
+}
+
+// Отправить код подтверждения
+async function sendVerificationCode(fromSendModal = false) {
+    let phoneNumber;
+    
+    if (fromSendModal) {
+        // Берем телефон из модалки отправки
+        phoneNumber = document.getElementById('sendCodePhone').value;
+        if (!phoneNumber) {
+            showNotification('Введите номер телефона', 'error');
+            return;
+        }
+    } else {
+        // Берем телефон из модалки подтверждения
+        phoneNumber = document.getElementById('verifyPhoneNumber').value;
+    }
+    
+    if (!phoneNumber) {
+        showNotification('Номер телефона не найден', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Отправка SMS кода...');
         
-        // Выбор подписки
-        async function selectSubscription(subscriptionName) {
-            if (!currentUser) {
-                showNotification('Для выбора подписки необходимо войти в систему', 'error');
-                showLoginModal();
+        const response = await fetch(`${API_BASE_URL}/api/auth/send-verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone: phoneNumber })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Код подтверждения отправлен! Проверьте SMS на телефоне', 'success');
+            
+            if (fromSendModal) {
+                // Если отправляли из модалки отправки, закрываем ее и открываем модалку ввода кода
+                closeModal('sendCodeModal');
+                openVerifyPhoneModal(phoneNumber);
+            } else {
+                // Если отправляли из модалки подтверждения, просто обновляем UI
+                document.getElementById('verifyPhoneCode').value = '';
+                document.getElementById('verifyPhoneCode').focus();
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка отправки кода');
+        }
+    } catch (error) {
+        console.error('Ошибка отправки кода:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Подтвердить телефон с кодом
+async function verifyPhoneCode() {
+    const phoneNumber = document.getElementById('verifyPhoneNumber').value;
+    const code = document.getElementById('verifyPhoneCode').value;
+    
+    if (!phoneNumber || !code) {
+        showNotification('Введите код подтверждения', 'error');
+        return;
+    }
+    
+    if (code.length !== 6) {
+        showNotification('Код должен содержать 6 цифр', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Проверка кода...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone: phoneNumber, code: code })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Телефон успешно подтвержден!', 'success');
+            closeVerifyPhoneModal();
+            
+            // Обновляем данные пользователя
+            if (data.data.user) {
+                currentUser = data.data.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserInterface();
+                
+                // Показываем успешное сообщение
+                showNotification('Теперь вы можете активировать подписку', 'success');
+                
+                // Автоматически открываем страницу подписок через 1 секунду
+                setTimeout(() => {
+                    navigateToPage('subscription');
+                }, 1000);
+            }
+        } else {
+            throw new Error(data.error || 'Неверный код подтверждения');
+        }
+    } catch (error) {
+        console.error('Ошибка подтверждения телефона:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+        
+// Обновленная функция выбора подписки
+async function selectSubscription(subscriptionName) {
+    if (!currentUser) {
+        showNotification('Для выбора подписки необходимо войти в систему', 'error');
+        showLoginModal();
+        return;
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showNotification('Требуется авторизация', 'error');
+            return;
+        }
+        
+        const response = await fetch(`${API_BASE_URL}/api/subscriptions/subscribe`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                plan: subscriptionName
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            // Если требуется подтверждение телефона
+            if (data.requires_phone_verification) {
+                // Показываем модалку для подтверждения телефона
+                openVerifyPhoneModal(data.user_phone || currentUser.phone);
                 return;
             }
-            
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    showNotification('Требуется авторизация', 'error');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/subscriptions/subscribe`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        plan: subscriptionName
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка выбора подписки');
-                }
-                
-                if (data.success) {
-                    showNotification('Подписка успешно активирована!', 'success');
-                    
-                    // Обновляем пользователя
-                    if (data.data.user) {
-                        currentUser = data.data.user;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        updateUserInterface();
-                        
-                        // Показываем соответствующий экран
-                        determineInitialScreen();
-                    }
-                } else {
-                    throw new Error(data.error || 'Ошибка выбора подписки');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка выбора подписки:', error);
-                showNotification(error.message, 'error');
-            }
+            throw new Error(data.error || 'Ошибка выбора подписки');
         }
+        
+        if (data.success) {
+            showNotification('Подписка успешно активирована!', 'success');
+            
+            // Обновляем пользователя
+            if (data.data.user) {
+                currentUser = data.data.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserInterface();
+                
+                // Показываем соответствующий экран
+                determineInitialScreen();
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка выбора подписки');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка выбора подписки:', error);
+        showNotification(error.message, 'error');
+    }
+}
         
         // Обновление интерфейса пользователя
         function updateUserInterface() {
@@ -3925,7 +4135,7 @@ function getDayWord(days) {
             window.location.href = '/performer.html';
         }
         
-        async function login() {
+async function login() {
     try {
         const phoneEmail = document.getElementById('loginPhoneInput').value;
         const password = document.getElementById('loginPasswordInput').value;
@@ -3949,12 +4159,42 @@ function getDayWord(days) {
             },
             body: JSON.stringify(loginData)
         });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка входа');
-                }
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            // Если требуется подтверждение телефона
+            if (data.requires_phone_verification) {
+                showNotification('Требуется подтверждение телефона', 'info');
+                openVerifyPhoneModal(data.phone);
+                return;
+            }
+            throw new Error(data.error || 'Ошибка входа');
+        }
+        
+        if (data.success) {
+            localStorage.setItem('token', data.data.token);
+            localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+            currentToken = data.data.token;
+            currentUser = data.data.user;
+            
+            showNotification('Успешный вход!', 'success');
+            closeModal('loginModal');
+            updateUserInterface();
+            
+            // Определяем, какой экран показать после входа
+            determineInitialScreen();
+            
+            // Показываем информацию о подписке
+            setTimeout(() => {
+                showSubscriptionNotification();
+            }, 1500);
+        }
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showNotification(error.message, 'error');
+    }
+}
                 
 if (data.success) {
     localStorage.setItem('token', data.data.token);
