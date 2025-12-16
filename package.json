@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "setup": "npm install",
+    "setup": "node setup.js",
+    "setup:prod": "NODE_ENV=production node setup.js",
     "init-db": "node -e \"require('./server.js').initDatabase()\"",
     "health": "node -e \"require('./server.js').checkHealth()\""
   },
