@@ -2419,11 +2419,16 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
         
         // Проверяем, подтвержден ли телефон
         if (!req.user.phone_verified) {
+            // Вместо возврата ошибки, предлагаем подтвердить телефон
             return res.status(403).json({
                 success: false,
-                error: 'Для активации подписки необходимо подтвердить телефон'
+                error: 'Для активации подписки необходимо подтвердить телефон',
+                requires_phone_verification: true,
+                user_phone: req.user.phone,
+                user_id: req.user.id
             });
         }
+
         
         // Проверяем существование подписки
         const subscription = await db.get(
