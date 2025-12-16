@@ -3983,41 +3983,41 @@ const createInitialData = async () => {
         }
 
         // Подписки
-        const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions LIMIT 1");
-        if (!subscriptionsExist) {
-            const subscriptions = [
-                [
-                    'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
-                    990, 9900, 500, 5,
-                    JSON.stringify(['До 5 задач в месяц', 'Все базовые услуги', 'Поддержка по email', 'Стандартное время ответа']),
-                    '#FF6B8B', 1, 0, 1
-                ],
-                [
-                    'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
-                    1990, 19900, 1000, 999,
-                    JSON.stringify(['Неограниченные задачи', 'Все услуги премиум-класса', 'Приоритетная поддержка 24/7', 'Личный помощник', 'Срочные заказы']),
-                    '#9B59B6', 2, 1, 1
-                ],
-                [
-                    'vip', 'VIP', 'Индивидуальный подход и максимальный комфорт',
-                    4990, 49900, 2000, 999,
-                    JSON.stringify(['Неограниченные задачи', 'Все услуги VIP-класса', 'Персональный менеджер', 'Экстренная поддержка', 'Высший приоритет']),
-                    '#C5A880', 3, 0, 1
-                ]
-            ];
+       // Подписки
+const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions LIMIT 1");
+if (!subscriptionsExist) {
+    const subscriptions = [
+        [
+            'essential', 'Эссеншл', 'Базовый набор услуг для эпизодических задач',
+            990, 9900, 500, 5,
+            '["До 5 задач в месяц", "Все базовые услуги", "Поддержка по email", "Стандартное время ответа"]',
+            '#FF6B8B', 1, 0, 1
+        ],
+        [
+            'premium', 'Премиум', 'Полный доступ ко всем услугам и приоритетная поддержка',
+            1990, 19900, 1000, 999,
+            '["Неограниченные задачи", "Все услуги премиум-класса", "Приоритетная поддержка 24/7", "Личный помощник", "Срочные заказы"]',
+            '#9B59B6', 2, 1, 1
+        ],
+        [
+            'vip', 'VIP', 'Индивидуальный подход и максимальный комфорт',
+            4990, 49900, 2000, 999,
+            '["Неограниченные задачи", "Все услуги VIP-класса", "Персональный менеджер", "Экстренная поддержка", "Высший приоритет"]',
+            '#C5A880', 3, 0, 1
+        ]
+    ];
 
-            for (const sub of subscriptions) {
-                await db.run(
-                    `INSERT INTO subscriptions 
-                    (name, display_name, description, price_monthly, price_yearly, 
-                     initial_fee, tasks_limit, features, color_theme, sort_order, is_popular, is_active) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    sub
-                );
-            }
-            console.log('✅ Тарифы подписок созданы');
-        }
-
+    for (const sub of subscriptions) {
+        await db.run(
+            `INSERT INTO subscriptions 
+            (name, display_name, description, price_monthly, price_yearly, initial_fee, 
+             tasks_limit, features, color_theme, sort_order, is_popular, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            sub
+        );
+    }
+    console.log('✅ Тарифы подписок созданы');
+}
         // Категории
         const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
         if (!categoriesExist) {
