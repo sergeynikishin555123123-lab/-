@@ -249,11 +249,6 @@
             width: 100%;
         }
         
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-        }
-        
         /* Кнопки */
         .btn {
             display: inline-flex;
@@ -277,21 +272,10 @@
             box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
         }
         
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(197, 168, 128, 0.4);
-        }
-        
         .btn-secondary {
             background: white;
             color: var(--graphite-dark);
             border: 2px solid rgba(61, 61, 61, 0.1);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(61, 61, 61, 0.02);
-            border-color: var(--graphite-light);
-            transform: translateY(-1px);
         }
         
         /* Hero секция */
@@ -426,16 +410,6 @@
             font-weight: 600;
             flex: 1;
             margin-right: 10px;
-        }
-        
-        .service-category {
-            background: var(--pastel-pink);
-            color: #C2185B;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            white-space: nowrap;
         }
         
         .service-description {
@@ -592,21 +566,6 @@
         .subscription-features i {
             color: var(--success);
             font-size: 0.9rem;
-        }
-        
-        /* Страница подписок */
-        .subscription-screen {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .subscription-content {
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
         }
         
         /* Уведомления */
@@ -820,9 +779,61 @@
             .subscription-card {
                 margin-bottom: 20px;
             }
+            
+            /* Адаптивные стили для задач на мобильных */
+            .task-detail-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            
+            .task-quick-item {
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .task-quick-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+            }
+            
+            .btn {
+                padding: 8px 12px !important;
+                font-size: 0.85rem !important;
+            }
+            
+            .table-container {
+                overflow-x: auto;
+                font-size: 0.85rem;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            .modal-content {
+                padding: 20px !important;
+                margin: 10px !important;
+            }
+            
+            .chat-modal-content {
+                height: 90vh !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
         }
         
         @media (max-width: 480px) {
+            .container {
+                padding: 0 8px !important;
+            }
+            
             .hero {
                 padding: 20px;
             }
@@ -831,16 +842,30 @@
                 font-size: 1.6rem;
             }
             
+            .section-title {
+                font-size: 1.4rem !important;
+            }
+            
             .grid-3 {
                 grid-template-columns: 1fr;
             }
             
             .profile-stats {
                 grid-template-columns: 1fr;
+                gap: 8px !important;
+            }
+            
+            .stat-item {
+                padding: 10px !important;
             }
             
             .nav-item span {
                 font-size: 0.7rem;
+            }
+            
+            .nav-item i {
+                font-size: 1rem !important;
+                margin-bottom: 2px !important;
             }
             
             .notification {
@@ -850,6 +875,48 @@
             
             .modal-content {
                 padding: 20px;
+            }
+            
+            .bottom-nav {
+                height: 55px !important;
+                padding: 0 5px !important;
+            }
+            
+            .nav-item span {
+                font-size: 0.65rem !important;
+            }
+        }
+        
+        /* Стили для планшетов */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .container {
+                padding: 0 16px !important;
+            }
+        }
+        
+        /* Ховеры только для десктопа */
+        @media (min-width: 1025px) {
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow);
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+            
+            .btn-primary:hover {
+                box-shadow: 0 8px 20px rgba(197, 168, 128, 0.4);
+            }
+            
+            .btn-secondary:hover {
+                background: rgba(61, 61, 61, 0.02);
+                border-color: var(--graphite-light);
+                transform: translateY(-1px);
             }
         }
         
@@ -871,11 +938,6 @@
             box-shadow: var(--shadow-lg);
             transition: var(--transition);
             animation: pulse 2s infinite;
-        }
-        
-        .admin-access-btn:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-xl);
         }
         
         @keyframes pulse {
@@ -1019,10 +1081,6 @@
             transition: var(--transition-fast);
         }
         
-        .tab:hover {
-            color: var(--graphite-dark);
-        }
-        
         .tab.active {
             color: var(--gold-metallic);
             border-bottom-color: var(--gold-metallic);
@@ -1035,24 +1093,6 @@
             padding: 24px;
             margin-bottom: 20px;
             border: 1px solid rgba(61, 61, 61, 0.08);
-        }
-        
-        .task-detail-row {
-            display: flex;
-            margin-bottom: 16px;
-            align-items: flex-start;
-        }
-        
-        .task-detail-label {
-            width: 120px;
-            font-weight: 600;
-            color: var(--graphite-dark);
-            flex-shrink: 0;
-        }
-        
-        .task-detail-value {
-            flex: 1;
-            color: var(--graphite-medium);
         }
         
         /* Пустые состояния */
@@ -1208,11 +1248,6 @@
             transition: var(--transition);
         }
         
-        .send-message-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
-        }
-        
         .send-message-btn:disabled {
             background: var(--graphite-light);
             cursor: not-allowed;
@@ -1343,12 +1378,6 @@
             transition: var(--transition);
         }
         
-        .task-quick-item:hover {
-            background: rgba(61, 61, 61, 0.02);
-            border-color: var(--gold-metallic);
-            transform: translateY(-2px);
-        }
-        
         .task-quick-header {
             display: flex;
             justify-content: space-between;
@@ -1440,11 +1469,6 @@
             animation: pulse 2s infinite;
         }
         
-        .quick-tasks-btn:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-xl);
-        }
-        
         /* Кнопка панели исполнителя */
         .performer-access-btn {
             position: fixed;
@@ -1465,8 +1489,30 @@
             animation: pulse 2s infinite;
         }
         
-        .performer-access-btn:hover {
-            transform: scale(1.1);
+        /* Стили для модального чата */
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+        
+        .chat-modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 800px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
             box-shadow: var(--shadow-xl);
         }
     </style>
@@ -1496,7 +1542,6 @@
                 <a href="#" class="nav-menu-item" onclick="showTasksPopup()">
                     <i class="fas fa-tasks"></i>Мои задачи
                 </a>
-                <!-- Добавляем ссылку на панель исполнителя для пользователей с ролью performer -->
                 <a href="#" class="nav-menu-item" onclick="navigateToPerformerPanel()" id="performerPanelLink" style="display: none;">
                     <i class="fas fa-user-tie"></i>Панель исполнителя
                 </a>
@@ -2121,6 +2166,12 @@
                 if (popupModal && event.target === popupModal) {
                     closeTasksPopup();
                 }
+                
+                // Закрытие чата при клике вне его
+                const chatModal = document.getElementById('taskChatModal');
+                if (chatModal && event.target === chatModal) {
+                    closeChatModal();
+                }
             });
             
             // Обработка Escape для закрытия модальных окон
@@ -2129,6 +2180,7 @@
                     closeAllModals();
                     closeUserMenu();
                     closeTasksPopup();
+                    closeChatModal();
                 }
             });
         }
@@ -3110,7 +3162,7 @@
                             <td><span class="task-status ${task.status}">${getStatusText(task.status)}</span></td>
                             <td>${formatDate(task.created_at)}</td>
                             <td>
-                                <button class="btn btn-secondary btn-sm" onclick="showTaskDetails(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
+                                <button class="btn btn-secondary btn-sm" onclick="showTaskDetailsPopup(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </td>
@@ -3122,8 +3174,8 @@
             container.appendChild(table);
         }
         
-        // Показать детали задачи
-        async function showTaskDetails(taskId) {
+        // Показать детали задачи (оптимизированная версия)
+        async function showTaskDetailsPopup(taskId) {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) return;
@@ -3262,39 +3314,14 @@
                                 </div>
                             </div>
                             
-                            <!-- Чат задачи -->
-                            <div class="chat-container" id="taskChatContainer">
-                                <div class="chat-header">
-                                    <h3>Обсуждение задачи</h3>
-                                    ${task.performer_id ? `
-                                    <span class="task-status ${task.status}" style="font-size: 0.8rem; padding: 4px 8px;">
-                                        <i class="${getStatusInfo(task.status).icon}"></i>
-                                        ${getStatusText(task.status)}
-                                    </span>
-                                    ` : ''}
-                                </div>
-                                
-                                <div class="chat-messages-container" id="chatMessagesContainer">
-                                    <!-- Сообщения загружаются динамически -->
-                                </div>
-                                
-                                <div class="chat-input-area">
-                                    <textarea 
-                                        class="chat-input" 
-                                        id="chatMessageInput" 
-                                        placeholder="Введите сообщение..."
-                                        onkeydown="handleChatInputKeydown(event)"
-                                    ></textarea>
-                                    <button 
-                                        class="send-message-btn" 
-                                        onclick="sendChatMessage()"
-                                        id="sendMessageBtn"
-                                    >
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </div>
+                            <!-- Кнопка чата -->
+                            <div style="margin-top: 30px;">
+                                <button class="btn btn-primary" onclick="openTaskChat(${task.id})" style="width: 100%;">
+                                    <i class="fas fa-comments"></i> Открыть чат с исполнителем
+                                </button>
                             </div>
                             
+                            <!-- Действия с задачей -->
                             <div style="margin-top: 30px; display: flex; gap: 10px;">
                                 <button class="btn btn-secondary" onclick="navigateToPage('tasks')">
                                     <i class="fas fa-arrow-left"></i>
@@ -3315,12 +3342,6 @@
                             </div>
                         `;
                         
-                        // Загружаем сообщения в чат
-                        renderChatMessages();
-                        
-                        // Начинаем опрос новых сообщений
-                        startChatPolling();
-                        
                         navigateToPage('task-details');
                     }
                 } else {
@@ -3334,15 +3355,159 @@
             }
         }
         
+        // Открыть чат задачи
+        async function openTaskChat(taskId) {
+            try {
+                showLoading('Загрузка чата...');
+                
+                // Получаем задачу и сообщения
+                const [taskResponse, messagesResponse] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/tasks/${taskId}`, {
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    }),
+                    fetch(`${API_BASE_URL}/api/tasks/${taskId}/messages`, {
+                        headers: { 'Authorization': `Bearer ${currentToken}` }
+                    })
+                ]);
+                
+                if (!taskResponse.ok || !messagesResponse.ok) {
+                    throw new Error('Ошибка загрузки чата');
+                }
+                
+                const taskData = await taskResponse.json();
+                const messagesData = await messagesResponse.json();
+                
+                if (!taskData.success || !messagesData.success) {
+                    throw new Error('Ошибка данных чата');
+                }
+                
+                const task = taskData.data.task;
+                chatMessages = messagesData.data.messages || [];
+                currentChatTaskId = taskId;
+                
+                // Создаем модальное окно для чата
+                const chatModal = document.createElement('div');
+                chatModal.className = 'chat-modal';
+                chatModal.id = 'taskChatModal';
+                
+                chatModal.innerHTML = `
+                    <div class="chat-modal-content">
+                        <div class="chat-header" style="
+                            padding: 20px;
+                            background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+                            color: white;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                        ">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.2rem;">Чат по задаче: ${task.title}</h3>
+                                <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.9;">
+                                    ${task.performer_first_name ? `С исполнителем: ${task.performer_first_name}` : 'Ожидание исполнителя'}
+                                </p>
+                            </div>
+                            <button onclick="closeChatModal()" style="
+                                background: rgba(255,255,255,0.2);
+                                border: none;
+                                color: white;
+                                width: 40px;
+                                height: 40px;
+                                border-radius: 50%;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="chat-messages-container" id="chatMessagesContent" style="
+                            flex: 1;
+                            overflow-y: auto;
+                            padding: 20px;
+                            background: rgba(249, 247, 243, 0.5);
+                            display: flex;
+                            flex-direction: column;
+                            gap: 10px;
+                        ">
+                            <!-- Сообщения будут здесь -->
+                        </div>
+                        
+                        <div class="chat-input-area" style="
+                            padding: 15px 20px;
+                            border-top: 1px solid rgba(61, 61, 61, 0.1);
+                            background: white;
+                            display: flex;
+                            gap: 10px;
+                        ">
+                            <textarea 
+                                id="chatMessageInput" 
+                                placeholder="Введите сообщение..."
+                                style="
+                                    flex: 1;
+                                    padding: 12px 16px;
+                                    border: 1px solid rgba(61, 61, 61, 0.1);
+                                    border-radius: 24px;
+                                    font-family: 'Inter', sans-serif;
+                                    font-size: 0.95rem;
+                                    resize: none;
+                                    min-height: 48px;
+                                    max-height: 120px;
+                                    transition: var(--transition);
+                                "
+                                onkeydown="handleChatKeydown(event)"
+                            ></textarea>
+                            <button 
+                                id="sendChatButton"
+                                onclick="sendChatMessage()"
+                                style="
+                                    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+                                    color: white;
+                                    border: none;
+                                    border-radius: 50%;
+                                    width: 48px;
+                                    height: 48px;
+                                    cursor: pointer;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    transition: var(--transition);
+                                "
+                            >
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(chatModal);
+                renderChatMessages();
+                startChatPolling();
+                
+                // Фокус на поле ввода
+                const input = document.getElementById('chatMessageInput');
+                if (input) {
+                    input.focus();
+                }
+                
+            } catch (error) {
+                console.error('Ошибка открытия чата:', error);
+                showNotification('Ошибка открытия чата', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
         // Рендер сообщений чата
         function renderChatMessages() {
-            const container = document.getElementById('chatMessagesContainer');
+            const container = document.getElementById('chatMessagesContent');
             if (!container) return;
             
             if (chatMessages.length === 0) {
                 container.innerHTML = `
-                    <div class="no-messages">
-                        <i class="fas fa-comments"></i>
+                    <div style="text-align: center; padding: 40px; color: var(--graphite-medium);">
+                        <i class="fas fa-comments" style="font-size: 3rem; opacity: 0.3; margin-bottom: 16px;"></i>
                         <p>Пока нет сообщений</p>
                         <p class="text-sm">Начните обсуждение задачи</p>
                     </div>
@@ -3352,20 +3517,56 @@
             
             container.innerHTML = chatMessages.map(msg => {
                 const isCurrentUser = msg.user_id === currentUser.id;
-                const senderName = msg.user_id === currentUser.id 
+                const senderName = isCurrentUser 
                     ? 'Вы' 
                     : `${msg.first_name || 'Пользователь'} ${msg.last_name || ''}`;
                 
                 return `
-                    <div class="chat-message ${isCurrentUser ? 'sent' : 'received'}">
-                        <div class="message-bubble">
-                            ${!isCurrentUser ? `<div class="message-sender">${senderName}</div>` : ''}
-                            <div>${msg.message}</div>
-                            <div class="message-time">
+                    <div style="display: flex; max-width: 80%; ${isCurrentUser ? 'margin-left: auto;' : ''}">
+                        ${!isCurrentUser ? `
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--lavender-light), var(--pastel-pink)); 
+                                 display: flex; align-items: center; justify-content: center; margin-right: 10px; margin-top: 5px; color: var(--graphite-dark); font-weight: 600; font-size: 0.8rem;">
+                                ${senderName.charAt(0)}
+                            </div>
+                        ` : ''}
+                        
+                        <div style="flex: 1;">
+                            ${!isCurrentUser ? `
+                                <div style="font-size: 0.8rem; font-weight: 600; color: var(--graphite-medium); margin-bottom: 4px;">
+                                    ${senderName}
+                                </div>
+                            ` : ''}
+                            
+                            <div style="
+                                padding: 12px 16px;
+                                border-radius: 18px;
+                                ${isCurrentUser 
+                                    ? 'background: linear-gradient(135deg, var(--pastel-pink), #F0C8DE); color: var(--graphite-dark); border-bottom-right-radius: 4px;' 
+                                    : 'background: white; border: 1px solid rgba(61, 61, 61, 0.1); color: var(--graphite-dark); border-bottom-left-radius: 4px;'
+                                }
+                                box-shadow: var(--shadow-sm);
+                                word-break: break-word;
+                            ">
+                                ${msg.message}
+                            </div>
+                            
+                            <div style="
+                                font-size: 0.7rem;
+                                color: var(--graphite-light);
+                                margin-top: 4px;
+                                ${isCurrentUser ? 'text-align: right;' : ''}
+                            ">
                                 ${new Date(msg.created_at).toLocaleString('ru-RU')}
                                 ${msg.is_read && !isCurrentUser ? ' <i class="fas fa-check" style="color: var(--success);"></i>' : ''}
                             </div>
                         </div>
+                        
+                        ${isCurrentUser ? `
+                            <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark)); 
+                                 display: flex; align-items: center; justify-content: center; margin-left: 10px; margin-top: 5px; color: white; font-weight: 600; font-size: 0.8rem;">
+                                ${senderName.charAt(0)}
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -3383,7 +3584,7 @@
             
             if (!message) return;
             
-            const sendBtn = document.getElementById('sendMessageBtn');
+            const sendBtn = document.getElementById('sendChatButton');
             sendBtn.disabled = true;
             
             try {
@@ -3393,32 +3594,18 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${currentToken}`
                     },
-                    body: JSON.stringify({
-                        message: message,
-                        attachment_url: null,
-                        attachment_type: null
-                    })
+                    body: JSON.stringify({ message })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Добавляем сообщение в локальный список
-                    chatMessages.push({
-                        id: data.data.message.id,
-                        user_id: currentUser.id,
-                        first_name: currentUser.first_name,
-                        last_name: currentUser.last_name,
-                        message: message,
-                        created_at: new Date().toISOString(),
-                        is_read: 0
-                    });
-                    
                     // Очищаем поле ввода
                     input.value = '';
                     
-                    // Перерисовываем сообщения
-                    renderChatMessages();
+                    // Перезагружаем сообщения
+                    await loadChatMessages();
+                    
                 } else {
                     throw new Error(data.error || 'Ошибка отправки сообщения');
                 }
@@ -3431,82 +3618,59 @@
             }
         }
         
-        // Обработка нажатия Enter в поле ввода чата
-        function handleChatInputKeydown(event) {
+        // Загрузка сообщений чата
+        async function loadChatMessages() {
+            if (!currentChatTaskId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${currentChatTaskId}/messages`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    chatMessages = data.data.messages || [];
+                    renderChatMessages();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error);
+            }
+        }
+        
+        // Опрос новых сообщений
+        function startChatPolling() {
+            if (chatPollingInterval) {
+                clearInterval(chatPollingInterval);
+            }
+            
+            chatPollingInterval = setInterval(async () => {
+                await loadChatMessages();
+            }, 3000);
+        }
+        
+        // Обработка Enter в чате
+        function handleChatKeydown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 sendChatMessage();
             }
         }
         
-        // Опрос новых сообщений
-        function startChatPolling() {
-            // Останавливаем предыдущий опрос
-            if (chatPollingInterval) {
-                clearInterval(chatPollingInterval);
-            }
-            
-            // Начинаем новый опрос
-            chatPollingInterval = setInterval(async () => {
-                if (!currentChatTaskId) return;
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/tasks/${currentChatTaskId}/messages`, {
-                        headers: {
-                            'Authorization': `Bearer ${currentToken}`
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        const newMessages = data.data.messages || [];
-                        if (newMessages.length !== chatMessages.length) {
-                            chatMessages = newMessages;
-                            renderChatMessages();
-                        }
-                    }
-                } catch (error) {
-                    console.error('Ошибка опроса сообщений:', error);
-                }
-            }, 3000); // Опрос каждые 3 секунды
-        }
-        
-        // Остановка опроса при уходе со страницы
-        window.addEventListener('beforeunload', function() {
+        // Закрытие чата
+        function closeChatModal() {
             if (chatPollingInterval) {
                 clearInterval(chatPollingInterval);
                 chatPollingInterval = null;
             }
-        });
-        
-        // Завершение задачи
-        async function completeTask(taskId) {
-            if (!confirm('Вы уверены, что хотите отметить задачу как выполненную?')) {
-                return;
+            
+            const modal = document.getElementById('taskChatModal');
+            if (modal) {
+                modal.remove();
             }
             
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/complete`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Задача отмечена как выполненная', 'success');
-                    // Перезагружаем детали задачи
-                    showTaskDetails(taskId);
-                } else {
-                    throw new Error(data.error || 'Ошибка завершения задачи');
-                }
-            } catch (error) {
-                console.error('Ошибка завершения задачи:', error);
-                showNotification(error.message, 'error');
-            }
+            currentChatTaskId = null;
+            chatMessages = [];
         }
         
         // Показать поп-ап окно с задачами
@@ -3546,7 +3710,7 @@
                     container.innerHTML = tasks.map(task => {
                         const status = getStatusInfo(task.status);
                         return `
-                            <div class="task-quick-item" onclick="viewTaskFromPopup(${task.id})">
+                            <div class="task-quick-item" onclick="showTaskDetailsPopup(${task.id})">
                                 <div class="task-quick-header">
                                     <div class="task-quick-title">${task.title}</div>
                                     <span class="task-quick-status ${task.status}">${status.name}</span>
@@ -3583,12 +3747,6 @@
             }
         }
         
-        // Просмотр задачи из поп-ап окна
-        function viewTaskFromPopup(taskId) {
-            closeTasksPopup();
-            showTaskDetails(taskId);
-        }
-        
         // Обновление статуса задачи
         async function updateTaskStatus(taskId, status) {
             if (!confirm('Вы уверены, что хотите изменить статус задачи?')) {
@@ -3610,12 +3768,41 @@
                 if (data.success) {
                     showNotification('Статус задачи обновлен', 'success');
                     // Перезагружаем детали задачи
-                    showTaskDetails(taskId);
+                    showTaskDetailsPopup(taskId);
                 } else {
                     throw new Error(data.error || 'Ошибка обновления статуса');
                 }
             } catch (error) {
                 console.error('Ошибка обновления статуса задачи:', error);
+                showNotification(error.message, 'error');
+            }
+        }
+        
+        // Завершение задачи
+        async function completeTask(taskId) {
+            if (!confirm('Вы уверены, что хотите отметить задачу как выполненную?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Задача отмечена как выполненная', 'success');
+                    // Перезагружаем детали задачи
+                    showTaskDetailsPopup(taskId);
+                } else {
+                    throw new Error(data.error || 'Ошибка завершения задачи');
+                }
+            } catch (error) {
+                console.error('Ошибка завершения задачи:', error);
                 showNotification(error.message, 'error');
             }
         }
@@ -3928,15 +4115,17 @@
         window.toggleUserMenu = toggleUserMenu;
         window.selectSubscription = selectSubscription;
         window.filterTasks = filterTasks;
-        window.showTaskDetails = showTaskDetails;
+        window.showTaskDetails = showTaskDetailsPopup;
+        window.showTaskDetailsPopup = showTaskDetailsPopup;
         window.showHelp = showHelp;
         window.showTasksPopup = showTasksPopup;
         window.closeTasksPopup = closeTasksPopup;
-        window.viewTaskFromPopup = viewTaskFromPopup;
         window.updateTaskStatus = updateTaskStatus;
         window.completeTask = completeTask;
+        window.openTaskChat = openTaskChat;
+        window.closeChatModal = closeChatModal;
         window.sendChatMessage = sendChatMessage;
-        window.handleChatInputKeydown = handleChatInputKeydown;
+        window.handleChatKeydown = handleChatKeydown;
         window.navigateToPerformerPanel = navigateToPerformerPanel;
     </script>
 </body>
