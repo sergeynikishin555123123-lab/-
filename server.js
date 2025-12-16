@@ -1044,7 +1044,6 @@ app.post('/api/auth/register', async (req, res) => {
         
         // Для исполнителей и администраторов сразу активная подписка
         const initialFeePaid = DEMO_MODE ? 1 : ((role === 'performer' || role === 'admin' || role === 'manager' || role === 'superadmin') ? 1 : (subscription.initial_fee === 0 ? 1 : 0));
-const subscriptionStatus = initialFeePaid ? 'active' : 'pending';
 
         const subscriptionStatus = initialFeePaid ? 'active' : 'pending';
         
