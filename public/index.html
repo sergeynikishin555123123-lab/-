@@ -2163,11 +2163,19 @@ public/index.html - <!DOCTYPE html>
                 return;
             }
             
-            if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
-                // Пользователь без активной подписки - показываем экран подписки
-                navigateToPage('subscription-required');
-                return;
-            }
+            // Проверяем подтверждение телефона
+if (!currentUser.phone_verified) {
+    // Пользователь без подтвержденного телефона
+    showNotification('Подтвердите телефон для активации аккаунта', 'warning');
+    openVerifyPhoneModal(currentUser.phone);
+    return;
+}
+
+if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+    // Пользователь без активной подписки - показываем экран подписки
+    navigateToPage('subscription-required');
+    return;
+}
             
             // Пользователь с активной подпиской - показываем главную
             navigateToPage('home');
@@ -3040,34 +3048,37 @@ public/index.html - <!DOCTYPE html>
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification('Телефон успешно подтвержден!', 'success');
-                    closeVerifyPhoneModal();
-                    
-                    // Обновляем данные пользователя
-                    if (data.data.user) {
-                        currentUser = data.data.user;
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        updateUserInterface();
-                        
-                        // Показываем успешное сообщение
-                        showNotification('Теперь вы можете активировать подписку', 'success');
-                        
-                        // Автоматически открываем страницу подписок через 1 секунду
-                        setTimeout(() => {
-                            navigateToPage('subscription');
-                        }, 1000);
-                    }
-                } else {
-                    throw new Error(data.error || 'Неверный код подтверждения');
-                }
-            } catch (error) {
-                console.error('Ошибка подтверждения телефона:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+if (data.success) {
+    showNotification('Телефон успешно подтвержден!', 'success');
+    closeVerifyPhoneModal();
+    
+    // Сохраняем токен и пользователя
+    if (data.data.token) {
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+        currentToken = data.data.token;
+        currentUser = data.data.user;
+        updateUserInterface();
+    }
+    
+    // Если это новая регистрация
+    if (data.data.is_new_registration) {
+        showNotification('Регистрация завершена! Добро пожаловать!', 'success');
+        
+        // Определяем следующий экран
+        setTimeout(() => {
+            determineInitialScreen();
+        }, 1000);
+    } else {
+        // Если это существующий пользователь
+        showNotification('Теперь вы можете активировать подписку', 'success');
+        
+        // Автоматически открываем страницу подписок через 1 секунду
+        setTimeout(() => {
+            navigateToPage('subscription');
+        }, 1000);
+    }
+}
         
         // Обновленная функция выбора подписки
         async function selectSubscription(subscriptionName) {
@@ -4236,19 +4247,33 @@ public/index.html - <!DOCTYPE html>
                     throw new Error(data.error || 'Ошибка регистрации');
                 }
                 
-                if (data.success) {
-                    localStorage.setItem('token', data.data.token);
-                    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
-                    currentToken = data.data.token;
-                    currentUser = data.data.user;
-                    
-                    showNotification('Регистрация успешна!', 'success');
-                    closeModal('registerModal');
-                    updateUserInterface();
-                    
-                    // Определяем, какой экран показать после регистрации
-                    determineInitialScreen();
-                }
+if (data.success) {
+    // Если требуется подтверждение телефона (новый пользователь)
+    if (data.data.requires_phone_verification && data.data.can_verify_immediately) {
+        showNotification('Регистрация почти завершена! Подтвердите телефон.', 'info');
+        closeModal('registerModal');
+        
+        // Открываем модалку подтверждения телефона сразу
+        setTimeout(() => {
+            openVerifyPhoneModal(data.data.phone);
+        }, 500);
+        
+        // Не сохраняем токен и пользователя - он еще не подтвержден
+    } else if (data.data.token) {
+        // Если токен есть (подтвердили телефон или это тестовый пользователь)
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('currentUser', JSON.stringify(data.data.user));
+        currentToken = data.data.token;
+        currentUser = data.data.user;
+        
+        showNotification('Регистрация успешна!', 'success');
+        closeModal('registerModal');
+        updateUserInterface();
+        
+        // Определяем, какой экран показать после регистрации
+        determineInitialScreen();
+    }
+}
                 
             } catch (error) {
                 console.error('Ошибка регистрации:', error);
