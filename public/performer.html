@@ -1342,6 +1342,11 @@
             }
         };
 
+        // Переменные для работы чата
+        let currentChatTask = null;
+        let performerChatMessages = [];
+        let performerChatPolling = null;
+
         // Инициализация
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('👔 Инициализация панели исполнителя...');
@@ -1621,6 +1626,11 @@
 
         // Навигация по разделам
         function navigateToSection(section) {
+            // Останавливаем опрос чата при уходе
+            if (section !== 'chat') {
+                stopPerformerChatPolling();
+            }
+            
             // Обновляем активную ссылку
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
@@ -1702,7 +1712,7 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 ${task.status === 'assigned' || task.status === 'in_progress' ? `
-                                    <button class="btn btn-primary btn-sm" onclick="openChat(${task.id})">
+                                    <button class="btn btn-primary btn-sm" onclick="openPerformerChat(${task.id})">
                                         <i class="fas fa-comment"></i>
                                     </button>
                                 ` : ''}
@@ -1828,7 +1838,7 @@
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 ${task.status === 'assigned' || task.status === 'in_progress' ? `
-                                    <button class="btn btn-primary btn-sm" onclick="openChat(${task.id})">
+                                    <button class="btn btn-primary btn-sm" onclick="openPerformerChat(${task.id})">
                                         <i class="fas fa-comment"></i>
                                     </button>
                                 ` : ''}
@@ -2107,7 +2117,7 @@
                                     </button>
                                 ` : ''}
                                 
-                                <button class="btn btn-primary" onclick="openChat(${task.id})">
+                                <button class="btn btn-primary" onclick="openPerformerChat(${task.id})">
                                     <i class="fas fa-comment"></i> Открыть чат
                                 </button>
                             </div>
@@ -2209,124 +2219,168 @@
             }
         }
 
+        // === РАБОЧИЙ ЧАТ ===
+
         // Открыть чат с клиентом
-        async function openChat(taskId) {
-            showLoading('Загрузка чата...');
+        async function openPerformerChat(taskId) {
+            showLoading('Открытие чата...');
             
             try {
-                // Получаем задачу и сообщения
-                const [taskResponse, messagesResponse] = await Promise.all([
-                    fetch(`/api/tasks/${taskId}`, {
-                        headers: { 'Authorization': `Bearer ${app.token}` }
-                    }),
-                    fetch(`/api/tasks/${taskId}/messages`, {
-                        headers: { 'Authorization': `Bearer ${app.token}` }
-                    })
-                ]);
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    headers: { 'Authorization': `Bearer ${app.token}` }
+                });
                 
-                const taskData = await taskResponse.json();
-                const messagesData = await messagesResponse.json();
+                const data = await response.json();
                 
-                if (!taskData.success || !messagesData.success) {
-                    throw new Error('Ошибка загрузки данных чата');
-                }
-                
-                const task = taskData.data.task;
-                const messages = messagesData.data.messages || [];
-                
-                const html = `
-                    <div class="content-header">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <button class="btn btn-secondary" onclick="navigateToSection('my-tasks')" style="padding: 8px 16px;">
-                                <i class="fas fa-arrow-left"></i>
-                            </button>
-                            <div>
-                                <h1 class="content-title">Чат по задаче</h1>
-                                <p class="content-subtitle">${task.title}</p>
-                            </div>
-                        </div>
-                    </div>
+                if (data.success) {
+                    currentChatTask = data.data.task;
+                    performerChatMessages = data.data.messages || [];
                     
-                    <div class="task-chat-container">
-                        <div class="chat-header">
-                            <h3>Обсуждение с ${task.client_first_name} ${task.client_last_name || ''}</h3>
-                        </div>
-                        
-                        <div class="chat-messages" id="chatMessages">
-                            ${messages.length === 0 ? `
-                                <div class="no-messages">
-                                    <i class="fas fa-comments"></i>
-                                    <p>Пока нет сообщений</p>
-                                    <p class="text-sm">Начните обсуждение задачи</p>
-                                </div>
-                            ` : messages.map(msg => {
-                                const isCurrentUser = msg.user_id === app.currentPerformer.id;
-                                return `
-                                    <div class="chat-message ${isCurrentUser ? 'sent' : 'received'}">
-                                        ${!isCurrentUser ? `<div class="message-sender">${msg.first_name}</div>` : ''}
-                                        <div class="message-bubble">${msg.message}</div>
-                                        <div class="message-time">
-                                            ${new Date(msg.created_at).toLocaleString('ru-RU')}
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                        
-                        <div class="chat-input-area">
-                            <textarea 
-                                class="chat-input" 
-                                id="chatMessageInput" 
-                                placeholder="Введите сообщение..."
-                                onkeydown="handleChatKeydown(event, ${taskId})"
-                            ></textarea>
-                            <button 
-                                class="send-message-btn" 
-                                onclick="sendChatMessage(${taskId})"
-                                id="sendChatBtn"
-                            >
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                const contentArea = document.getElementById('contentArea');
-                contentArea.innerHTML = html;
-                
-                // Прокручиваем вниз
-                const messagesContainer = document.getElementById('chatMessages');
-                if (messagesContainer) {
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    renderPerformerChat();
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки чата');
                 }
-                
-                // Фокус на поле ввода
-                const input = document.getElementById('chatMessageInput');
-                if (input) {
-                    input.focus();
-                }
-                
             } catch (error) {
-                console.error('Ошибка загрузки чата:', error);
-                showNotification('Ошибка загрузки чата', 'error');
-                navigateToSection('my-tasks');
+                console.error('Ошибка открытия чата:', error);
+                showNotification('Ошибка открытия чата', 'error');
             } finally {
                 hideLoading();
             }
         }
 
+        // Рендер чата
+        function renderPerformerChat() {
+            const contentArea = document.getElementById('contentArea');
+            
+            contentArea.innerHTML = `
+                <div class="content-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="navigateToSection('my-tasks')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1 class="content-title">Чат с клиентом</h1>
+                    </div>
+                </div>
+                
+                <div class="task-chat-container">
+                    <div class="chat-header">
+                        <h3>${currentChatTask.title}</h3>
+                        <div style="font-size: 0.9rem; opacity: 0.9;">
+                            Клиент: ${currentChatTask.client_first_name} ${currentChatTask.client_last_name || ''}
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="performerMessages">
+                        ${performerChatMessages.length === 0 ? `
+                            <div class="no-messages">
+                                <i class="fas fa-comments"></i>
+                                <p>Пока нет сообщений</p>
+                                <p class="text-sm">Начните обсуждение задачи</p>
+                            </div>
+                        ` : performerChatMessages.map(msg => {
+                            const isCurrentUser = msg.user_id === app.currentPerformer.id;
+                            return `
+                                <div class="chat-message ${isCurrentUser ? 'sent' : 'received'}">
+                                    ${!isCurrentUser ? `<div class="message-sender">${msg.first_name}</div>` : ''}
+                                    <div class="message-bubble">${msg.message}</div>
+                                    <div class="message-time">
+                                        ${new Date(msg.created_at).toLocaleString('ru-RU')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <textarea 
+                            class="chat-input" 
+                            id="performerChatInput" 
+                            placeholder="Введите сообщение..."
+                            onkeydown="handlePerformerChatKeydown(event)"
+                        ></textarea>
+                        <button 
+                            class="send-message-btn" 
+                            onclick="sendPerformerChatMessage()"
+                            id="sendPerformerChatBtn"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Прокручиваем вниз
+            const messagesContainer = document.getElementById('performerMessages');
+            if (messagesContainer) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Фокус на поле ввода
+            const input = document.getElementById('performerChatInput');
+            if (input) {
+                input.focus();
+            }
+            
+            // Начинаем опрос сообщений
+            startPerformerChatPolling();
+        }
+
+        // Загрузка сообщений чата
+        async function loadPerformerChatMessages() {
+            if (!currentChatTask) return;
+            
+            try {
+                const response = await fetch(`/api/tasks/${currentChatTask.id}/messages`, {
+                    headers: { 'Authorization': `Bearer ${app.token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    performerChatMessages = data.data.messages || [];
+                    const messagesContainer = document.getElementById('performerMessages');
+                    if (messagesContainer) {
+                        messagesContainer.innerHTML = performerChatMessages.length === 0 ? `
+                            <div class="no-messages">
+                                <i class="fas fa-comments"></i>
+                                <p>Пока нет сообщений</p>
+                                <p class="text-sm">Начните обсуждение задачи</p>
+                            </div>
+                        ` : performerChatMessages.map(msg => {
+                            const isCurrentUser = msg.user_id === app.currentPerformer.id;
+                            return `
+                                <div class="chat-message ${isCurrentUser ? 'sent' : 'received'}">
+                                    ${!isCurrentUser ? `<div class="message-sender">${msg.first_name}</div>` : ''}
+                                    <div class="message-bubble">${msg.message}</div>
+                                    <div class="message-time">
+                                        ${new Date(msg.created_at).toLocaleString('ru-RU')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error);
+            }
+        }
+
         // Отправка сообщения в чат
-        async function sendChatMessage(taskId) {
-            const input = document.getElementById('chatMessageInput');
+        async function sendPerformerChatMessage() {
+            if (!currentChatTask) return;
+            
+            const input = document.getElementById('performerChatInput');
             const message = input.value.trim();
             
             if (!message) return;
             
-            const sendBtn = document.getElementById('sendChatBtn');
+            const sendBtn = document.getElementById('sendPerformerChatBtn');
             sendBtn.disabled = true;
             
             try {
-                const response = await fetch(`/api/tasks/${taskId}/messages`, {
+                const response = await fetch(`/api/tasks/${currentChatTask.id}/messages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2338,11 +2392,8 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Очищаем поле ввода
                     input.value = '';
-                    
-                    // Перезагружаем чат
-                    await openChat(taskId);
+                    await loadPerformerChatMessages();
                 } else {
                     throw new Error(data.error || 'Ошибка отправки сообщения');
                 }
@@ -2356,12 +2407,35 @@
         }
 
         // Обработка нажатия Enter в чате
-        function handleChatKeydown(event, taskId) {
+        function handlePerformerChatKeydown(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
-                sendChatMessage(taskId);
+                sendPerformerChatMessage();
             }
         }
+
+        // Опрос сообщений
+        function startPerformerChatPolling() {
+            if (performerChatPolling) {
+                clearInterval(performerChatPolling);
+            }
+            
+            performerChatPolling = setInterval(async () => {
+                await loadPerformerChatMessages();
+            }, 3000);
+        }
+
+        // Останавливаем опрос при уходе
+        function stopPerformerChatPolling() {
+            if (performerChatPolling) {
+                clearInterval(performerChatPolling);
+                performerChatPolling = null;
+            }
+            currentChatTask = null;
+            performerChatMessages = [];
+        }
+
+        // === КОНЕЦ ЧАТА ===
 
         // Загрузка данных профиля
         function loadProfileData() {
@@ -2410,11 +2484,31 @@
             showLoading('Сохранение настроек...');
             
             try {
-                // В реальном приложении здесь был бы запрос к API
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch('/api/performer/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${app.token}`
+                    },
+                    body: JSON.stringify({
+                        first_name: document.getElementById('editFirstName').value,
+                        last_name: document.getElementById('editLastName').value,
+                        phone: document.getElementById('editPhone').value,
+                        availability: document.getElementById('availabilityStatus').value,
+                        max_tasks: document.getElementById('maxTasks').value,
+                        min_budget: document.getElementById('minBudget').value
+                    })
+                });
                 
-                showNotification('Настройки успешно сохранены', 'success');
+                const data = await response.json();
                 
+                if (data.success) {
+                    showNotification('Настройки успешно сохранены', 'success');
+                    // Обновляем данные
+                    await loadPerformerData();
+                } else {
+                    throw new Error(data.error || 'Ошибка сохранения настроек');
+                }
             } catch (error) {
                 console.error('Ошибка сохранения настроек:', error);
                 showNotification('Ошибка сохранения настроек', 'error');
@@ -2488,24 +2582,62 @@
 
         // Навигация в главное приложение
         function navigateToMainApp() {
+            stopPerformerChatPolling();
             window.location.href = '/index.html';
         }
 
         // Проверка сообщений
         function checkMessages() {
-            showNotification('Проверьте чат в задачах в работе', 'info');
+            // Проверяем задачи с новыми сообщениями
+            const tasksWithUnread = app.myTasks.filter(task => 
+                task.status === 'assigned' || task.status === 'in_progress'
+            );
+            
+            if (tasksWithUnread.length > 0) {
+                showNotification(`У вас ${tasksWithUnread.length} задач для обсуждения`, 'info');
+            } else {
+                showNotification('Нет задач с активными чатами', 'info');
+            }
         }
 
         // Обновление статуса доступности
-        function updateAvailability() {
-            const status = prompt('Установите статус доступности (available, busy, away):', 'available');
-            if (status) {
-                showNotification(`Статус доступности изменен на: ${status}`, 'success');
+        async function updateAvailability() {
+            const currentStatus = document.getElementById('availabilityStatus')?.value || 'available';
+            const statuses = {
+                available: 'Доступен',
+                busy: 'Занят',
+                away: 'Не на месте'
+            };
+            
+            const newStatus = prompt('Установите статус доступности:\n1. available - Доступен\n2. busy - Занят\n3. away - Не на месте', currentStatus);
+            
+            if (newStatus && ['available', 'busy', 'away'].includes(newStatus)) {
+                try {
+                    const response = await fetch('/api/performer/availability', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${app.token}`
+                        },
+                        body: JSON.stringify({ availability: newStatus })
+                    });
+                    
+                    if (response.ok) {
+                        showNotification(`Статус доступности изменен на: ${statuses[newStatus]}`, 'success');
+                        if (document.getElementById('availabilityStatus')) {
+                            document.getElementById('availabilityStatus').value = newStatus;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка обновления статуса:', error);
+                    showNotification('Ошибка обновления статуса', 'error');
+                }
             }
         }
 
         // Выход из системы
         function logout() {
+            stopPerformerChatPolling();
             localStorage.removeItem('token');
             localStorage.removeItem('currentUser');
             window.location.href = 'index.html';
@@ -2547,9 +2679,24 @@
         // Запуск уведомлений
         function startNotifications() {
             // Имитация новых задач
-            setInterval(() => {
+            setInterval(async () => {
                 if (Math.random() > 0.8) { // 20% chance
-                    showNotification('Появились новые доступные задачи!', 'info');
+                    // Проверяем реальные обновления
+                    try {
+                        const response = await fetch('/api/performer/tasks/available/count', {
+                            headers: { 'Authorization': `Bearer ${app.token}` }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success && data.data.count > app.availableTasks.length) {
+                                showNotification('Появились новые доступные задачи!', 'info');
+                                await loadAvailableTasks();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Ошибка проверки новых задач:', error);
+                    }
                 }
             }, 60000); // Каждую минуту
         }
@@ -2566,6 +2713,9 @@
                     }
                 });
             });
+            
+            // Остановка чата при закрытии страницы
+            window.addEventListener('beforeunload', stopPerformerChatPolling);
         }
 
         // Загрузка
@@ -2593,9 +2743,9 @@
         window.viewTask = viewTask;
         window.startTask = startTask;
         window.completeTask = completeTask;
-        window.openChat = openChat;
-        window.sendChatMessage = sendChatMessage;
-        window.handleChatKeydown = handleChatKeydown;
+        window.openPerformerChat = openPerformerChat;
+        window.sendPerformerChatMessage = sendPerformerChatMessage;
+        window.handlePerformerChatKeydown = handlePerformerChatKeydown;
         window.saveProfileSettings = saveProfileSettings;
         window.navigateToMainApp = navigateToMainApp;
         window.checkMessages = checkMessages;
@@ -2604,6 +2754,7 @@
         window.applyMyTasksFilters = applyMyTasksFilters;
         window.resetFilters = resetFilters;
         window.logout = logout;
+        window.stopPerformerChatPolling = stopPerformerChatPolling;
     </script>
 </body>
 </html>
