@@ -388,7 +388,13 @@ const initDatabase = async () => {
         // Определяем путь к базе данных
         let dbPath;
         if (process.env.NODE_ENV === 'production') {
-            dbPath = process.env.DATABASE_PATH || '/data/concierge_prod.db';
+            // Вместо /data используем текущую директорию или указанный путь
+            if (process.env.DATABASE_PATH) {
+                dbPath = process.env.DATABASE_PATH;
+            } else {
+                // Используем текущую директорию + /data
+                dbPath = './data/concierge_prod.db';
+            }
         } else if (process.env.NODE_ENV === 'test') {
             dbPath = process.env.TEST_DATABASE_PATH || './concierge_test.db';
         } else {
@@ -399,12 +405,45 @@ const initDatabase = async () => {
         
         // Создаем директорию если не существует
         const dir = path.dirname(dbPath);
-        if (dir !== '.' && !fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-            console.log(`📁 Создана директория: ${dir}`);
+        
+        // Используем абсолютный путь для проверки
+        const absoluteDir = path.resolve(dir);
+        console.log(`📁 Абсолютный путь к директории: ${absoluteDir}`);
+        
+        if (dir !== '.' && dir !== '/' && !fs.existsSync(absoluteDir)) {
+            try {
+                console.log(`📁 Создаю директорию: ${absoluteDir}`);
+                fs.mkdirSync(absoluteDir, { recursive: true });
+                console.log(`✅ Директория создана: ${absoluteDir}`);
+                
+                // Даем права на запись
+                fs.chmodSync(absoluteDir, 0o755);
+            } catch (mkdirError) {
+                console.error(`❌ Ошибка создания директории: ${mkdirError.message}`);
+                
+                // Если не получается, пробуем создать в текущей директории
+                console.log('🔄 Пробую альтернативный путь...');
+                dbPath = './concierge_prod.db';
+                console.log(`📁 Новый путь к базе данных: ${dbPath}`);
+            }
+        }
+        
+        // Проверяем, можем ли мы записать в эту директорию
+        try {
+            const testFile = path.join(path.dirname(dbPath), 'test_write.tmp');
+            fs.writeFileSync(testFile, 'test');
+            fs.unlinkSync(testFile);
+            console.log('✅ Права на запись подтверждены');
+        } catch (writeError) {
+            console.error(`❌ Нет прав на запись: ${writeError.message}`);
+            
+            // Используем гарантированно доступное место
+            dbPath = './concierge_prod.db';
+            console.log(`📁 Использую гарантированный путь: ${dbPath}`);
         }
         
         // Открываем базу данных
+        console.log(`📁 Финальный путь к БД: ${path.resolve(dbPath)}`);
         db = await open({
             filename: dbPath,
             driver: sqlite3.Database,
@@ -4275,6 +4314,7 @@ process.on('SIGINT', () => {
 });
 
 // ==================== ЗАПУСК СЕРВЕРА ====================
+// ==================== ЗАПУСК СЕРВЕРА ====================
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
@@ -4282,10 +4322,23 @@ const startServer = async () => {
         console.log('='.repeat(80));
         console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
         console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`📁 Database: ${process.env.DATABASE_PATH || (process.env.NODE_ENV === 'production' ? '/data/concierge_prod.db' : './concierge.db')}`);
+        console.log(`📁 Текущая рабочая директория: ${process.cwd()}`);
+        console.log(`📁 Директория скрипта: ${__dirname}`);
         console.log(`🤖 Telegram Bot: ${process.env.TELEGRAM_BOT_TOKEN ? '✅ Enabled' : '❌ Disabled'}`);
         console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? '✅ Set' : '⚠️ Using default'}`);
         console.log('='.repeat(80));
+        
+        // Проверяем права на запись в текущую директорию
+        try {
+            const testFile = './.write_test.tmp';
+            fs.writeFileSync(testFile, 'test');
+            fs.unlinkSync(testFile);
+            console.log('✅ Права на запись в текущую директорию: ДА');
+        } catch (error) {
+            console.error('❌ Права на запись в текущую директорию: НЕТ');
+            console.error('   Ошибка:', error.message);
+            console.log('⚠️  Попробуйте запустить с правами пользователя или измените директорию');
+        }
         
         await initDatabase();
         console.log('✅ База данных готова');
