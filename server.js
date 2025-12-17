@@ -4010,34 +4010,53 @@ app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (
     }
 });
 
-// Принятие задачи исполнителем
+// Принятие задачи исполнителем - ОБНОВЛЕННАЯ ВЕРСИЯ
 app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), async (req, res) => {
     try {
         const taskId = req.params.taskId;
+        const performerId = req.user.id;
         
+        console.log(`🤝 Исполнитель ${performerId} принимает задачу ${taskId}`);
+        
+        // Проверяем задачу
         const task = await db.get(
             'SELECT * FROM tasks WHERE id = ? AND status = "searching"',
             [taskId]
         );
         
         if (!task) {
+            console.log(`❌ Задача ${taskId} не найдена или уже принята`);
             return res.status(404).json({
                 success: false,
                 error: 'Задача не найдена или уже принята'
             });
         }
         
+        // Проверяем специализацию
         const canAccept = await db.get(
             'SELECT 1 FROM performer_categories WHERE performer_id = ? AND category_id = ? AND is_active = 1',
-            [req.user.id, task.category_id]
+            [performerId, task.category_id]
         );
         
         if (!canAccept) {
+            console.log(`❌ Исполнитель ${performerId} не имеет специализации в категории ${task.category_id}`);
             return res.status(403).json({
                 success: false,
                 error: 'У вас нет специализации в этой категории'
             });
         }
+        
+        // Проверяем, не занята ли уже задача
+        if (task.performer_id && task.performer_id !== 0) {
+            console.log(`❌ Задача ${taskId} уже назначена исполнителю ${task.performer_id}`);
+            return res.status(400).json({
+                success: false,
+                error: 'Задача уже назначена другому исполнителю'
+            });
+        }
+        
+        // Принимаем задачу
+        console.log(`✅ Назначаем задачу ${taskId} исполнителю ${performerId}`);
         
         await db.run(
             `UPDATE tasks SET 
@@ -4045,29 +4064,32 @@ app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), a
                 status = 'assigned',
                 updated_at = CURRENT_TIMESTAMP 
              WHERE id = ?`,
-            [req.user.id, taskId]
+            [performerId, taskId]
         );
         
+        // Записываем историю статусов
         await db.run(
             `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
              VALUES (?, ?, ?, ?)`,
-            [taskId, 'assigned', req.user.id, 'Задача принята исполнителем']
+            [taskId, 'assigned', performerId, 'Задача принята исполнителем']
         );
         
+        // Уведомление исполнителю
         await db.run(
             `INSERT INTO notifications 
             (user_id, type, title, message, related_id, related_type) 
             VALUES (?, ?, ?, ?, ?, ?)`,
             [
-                req.user.id,
+                performerId,
                 'task_assigned',
                 'Вы приняли задачу',
-                `Вы приняли задачу "${task.title}"`,
+                `Вы приняли задачу "${task.title}". Начинайте выполнение.`,
                 taskId,
                 'task'
             ]
         );
         
+        // Уведомление клиенту
         await db.run(
             `INSERT INTO notifications 
             (user_id, type, title, message, related_id, related_type) 
@@ -4076,23 +4098,45 @@ app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), a
                 task.client_id,
                 'task_performer_assigned',
                 'Исполнитель назначен',
-                `Исполнитель принял вашу задачу "${task.title}"`,
+                `Исполнитель принял вашу задачу "${task.title}".`,
                 taskId,
                 'task'
             ]
         );
         
+        // Обновляем статистику исполнителя
+        await db.run(
+            'UPDATE users SET completed_tasks = completed_tasks + 1 WHERE id = ?',
+            [performerId]
+        );
+        
+        // Получаем обновленную задачу
+        const updatedTask = await db.get(
+            `SELECT t.*, c.display_name as category_name
+             FROM tasks t 
+             LEFT JOIN categories c ON t.category_id = c.id 
+             WHERE t.id = ?`,
+            [taskId]
+        );
+        
         res.json({
             success: true,
-            message: 'Задача успешно принята!',
-            data: { task_id: taskId }
+            message: '🎉 Задача успешно принята!',
+            data: { 
+                task: updatedTask,
+                task_id: taskId,
+                performer_id: performerId
+            }
         });
         
     } catch (error) {
-        console.error('Ошибка принятия задачи:', error.message);
+        console.error('🔥 Ошибка принятия задачи:', error.message);
+        console.error('Stack:', error.stack);
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка принятия задачи'
+            error: 'Внутренняя ошибка сервера при принятии задачи',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
