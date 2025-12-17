@@ -89,8 +89,6 @@ const initDatabase = async () => {
             )
         `);
 
-        // Остальные таблицы остаются без изменений...
-
         // Коды подтверждения телефона
         await db.exec(`
             CREATE TABLE IF NOT EXISTS phone_verification_codes (
@@ -486,7 +484,7 @@ const createInitialData = async () => {
                 [categoryMap.beauty_and_health, 'Массаж', 'Расслабляющий или лечебный массаж', 0, '1 час', 1, 9, 1],
                 
                 // Курсы и образование (1 услуга)
-                [categoryMap.courses_and_education, 'Репетиторство', 'Индивидуальные занятия по предметам', 0, '1 час', 1, 10, 1],
+                [categoryMap.courses_and_education, 'Репетиторство', 'Индивидуальные занятия по предметы', 0, '1 час', 1, 10, 1],
                 
                 // Покупки и доставка (2 услуги)
                 [categoryMap.shopping_and_delivery, 'Покупка продуктов', 'Покупка и доставка продуктов', 0, '1-2 часа', 1, 11, 1],
@@ -1242,7 +1240,7 @@ app.post('/api/auth/register-performer', async (req, res) => {
                 999,
                 avatarUrl,
                 verificationToken,
-                bio || null  // Добавьте это, если bio может быть пустым
+                bio || null
             ]
         );
         
@@ -5749,6 +5747,29 @@ app.get('/api/admin/transactions', authMiddleware(['admin', 'superadmin']), asyn
     try {
         const { start_date, end_date, type, status, limit = 100 } = req.query;
         
+        let whereClause = '';
+        const params = [];
+        
+        if (start_date) {
+            whereClause += ' AND DATE(t.created_at) >= ?';
+            params.push(start_date);
+        }
+        
+        if (end_date) {
+            whereClause += ' AND DATE(t.created_at) <= ?';
+            params.push(end_date);
+        }
+        
+        if (type && type !== 'all') {
+            whereClause += ' AND t.type = ?';
+            params.push(type);
+        }
+        
+        if (status && status !== 'all') {
+            whereClause += ' AND t.status = ?';
+            params.push(status);
+        }
+        
         let query = `
             SELECT t.*, 
                    u.email as user_email,
@@ -5757,38 +5778,16 @@ app.get('/api/admin/transactions', authMiddleware(['admin', 'superadmin']), asyn
                    u.phone as user_phone
             FROM transactions t
             LEFT JOIN users u ON t.user_id = u.id
-            WHERE 1=1
+            WHERE 1=1 ${whereClause}
+            ORDER BY t.created_at DESC LIMIT ?
         `;
         
-        const params = [];
-        
-        if (start_date) {
-            query += ' AND DATE(t.created_at) >= ?';
-            params.push(start_date);
-        }
-        
-        if (end_date) {
-            query += ' AND DATE(t.created_at) <= ?';
-            params.push(end_date);
-        }
-        
-        if (type && type !== 'all') {
-            query += ' AND t.type = ?';
-            params.push(type);
-        }
-        
-        if (status && status !== 'all') {
-            query += ' AND t.status = ?';
-            params.push(status);
-        }
-        
-        query += ' ORDER BY t.created_at DESC LIMIT ?';
         params.push(parseInt(limit));
         
         const transactions = await db.all(query, params);
         
         // Суммарная статистика
-        const stats = await db.get(`
+        const statsQuery = `
             SELECT 
                 SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_completed,
                 SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as total_pending,
@@ -5796,12 +5795,10 @@ app.get('/api/admin/transactions', authMiddleware(['admin', 'superadmin']), asyn
                 COUNT(*) as total_count,
                 COUNT(DISTINCT user_id) as unique_users
             FROM transactions
-            WHERE 1=1
-            ${start_date ? ' AND DATE(created_at) >= ?' : ''}
-            ${end_date ? ' AND DATE(created_at) <= ?' : ''}
-            ${type && type !== 'all' ? ' AND type = ?' : ''}
-            ${status && status !== 'all' ? ' AND status = ?' : ''}
-        `, [...params.slice(0, -1)]);
+            WHERE 1=1 ${whereClause}
+        `;
+        
+        const stats = await db.get(statsQuery, params.slice(0, -1));
         
         res.json({
             success: true,
@@ -5826,7 +5823,40 @@ app.get('/api/admin/tasks-detailed', authMiddleware(['admin', 'superadmin']), as
     try {
         const { status, category_id, performer_id, client_id, date_from, date_to, limit = 50, offset = 0 } = req.query;
         
-        let query = `
+        let whereClause = '';
+        const params = [];
+        
+        if (status && status !== 'all') {
+            whereClause += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        if (category_id && category_id !== 'all') {
+            whereClause += ' AND t.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (performer_id && performer_id !== 'all') {
+            whereClause += ' AND t.performer_id = ?';
+            params.push(performer_id);
+        }
+        
+        if (client_id && client_id !== 'all') {
+            whereClause += ' AND t.client_id = ?';
+            params.push(client_id);
+        }
+        
+        if (date_from) {
+            whereClause += ' AND DATE(t.created_at) >= ?';
+            params.push(date_from);
+        }
+        
+        if (date_to) {
+            whereClause += ' AND DATE(t.created_at) <= ?';
+            params.push(date_to);
+        }
+        
+        const query = `
             SELECT t.*, 
                    c.display_name as category_name,
                    c.icon as category_icon,
@@ -5847,71 +5877,17 @@ app.get('/api/admin/tasks-detailed', authMiddleware(['admin', 'superadmin']), as
             LEFT JOIN services s ON t.service_id = s.id
             LEFT JOIN users u1 ON t.client_id = u1.id
             LEFT JOIN users u2 ON t.performer_id = u2.id
-            WHERE 1=1
+            WHERE 1=1 ${whereClause}
+            ORDER BY t.created_at DESC LIMIT ? OFFSET ?
         `;
         
-        const params = [];
-        
-        if (status && status !== 'all') {
-            query += ' AND t.status = ?';
-            params.push(status);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            query += ' AND t.category_id = ?';
-            params.push(category_id);
-        }
-        
-        if (performer_id && performer_id !== 'all') {
-            query += ' AND t.performer_id = ?';
-            params.push(performer_id);
-        }
-        
-        if (client_id && client_id !== 'all') {
-            query += ' AND t.client_id = ?';
-            params.push(client_id);
-        }
-        
-        if (date_from) {
-            query += ' AND DATE(t.created_at) >= ?';
-            params.push(date_from);
-        }
-        
-        if (date_to) {
-            query += ' AND DATE(t.created_at) <= ?';
-            params.push(date_to);
-        }
-        
-        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
         
         const tasks = await db.all(query, params);
         
         // Общее количество для пагинации
-        let countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1`;
-        let countParams = [];
-        
-        if (status && status !== 'all') {
-            countQuery += ' AND status = ?';
-            countParams.push(status);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            countQuery += ' AND category_id = ?';
-            countParams.push(category_id);
-        }
-        
-        if (date_from) {
-            countQuery += ' AND DATE(created_at) >= ?';
-            countParams.push(date_from);
-        }
-        
-        if (date_to) {
-            countQuery += ' AND DATE(created_at) <= ?';
-            countParams.push(date_to);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
+        const countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1 ${whereClause}`;
+        const countResult = await db.get(countQuery, params.slice(0, -2));
         
         res.json({
             success: true,
@@ -6151,65 +6127,53 @@ app.get('/api/admin/users-detailed', authMiddleware(['admin', 'superadmin']), as
     try {
         const { role, subscription_status, is_active, phone_verified, search, limit = 50, offset = 0 } = req.query;
         
-        let query = `
+        let whereClause = '';
+        const params = [];
+        
+        if (role && role !== 'all') {
+            whereClause += ' AND u.role = ?';
+            params.push(role);
+        }
+        
+        if (subscription_status && subscription_status !== 'all') {
+            whereClause += ' AND u.subscription_status = ?';
+            params.push(subscription_status);
+        }
+        
+        if (is_active !== undefined && is_active !== 'all') {
+            whereClause += ' AND u.is_active = ?';
+            params.push(is_active === 'active' ? 1 : 0);
+        }
+        
+        if (phone_verified !== undefined && phone_verified !== 'all') {
+            whereClause += ' AND u.phone_verified = ?';
+            params.push(phone_verified === 'verified' ? 1 : 0);
+        }
+        
+        if (search) {
+            whereClause += ' AND (u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        const query = `
             SELECT u.*,
                    (SELECT COUNT(*) FROM tasks t WHERE t.client_id = u.id) as tasks_count,
                    (SELECT COUNT(*) FROM tasks t WHERE t.performer_id = u.id) as performed_tasks_count,
                    (SELECT AVG(rating) FROM reviews r WHERE r.performer_id = u.id) as avg_rating,
                    (SELECT SUM(amount) FROM transactions tr WHERE tr.user_id = u.id AND tr.status = 'completed') as total_transactions
             FROM users u
-            WHERE 1=1
+            WHERE 1=1 ${whereClause}
+            ORDER BY u.created_at DESC LIMIT ? OFFSET ?
         `;
         
-        const params = [];
-        
-        if (role && role !== 'all') {
-            query += ' AND u.role = ?';
-            params.push(role);
-        }
-        
-        if (subscription_status && subscription_status !== 'all') {
-            query += ' AND u.subscription_status = ?';
-            params.push(subscription_status);
-        }
-        
-        if (is_active !== undefined && is_active !== 'all') {
-            query += ' AND u.is_active = ?';
-            params.push(is_active === 'active' ? 1 : 0);
-        }
-        
-        if (phone_verified !== undefined && phone_verified !== 'all') {
-            query += ' AND u.phone_verified = ?';
-            params.push(phone_verified === 'verified' ? 1 : 0);
-        }
-        
-        if (search) {
-            query += ' AND (u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.phone LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
-        }
-        
-        query += ' ORDER BY u.created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
         
         const users = await db.all(query, params);
         
         // Общее количество
-        let countQuery = `SELECT COUNT(*) as total FROM users WHERE 1=1`;
-        let countParams = [];
-        
-        if (role && role !== 'all') {
-            countQuery += ' AND role = ?';
-            countParams.push(role);
-        }
-        
-        if (search) {
-            countQuery += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
-            const searchTerm = `%${search}%`;
-            countParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
+        const countQuery = `SELECT COUNT(*) as total FROM users WHERE 1=1 ${whereClause}`;
+        const countResult = await db.get(countQuery, params.slice(0, -2));
         
         res.json({
             success: true,
@@ -6607,6 +6571,18 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
         switch(type) {
             case 'financial':
                 // Финансовый отчет
+                let financialWhere = '';
+                const financialParams = [];
+                
+                if (start_date) {
+                    financialWhere += ' AND DATE(created_at) >= ?';
+                    financialParams.push(start_date);
+                }
+                if (end_date) {
+                    financialWhere += ' AND DATE(created_at) <= ?';
+                    financialParams.push(end_date);
+                }
+                
                 const financialReport = await db.all(`
                     SELECT 
                         DATE(created_at) as date,
@@ -6614,12 +6590,10 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                         SUM(amount) as total_amount,
                         COUNT(*) as transaction_count
                     FROM transactions
-                    WHERE status = 'completed'
-                    ${start_date ? ' AND DATE(created_at) >= ?' : ''}
-                    ${end_date ? ' AND DATE(created_at) <= ?' : ''}
+                    WHERE status = 'completed' ${financialWhere}
                     GROUP BY DATE(created_at), type
                     ORDER BY date DESC, type
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, financialParams);
                 
                 const dailyRevenue = await db.all(`
                     SELECT 
@@ -6627,12 +6601,10 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                         SUM(CASE WHEN type IN ('initial_fee', 'subscription') THEN amount ELSE 0 END) as revenue,
                         SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as expenses
                     FROM transactions
-                    WHERE status = 'completed'
-                    ${start_date ? ' AND DATE(created_at) >= ?' : ''}
-                    ${end_date ? ' AND DATE(created_at) <= ?' : ''}
+                    WHERE status = 'completed' ${financialWhere}
                     GROUP BY DATE(created_at)
                     ORDER BY date DESC
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, financialParams);
                 
                 reportData = {
                     financial_summary: financialReport,
@@ -6645,6 +6617,22 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                 
             case 'tasks':
                 // Отчет по задачам
+                let tasksWhere = '';
+                const tasksParams = [];
+                
+                if (start_date) {
+                    tasksWhere += ' WHERE DATE(t.created_at) >= ?';
+                    tasksParams.push(start_date);
+                }
+                if (end_date) {
+                    if (start_date) {
+                        tasksWhere += ' AND DATE(t.created_at) <= ?';
+                    } else {
+                        tasksWhere += ' WHERE DATE(t.created_at) <= ?';
+                    }
+                    tasksParams.push(end_date);
+                }
+                
                 const taskReport = await db.all(`
                     SELECT 
                         DATE(t.created_at) as date,
@@ -6654,22 +6642,36 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                         AVG(t.price) as avg_price
                     FROM tasks t
                     LEFT JOIN categories c ON t.category_id = c.id
-                    ${start_date ? ' WHERE DATE(t.created_at) >= ?' : ''}
-                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(t.created_at) <= ?' : ''}
+                    ${tasksWhere}
                     GROUP BY DATE(t.created_at), c.display_name, t.status
                     ORDER BY date DESC, category
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, tasksParams);
+                
+                let statusWhere = '';
+                const statusParams = [];
+                
+                if (start_date) {
+                    statusWhere += ' WHERE DATE(created_at) >= ?';
+                    statusParams.push(start_date);
+                }
+                if (end_date) {
+                    if (start_date) {
+                        statusWhere += ' AND DATE(created_at) <= ?';
+                    } else {
+                        statusWhere += ' WHERE DATE(created_at) <= ?';
+                    }
+                    statusParams.push(end_date);
+                }
                 
                 const statusDistribution = await db.all(`
                     SELECT 
                         status,
                         COUNT(*) as count,
-                        (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks)) as percentage
+                        (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks ${statusWhere})) as percentage
                     FROM tasks
-                    ${start_date ? ' WHERE DATE(created_at) >= ?' : ''}
-                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(created_at) <= ?' : ''}
+                    ${statusWhere}
                     GROUP BY status
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, statusParams);
                 
                 reportData = {
                     task_summary: taskReport,
@@ -6681,6 +6683,22 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                 
             case 'users':
                 // Отчет по пользователям
+                let usersWhere = '';
+                const usersParams = [];
+                
+                if (start_date) {
+                    usersWhere += ' WHERE DATE(u.created_at) >= ?';
+                    usersParams.push(start_date);
+                }
+                if (end_date) {
+                    if (start_date) {
+                        usersWhere += ' AND DATE(u.created_at) <= ?';
+                    } else {
+                        usersWhere += ' WHERE DATE(u.created_at) <= ?';
+                    }
+                    usersParams.push(end_date);
+                }
+                
                 const userReport = await db.all(`
                     SELECT 
                         DATE(u.created_at) as date,
@@ -6689,11 +6707,26 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                         COUNT(*) as user_count,
                         SUM(CASE WHEN u.subscription_status = 'active' THEN 1 ELSE 0 END) as active_subscriptions
                     FROM users u
-                    ${start_date ? ' WHERE DATE(u.created_at) >= ?' : ''}
-                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(u.created_at) <= ?' : ''}
+                    ${usersWhere}
                     GROUP BY DATE(u.created_at), u.role, u.subscription_plan
                     ORDER BY date DESC
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, usersParams);
+                
+                let growthWhere = '';
+                const growthParams = [];
+                
+                if (start_date) {
+                    growthWhere += ' WHERE DATE(created_at) >= ?';
+                    growthParams.push(start_date);
+                }
+                if (end_date) {
+                    if (start_date) {
+                        growthWhere += ' AND DATE(created_at) <= ?';
+                    } else {
+                        growthWhere += ' WHERE DATE(created_at) <= ?';
+                    }
+                    growthParams.push(end_date);
+                }
                 
                 const userGrowth = await db.all(`
                     SELECT 
@@ -6701,11 +6734,10 @@ app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), asy
                         COUNT(*) as new_users,
                         SUM(COUNT(*)) OVER (ORDER BY DATE(created_at)) as total_users
                     FROM users
-                    ${start_date ? ' WHERE DATE(created_at) >= ?' : ''}
-                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(created_at) <= ?' : ''}
+                    ${growthWhere}
                     GROUP BY DATE(created_at)
                     ORDER BY date
-                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                `, growthParams);
                 
                 reportData = {
                     user_summary: userReport,
@@ -6832,8 +6864,6 @@ function convertToCSV(data) {
     return csvRows.join('\n');
 }
 
-// Добавить в существующий файл server.js после всех остальных API маршрутов
-console.log('✅ Админ API загружены');
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
 // Обслуживание статических файлов
