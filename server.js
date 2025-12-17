@@ -1239,7 +1239,7 @@ app.post('/api/auth/register-performer', async (req, res) => {
                 999,
                 avatarUrl,
                 verificationToken,
-                bio
+                bio || null  // Добавьте это, если bio может быть пустым
             ]
         );
         
@@ -1250,7 +1250,7 @@ app.post('/api/auth/register-performer', async (req, res) => {
             const categories = await db.all('SELECT id FROM categories WHERE is_active = 1');
             for (const category of categories) {
                 await db.run(
-                    `INSERT INTO performer_categories (performer_id, category_id, is_active) 
+                    `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, is_active) 
                      VALUES (?, ?, 1)`,
                     [userId, category.id]
                 );
