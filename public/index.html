@@ -4216,6 +4216,122 @@
                 showNotification(error.message, 'error');
             }
         }
+
+// Специальная функция для входа исполнителя
+async function loginPerformer() {
+    const email = document.getElementById('loginEmail')?.value;
+    const phone = document.getElementById('loginPhone')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+    
+    console.log('Попытка входа исполнителя:', { email, phone });
+    
+    // Проверяем, что предоставлен email или телефон
+    if ((!email && !phone) || !password) {
+        showNotification('Укажите email или телефон и пароль', 'error');
+        return;
+    }
+    
+    showLoading('Вход исполнителя...');
+    
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email: email || null, 
+                phone: phone || null, 
+                password 
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+// В функции loginUser после успешного входа добавьте:
+if (data.data.user.role === 'performer' || 
+    data.data.user.role === 'admin' || 
+    data.data.user.role === 'superadmin' || 
+    data.data.user.role === 'manager') {
+    
+    showNotification('Вы вошли как исполнитель. Переход в панель исполнителя...', 'success');
+    setTimeout(() => {
+        window.location.href = '/performer.html';
+    }, 1500);
+    return;
+}
+                
+            } else {
+                showNotification('Это панель для клиентов. Исполнители могут войти в панель исполнителя.', 'info');
+                // Показываем кнопку для перехода в панель исполнителя
+                showPerformerPanelButton();
+            }
+            
+        } else if (data.requires_phone_verification) {
+            // Требуется подтверждение телефона
+            showVerificationModal(data.phone);
+            
+        } else if (data.requires_initial_fee) {
+            // Требуется оплата вступительного взноса
+            showInitialFeeModal(data);
+            
+        } else {
+            throw new Error(data.error || 'Ошибка входа');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка входа исполнителя:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Показать кнопку панели исполнителя
+function showPerformerPanelButton() {
+    const modal = document.getElementById('loginModal');
+    if (!modal) return;
+    
+    const buttonHtml = `
+        <div style="margin-top: 20px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; border: 1px solid rgba(52, 152, 219, 0.2);">
+            <p style="margin-bottom: 10px; font-weight: 500; color: #3498DB;">Вы исполнитель?</p>
+            <button onclick="goToPerformerPanel()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #3498DB, #2980B9); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fas fa-user-tie"></i>
+                Войти в панель исполнителя
+            </button>
+        </div>
+    `;
+    
+    // Добавляем кнопку в модальное окно
+    const existingButton = modal.querySelector('.performer-panel-button');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    
+    const buttonDiv = document.createElement('div');
+    buttonDiv.className = 'performer-panel-button';
+    buttonDiv.innerHTML = buttonHtml;
+    
+    const form = modal.querySelector('form');
+    if (form) {
+        form.parentNode.insertBefore(buttonDiv, form.nextSibling);
+    }
+}
+
+// Переход в панель исполнителя
+function goToPerformerPanel() {
+    // Сохраняем текущие данные входа
+    const email = document.getElementById('loginEmail')?.value;
+    const phone = document.getElementById('loginPhone')?.value;
+    const password = document.getElementById('loginPassword')?.value;
+    
+    localStorage.setItem('performer_login_data', JSON.stringify({
+        email: email || null,
+        phone: phone || null,
+        password: password || null
+    }));
+    
+    window.location.href = '/performer.html';
+}
         
         async function register() {
             try {
