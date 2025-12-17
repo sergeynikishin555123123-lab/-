@@ -1533,31 +1533,31 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
         
-        // Проверяем, подтвержден ли телефон (требуется для клиентов)
-        if (user.role === 'client' && !user.phone_verified) {
-            // Отправляем новый код подтверждения
-            const smsCode = generateVerificationCode();
-            const expiresAt = new Date();
-            expiresAt.setMinutes(expiresAt.getMinutes() + 10);
-            
-            await db.run(
-                `INSERT INTO phone_verification_codes (phone, code, expires_at) 
-                 VALUES (?, ?, ?)`,
-                [user.phone, smsCode, expiresAt.toISOString()]
-            );
-            
-            const smsResult = await sendSmsCode(user.phone, smsCode);
-            
-            return res.status(403).json({
-                success: false,
-                error: 'Требуется подтверждение телефона',
-                requires_phone_verification: true,
-                phone: user.phone,
-                phone_verification_sent: smsResult.success,
-                demo_mode: smsResult.demo || false,
-                expires_in_minutes: 10
-            });
-        }
+       // Проверяем, подтвержден ли телефон (требуется для клиентов и исполнителей)
+if ((user.role === 'client' || user.role === 'performer') && !user.phone_verified) {
+    // Отправляем новый код подтверждения
+    const smsCode = generateVerificationCode();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+    
+    await db.run(
+        `INSERT INTO phone_verification_codes (phone, code, expires_at) 
+         VALUES (?, ?, ?)`,
+        [user.phone, smsCode, expiresAt.toISOString()]
+    );
+    
+    const smsResult = await sendSmsCode(user.phone, smsCode);
+    
+    return res.status(403).json({
+        success: false,
+        error: 'Требуется подтверждение телефона',
+        requires_phone_verification: true,
+        phone: user.phone,
+        phone_verification_sent: smsResult.success,
+        demo_mode: smsResult.demo || false,
+        expires_in_minutes: 10
+    });
+}
         
         // Проверяем, оплачен ли вступительный взнос (только для клиентов)
 if (user.role === 'client' && user.subscription_status === 'pending' && user.initial_fee_paid === 0 && !DEMO_MODE) {
@@ -4718,6 +4718,229 @@ app.get('/api/performer/earnings', authMiddleware(['performer']), async (req, re
         res.status(500).json({
             success: false,
             error: 'Ошибка получения информации о заработке'
+        });
+    }
+});
+
+// ==================== МАРШРУТЫ ДЛЯ ПАНЕЛИ ИСПОЛНИТЕЛЯ ====================
+
+// Получение специализаций исполнителя
+app.get('/api/performer/categories', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const categories = await db.all(`
+            SELECT c.*, pc.experience_years, pc.hourly_rate
+            FROM performer_categories pc
+            JOIN categories c ON pc.category_id = c.id
+            WHERE pc.performer_id = ? AND pc.is_active = 1
+            ORDER BY c.display_name ASC
+        `, [req.user.id]);
+
+        res.json({
+            success: true,
+            data: { categories }
+        });
+
+    } catch (error) {
+        console.error('Ошибка получения специализаций:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения специализаций'
+        });
+    }
+});
+
+// Обновление статуса доступности
+app.post('/api/performer/availability', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { availability } = req.body;
+
+        if (!availability || !['available', 'busy', 'away'].includes(availability)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный статус доступности'
+            });
+        }
+
+        // Сохраняем в настройках
+        await db.run(`
+            INSERT OR REPLACE INTO settings (key, value, description, category) 
+            VALUES (?, ?, ?, ?)
+        `, [
+            `performer_${req.user.id}_availability`,
+            availability,
+            'Статус доступности исполнителя',
+            'performer'
+        ]);
+
+        res.json({
+            success: true,
+            message: 'Статус доступности обновлен',
+            data: { availability }
+        });
+
+    } catch (error) {
+        console.error('Ошибка обновления статуса доступности:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления статуса'
+        });
+    }
+});
+
+// Получение уведомлений исполнителя
+app.get('/api/performer/notifications', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { unread_only = false, limit = 20 } = req.query;
+
+        let query = `
+            SELECT n.*
+            FROM notifications n
+            WHERE n.user_id = ?
+        `;
+
+        const params = [req.user.id];
+
+        if (unread_only === 'true') {
+            query += ' AND n.is_read = 0';
+        }
+
+        query += ' ORDER BY n.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+
+        const notifications = await db.all(query, params);
+
+        res.json({
+            success: true,
+            data: { notifications }
+        });
+
+    } catch (error) {
+        console.error('Ошибка получения уведомлений:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения уведомлений'
+        });
+    }
+});
+
+// Пометить уведомления как прочитанные
+app.post('/api/performer/notifications/read', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { notification_ids } = req.body;
+
+        if (notification_ids && Array.isArray(notification_ids)) {
+            const placeholders = notification_ids.map(() => '?').join(',');
+            await db.run(`
+                UPDATE notifications 
+                SET is_read = 1, read_at = CURRENT_TIMESTAMP 
+                WHERE id IN (${placeholders}) AND user_id = ?
+            `, [...notification_ids, req.user.id]);
+        } else {
+            // Пометить все как прочитанные
+            await db.run(`
+                UPDATE notifications 
+                SET is_read = 1, read_at = CURRENT_TIMESTAMP 
+                WHERE user_id = ? AND is_read = 0
+            `, [req.user.id]);
+        }
+
+        res.json({
+            success: true,
+            message: 'Уведомления помечены как прочитанные'
+        });
+
+    } catch (error) {
+        console.error('Ошибка отметки уведомлений:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отметки уведомлений'
+        });
+    }
+});
+
+// Обновление профиля исполнителя
+app.put('/api/performer/profile', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const { first_name, last_name, phone, categories } = req.body;
+
+        const updateFields = [];
+        const updateValues = [];
+
+        if (first_name !== undefined) {
+            updateFields.push('first_name = ?');
+            updateValues.push(first_name);
+        }
+
+        if (last_name !== undefined) {
+            updateFields.push('last_name = ?');
+            updateValues.push(last_name);
+        }
+
+        if (phone !== undefined) {
+            const formattedPhone = formatPhone(phone);
+            if (!validatePhone(formattedPhone)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректный номер телефона'
+                });
+            }
+            updateFields.push('phone = ?');
+            updateValues.push(formattedPhone);
+        }
+
+        if (updateFields.length === 0 && !categories) {
+            return res.status(400).json({
+                success: false,
+                error: 'Нет данных для обновления'
+            });
+        }
+
+        if (updateFields.length > 0) {
+            updateFields.push('updated_at = CURRENT_TIMESTAMP');
+            updateValues.push(req.user.id);
+
+            const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+            await db.run(query, updateValues);
+        }
+
+        // Обновляем специализации если переданы
+        if (categories && Array.isArray(categories)) {
+            // Удаляем старые специализации
+            await db.run('DELETE FROM performer_categories WHERE performer_id = ?', [req.user.id]);
+
+            // Добавляем новые
+            for (const categoryId of categories) {
+                await db.run(
+                    'INSERT INTO performer_categories (performer_id, category_id, is_active) VALUES (?, ?, 1)',
+                    [req.user.id, categoryId]
+                );
+            }
+        }
+
+        // Получаем обновленного пользователя
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    avatar_url, user_rating, completed_tasks
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+
+        res.json({
+            success: true,
+            message: 'Профиль успешно обновлен',
+            data: { 
+                user: {
+                    ...user,
+                    rating: user.user_rating
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Ошибка обновления профиля исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления профиля'
         });
     }
 });
