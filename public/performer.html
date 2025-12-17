@@ -2784,44 +2784,58 @@
         }
         
         // Принять задачу
-        async function acceptTask(taskId) {
-            if (!confirm('Вы уверены, что хотите принять эту задачу?')) {
-                return;
+       // Принять задачу - ИСПРАВЛЕННАЯ ВЕРСИЯ
+async function acceptTask(taskId) {
+    const task = availableTasks.find(t => t.id === taskId);
+    
+    if (!task) {
+        showNotification('Задача не найдена', 'error');
+        return;
+    }
+    
+    if (!confirm(`Принять задачу "${task.title}"?`)) {
+        return;
+    }
+    
+    try {
+        showLoading('Принятие задачи...');
+        console.log(`📋 Принимаем задачу ID: ${taskId}`);
+        
+        const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/accept`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
             }
+        });
+        
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+        
+        if (data.success) {
+            showNotification('🎉 Задача успешно принята! Вы теперь исполнитель.', 'success');
             
-            showLoading('Принятие задачи...');
+            // Обновляем все данные
+            setTimeout(async () => {
+                await loadAvailableTasks();
+                await loadMyTasks();
+                await loadPerformerStats();
+                await loadRecentTasks();
+                
+                // Возвращаемся к списку задач
+                navigateToPage('my-tasks');
+            }, 1000);
             
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/accept`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Задача успешно принята!', 'success');
-                    
-                    // Обновляем данные
-                    await loadAvailableTasks();
-                    await loadMyTasks();
-                    await loadPerformerStats();
-                    
-                    // Возвращаемся к списку задач
-                    navigateToPage('my-tasks');
-                    
-                } else {
-                    throw new Error(data.error || 'Ошибка принятия задачи');
-                }
-            } catch (error) {
-                console.error('Ошибка принятия задачи:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
+        } else {
+            throw new Error(data.error || 'Ошибка принятия задачи');
         }
+    } catch (error) {
+        console.error('Ошибка принятия задачи:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // Отказаться от задачи
         async function rejectTask(taskId) {
