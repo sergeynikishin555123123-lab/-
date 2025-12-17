@@ -4289,17 +4289,13 @@ app.post('/api/performer/tasks/:taskId/start', authMiddleware(['performer']), as
 });
 
 // Завершить задачу
-// Завершение задачи исполнителем
-app.post('/api/tasks/:id/complete', authMiddleware(['performer']), async (req, res) => {
+app.post('/api/performer/tasks/:taskId/complete', authMiddleware(['performer']), async (req, res) => {
     try {
-        const taskId = req.params.id;
-        const performerId = req.user.id;
-        
-        console.log(`✅ Исполнитель ${performerId} завершает задачу ${taskId}`);
+        const taskId = req.params.taskId;
         
         const task = await db.get(
             'SELECT * FROM tasks WHERE id = ? AND performer_id = ?',
-            [taskId, performerId]
+            [taskId, req.user.id]
         );
         
         if (!task) {
@@ -4328,7 +4324,7 @@ app.post('/api/tasks/:id/complete', authMiddleware(['performer']), async (req, r
         await db.run(
             `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
              VALUES (?, ?, ?, ?)`,
-            [taskId, 'completed', performerId, 'Исполнитель завершил работу']
+            [taskId, 'completed', req.user.id, 'Исполнитель завершил работу']
         );
         
         await db.run(
@@ -4347,16 +4343,13 @@ app.post('/api/tasks/:id/complete', authMiddleware(['performer']), async (req, r
         
         await db.run(
             'UPDATE users SET completed_tasks = completed_tasks + 1 WHERE id = ?',
-            [performerId]
+            [req.user.id]
         );
         
         res.json({
             success: true,
             message: 'Задача завершена! Ожидайте подтверждения клиента.',
-            data: { 
-                task_id: taskId,
-                status: 'completed'
-            }
+            data: { task_id: taskId }
         });
         
     } catch (error) {
