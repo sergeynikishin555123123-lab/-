@@ -3834,6 +3834,894 @@ app.post('/api/tasks/:id/reviews', authMiddleware(['client']), async (req, res) 
     }
 });
 
+// ==================== API ИСПОЛНИТЕЛЕЙ ====================
+
+// Получение статистики исполнителя
+app.get('/api/performer/stats', authMiddleware(['performer', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Основная статистика
+        const stats = await db.get(`
+            SELECT 
+                COUNT(*) as total_tasks,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks,
+                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_tasks,
+                SUM(CASE WHEN status = 'completed' THEN price ELSE 0 END) as total_earnings,
+                AVG(CASE WHEN status = 'completed' THEN price ELSE NULL END) as avg_price,
+                MIN(CASE WHEN status = 'completed' THEN created_at END) as first_task_date,
+                MAX(CASE WHEN status = 'completed' THEN created_at END) as last_task_date
+            FROM tasks 
+            WHERE performer_id = ?
+        `, [userId]);
+        
+        // Рейтинги и отзывы
+        const reviews = await db.all(`
+            SELECT r.*, 
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name,
+                   u.avatar_url as client_avatar,
+                   t.title as task_title
+            FROM reviews r
+            JOIN users u ON r.client_id = u.id
+            JOIN tasks t ON r.task_id = t.id
+            WHERE r.performer_id = ?
+            ORDER BY r.created_at DESC
+            LIMIT 10
+        `, [userId]);
+        
+        // Специализации
+        const categories = await db.all(`
+            SELECT c.*, pc.experience_years, pc.hourly_rate
+            FROM performer_categories pc
+            JOIN categories c ON pc.category_id = c.id
+            WHERE pc.performer_id = ? AND pc.is_active = 1
+        `, [userId]);
+        
+        // Средний рейтинг
+        const avgRating = await db.get(`
+            SELECT AVG(rating) as avg_rating
+            FROM reviews 
+            WHERE performer_id = ?
+        `, [userId]);
+        
+        // Активные задачи
+        const activeTasks = await db.all(`
+            SELECT COUNT(*) as count
+            FROM tasks 
+            WHERE performer_id = ? AND status IN ('assigned', 'in_progress')
+        `, [userId]);
+        
+        // Доступные задачи (по специализации)
+        const availableTasks = await db.all(`
+            SELECT COUNT(*) as count
+            FROM tasks t
+            JOIN performer_categories pc ON t.category_id = pc.category_id
+            WHERE pc.performer_id = ? 
+              AND pc.is_active = 1
+              AND t.status = 'searching'
+        `, [userId]);
+        
+        res.json({
+            success: true,
+            data: {
+                stats: {
+                    total_tasks: stats?.total_tasks || 0,
+                    completed_tasks: stats?.completed_tasks || 0,
+                    in_progress_tasks: stats?.in_progress_tasks || 0,
+                    cancelled_tasks: stats?.cancelled_tasks || 0,
+                    total_earnings: stats?.total_earnings || 0,
+                    avg_price: stats?.avg_price || 0,
+                    first_task_date: stats?.first_task_date,
+                    last_task_date: stats?.last_task_date,
+                    avg_rating: avgRating?.avg_rating || 0
+                },
+                categories,
+                recent_reviews: reviews,
+                active_tasks: activeTasks?.[0]?.count || 0,
+                available_tasks: availableTasks?.[0]?.count || 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения статистики исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
+        });
+    }
+});
+
+// Получение доступных задач для исполнителя
+app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (req, res) => {
+    try {
+        // Получаем специализации исполнителя
+        const specializations = await db.all(
+            'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
+            [req.user.id]
+        );
+        
+        if (specializations.length === 0) {
+            return res.json({
+                success: true,
+                data: { tasks: [], count: 0 }
+            });
+        }
+        
+        const categoryIds = specializations.map(s => s.category_id);
+        const placeholders = categoryIds.map(() => '?').join(',');
+        
+        // Получаем доступные задачи
+        const tasks = await db.all(`
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name,
+                   u.avatar_url as client_avatar,
+                   u.user_rating as client_rating
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u ON t.client_id = u.id
+            WHERE t.status = 'searching' 
+              AND t.category_id IN (${placeholders})
+              AND (t.performer_id IS NULL OR t.performer_id != ?)
+            ORDER BY t.priority DESC, t.created_at DESC
+        `, [...categoryIds, req.user.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks,
+                count: tasks.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения доступных задач:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения доступных задач'
+        });
+    }
+});
+
+// Принятие задачи исполнителем
+app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        
+        // Проверяем задачу
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ? AND status = "searching"',
+            [taskId]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена или уже принята'
+            });
+        }
+        
+        // Проверяем специализацию
+        const canAccept = await db.get(
+            'SELECT 1 FROM performer_categories WHERE performer_id = ? AND category_id = ? AND is_active = 1',
+            [req.user.id, task.category_id]
+        );
+        
+        if (!canAccept) {
+            return res.status(403).json({
+                success: false,
+                error: 'У вас нет специализации в этой категории'
+            });
+        }
+        
+        // Принимаем задачу
+        await db.run(
+            `UPDATE tasks SET 
+                performer_id = ?,
+                status = 'assigned',
+                updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [req.user.id, taskId]
+        );
+        
+        // История статуса
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'assigned', req.user.id, 'Задача принята исполнителем']
+        );
+        
+        // Уведомления
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'task_assigned',
+                'Вы приняли задачу',
+                `Вы приняли задачу "${task.title}"`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                task.client_id,
+                'task_performer_assigned',
+                'Исполнитель назначен',
+                `Исполнитель принял вашу задачу "${task.title}"`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Задача успешно принята!',
+            data: { task_id: taskId }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка принятия задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка принятия задачи'
+        });
+    }
+});
+
+// Получение задач исполнителя
+app.get('/api/performer/tasks', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { status, limit = 50 } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name,
+                   u.avatar_url as client_avatar,
+                   u.user_rating as client_rating
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u ON t.client_id = u.id
+            WHERE t.performer_id = ?
+        `;
+        
+        const params = [req.user.id];
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const tasks = await db.all(query, params);
+        
+        // Для задач в поиске добавляем доступные задачи по специализации
+        if (!status || status === 'searching' || status === 'all') {
+            const specializations = await db.all(
+                'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
+                [req.user.id]
+            );
+            
+            if (specializations.length > 0) {
+                const categoryIds = specializations.map(s => s.category_id);
+                const placeholders = categoryIds.map(() => '?').join(',');
+                
+                const availableTasks = await db.all(`
+                    SELECT t.*, 
+                           c.display_name as category_name,
+                           c.icon as category_icon,
+                           u.first_name as client_first_name,
+                           u.last_name as client_last_name,
+                           u.avatar_url as client_avatar,
+                           u.user_rating as client_rating
+                    FROM tasks t
+                    LEFT JOIN categories c ON t.category_id = c.id
+                    LEFT JOIN users u ON t.client_id = u.id
+                    WHERE t.status = 'searching' 
+                      AND t.category_id IN (${placeholders})
+                      AND (t.performer_id IS NULL OR t.performer_id != ?)
+                    ORDER BY t.priority DESC, t.created_at DESC
+                    LIMIT 20
+                `, [...categoryIds, req.user.id]);
+                
+                // Добавляем флаг доступности
+                tasks.push(...availableTasks.map(task => ({
+                    ...task,
+                    is_available: true
+                })));
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: { tasks, count: tasks.length }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения задач исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Начать выполнение задачи
+app.post('/api/performer/tasks/:taskId/start', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ? AND performer_id = ?',
+            [taskId, req.user.id]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена или не назначена вам'
+            });
+        }
+        
+        if (task.status !== 'assigned') {
+            return res.status(400).json({
+                success: false,
+                error: 'Можно начать только назначенные задачи'
+            });
+        }
+        
+        await db.run(
+            `UPDATE tasks SET 
+                status = 'in_progress',
+                updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [taskId]
+        );
+        
+        // История статуса
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'in_progress', req.user.id, 'Исполнитель начал работу']
+        );
+        
+        // Уведомление клиенту
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                task.client_id,
+                'task_in_progress',
+                'Исполнитель начал работу',
+                `Исполнитель начал выполнение задачи "${task.title}"`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Работа над задачей начата!',
+            data: { task_id: taskId }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка начала выполнения задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка начала выполнения'
+        });
+    }
+});
+
+// Завершить задачу
+app.post('/api/performer/tasks/:taskId/complete', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ? AND performer_id = ?',
+            [taskId, req.user.id]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена или не назначена вам'
+            });
+        }
+        
+        if (task.status !== 'in_progress') {
+            return res.status(400).json({
+                success: false,
+                error: 'Можно завершить только задачи в работе'
+            });
+        }
+        
+        await db.run(
+            `UPDATE tasks SET 
+                status = 'completed',
+                completed_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [taskId]
+        );
+        
+        // История статуса
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'completed', req.user.id, 'Исполнитель завершил работу']
+        );
+        
+        // Уведомление клиенту
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                task.client_id,
+                'task_completed',
+                'Задача выполнена',
+                `Исполнитель завершил задачу "${task.title}". Пожалуйста, оцените работу.`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        // Обновляем статистику исполнителя
+        await db.run(
+            'UPDATE users SET completed_tasks = completed_tasks + 1 WHERE id = ?',
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Задача завершена! Ожидайте подтверждения клиента.',
+            data: { task_id: taskId }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка завершения задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка завершения задачи'
+        });
+    }
+});
+
+// Отказаться от задачи
+app.post('/api/performer/tasks/:taskId/reject', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const taskId = req.params.taskId;
+        const { reason } = req.body;
+        
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ? AND performer_id = ?',
+            [taskId, req.user.id]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена или не назначена вам'
+            });
+        }
+        
+        if (!['assigned', 'in_progress'].includes(task.status)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Можно отказаться только от назначенных задач или задач в работе'
+            });
+        }
+        
+        // Возвращаем задачу в поиск
+        await db.run(
+            `UPDATE tasks SET 
+                performer_id = NULL,
+                status = 'searching',
+                updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [taskId]
+        );
+        
+        // История статуса
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'searching', req.user.id, `Исполнитель отказался. Причина: ${reason || 'не указана'}`]
+        );
+        
+        // Уведомление клиенту
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                task.client_id,
+                'task_performer_rejected',
+                'Исполнитель отказался',
+                `Исполнитель отказался от задачи "${task.title}". Причина: ${reason || 'не указана'}`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Вы отказались от задачи',
+            data: { task_id: taskId }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отказа от задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отказа от задачи'
+        });
+    }
+});
+
+// Обновление профиля исполнителя
+app.put('/api/performer/profile', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { first_name, last_name, phone, availability, max_tasks, min_budget, categories } = req.body;
+        
+        const updateFields = [];
+        const updateValues = [];
+        
+        if (first_name !== undefined) {
+            updateFields.push('first_name = ?');
+            updateValues.push(first_name);
+        }
+        
+        if (last_name !== undefined) {
+            updateFields.push('last_name = ?');
+            updateValues.push(last_name);
+        }
+        
+        if (phone !== undefined) {
+            const formattedPhone = formatPhone(phone);
+            if (!validatePhone(formattedPhone)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректный номер телефона'
+                });
+            }
+            updateFields.push('phone = ?');
+            updateValues.push(formattedPhone);
+        }
+        
+        // Дополнительные поля для исполнителей
+        if (availability !== undefined) {
+            // Сохраняем в настройках пользователя или отдельной таблице
+            // В демо-режиме просто обновляем
+            console.log(`Исполнитель ${req.user.id} установил статус доступности: ${availability}`);
+        }
+        
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Нет данных для обновления'
+            });
+        }
+        
+        updateFields.push('updated_at = CURRENT_TIMESTAMP');
+        updateValues.push(req.user.id);
+        
+        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+        await db.run(query, updateValues);
+        
+        // Обновляем специализации если переданы
+        if (categories && Array.isArray(categories)) {
+            // Удаляем старые специализации
+            await db.run('DELETE FROM performer_categories WHERE performer_id = ?', [req.user.id]);
+            
+            // Добавляем новые
+            for (const categoryId of categories) {
+                await db.run(
+                    'INSERT INTO performer_categories (performer_id, category_id, is_active) VALUES (?, ?, 1)',
+                    [req.user.id, categoryId]
+                );
+            }
+        }
+        
+        // Получаем обновленного пользователя
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    avatar_url, user_rating, completed_tasks
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Профиль успешно обновлен',
+            data: { 
+                user: {
+                    ...user,
+                    rating: user.user_rating
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления профиля исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления профиля'
+        });
+    }
+});
+
+// Получение специализаций исполнителя
+app.get('/api/performer/categories', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const categories = await db.all(`
+            SELECT c.*, pc.experience_years, pc.hourly_rate
+            FROM performer_categories pc
+            JOIN categories c ON pc.category_id = c.id
+            WHERE pc.performer_id = ? AND pc.is_active = 1
+        `, [req.user.id]);
+        
+        res.json({
+            success: true,
+            data: { categories }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения специализаций:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения специализаций'
+        });
+    }
+});
+
+// Обновление статуса доступности исполнителя
+app.post('/api/performer/availability', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { availability } = req.body;
+        
+        if (!availability || !['available', 'busy', 'away'].includes(availability)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный статус доступности'
+            });
+        }
+        
+        // Сохраняем в настройках или отдельной таблице
+        // В демо-режиме просто логируем
+        console.log(`Исполнитель ${req.user.id} изменил статус доступности на: ${availability}`);
+        
+        // Можно сохранить в отдельной таблице settings
+        await db.run(`
+            INSERT OR REPLACE INTO settings (key, value, description, category) 
+            VALUES (?, ?, ?, ?)
+        `, [
+            `performer_${req.user.id}_availability`,
+            availability,
+            'Статус доступности исполнителя',
+            'performer'
+        ]);
+        
+        res.json({
+            success: true,
+            message: 'Статус доступности обновлен',
+            data: { availability }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления статуса доступности:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления статуса'
+        });
+    }
+});
+
+// Получение количества доступных задач
+app.get('/api/performer/tasks/available/count', authMiddleware(['performer']), async (req, res) => {
+    try {
+        // Получаем специализации исполнителя
+        const specializations = await db.all(
+            'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
+            [req.user.id]
+        );
+        
+        if (specializations.length === 0) {
+            return res.json({
+                success: true,
+                data: { count: 0 }
+            });
+        }
+        
+        const categoryIds = specializations.map(s => s.category_id);
+        const placeholders = categoryIds.map(() => '?').join(',');
+        
+        // Считаем доступные задачи
+        const result = await db.get(`
+            SELECT COUNT(*) as count
+            FROM tasks t
+            WHERE t.status = 'searching' 
+              AND t.category_id IN (${placeholders})
+              AND (t.performer_id IS NULL OR t.performer_id != ?)
+        `, [...categoryIds, req.user.id]);
+        
+        res.json({
+            success: true,
+            data: { count: result?.count || 0 }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка подсчета доступных задач:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка подсчета задач'
+        });
+    }
+});
+
+// Получение уведомлений исполнителя
+app.get('/api/performer/notifications', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { unread_only = false, limit = 20 } = req.query;
+        
+        let query = `
+            SELECT n.*
+            FROM notifications n
+            WHERE n.user_id = ?
+        `;
+        
+        const params = [req.user.id];
+        
+        if (unread_only === 'true') {
+            query += ' AND n.is_read = 0';
+        }
+        
+        query += ' ORDER BY n.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const notifications = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: { notifications }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения уведомлений:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения уведомлений'
+        });
+    }
+});
+
+// Пометить уведомления как прочитанные
+app.post('/api/performer/notifications/read', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { notification_ids } = req.body;
+        
+        if (notification_ids && Array.isArray(notification_ids)) {
+            const placeholders = notification_ids.map(() => '?').join(',');
+            await db.run(`
+                UPDATE notifications 
+                SET is_read = 1, read_at = CURRENT_TIMESTAMP 
+                WHERE id IN (${placeholders}) AND user_id = ?
+            `, [...notification_ids, req.user.id]);
+        } else {
+            // Пометить все как прочитанные
+            await db.run(`
+                UPDATE notifications 
+                SET is_read = 1, read_at = CURRENT_TIMESTAMP 
+                WHERE user_id = ? AND is_read = 0
+            `, [req.user.id]);
+        }
+        
+        res.json({
+            success: true,
+            message: 'Уведомления помечены как прочитанные'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отметки уведомлений:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отметки уведомлений'
+        });
+    }
+});
+
+// Получение информации о заработке
+app.get('/api/performer/earnings', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { period = 'month' } = req.query; // month, week, all
+        
+        let dateFilter = '';
+        const params = [req.user.id];
+        
+        const now = new Date();
+        if (period === 'week') {
+            const weekAgo = new Date(now);
+            weekAgo.setDate(now.getDate() - 7);
+            dateFilter = ' AND t.completed_at >= ?';
+            params.push(weekAgo.toISOString());
+        } else if (period === 'month') {
+            const monthAgo = new Date(now);
+            monthAgo.setMonth(now.getMonth() - 1);
+            dateFilter = ' AND t.completed_at >= ?';
+            params.push(monthAgo.toISOString());
+        }
+        
+        // Общий заработок
+        const totalEarnings = await db.get(`
+            SELECT SUM(t.price) as total
+            FROM tasks t
+            WHERE t.performer_id = ? 
+              AND t.status = 'completed'
+              ${dateFilter}
+        `, params);
+        
+        // Заработок по месяцам (для графика)
+        const monthlyEarnings = await db.all(`
+            SELECT 
+                strftime('%Y-%m', t.completed_at) as month,
+                SUM(t.price) as earnings,
+                COUNT(*) as tasks_count
+            FROM tasks t
+            WHERE t.performer_id = ? 
+              AND t.status = 'completed'
+              AND t.completed_at IS NOT NULL
+            GROUP BY strftime('%Y-%m', t.completed_at)
+            ORDER BY month DESC
+            LIMIT 6
+        `, [req.user.id]);
+        
+        // Последние выплаты
+        const recentPayments = await db.all(`
+            SELECT *
+            FROM transactions
+            WHERE user_id = ? AND type = 'payout'
+            ORDER BY created_at DESC
+            LIMIT 5
+        `, [req.user.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                total_earnings: totalEarnings?.total || 0,
+                monthly_earnings: monthlyEarnings,
+                recent_payments: recentPayments,
+                period: period
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения информации о заработке:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения информации о заработке'
+        });
+    }
+});
+
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
 // Обслуживание статических файлов
