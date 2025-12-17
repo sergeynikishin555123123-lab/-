@@ -3207,64 +3207,213 @@
         }
         
         // Регистрация исполнителя
-        async function registerPerformer() {
-            try {
-                const firstName = document.getElementById('performerFirstName').value;
-                const lastName = document.getElementById('performerLastName').value;
-                const phone = document.getElementById('performerPhone').value;
-                const email = document.getElementById('performerEmail').value;
-                const password = document.getElementById('performerRegisterPassword').value;
-                const confirmPassword = document.getElementById('performerConfirmPassword').value;
-                const bio = document.getElementById('performerBio').value;
-                
-                if (!firstName || !lastName || !phone || !password || !confirmPassword) {
-                    showNotification('Заполните обязательные поля', 'error');
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    showNotification('Пароль должен содержать не менее 6 символов', 'error');
-                    return;
-                }
-                
-                if (password !== confirmPassword) {
-                    showNotification('Пароли не совпадают', 'error');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE_URL}/api/auth/register-performer`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        first_name: firstName,
-                        last_name: lastName,
-                        phone,
-                        bio: bio || '',
-                        role: 'performer'
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка регистрации');
-                }
-                
-                if (data.success) {
-                    showNotification('Регистрация успешна! Теперь вы можете войти как исполнитель.', 'success');
-                    closeModal('performerRegisterModal');
-                    showPerformerLoginModal();
-                }
-                
-            } catch (error) {
-                console.error('Ошибка регистрации:', error);
-                showNotification(error.message, 'error');
-            }
+// Регистрация исполнителя - ОБНОВЛЕННАЯ ВЕРСИЯ
+async function registerPerformer() {
+    try {
+        const firstName = document.getElementById('performerFirstName').value;
+        const lastName = document.getElementById('performerLastName').value;
+        const phone = document.getElementById('performerPhone').value;
+        const email = document.getElementById('performerEmail').value;
+        const password = document.getElementById('performerRegisterPassword').value;
+        const confirmPassword = document.getElementById('performerConfirmPassword').value;
+        const bio = document.getElementById('performerBio').value;
+        
+        if (!firstName || !lastName || !phone || !password || !confirmPassword) {
+            showNotification('Заполните обязательные поля', 'error');
+            return;
         }
+        
+        if (password.length < 6) {
+            showNotification('Пароль должен содержать не менее 6 символов', 'error');
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            showNotification('Пароли не совпадают', 'error');
+            return;
+        }
+        
+        showLoading('Регистрация исполнителя...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/register-performer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                first_name: firstName,
+                last_name: lastName,
+                phone,
+                bio: bio || ''
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Регистрация успешна! Подтвердите телефон для входа.', 'success');
+            closeModal('performerRegisterModal');
+            
+            // Если есть информация для подтверждения телефона
+            if (data.data.requires_phone_verification) {
+                // Сразу показываем модалку для подтверждения телефона
+                openPhoneVerificationModal(data.data.phone, data.data.user);
+            }
+            
+        } else {
+            throw new Error(data.error || 'Ошибка регистрации');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Функция для открытия модалки подтверждения телефона
+function openPhoneVerificationModal(phone, user) {
+    closeAllModals();
+    
+    // Создаем модальное окно для подтверждения телефона
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'phoneVerificationModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3 class="modal-title">Подтверждение телефона</h3>
+            <div style="margin-bottom: 20px;">
+                <p style="color: var(--graphite-medium); margin-bottom: 10px;">
+                    Для активации аккаунта исполнителя необходимо подтвердить ваш номер телефона:
+                </p>
+                <div style="font-weight: 600; font-size: 1.1rem; color: var(--graphite-dark);">
+                    ${phone}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Код из SMS</label>
+                <input type="text" id="phoneVerificationCode" class="form-input" 
+                       placeholder="Введите 6-значный код" maxlength="6"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            </div>
+            
+            <button class="btn btn-primary w-100" onclick="verifyPerformerPhone('${phone}')" 
+                    style="margin-bottom: 10px;">
+                Подтвердить
+            </button>
+            
+            <button class="btn btn-secondary w-100" onclick="sendPerformerVerificationCode('${phone}')">
+                <i class="fas fa-redo"></i> Отправить код еще раз
+            </button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> Код действителен 10 минут
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="#" onclick="closeAllModals(); showPerformerLoginModal();" 
+                   style="color: var(--performer-blue); text-decoration: none;">
+                    <i class="fas fa-sign-in-alt"></i> Войти как исполнитель
+                </a>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Сразу отправляем код подтверждения
+    setTimeout(() => {
+        sendPerformerVerificationCode(phone);
+    }, 1000);
+}
+
+// Функция для отправки кода подтверждения
+async function sendPerformerVerificationCode(phone) {
+    try {
+        showLoading('Отправка SMS кода...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/send-verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Код подтверждения отправлен! Проверьте SMS на телефоне', 'success');
+            document.getElementById('phoneVerificationCode')?.focus();
+        } else {
+            showNotification(data.error || 'Ошибка отправки кода', 'error');
+        }
+    } catch (error) {
+        console.error('Ошибка отправки кода:', error);
+        showNotification('Ошибка отправки SMS', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Функция для подтверждения телефона исполнителя
+async function verifyPerformerPhone(phone) {
+    const code = document.getElementById('phoneVerificationCode').value;
+    
+    if (!code || code.length !== 6) {
+        showNotification('Введите 6-значный код', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Проверка кода...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone, code })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Телефон успешно подтвержден! Теперь вы можете войти.', 'success');
+            
+            // Закрываем модалку
+            closeAllModals();
+            
+            // Если есть токен (автоматическая авторизация)
+            if (data.data.token) {
+                localStorage.setItem('performerToken', data.data.token);
+                localStorage.setItem('currentPerformer', JSON.stringify(data.data.user));
+                currentToken = data.data.token;
+                currentPerformer = data.data.user;
+                
+                updatePerformerInterface();
+                determineInitialScreen();
+            } else {
+                // Показываем форму входа
+                showPerformerLoginModal();
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка подтверждения телефона');
+        }
+    } catch (error) {
+        console.error('Ошибка подтверждения телефона:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // Вход пользователя (клиента)
         async function loginUser() {
