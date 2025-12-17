@@ -2634,7 +2634,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 
 // ==================== ЗАДАЧИ ====================
 
-// Создание задачи
+// Создание задачи - ОБНОВЛЕННАЯ ВЕРСИЯ
 app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
         const { 
@@ -2648,6 +2648,13 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             contact_info,
             additional_requirements
         } = req.body;
+        
+        console.log('Создание новой задачи:', { 
+            title, 
+            category_id, 
+            client_id: req.user.id,
+            status: 'searching' 
+        });
         
         if (!title || !description || !category_id || !deadline || !address || !contact_info) {
             return res.status(400).json({
@@ -2720,14 +2727,17 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             });
         }
         
-        const finalPrice = 0;
+        const finalPrice = 0; // Включено в подписку
         const taskNumber = generateTaskNumber();
+        
+        // Статус должен быть 'searching' (в поиске исполнителя)
+        const taskStatus = 'searching';
         
         const result = await db.run(
             `INSERT INTO tasks 
             (task_number, title, description, client_id, category_id, service_id, 
-             priority, price, address, deadline, contact_info, additional_requirements) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             priority, price, address, deadline, contact_info, additional_requirements, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 taskNumber,
                 title,
@@ -2740,7 +2750,8 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
                 address,
                 deadline,
                 contact_info,
-                additional_requirements || null
+                additional_requirements || null,
+                taskStatus  // Явно указываем статус
             ]
         );
         
@@ -2753,12 +2764,14 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             );
         }
         
+        // Записываем историю статусов
         await db.run(
             `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
              VALUES (?, ?, ?, ?)`,
-            [taskId, 'new', req.user.id, 'Задача создана']
+            [taskId, taskStatus, req.user.id, 'Задача создана и опубликована для исполнителей']
         );
         
+        // Отправляем уведомление клиенту
         await db.run(
             `INSERT INTO notifications 
             (user_id, type, title, message, related_id, related_type) 
@@ -2773,34 +2786,47 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             ]
         );
         
+        // Ищем исполнителей по категории и отправляем им уведомления
+        console.log(`🔍 Поиск исполнителей для категории ${category_id}...`);
+        
         const performers = await db.all(
-            `SELECT u.id, u.first_name, u.last_name, u.avatar_url, u.user_rating as rating
+            `SELECT DISTINCT u.id, u.first_name, u.last_name, u.phone, u.avatar_url, u.user_rating
              FROM users u
              JOIN performer_categories pc ON u.id = pc.performer_id
              WHERE u.role = 'performer' 
                AND u.is_active = 1
                AND u.phone_verified = 1
                AND pc.category_id = ?
-               AND pc.is_active = 1`,
+               AND pc.is_active = 1
+             ORDER BY u.user_rating DESC`,
             [category_id]
         );
         
+        console.log(`✅ Найдено исполнителей: ${performers.length}`);
+        
         for (const performer of performers) {
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message, related_id, related_type) 
-                VALUES (?, ?, ?, ?, ?, ?)`,
-                [
-                    performer.id,
-                    'new_task_available',
-                    'Новая задача доступна',
-                    `Доступна новая задача в категории "${category.display_name}"`,
-                    taskId,
-                    'task'
-                ]
-            );
+            try {
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message, related_id, related_type) 
+                    VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        performer.id,
+                        'new_task_available',
+                        'Новая задача доступна',
+                        `Доступна новая задача в категории "${category.display_name}". 
+                         Название: "${title}"`,
+                        taskId,
+                        'task'
+                    ]
+                );
+                console.log(`📧 Уведомление отправлено исполнителю: ${performer.first_name} (ID: ${performer.id})`);
+            } catch (error) {
+                console.warn(`Ошибка отправки уведомления исполнителю ${performer.id}:`, error.message);
+            }
         }
         
+        // Получаем созданную задачу с информацией о категории
         const task = await db.get(
             `SELECT t.*, c.display_name as category_name
              FROM tasks t 
@@ -2809,22 +2835,33 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             [taskId]
         );
         
+        // Получаем обновленные данные пользователя
+        const updatedUser = await db.get(
+            `SELECT tasks_limit, tasks_used FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        
         res.status(201).json({
             success: true,
-            message: 'Задача успешно создана!',
+            message: 'Задача успешно создана и опубликована для исполнителей!',
             data: { 
                 task,
-                tasks_used: req.user.role === 'client' ? req.user.tasks_used + 1 : 0,
-                tasks_remaining: req.user.role === 'client' ? req.user.tasks_limit - (req.user.tasks_used + 1) : 999,
-                available_performers: performers.length
+                user: updatedUser,
+                tasks_used: updatedUser?.tasks_used || 0,
+                tasks_remaining: (updatedUser?.tasks_limit || 0) - (updatedUser?.tasks_used || 0),
+                available_performers: performers.length,
+                demo_mode: DEMO_MODE
             }
         });
         
     } catch (error) {
-        console.error('Ошибка создания задачи:', error.message);
+        console.error('🔥 Ошибка создания задачи:', error.message);
+        console.error('Stack:', error.stack);
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка создания задачи'
+            error: 'Внутренняя ошибка сервера при создании задачи',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
@@ -3869,24 +3906,37 @@ app.get('/api/performer/stats', authMiddleware(['performer', 'admin', 'superadmi
 });
 
 // Получение доступных задач для исполнителя
+// Получение доступных задач для исполнителей - УЛУЧШЕННАЯ ВЕРСИЯ
 app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (req, res) => {
     try {
+        console.log(`🔍 Исполнитель ${req.user.id} запрашивает доступные задачи`);
+        
+        const { category_id, min_price, priority } = req.query;
+        
+        // Получаем специализации исполнителя
         const specializations = await db.all(
             'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
             [req.user.id]
         );
         
+        console.log(`📊 Специализации исполнителя: ${specializations.length} категорий`);
+        
         if (specializations.length === 0) {
+            console.log('⚠️ У исполнителя нет специализаций');
             return res.json({
                 success: true,
-                data: { tasks: [], count: 0 }
+                data: {
+                    tasks: [],
+                    count: 0,
+                    message: 'У вас нет активных специализаций. Выберите специализации в профиле.'
+                }
             });
         }
         
         const categoryIds = specializations.map(s => s.category_id);
-        const placeholders = categoryIds.map(() => '?').join(',');
+        console.log(`📋 ID категорий: ${categoryIds.join(', ')}`);
         
-        const tasks = await db.all(`
+        let query = `
             SELECT t.*, 
                    c.display_name as category_name,
                    c.icon as category_icon,
@@ -3898,24 +3948,64 @@ app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.client_id = u.id
             WHERE t.status = 'searching' 
-              AND t.category_id IN (${placeholders})
-              AND (t.performer_id IS NULL OR t.performer_id != ?)
-            ORDER BY t.priority DESC, t.created_at DESC
-        `, [...categoryIds, req.user.id]);
+              AND t.category_id IN (${categoryIds.map(() => '?').join(',')})
+              AND (t.performer_id IS NULL OR t.performer_id = 0)
+              AND t.client_id != ?  -- Исключаем свои собственные задачи
+        `;
+        
+        const params = [...categoryIds, req.user.id];
+        
+        // Добавляем фильтры
+        if (category_id && category_id !== 'all') {
+            query += ' AND t.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (min_price) {
+            query += ' AND t.price >= ?';
+            params.push(min_price);
+        }
+        
+        if (priority && priority !== 'all') {
+            query += ' AND t.priority = ?';
+            params.push(priority);
+        }
+        
+        query += ' ORDER BY t.priority DESC, t.created_at DESC';
+        
+        console.log(`🔎 SQL запрос: ${query}`);
+        console.log(`🔎 Параметры: ${params}`);
+        
+        const tasks = await db.all(query, params);
+        
+        console.log(`✅ Найдено доступных задач: ${tasks.length}`);
+        
+        // Добавляем флаг can_take к каждой задаче
+        const tasksWithFlag = tasks.map(task => ({
+            ...task,
+            can_take: true
+        }));
         
         res.json({
             success: true,
             data: {
-                tasks,
-                count: tasks.length
+                tasks: tasksWithFlag,
+                count: tasksWithFlag.length,
+                categories: specializations.length,
+                message: tasksWithFlag.length > 0 
+                    ? `Найдено ${tasksWithFlag.length} доступных задач` 
+                    : 'Нет доступных задач в ваших категориях'
             }
         });
         
     } catch (error) {
-        console.error('Ошибка получения доступных задач:', error.message);
+        console.error('🔥 Ошибка получения доступных задач:', error.message);
+        console.error('Stack:', error.stack);
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения доступных задач'
+            error: 'Внутренняя ошибка сервера при получении задач',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
