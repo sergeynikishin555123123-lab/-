@@ -1566,16 +1566,17 @@
                         <h2 class="section-title">Женский Консьерж</h2>
                         <p class="section-subtitle">Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.</p>
                         
-                        <div class="auth-actions">
-                            <button class="btn btn-primary" onclick="showLoginModal()">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Войти в систему
-                            </button>
-                            <button class="btn btn-secondary" onclick="showRegisterModal()">
-                                <i class="fas fa-user-plus"></i>
-                                Зарегистрироваться
-                            </button>
-                        </div>
+                        <!-- В auth-actions замените -->
+<div class="auth-actions">
+    <button class="btn btn-primary" onclick="window.showLoginModal()">
+        <i class="fas fa-sign-in-alt"></i>
+        Войти в систему
+    </button>
+    <button class="btn btn-secondary" onclick="window.showRegisterModal()">
+        <i class="fas fa-user-plus"></i>
+        Зарегистрироваться
+    </button>
+</div>
                     </div>
                 </div>
             </div>
@@ -4217,7 +4218,7 @@
             }
         }
 
-// Специальная функция для входа исполнителя
+// В функции loginPerformer() найдите и исправьте:
 async function loginPerformer() {
     const email = document.getElementById('loginEmail')?.value;
     const phone = document.getElementById('loginPhone')?.value;
@@ -4247,19 +4248,17 @@ async function loginPerformer() {
         const data = await response.json();
         
         if (data.success) {
-// В функции loginUser после успешного входа добавьте:
-if (data.data.user.role === 'performer' || 
-    data.data.user.role === 'admin' || 
-    data.data.user.role === 'superadmin' || 
-    data.data.user.role === 'manager') {
-    
-    showNotification('Вы вошли как исполнитель. Переход в панель исполнителя...', 'success');
-    setTimeout(() => {
-        window.location.href = '/performer.html';
-    }, 1500);
-    return;
-}
+            // В функции loginUser после успешного входа добавьте:
+            if (data.data.user.role === 'performer' || 
+                data.data.user.role === 'admin' || 
+                data.data.user.role === 'superadmin' || 
+                data.data.user.role === 'manager') {
                 
+                showNotification('Вы вошли как исполнитель. Переход в панель исполнителя...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/performer.html';
+                }, 1500);
+                return;
             } else {
                 showNotification('Это панель для клиентов. Исполнители могут войти в панель исполнителя.', 'info');
                 // Показываем кнопку для перехода в панель исполнителя
