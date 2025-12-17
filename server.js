@@ -83,10 +83,13 @@ const initDatabase = async () => {
                 verification_token TEXT,
                 reset_token TEXT,
                 reset_token_expires TIMESTAMP,
+                bio TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // Остальные таблицы остаются без изменений...
 
         // Коды подтверждения телефона
         await db.exec(`
