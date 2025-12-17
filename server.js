@@ -704,16 +704,49 @@ const validateEmail = (email) => {
 
 const validatePhone = (phone) => {
     if (!phone) return false;
-    const re = /^\+?[1-9]\d{10,14}$/;
-    return re.test(phone.replace(/\D/g, ''));
+    
+    // Форматируем телефон для проверки
+    const formattedPhone = formatPhone(phone);
+    
+    // Проверяем международный формат: +7/8 и 10 цифр после
+    const internationalRegex = /^\+[78]\d{10}$/;
+    
+    // Проверяем российские форматы без кода страны:
+    // 9XXXXXXXXX (10 цифр) или 79XXXXXXXXX (11 цифр) или 89XXXXXXXXX (11 цифр)
+    const russianRegex = /^(?:\+?[78]|8?)(9\d{9})$/;
+    
+    return internationalRegex.test(formattedPhone) || russianRegex.test(phone);
 };
 
 const formatPhone = (phone) => {
-    const cleaned = phone.replace(/\D/g, '');
-    if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
-        return '+7' + cleaned.substring(1);
+    if (!phone) return '';
+    
+    // Убираем все нецифровые символы, кроме плюса
+    let cleaned = phone.toString().replace(/[^\d+]/g, '');
+    
+    // Если номер начинается с 7 или 8 без кода страны
+    if (/^[78]\d{10}$/.test(cleaned)) {
+        // Преобразуем 7xxxxxxxxxx или 8xxxxxxxxxx в +7xxxxxxxxxx
+        cleaned = '+7' + cleaned.substring(1);
     }
-    return '+' + cleaned;
+    // Если номер начинается с 9 (10 цифр без кода страны)
+    else if (/^9\d{9}$/.test(cleaned)) {
+        cleaned = '+7' + cleaned;
+    }
+    // Если номер начинается с +7 или +8
+    else if (/^\+[78]\d{10,}$/.test(cleaned)) {
+        // Уже в правильном формате
+    }
+    // Если номер начинается с 7 или 8 и больше 11 цифр (уже есть код страны)
+    else if (/^[78]\d{11,}$/.test(cleaned)) {
+        cleaned = '+' + cleaned;
+    }
+    // Для других форматов просто возвращаем с плюсом
+    else if (!cleaned.startsWith('+')) {
+        cleaned = '+' + cleaned;
+    }
+    
+    return cleaned;
 };
 
 const generateAvatarUrl = (firstName, lastName, role) => {
