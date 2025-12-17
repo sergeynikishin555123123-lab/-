@@ -4920,67 +4920,911 @@ app.get('/api/performer/tasks/available/count', authMiddleware(['performer']), a
     }
 });
 
-// ==================== АДМИН API ====================
+// ==================== АДМИН API (ПОЛНЫЕ ВОЗМОЖНОСТИ) ====================
 
-// Получение всех пользователей (админ)
-app.get('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+// Аутентификация администратора (без подтверждения телефона)
+app.post('/api/admin/login', async (req, res) => {
     try {
-        const { role, limit = 50, offset = 0 } = req.query;
+        const { email, password } = req.body;
         
-        let query = `
-            SELECT id, email, first_name, last_name, phone, phone_verified, role, 
-                   subscription_plan, subscription_status, subscription_expires,
-                   avatar_url, balance, initial_fee_paid, initial_fee_amount,
-                   tasks_limit, tasks_used, user_rating, completed_tasks,
-                   total_spent, is_active, last_login, email_verified,
-                   created_at, updated_at
-            FROM users
-            WHERE 1=1
-        `;
+        console.log('👑 Попытка входа администратора:', { email });
         
-        const params = [];
-        
-        if (role && role !== 'all') {
-            query += ' AND role = ?';
-            params.push(role);
+        if (!email || !password) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите email и пароль'
+            });
         }
         
-        query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const users = await db.all(query, params);
-        
-        const countResult = await db.get(
-            'SELECT COUNT(*) as total FROM users' + (role && role !== 'all' ? ' WHERE role = ?' : ''),
-            role && role !== 'all' ? [role] : []
+        const user = await db.get(
+            `SELECT * FROM users WHERE email = ? AND role IN ('admin', 'superadmin', 'manager')`,
+            [email]
         );
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Пользователь не найден или недостаточно прав'
+            });
+        }
+        
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                error: 'Неверный пароль'
+            });
+        }
+        
+        await db.run(
+            'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
+            [user.id]
+        );
+        
+        const userForResponse = {
+            id: user.id,
+            email: user.email,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            phone: user.phone,
+            phone_verified: user.phone_verified,
+            role: user.role,
+            subscription_plan: user.subscription_plan,
+            subscription_status: user.subscription_status,
+            subscription_expires: user.subscription_expires,
+            avatar_url: user.avatar_url,
+            balance: user.balance,
+            initial_fee_paid: user.initial_fee_paid,
+            initial_fee_amount: user.initial_fee_amount,
+            rating: user.user_rating,
+            completed_tasks: user.completed_tasks,
+            tasks_limit: user.tasks_limit,
+            tasks_used: user.tasks_used,
+            total_spent: user.total_spent,
+            last_login: user.last_login,
+            email_verified: user.email_verified
+        };
+        
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                role: user.role,
+                email: user.email,
+                is_admin: true
+            },
+            process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
+            { expiresIn: '30d' }
+        );
+        
+        console.log('✅ Успешный вход администратора:', user.email);
         
         res.json({
             success: true,
-            data: {
-                users,
-                pagination: {
-                    total: countResult?.total || 0,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
+            message: 'Вход выполнен успешно!',
+            data: { 
+                user: userForResponse,
+                token 
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка входа администратора:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Внутренняя ошибка сервера при входе'
+        });
+    }
+});
+
+// Создание администратора (без подтверждения телефона)
+app.post('/api/admin/create', authMiddleware(['superadmin']), async (req, res) => {
+    try {
+        const { email, password, first_name, last_name, phone, role = 'admin' } = req.body;
+        
+        console.log('👑 Создание администратора:', { email, role });
+        
+        if (!email || !password || !first_name) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля: email, пароль и имя'
+            });
+        }
+        
+        if (!validateEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный email адрес'
+            });
+        }
+        
+        if (!['admin', 'manager'].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректная роль. Допустимые значения: admin, manager'
+            });
+        }
+        
+        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                error: 'Пользователь с таким email уже существует'
+            });
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 12);
+        
+        const avatarUrl = generateAvatarUrl(first_name, last_name, role);
+        
+        const result = await db.run(
+            `INSERT INTO users 
+            (email, password, first_name, last_name, phone, phone_verified, role, 
+             subscription_plan, subscription_status, subscription_expires,
+             initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url,
+             email_verified) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                email,
+                hashedPassword,
+                first_name,
+                last_name || '',
+                phone || null,
+                1, // Админам не нужно подтверждение телефона
+                role,
+                'premium',
+                'active',
+                null, // Подписка без ограничений
+                1,
+                0,
+                999,
+                avatarUrl,
+                1
+            ]
+        );
+        
+        const userId = result.lastID;
+        
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, avatar_url
+             FROM users WHERE id = ?`,
+            [userId]
+        );
+        
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message) 
+            VALUES (?, ?, ?, ?)`,
+            [
+                userId,
+                'admin_created',
+                'Аккаунт администратора создан',
+                `Ваш аккаунт администратора успешно создан. Роль: ${role === 'admin' ? 'Администратор' : 'Менеджер'}`
+            ]
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Администратор успешно создан',
+            data: { 
+                user,
+                login_credentials: {
+                    email: email,
+                    password: password // В реальной системе лучше отправлять отдельно
                 }
             }
         });
         
     } catch (error) {
-        console.error('Ошибка получения пользователей:', error.message);
+        console.error('❌ Ошибка создания администратора:', error.message);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения пользователей'
+            error: 'Внутренняя ошибка сервера при создании администратора'
         });
     }
 });
 
-// Получение всех задач (админ)
-app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+// Получение статистики системы (расширенная)
+app.get('/api/admin/dashboard-stats', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const { status, category_id, limit = 50, offset = 0 } = req.query;
+        // 1. Статистика пользователей
+        const usersStats = await db.get(`
+            SELECT 
+                COUNT(*) as total_users,
+                SUM(CASE WHEN role = 'client' THEN 1 ELSE 0 END) as clients,
+                SUM(CASE WHEN role = 'performer' THEN 1 ELSE 0 END) as performers,
+                SUM(CASE WHEN role IN ('admin', 'superadmin', 'manager') THEN 1 ELSE 0 END) as admins,
+                SUM(CASE WHEN phone_verified = 1 THEN 1 ELSE 0 END) as verified_users,
+                SUM(CASE WHEN subscription_status = 'active' THEN 1 ELSE 0 END) as active_subscriptions,
+                SUM(CASE WHEN is_active = 0 THEN 1 ELSE 0 END) as inactive_users,
+                SUM(CASE WHEN DATE(created_at) = DATE('now') THEN 1 ELSE 0 END) as new_users_today
+            FROM users
+        `);
+        
+        // 2. Статистика задач
+        const tasksStats = await db.get(`
+            SELECT 
+                COUNT(*) as total_tasks,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks,
+                SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) as new_tasks,
+                SUM(CASE WHEN status = 'searching' THEN 1 ELSE 0 END) as searching_tasks,
+                SUM(CASE WHEN status = 'assigned' THEN 1 ELSE 0 END) as assigned_tasks,
+                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_tasks,
+                SUM(price) as total_revenue,
+                AVG(price) as avg_task_price,
+                SUM(CASE WHEN DATE(created_at) = DATE('now') THEN 1 ELSE 0 END) as new_tasks_today,
+                SUM(CASE WHEN DATE(created_at) = DATE('now', '-1 day') THEN 1 ELSE 0 END) as new_tasks_yesterday
+            FROM tasks
+        `);
+        
+        // 3. Финансовая статистика
+        const financeStats = await db.get(`
+            SELECT 
+                SUM(CASE WHEN type = 'initial_fee' THEN amount ELSE 0 END) as total_initial_fees,
+                SUM(CASE WHEN type = 'subscription' THEN amount ELSE 0 END) as total_subscriptions,
+                SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as total_payouts,
+                SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_processed,
+                SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as total_pending,
+                COUNT(DISTINCT user_id) as users_with_transactions
+            FROM transactions
+        `);
+        
+        // 4. Статистика по категориям
+        const categoryStats = await db.all(`
+            SELECT 
+                c.id,
+                c.display_name as category_name,
+                c.icon,
+                c.color,
+                COUNT(t.id) as task_count,
+                SUM(CASE WHEN t.status = 'completed' THEN 1 ELSE 0 END) as completed_count,
+                AVG(CASE WHEN t.status = 'completed' THEN t.price ELSE NULL END) as avg_price
+            FROM categories c
+            LEFT JOIN tasks t ON c.id = t.category_id
+            GROUP BY c.id
+            ORDER BY task_count DESC
+        `);
+        
+        // 5. Статистика по подпискам
+        const subscriptionStats = await db.all(`
+            SELECT 
+                s.name,
+                s.display_name,
+                s.price_monthly,
+                s.initial_fee,
+                COUNT(u.id) as user_count,
+                SUM(CASE WHEN u.subscription_status = 'active' THEN 1 ELSE 0 END) as active_users
+            FROM subscriptions s
+            LEFT JOIN users u ON s.name = u.subscription_plan
+            GROUP BY s.id
+            ORDER BY s.sort_order
+        `);
+        
+        // 6. Недавняя активность
+        const recentActivity = await db.all(`
+            SELECT 
+                id,
+                type,
+                title,
+                message,
+                created_at,
+                related_type,
+                related_id
+            FROM notifications
+            ORDER BY created_at DESC
+            LIMIT 10
+        `);
+        
+        // 7. Выплаты за сегодня
+        const todayPayouts = await db.get(`
+            SELECT 
+                SUM(amount) as total_amount,
+                COUNT(*) as count
+            FROM transactions
+            WHERE type = 'payout' 
+              AND DATE(created_at) = DATE('now')
+              AND status = 'completed'
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                users: usersStats,
+                tasks: tasksStats,
+                finance: financeStats,
+                categories: categoryStats,
+                subscriptions: subscriptionStats,
+                recent_activity: recentActivity,
+                today_payouts: todayPayouts,
+                system_info: {
+                    demo_mode: DEMO_MODE,
+                    total_categories: categoryStats.length,
+                    total_services: await db.get('SELECT COUNT(*) as count FROM services').then(r => r.count),
+                    total_subscriptions: subscriptionStats.length
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения статистики системы:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики системы'
+        });
+    }
+});
+
+// Управление категориями (админ)
+app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const categories = await db.all(
+            `SELECT c.*, 
+                    COUNT(s.id) as services_count,
+                    (SELECT COUNT(*) FROM tasks t WHERE t.category_id = c.id) as tasks_count
+             FROM categories c
+             LEFT JOIN services s ON c.id = s.category_id AND s.is_active = 1
+             GROUP BY c.id
+             ORDER BY c.sort_order ASC`
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                categories,
+                count: categories.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения категорий:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения категорий'
+        });
+    }
+});
+
+// Создание/обновление категории
+app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { id, name, display_name, description, icon, color, sort_order, is_active } = req.body;
+        
+        if (!name || !display_name || !description) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        if (id) {
+            // Обновление существующей категории
+            await db.run(
+                `UPDATE categories SET 
+                    name = ?,
+                    display_name = ?,
+                    description = ?,
+                    icon = ?,
+                    color = ?,
+                    sort_order = ?,
+                    is_active = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [name, display_name, description, icon || 'fas fa-folder', color || '#C5A880', 
+                 sort_order || 0, is_active ? 1 : 0, id]
+            );
+            
+            const category = await db.get('SELECT * FROM categories WHERE id = ?', [id]);
+            
+            res.json({
+                success: true,
+                message: 'Категория успешно обновлена',
+                data: { category }
+            });
+        } else {
+            // Создание новой категории
+            const result = await db.run(
+                `INSERT INTO categories 
+                (name, display_name, description, icon, color, sort_order, is_active) 
+                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [name, display_name, description, icon || 'fas fa-folder', color || '#C5A880', 
+                 sort_order || 0, is_active ? 1 : 1]
+            );
+            
+            const categoryId = result.lastID;
+            const category = await db.get('SELECT * FROM categories WHERE id = ?', [categoryId]);
+            
+            res.status(201).json({
+                success: true,
+                message: 'Категория успешно создана',
+                data: { category }
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения категории'
+        });
+    }
+});
+
+// Удаление категории
+app.delete('/api/admin/categories/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        
+        // Проверяем, есть ли связанные услуги или задачи
+        const hasServices = await db.get(
+            'SELECT 1 FROM services WHERE category_id = ? LIMIT 1',
+            [categoryId]
+        );
+        
+        const hasTasks = await db.get(
+            'SELECT 1 FROM tasks WHERE category_id = ? LIMIT 1',
+            [categoryId]
+        );
+        
+        if (hasServices || hasTasks) {
+            // Не удаляем, а деактивируем
+            await db.run(
+                'UPDATE categories SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [categoryId]
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Категория деактивирована (есть связанные данные)',
+                data: { id: categoryId, deactivated: true }
+            });
+        }
+        
+        // Если нет связанных данных - удаляем
+        await db.run('DELETE FROM categories WHERE id = ?', [categoryId]);
+        
+        res.json({
+            success: true,
+            message: 'Категория успешно удалена',
+            data: { id: categoryId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления категории'
+        });
+    }
+});
+
+// Управление услугами (админ)
+app.get('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { category_id, is_active } = req.query;
+        
+        let query = `
+            SELECT s.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.service_id = s.id) as tasks_count
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (category_id && category_id !== 'all') {
+            query += ' AND s.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (is_active && is_active !== 'all') {
+            query += ' AND s.is_active = ?';
+            params.push(is_active === 'active' ? 1 : 0);
+        }
+        
+        query += ' ORDER BY s.sort_order ASC, s.name ASC';
+        
+        const services = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения услуг:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
+        });
+    }
+});
+
+// Создание/обновление услуги
+app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { id, category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured } = req.body;
+        
+        if (!category_id || !name || !description) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        // Проверяем существование категории
+        const categoryExists = await db.get('SELECT 1 FROM categories WHERE id = ? AND is_active = 1', [category_id]);
+        if (!categoryExists) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        if (id) {
+            // Обновление существующей услуги
+            await db.run(
+                `UPDATE services SET 
+                    category_id = ?,
+                    name = ?,
+                    description = ?,
+                    base_price = ?,
+                    estimated_time = ?,
+                    is_active = ?,
+                    sort_order = ?,
+                    is_featured = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [category_id, name, description, base_price || 0, estimated_time || null,
+                 is_active ? 1 : 0, sort_order || 0, is_featured ? 1 : 0, id]
+            );
+            
+            const service = await db.get(
+                `SELECT s.*, c.display_name as category_name 
+                 FROM services s 
+                 LEFT JOIN categories c ON s.category_id = c.id 
+                 WHERE s.id = ?`,
+                [id]
+            );
+            
+            res.json({
+                success: true,
+                message: 'Услуга успешно обновлена',
+                data: { service }
+            });
+        } else {
+            // Создание новой услуги
+            const result = await db.run(
+                `INSERT INTO services 
+                (category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [category_id, name, description, base_price || 0, estimated_time || null,
+                 is_active ? 1 : 1, sort_order || 0, is_featured ? 1 : 0]
+            );
+            
+            const serviceId = result.lastID;
+            const service = await db.get(
+                `SELECT s.*, c.display_name as category_name 
+                 FROM services s 
+                 LEFT JOIN categories c ON s.category_id = c.id 
+                 WHERE s.id = ?`,
+                [serviceId]
+            );
+            
+            res.status(201).json({
+                success: true,
+                message: 'Услуга успешно создана',
+                data: { service }
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения услуги'
+        });
+    }
+});
+
+// Удаление услуги
+app.delete('/api/admin/services/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const serviceId = req.params.id;
+        
+        // Проверяем, есть ли связанные задачи
+        const hasTasks = await db.get(
+            'SELECT 1 FROM tasks WHERE service_id = ? LIMIT 1',
+            [serviceId]
+        );
+        
+        if (hasTasks) {
+            // Не удаляем, а деактивируем
+            await db.run(
+                'UPDATE services SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [serviceId]
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Услуга деактивирована (есть связанные задачи)',
+                data: { id: serviceId, deactivated: true }
+            });
+        }
+        
+        // Если нет связанных данных - удаляем
+        await db.run('DELETE FROM services WHERE id = ?', [serviceId]);
+        
+        res.json({
+            success: true,
+            message: 'Услуга успешно удалена',
+            data: { id: serviceId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления услуги'
+        });
+    }
+});
+
+// Управление подписками (админ)
+app.get('/api/admin/subscriptions', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const subscriptions = await db.all(
+            `SELECT s.*,
+                    (SELECT COUNT(*) FROM users u WHERE u.subscription_plan = s.name) as user_count,
+                    (SELECT COUNT(*) FROM users u WHERE u.subscription_plan = s.name AND u.subscription_status = 'active') as active_users
+             FROM subscriptions s
+             ORDER BY s.sort_order ASC, s.price_monthly ASC`
+        );
+        
+        const subscriptionsWithParsedFeatures = subscriptions.map(sub => ({
+            ...sub,
+            features: typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                subscriptions: subscriptionsWithParsedFeatures,
+                count: subscriptions.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения подписок:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения подписок'
+        });
+    }
+});
+
+// Создание/обновление подписки
+app.post('/api/admin/subscriptions', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { id, name, display_name, description, price_monthly, price_yearly, 
+                initial_fee, tasks_limit, features, color_theme, sort_order, 
+                is_popular, is_active } = req.body;
+        
+        if (!name || !display_name || !description || price_monthly === undefined || 
+            initial_fee === undefined || tasks_limit === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля'
+            });
+        }
+        
+        // Преобразуем features в строку JSON
+        let featuresJson;
+        try {
+            if (typeof features === 'string') {
+                featuresJson = JSON.stringify(JSON.parse(features));
+            } else if (Array.isArray(features)) {
+                featuresJson = JSON.stringify(features);
+            } else {
+                featuresJson = JSON.stringify([]);
+            }
+        } catch (error) {
+            featuresJson = JSON.stringify([]);
+        }
+        
+        if (id) {
+            // Обновление существующей подписки
+            await db.run(
+                `UPDATE subscriptions SET 
+                    name = ?,
+                    display_name = ?,
+                    description = ?,
+                    price_monthly = ?,
+                    price_yearly = ?,
+                    initial_fee = ?,
+                    tasks_limit = ?,
+                    features = ?,
+                    color_theme = ?,
+                    sort_order = ?,
+                    is_popular = ?,
+                    is_active = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [name, display_name, description, price_monthly, price_yearly || price_monthly * 12,
+                 initial_fee, tasks_limit, featuresJson, color_theme || '#FF6B8B',
+                 sort_order || 0, is_popular ? 1 : 0, is_active ? 1 : 0, id]
+            );
+            
+            const subscription = await db.get('SELECT * FROM subscriptions WHERE id = ?', [id]);
+            
+            res.json({
+                success: true,
+                message: 'Подписка успешно обновлена',
+                data: { subscription }
+            });
+        } else {
+            // Создание новой подписки
+            const result = await db.run(
+                `INSERT INTO subscriptions 
+                (name, display_name, description, price_monthly, price_yearly, 
+                 initial_fee, tasks_limit, features, color_theme, sort_order, 
+                 is_popular, is_active) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [name, display_name, description, price_monthly, price_yearly || price_monthly * 12,
+                 initial_fee, tasks_limit, featuresJson, color_theme || '#FF6B8B',
+                 sort_order || 0, is_popular ? 1 : 0, is_active ? 1 : 1]
+            );
+            
+            const subscriptionId = result.lastID;
+            const subscription = await db.get('SELECT * FROM subscriptions WHERE id = ?', [subscriptionId]);
+            
+            res.status(201).json({
+                success: true,
+                message: 'Подписка успешно создана',
+                data: { subscription }
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения подписки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения подписки'
+        });
+    }
+});
+
+// Удаление подписки
+app.delete('/api/admin/subscriptions/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const subscriptionId = req.params.id;
+        
+        // Проверяем, есть ли пользователи с этой подпиской
+        const hasUsers = await db.get(
+            'SELECT 1 FROM users WHERE subscription_plan = (SELECT name FROM subscriptions WHERE id = ?) LIMIT 1',
+            [subscriptionId]
+        );
+        
+        if (hasUsers) {
+            // Не удаляем, а деактивируем
+            await db.run(
+                'UPDATE subscriptions SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [subscriptionId]
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Подписка деактивирована (есть пользователи с этой подпиской)',
+                data: { id: subscriptionId, deactivated: true }
+            });
+        }
+        
+        // Если нет пользователей - удаляем
+        await db.run('DELETE FROM subscriptions WHERE id = ?', [subscriptionId]);
+        
+        res.json({
+            success: true,
+            message: 'Подписка успешно удалена',
+            data: { id: subscriptionId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления подписки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления подписки'
+        });
+    }
+});
+
+// Полный отчет по транзакциям
+app.get('/api/admin/transactions', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { start_date, end_date, type, status, limit = 100 } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   u.email as user_email,
+                   u.first_name as user_first_name,
+                   u.last_name as user_last_name,
+                   u.phone as user_phone
+            FROM transactions t
+            LEFT JOIN users u ON t.user_id = u.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (start_date) {
+            query += ' AND DATE(t.created_at) >= ?';
+            params.push(start_date);
+        }
+        
+        if (end_date) {
+            query += ' AND DATE(t.created_at) <= ?';
+            params.push(end_date);
+        }
+        
+        if (type && type !== 'all') {
+            query += ' AND t.type = ?';
+            params.push(type);
+        }
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const transactions = await db.all(query, params);
+        
+        // Суммарная статистика
+        const stats = await db.get(`
+            SELECT 
+                SUM(CASE WHEN status = 'completed' THEN amount ELSE 0 END) as total_completed,
+                SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) as total_pending,
+                SUM(CASE WHEN status = 'failed' THEN amount ELSE 0 END) as total_failed,
+                COUNT(*) as total_count,
+                COUNT(DISTINCT user_id) as unique_users
+            FROM transactions
+            WHERE 1=1
+            ${start_date ? ' AND DATE(created_at) >= ?' : ''}
+            ${end_date ? ' AND DATE(created_at) <= ?' : ''}
+            ${type && type !== 'all' ? ' AND type = ?' : ''}
+            ${status && status !== 'all' ? ' AND status = ?' : ''}
+        `, [...params.slice(0, -1)]);
+        
+        res.json({
+            success: true,
+            data: {
+                transactions,
+                stats,
+                count: transactions.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения транзакций:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения транзакций'
+        });
+    }
+});
+
+// Управление задачами (админ - полный доступ)
+app.get('/api/admin/tasks-detailed', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { status, category_id, performer_id, client_id, date_from, date_to, limit = 50, offset = 0 } = req.query;
         
         let query = `
             SELECT t.*, 
@@ -4989,9 +5833,15 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
                    s.name as service_name,
                    u1.first_name as client_first_name, 
                    u1.last_name as client_last_name,
+                   u1.phone as client_phone,
+                   u1.email as client_email,
                    u2.first_name as performer_first_name,
                    u2.last_name as performer_last_name,
-                   u2.user_rating as performer_rating
+                   u2.phone as performer_phone,
+                   u2.email as performer_email,
+                   u2.user_rating as performer_rating,
+                   (SELECT COUNT(*) FROM task_messages WHERE task_id = t.id) as messages_count,
+                   (SELECT COUNT(*) FROM reviews WHERE task_id = t.id) as reviews_count
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN services s ON t.service_id = s.id
@@ -5012,11 +5862,32 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
             params.push(category_id);
         }
         
+        if (performer_id && performer_id !== 'all') {
+            query += ' AND t.performer_id = ?';
+            params.push(performer_id);
+        }
+        
+        if (client_id && client_id !== 'all') {
+            query += ' AND t.client_id = ?';
+            params.push(client_id);
+        }
+        
+        if (date_from) {
+            query += ' AND DATE(t.created_at) >= ?';
+            params.push(date_from);
+        }
+        
+        if (date_to) {
+            query += ' AND DATE(t.created_at) <= ?';
+            params.push(date_to);
+        }
+        
         query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
         params.push(parseInt(limit), parseInt(offset));
         
         const tasks = await db.all(query, params);
         
+        // Общее количество для пагинации
         let countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1`;
         let countParams = [];
         
@@ -5028,6 +5899,16 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
         if (category_id && category_id !== 'all') {
             countQuery += ' AND category_id = ?';
             countParams.push(category_id);
+        }
+        
+        if (date_from) {
+            countQuery += ' AND DATE(created_at) >= ?';
+            countParams.push(date_from);
+        }
+        
+        if (date_to) {
+            countQuery += ' AND DATE(created_at) <= ?';
+            countParams.push(date_to);
         }
         
         const countResult = await db.get(countQuery, countParams);
@@ -5046,7 +5927,7 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
         });
         
     } catch (error) {
-        console.error('Ошибка получения задач (админ):', error.message);
+        console.error('❌ Ошибка получения задач:', error.message);
         res.status(500).json({
             success: false,
             error: 'Ошибка получения задач'
@@ -5054,119 +5935,33 @@ app.get('/api/admin/tasks', authMiddleware(['admin', 'superadmin']), async (req,
     }
 });
 
-// Обновление пользователя (админ)
-app.put('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
-    try {
-        const userId = req.params.id;
-        const { role, subscription_status, is_active, tasks_limit } = req.body;
-        
-        const updateFields = [];
-        const updateValues = [];
-        
-        if (role !== undefined) {
-            updateFields.push('role = ?');
-            updateValues.push(role);
-        }
-        
-        if (subscription_status !== undefined) {
-            updateFields.push('subscription_status = ?');
-            updateValues.push(subscription_status);
-        }
-        
-        if (is_active !== undefined) {
-            updateFields.push('is_active = ?');
-            updateValues.push(is_active ? 1 : 0);
-        }
-        
-        if (tasks_limit !== undefined) {
-            updateFields.push('tasks_limit = ?');
-            updateValues.push(tasks_limit);
-        }
-        
-        if (updateFields.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Нет данных для обновления'
-            });
-        }
-        
-        updateFields.push('updated_at = CURRENT_TIMESTAMP');
-        updateValues.push(userId);
-        
-        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
-        
-        await db.run(query, updateValues);
-        
-        const updatedUser = await db.get(
-            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
-                    subscription_plan, subscription_status, subscription_expires,
-                    avatar_url, balance, initial_fee_paid, initial_fee_amount,
-                    tasks_limit, tasks_used, user_rating, completed_tasks,
-                    total_spent, is_active, last_login, email_verified
-             FROM users WHERE id = ?`,
-            [userId]
-        );
-        
-        res.json({
-            success: true,
-            message: 'Пользователь успешно обновлен',
-            data: { user: updatedUser }
-        });
-        
-    } catch (error) {
-        console.error('Ошибка обновления пользователя:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка обновления пользователя'
-        });
-    }
-});
-
-// Удаление пользователя (админ)
-app.delete('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
-    try {
-        const userId = req.params.id;
-        
-        const user = await db.get('SELECT id, role FROM users WHERE id = ?', [userId]);
-        
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                error: 'Пользователь не найден'
-            });
-        }
-        
-        if (user.role === 'superadmin' && req.user.role !== 'superadmin') {
-            return res.status(403).json({
-                success: false,
-                error: 'Недостаточно прав для удаления суперадмина'
-            });
-        }
-        
-        await db.run('UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [userId]);
-        
-        res.json({
-            success: true,
-            message: 'Пользователь деактивирован'
-        });
-        
-    } catch (error) {
-        console.error('Ошибка удаления пользователя:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка удаления пользователя'
-        });
-    }
-});
-
-// Обновление задачи (админ)
+// Полное обновление задачи (админ)
 app.put('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
         const taskId = req.params.id;
-        const { status, performer_id, priority, price, admin_notes } = req.body;
+        const { title, description, status, performer_id, priority, price, admin_notes, 
+                category_id, service_id, deadline, address, contact_info } = req.body;
+        
+        const task = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
         
         const updateFields = [];
         const updateValues = [];
+        
+        if (title !== undefined) {
+            updateFields.push('title = ?');
+            updateValues.push(title);
+        }
+        
+        if (description !== undefined) {
+            updateFields.push('description = ?');
+            updateValues.push(description);
+        }
         
         if (status !== undefined) {
             updateFields.push('status = ?');
@@ -5193,6 +5988,31 @@ app.put('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (
             updateValues.push(admin_notes);
         }
         
+        if (category_id !== undefined) {
+            updateFields.push('category_id = ?');
+            updateValues.push(category_id);
+        }
+        
+        if (service_id !== undefined) {
+            updateFields.push('service_id = ?');
+            updateValues.push(service_id);
+        }
+        
+        if (deadline !== undefined) {
+            updateFields.push('deadline = ?');
+            updateValues.push(deadline);
+        }
+        
+        if (address !== undefined) {
+            updateFields.push('address = ?');
+            updateValues.push(address);
+        }
+        
+        if (contact_info !== undefined) {
+            updateFields.push('contact_info = ?');
+            updateValues.push(contact_info);
+        }
+        
         if (updateFields.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -5207,18 +6027,53 @@ app.put('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (
         
         await db.run(query, updateValues);
         
-        if (status) {
+        // Записываем историю статусов, если статус изменился
+        if (status && status !== task.status) {
             await db.run(
                 `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
                  VALUES (?, ?, ?, ?)`,
                 [taskId, status, req.user.id, admin_notes || `Статус изменен администратором`]
             );
+            
+            // Отправляем уведомления
+            if (task.client_id) {
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message, related_id, related_type) 
+                    VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        task.client_id,
+                        'task_status_changed',
+                        'Статус задачи изменен',
+                        `Статус задачи "${title || task.title}" изменен на "${status}"`,
+                        taskId,
+                        'task'
+                    ]
+                );
+            }
+            
+            if (performer_id && task.performer_id !== performer_id) {
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message, related_id, related_type) 
+                    VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        performer_id,
+                        'task_assigned',
+                        'Задача назначена вам',
+                        `Вам назначена задача "${title || task.title}"`,
+                        taskId,
+                        'task'
+                    ]
+                );
+            }
         }
         
         const updatedTask = await db.get(
-            `SELECT t.*, c.display_name as category_name
+            `SELECT t.*, c.display_name as category_name, s.name as service_name
              FROM tasks t 
              LEFT JOIN categories c ON t.category_id = c.id 
+             LEFT JOIN services s ON t.service_id = s.id 
              WHERE t.id = ?`,
             [taskId]
         );
@@ -5230,7 +6085,7 @@ app.put('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (
         });
         
     } catch (error) {
-        console.error('Ошибка обновления задачи:', error.message);
+        console.error('❌ Ошибка обновления задачи:', error.message);
         res.status(500).json({
             success: false,
             error: 'Ошибка обновления задачи'
@@ -5244,7 +6099,6 @@ app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), asyn
         const taskId = req.params.id;
         
         const task = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
-        
         if (!task) {
             return res.status(404).json({
                 success: false,
@@ -5252,15 +6106,39 @@ app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), asyn
             });
         }
         
-        await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
+        // Начинаем транзакцию для удаления связанных данных
+        await db.exec('BEGIN TRANSACTION');
         
-        res.json({
-            success: true,
-            message: 'Задача удалена'
-        });
+        try {
+            // Удаляем связанные записи
+            await db.run('DELETE FROM task_messages WHERE task_id = ?', [taskId]);
+            await db.run('DELETE FROM task_status_history WHERE task_id = ?', [taskId]);
+            await db.run('DELETE FROM reviews WHERE task_id = ?', [taskId]);
+            
+            // Удаляем саму задачу
+            await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
+            
+            // Возвращаем использованные задачи клиенту
+            await db.run(
+                'UPDATE users SET tasks_used = tasks_used - 1 WHERE id = ? AND tasks_used > 0',
+                [task.client_id]
+            );
+            
+            await db.exec('COMMIT');
+            
+            res.json({
+                success: true,
+                message: 'Задача успешно удалена',
+                data: { task_id: taskId }
+            });
+            
+        } catch (error) {
+            await db.exec('ROLLBACK');
+            throw error;
+        }
         
     } catch (error) {
-        console.error('Ошибка удаления задачи:', error.message);
+        console.error('❌ Ошибка удаления задачи:', error.message);
         res.status(500).json({
             success: false,
             error: 'Ошибка удаления задачи'
@@ -5268,85 +6146,694 @@ app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), asyn
     }
 });
 
-// Получение статистики системы (админ)
-app.get('/api/admin/stats', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+// Полное управление пользователями
+app.get('/api/admin/users-detailed', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const usersStats = await db.get(`
-            SELECT 
-                COUNT(*) as total_users,
-                SUM(CASE WHEN role = 'client' THEN 1 ELSE 0 END) as clients,
-                SUM(CASE WHEN role = 'performer' THEN 1 ELSE 0 END) as performers,
-                SUM(CASE WHEN role IN ('admin', 'superadmin', 'manager') THEN 1 ELSE 0 END) as admins,
-                SUM(CASE WHEN phone_verified = 1 THEN 1 ELSE 0 END) as verified_users,
-                SUM(CASE WHEN subscription_status = 'active' THEN 1 ELSE 0 END) as active_subscriptions
-            FROM users
-            WHERE is_active = 1
-        `);
+        const { role, subscription_status, is_active, phone_verified, search, limit = 50, offset = 0 } = req.query;
         
-        const tasksStats = await db.get(`
-            SELECT 
-                COUNT(*) as total_tasks,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_tasks,
-                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_tasks,
-                SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) as new_tasks,
-                SUM(CASE WHEN status = 'searching' THEN 1 ELSE 0 END) as searching_tasks,
-                SUM(CASE WHEN status = 'assigned' THEN 1 ELSE 0 END) as assigned_tasks,
-                SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_tasks,
-                SUM(price) as total_revenue
-            FROM tasks
-        `);
-        
-        const earningsStats = await db.get(`
-            SELECT 
-                SUM(CASE WHEN type = 'initial_fee' THEN amount ELSE 0 END) as total_initial_fees,
-                SUM(CASE WHEN type = 'subscription' THEN amount ELSE 0 END) as total_subscriptions,
-                SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as total_payouts
-            FROM transactions
-            WHERE status = 'completed'
-        `);
-        
-        const recentActivity = await db.all(`
-            SELECT 
-                'task' as type,
-                t.title as title,
-                t.status as status,
-                u.first_name as user_name,
-                u.role as user_role,
-                t.created_at as date
-            FROM tasks t
-            JOIN users u ON t.client_id = u.id
-            UNION ALL
-            SELECT 
-                'registration' as type,
-                'Новый пользователь' as title,
-                'completed' as status,
-                u.first_name as user_name,
-                u.role as user_role,
-                u.created_at as date
+        let query = `
+            SELECT u.*,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.client_id = u.id) as tasks_count,
+                   (SELECT COUNT(*) FROM tasks t WHERE t.performer_id = u.id) as performed_tasks_count,
+                   (SELECT AVG(rating) FROM reviews r WHERE r.performer_id = u.id) as avg_rating,
+                   (SELECT SUM(amount) FROM transactions tr WHERE tr.user_id = u.id AND tr.status = 'completed') as total_transactions
             FROM users u
-            ORDER BY date DESC
-            LIMIT 10
-        `);
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (role && role !== 'all') {
+            query += ' AND u.role = ?';
+            params.push(role);
+        }
+        
+        if (subscription_status && subscription_status !== 'all') {
+            query += ' AND u.subscription_status = ?';
+            params.push(subscription_status);
+        }
+        
+        if (is_active !== undefined && is_active !== 'all') {
+            query += ' AND u.is_active = ?';
+            params.push(is_active === 'active' ? 1 : 0);
+        }
+        
+        if (phone_verified !== undefined && phone_verified !== 'all') {
+            query += ' AND u.phone_verified = ?';
+            params.push(phone_verified === 'verified' ? 1 : 0);
+        }
+        
+        if (search) {
+            query += ' AND (u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        query += ' ORDER BY u.created_at DESC LIMIT ? OFFSET ?';
+        params.push(parseInt(limit), parseInt(offset));
+        
+        const users = await db.all(query, params);
+        
+        // Общее количество
+        let countQuery = `SELECT COUNT(*) as total FROM users WHERE 1=1`;
+        let countParams = [];
+        
+        if (role && role !== 'all') {
+            countQuery += ' AND role = ?';
+            countParams.push(role);
+        }
+        
+        if (search) {
+            countQuery += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
+            const searchTerm = `%${search}%`;
+            countParams.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        const countResult = await db.get(countQuery, countParams);
         
         res.json({
             success: true,
             data: {
-                users: usersStats,
-                tasks: tasksStats,
-                earnings: earningsStats,
-                recent_activity: recentActivity
+                users,
+                pagination: {
+                    total: countResult?.total || 0,
+                    limit: parseInt(limit),
+                    offset: parseInt(offset),
+                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
+                }
             }
         });
         
     } catch (error) {
-        console.error('Ошибка получения статистики системы:', error.message);
+        console.error('❌ Ошибка получения пользователей:', error.message);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения статистики'
+            error: 'Ошибка получения пользователей'
         });
     }
 });
 
+// Полное обновление пользователя (админ)
+app.put('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { role, subscription_status, subscription_plan, subscription_expires,
+                is_active, phone_verified, email_verified, tasks_limit, balance,
+                first_name, last_name, email, phone, avatar_url, bio } = req.body;
+        
+        const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        // Проверка прав для изменения роли
+        if (role && user.role === 'superadmin' && req.user.role !== 'superadmin') {
+            return res.status(403).json({
+                success: false,
+                error: 'Недостаточно прав для изменения роли суперадмина'
+            });
+        }
+        
+        const updateFields = [];
+        const updateValues = [];
+        
+        if (role !== undefined) {
+            updateFields.push('role = ?');
+            updateValues.push(role);
+        }
+        
+        if (subscription_status !== undefined) {
+            updateFields.push('subscription_status = ?');
+            updateValues.push(subscription_status);
+        }
+        
+        if (subscription_plan !== undefined) {
+            updateFields.push('subscription_plan = ?');
+            updateValues.push(subscription_plan);
+        }
+        
+        if (subscription_expires !== undefined) {
+            updateFields.push('subscription_expires = ?');
+            updateValues.push(subscription_expires);
+        }
+        
+        if (is_active !== undefined) {
+            updateFields.push('is_active = ?');
+            updateValues.push(is_active ? 1 : 0);
+        }
+        
+        if (phone_verified !== undefined) {
+            updateFields.push('phone_verified = ?');
+            updateValues.push(phone_verified ? 1 : 0);
+        }
+        
+        if (email_verified !== undefined) {
+            updateFields.push('email_verified = ?');
+            updateValues.push(email_verified ? 1 : 0);
+        }
+        
+        if (tasks_limit !== undefined) {
+            updateFields.push('tasks_limit = ?');
+            updateValues.push(tasks_limit);
+        }
+        
+        if (balance !== undefined) {
+            updateFields.push('balance = ?');
+            updateValues.push(balance);
+        }
+        
+        if (first_name !== undefined) {
+            updateFields.push('first_name = ?');
+            updateValues.push(first_name);
+        }
+        
+        if (last_name !== undefined) {
+            updateFields.push('last_name = ?');
+            updateValues.push(last_name);
+        }
+        
+        if (email !== undefined && email.trim()) {
+            if (!validateEmail(email)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректный email адрес'
+                });
+            }
+            
+            // Проверяем уникальность email
+            const existingUser = await db.get(
+                'SELECT id FROM users WHERE email = ? AND id != ?',
+                [email, userId]
+            );
+            
+            if (existingUser) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Этот email уже используется другим пользователем'
+                });
+            }
+            
+            updateFields.push('email = ?');
+            updateValues.push(email);
+        }
+        
+        if (phone !== undefined && phone.trim()) {
+            const formattedPhone = formatPhone(phone);
+            if (!validatePhone(formattedPhone)) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректный номер телефона'
+                });
+            }
+            
+            // Проверяем уникальность телефона
+            const existingUser = await db.get(
+                'SELECT id FROM users WHERE phone = ? AND id != ?',
+                [formattedPhone, userId]
+            );
+            
+            if (existingUser) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Этот телефон уже используется другим пользователем'
+                });
+            }
+            
+            updateFields.push('phone = ?');
+            updateValues.push(formattedPhone);
+        }
+        
+        if (avatar_url !== undefined) {
+            updateFields.push('avatar_url = ?');
+            updateValues.push(avatar_url);
+        }
+        
+        if (bio !== undefined) {
+            updateFields.push('bio = ?');
+            updateValues.push(bio);
+        }
+        
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Нет данных для обновления'
+            });
+        }
+        
+        updateFields.push('updated_at = CURRENT_TIMESTAMP');
+        updateValues.push(userId);
+        
+        const query = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+        
+        await db.run(query, updateValues);
+        
+        const updatedUser = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    avatar_url, balance, initial_fee_paid, initial_fee_amount,
+                    tasks_limit, tasks_used, user_rating, completed_tasks,
+                    total_spent, is_active, last_login, email_verified, bio
+             FROM users WHERE id = ?`,
+            [userId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Пользователь успешно обновлен',
+            data: { user: updatedUser }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка обновления пользователя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления пользователя'
+        });
+    }
+});
+
+// Создание пользователя администратором
+app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { email, password, first_name, last_name, phone, role = 'client', 
+                subscription_plan = 'essential', phone_verified = true } = req.body;
+        
+        if (!email || !password || !first_name) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните все обязательные поля: email, пароль и имя'
+            });
+        }
+        
+        if (!validateEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный email адрес'
+            });
+        }
+        
+        if (phone && !validatePhone(phone)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный номер телефона'
+            });
+        }
+        
+        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+        if (existingUser) {
+            return res.status(409).json({
+                success: false,
+                error: 'Пользователь с таким email уже существует'
+            });
+        }
+        
+        if (phone) {
+            const formattedPhone = formatPhone(phone);
+            const existingPhone = await db.get('SELECT id FROM users WHERE phone = ?', [formattedPhone]);
+            if (existingPhone) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Пользователь с таким телефоном уже существует'
+                });
+            }
+        }
+        
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const avatarUrl = generateAvatarUrl(first_name, last_name, role);
+        
+        // Для администраторов и менеджеров не нужна подписка
+        const isAdmin = ['admin', 'manager', 'superadmin'].includes(role);
+        const finalSubscriptionPlan = isAdmin ? 'premium' : subscription_plan;
+        const subscriptionStatus = isAdmin ? 'active' : 'pending';
+        const tasksLimit = isAdmin ? 999 : 5;
+        const initialFeePaid = isAdmin ? 1 : 0;
+        
+        const result = await db.run(
+            `INSERT INTO users 
+            (email, password, first_name, last_name, phone, phone_verified, role, 
+             subscription_plan, subscription_status, tasks_limit, initial_fee_paid,
+             avatar_url, email_verified) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                email,
+                hashedPassword,
+                first_name,
+                last_name || '',
+                phone ? formatPhone(phone) : null,
+                phone_verified ? 1 : 0,
+                role,
+                finalSubscriptionPlan,
+                subscriptionStatus,
+                tasksLimit,
+                initialFeePaid,
+                avatarUrl,
+                1
+            ]
+        );
+        
+        const userId = result.lastID;
+        
+        const user = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    subscription_plan, subscription_status, avatar_url
+             FROM users WHERE id = ?`,
+            [userId]
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Пользователь успешно создан',
+            data: { 
+                user,
+                login_credentials: {
+                    email: email,
+                    password: password
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка создания пользователя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка создания пользователя'
+        });
+    }
+});
+
+// Настройки системы
+app.get('/api/admin/settings', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const settings = await db.all('SELECT * FROM settings ORDER BY category, key');
+        
+        // Преобразуем настройки в объект для удобства
+        const settingsObject = {};
+        settings.forEach(setting => {
+            settingsObject[setting.key] = setting.value;
+        });
+        
+        res.json({
+            success: true,
+            data: {
+                settings: settingsObject,
+                raw: settings
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения настроек:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения настроек'
+        });
+    }
+});
+
+// Сохранение настроек системы
+app.post('/api/admin/settings', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const settings = req.body;
+        
+        if (!settings || typeof settings !== 'object') {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректные данные настроек'
+            });
+        }
+        
+        await db.exec('BEGIN TRANSACTION');
+        
+        try {
+            for (const [key, value] of Object.entries(settings)) {
+                await db.run(
+                    `INSERT OR REPLACE INTO settings (key, value, updated_at) 
+                     VALUES (?, ?, CURRENT_TIMESTAMP)`,
+                    [key, value]
+                );
+            }
+            
+            await db.exec('COMMIT');
+            
+            res.json({
+                success: true,
+                message: 'Настройки успешно сохранены'
+            });
+            
+        } catch (error) {
+            await db.exec('ROLLBACK');
+            throw error;
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения настроек:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения настроек'
+        });
+    }
+});
+
+// Генерация отчетов
+app.get('/api/admin/reports/:type', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { type } = req.params;
+        const { start_date, end_date } = req.query;
+        
+        let reportData = {};
+        
+        switch(type) {
+            case 'financial':
+                // Финансовый отчет
+                const financialReport = await db.all(`
+                    SELECT 
+                        DATE(created_at) as date,
+                        type,
+                        SUM(amount) as total_amount,
+                        COUNT(*) as transaction_count
+                    FROM transactions
+                    WHERE status = 'completed'
+                    ${start_date ? ' AND DATE(created_at) >= ?' : ''}
+                    ${end_date ? ' AND DATE(created_at) <= ?' : ''}
+                    GROUP BY DATE(created_at), type
+                    ORDER BY date DESC, type
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                const dailyRevenue = await db.all(`
+                    SELECT 
+                        DATE(created_at) as date,
+                        SUM(CASE WHEN type IN ('initial_fee', 'subscription') THEN amount ELSE 0 END) as revenue,
+                        SUM(CASE WHEN type = 'payout' THEN amount ELSE 0 END) as expenses
+                    FROM transactions
+                    WHERE status = 'completed'
+                    ${start_date ? ' AND DATE(created_at) >= ?' : ''}
+                    ${end_date ? ' AND DATE(created_at) <= ?' : ''}
+                    GROUP BY DATE(created_at)
+                    ORDER BY date DESC
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                reportData = {
+                    financial_summary: financialReport,
+                    daily_revenue: dailyRevenue,
+                    total_revenue: dailyRevenue.reduce((sum, day) => sum + (day.revenue || 0), 0),
+                    total_expenses: dailyRevenue.reduce((sum, day) => sum + (day.expenses || 0), 0),
+                    net_profit: dailyRevenue.reduce((sum, day) => sum + (day.revenue || 0) + (day.expenses || 0), 0)
+                };
+                break;
+                
+            case 'tasks':
+                // Отчет по задачам
+                const taskReport = await db.all(`
+                    SELECT 
+                        DATE(t.created_at) as date,
+                        c.display_name as category,
+                        t.status,
+                        COUNT(*) as task_count,
+                        AVG(t.price) as avg_price
+                    FROM tasks t
+                    LEFT JOIN categories c ON t.category_id = c.id
+                    ${start_date ? ' WHERE DATE(t.created_at) >= ?' : ''}
+                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(t.created_at) <= ?' : ''}
+                    GROUP BY DATE(t.created_at), c.display_name, t.status
+                    ORDER BY date DESC, category
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                const statusDistribution = await db.all(`
+                    SELECT 
+                        status,
+                        COUNT(*) as count,
+                        (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM tasks)) as percentage
+                    FROM tasks
+                    ${start_date ? ' WHERE DATE(created_at) >= ?' : ''}
+                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(created_at) <= ?' : ''}
+                    GROUP BY status
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                reportData = {
+                    task_summary: taskReport,
+                    status_distribution: statusDistribution,
+                    total_tasks: taskReport.reduce((sum, day) => sum + (day.task_count || 0), 0),
+                    avg_completion_time: null // Можно добавить расчет
+                };
+                break;
+                
+            case 'users':
+                // Отчет по пользователям
+                const userReport = await db.all(`
+                    SELECT 
+                        DATE(u.created_at) as date,
+                        u.role,
+                        u.subscription_plan,
+                        COUNT(*) as user_count,
+                        SUM(CASE WHEN u.subscription_status = 'active' THEN 1 ELSE 0 END) as active_subscriptions
+                    FROM users u
+                    ${start_date ? ' WHERE DATE(u.created_at) >= ?' : ''}
+                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(u.created_at) <= ?' : ''}
+                    GROUP BY DATE(u.created_at), u.role, u.subscription_plan
+                    ORDER BY date DESC
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                const userGrowth = await db.all(`
+                    SELECT 
+                        DATE(created_at) as date,
+                        COUNT(*) as new_users,
+                        SUM(COUNT(*)) OVER (ORDER BY DATE(created_at)) as total_users
+                    FROM users
+                    ${start_date ? ' WHERE DATE(created_at) >= ?' : ''}
+                    ${end_date ? ' ${start_date ? 'AND' : 'WHERE'} DATE(created_at) <= ?' : ''}
+                    GROUP BY DATE(created_at)
+                    ORDER BY date
+                `, start_date ? [start_date, end_date].filter(Boolean) : []);
+                
+                reportData = {
+                    user_summary: userReport,
+                    user_growth: userGrowth,
+                    total_users: userGrowth[userGrowth.length - 1]?.total_users || 0,
+                    new_users_period: userGrowth.reduce((sum, day) => sum + (day.new_users || 0), 0)
+                };
+                break;
+                
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: 'Неверный тип отчета'
+                });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                report_type: type,
+                period: { start_date, end_date },
+                generated_at: new Date().toISOString(),
+                ...reportData
+            }
+        });
+        
+    } catch (error) {
+        console.error(`❌ Ошибка генерации отчета ${req.params.type}:`, error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка генерации отчета'
+        });
+    }
+});
+
+// Экспорт данных
+app.get('/api/admin/export/:type', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { type } = req.params;
+        const { format = 'json' } = req.query;
+        
+        let data;
+        let filename;
+        
+        switch(type) {
+            case 'users':
+                data = await db.all('SELECT * FROM users ORDER BY created_at DESC');
+                filename = `users_export_${new Date().toISOString().split('T')[0]}`;
+                break;
+                
+            case 'tasks':
+                data = await db.all(`
+                    SELECT t.*, 
+                           c.display_name as category_name,
+                           s.name as service_name,
+                           u1.email as client_email,
+                           u2.email as performer_email
+                    FROM tasks t
+                    LEFT JOIN categories c ON t.category_id = c.id
+                    LEFT JOIN services s ON t.service_id = s.id
+                    LEFT JOIN users u1 ON t.client_id = u1.id
+                    LEFT JOIN users u2 ON t.performer_id = u2.id
+                    ORDER BY t.created_at DESC
+                `);
+                filename = `tasks_export_${new Date().toISOString().split('T')[0]}`;
+                break;
+                
+            case 'transactions':
+                data = await db.all(`
+                    SELECT t.*, u.email as user_email
+                    FROM transactions t
+                    LEFT JOIN users u ON t.user_id = u.id
+                    ORDER BY t.created_at DESC
+                `);
+                filename = `transactions_export_${new Date().toISOString().split('T')[0]}`;
+                break;
+                
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: 'Неверный тип данных для экспорта'
+                });
+        }
+        
+        if (format === 'csv') {
+            // Генерация CSV
+            const csvData = convertToCSV(data);
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+            return res.send(csvData);
+        } else {
+            // JSON по умолчанию
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}.json"`);
+            return res.json(data);
+        }
+        
+    } catch (error) {
+        console.error(`❌ Ошибка экспорта ${req.params.type}:`, error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка экспорта данных'
+        });
+    }
+});
+
+// Вспомогательная функция для конвертации в CSV
+function convertToCSV(data) {
+    if (!data || data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]);
+    const csvRows = [
+        headers.join(','),
+        ...data.map(row => 
+            headers.map(header => {
+                const value = row[header];
+                // Экранируем запятые и кавычки
+                const escaped = ('' + value).replace(/"/g, '""');
+                return `"${escaped}"`;
+            }).join(',')
+        )
+    ];
+    
+    return csvRows.join('\n');
+}
+
+// Добавить в существующий файл server.js после всех остальных API маршрутов
+console.log('✅ Админ API загружены');
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
 // Обслуживание статических файлов
