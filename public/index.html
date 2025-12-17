@@ -2191,6 +2191,20 @@
                     await login();
                 });
             }
+
+// Автоформатирование телефона при вводе
+    const phoneInputs = document.querySelectorAll('input[type="tel"], input[id*="Phone"], input[placeholder*="телефон"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            formatPhoneInput(this);
+        });
+        
+        input.addEventListener('blur', function(e) {
+            if (this.value && !this.value.startsWith('+')) {
+                this.value = normalizePhone(this.value);
+            }
+        });
+    });
             
             // Форма регистрации
             const registerForm = document.getElementById('registerForm');
@@ -4166,22 +4180,28 @@ async function createTask() {
             window.location.href = '/performer.html';
         }
         
-        async function login() {
-            try {
-                const phoneEmail = document.getElementById('loginPhoneInput').value;
-                const password = document.getElementById('loginPasswordInput').value;
-                
-                if (!phoneEmail || !password) {
-                    showNotification('Заполните все поля', 'error');
-                    return;
-                }
-                
-                // Определяем, что ввел пользователь - телефон или email
-                const isPhone = /^[\+]?[0-9\s\-\(\)]+$/.test(phoneEmail.replace(/\s/g, ''));
-                
-                const loginData = isPhone 
-                    ? { phone: phoneEmail, password }
-                    : { email: phoneEmail, password };
+async function login() {
+    try {
+        const phoneEmail = document.getElementById('loginPhoneInput').value;
+        const password = document.getElementById('loginPasswordInput').value;
+        
+        if (!phoneEmail || !password) {
+            showNotification('Заполните все поля', 'error');
+            return;
+        }
+        
+        // Определяем, что ввел пользователь - телефон или email
+        const isPhone = /^[\+]?[0-9\s\-\(\)]+$/.test(phoneEmail.replace(/\s/g, ''));
+        
+        let loginData;
+        if (isPhone) {
+            // Нормализуем телефон перед отправкой
+            const normalizedPhone = normalizePhone(phoneEmail);
+            console.log('Введен телефон:', phoneEmail, 'Нормализован:', normalizedPhone);
+            loginData = { phone: normalizedPhone, password };
+        } else {
+            loginData = { email: phoneEmail, password };
+        }
                 
                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: 'POST',
@@ -4341,39 +4361,42 @@ function goToPerformerPanel() {
     window.location.href = '/performer.html';
 }
         
-        async function register() {
-            try {
-                const firstName = document.getElementById('registerFirstName').value;
-                const lastName = document.getElementById('registerLastName').value;
-                const email = document.getElementById('registerEmail').value;
-                const phone = document.getElementById('registerPhone').value;
-                const password = document.getElementById('registerPassword').value;
-                
-                // Теперь email не обязателен, обязательны только имя, телефон и пароль
-                if (!firstName || !phone || !password) {
-                    showNotification('Заполните имя, телефон и пароль', 'error');
-                    return;
-                }
+async function register() {
+    try {
+        const firstName = document.getElementById('registerFirstName').value;
+        const lastName = document.getElementById('registerLastName').value;
+        const email = document.getElementById('registerEmail').value;
+        const phone = document.getElementById('registerPhone').value;
+        const password = document.getElementById('registerPassword').value;
+        
+        if (!firstName || !phone || !password) {
+            showNotification('Заполните имя, телефон и пароль', 'error');
+            return;
+        }
+        
+        // Нормализуем телефон перед отправкой
+        const normalizedPhone = normalizePhone(phone);
+        console.log('Регистрация. Введен телефон:', phone, 'Нормализован:', normalizedPhone);
                 
                 if (password.length < 6) {
                     showNotification('Пароль должен содержать не менее 6 символов', 'error');
                     return;
                 }
                 
-                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email,
-                        password,
-                        first_name: firstName,
-                        last_name: lastName || '',
-                        phone,
-                        subscription_plan: 'essential'
-                    })
-                });
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email,
+                password,
+                first_name: firstName,
+                last_name: lastName || '',
+                phone: normalizedPhone, // Используем нормализованный телефон
+                subscription_plan: 'essential'
+            })
+        });
                 
                 const data = await response.json();
                 
