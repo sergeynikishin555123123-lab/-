@@ -1550,34 +1550,105 @@
             console.log('✅ Панель исполнителя готова');
         });
 
-        // Проверка роли пользователя
-        async function checkPerformerRole() {
-            try {
-                const response = await fetch('/api/auth/check', {
-                    headers: { 'Authorization': `Bearer ${app.token}` }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success && (data.data.user.role === 'performer' || 
-                        data.data.user.role === 'admin' || 
-                        data.data.user.role === 'superadmin' || 
-                        data.data.user.role === 'manager')) {
-                        app.currentPerformer = data.data.user;
-                        return true;
-                    }
-                }
-                
-                // Если пользователь не исполнитель, перенаправляем на главную
-                window.location.href = 'index.html';
-                return false;
-                
-            } catch (error) {
-                console.error('Ошибка проверки роли:', error);
-                window.location.href = 'index.html';
-                return false;
+// Проверка роли пользователя
+async function checkPerformerRole() {
+    try {
+        const response = await fetch('/api/auth/check', {
+            headers: { 'Authorization': `Bearer ${app.token}` }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && (data.data.user.role === 'performer' || 
+                data.data.user.role === 'admin' || 
+                data.data.user.role === 'superadmin' || 
+                data.data.user.role === 'manager')) {
+                app.currentPerformer = data.data.user;
+                return true;
             }
         }
+        
+        // Если пользователь не исполнитель, проверяем режим разработки
+        // В режиме разработки разрешаем доступ для тестирования
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.warn('⚠️ Демо-режим: Пользователь не исполнитель, но разрешаем доступ для тестирования');
+            
+            // Создаем тестового исполнителя
+            app.currentPerformer = {
+                id: 3,
+                first_name: 'Анна',
+                last_name: 'Кузнецова',
+                email: 'performer@test.com',
+                phone: '+79994445566',
+                phone_verified: 1,
+                role: 'performer',
+                subscription_plan: 'premium',
+                subscription_status: 'active',
+                avatar_url: 'https://ui-avatars.com/api/?name=Анна+Кузнецова&background=3498DB&color=fff&bold=true'
+            };
+            
+            return true;
+        } else {
+            // На продакшене показываем сообщение вместо редиректа
+            document.body.innerHTML = `
+                <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #3498DB, #2980B9); color: white; padding: 20px;">
+                    <div style="text-align: center; max-width: 500px;">
+                        <h1 style="margin-bottom: 20px;"><i class="fas fa-user-slash"></i> Доступ запрещен</h1>
+                        <p style="margin-bottom: 30px;">У вас нет доступа к панели исполнителя. Эта панель предназначена только для помощников и администраторов.</p>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="/index.html" style="padding: 10px 20px; background: white; color: #3498DB; border-radius: 8px; text-decoration: none;">
+                                <i class="fas fa-home"></i> Главная
+                            </a>
+                            <button onclick="history.back()" style="padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;">
+                                <i class="fas fa-arrow-left"></i> Назад
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return false;
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки роли:', error);
+        
+        // В демо-режиме продолжаем работу
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.warn('⚠️ Демо-режим: Ошибка проверки роли, создаем тестового исполнителя');
+            
+            app.currentPerformer = {
+                id: 3,
+                first_name: 'Анна',
+                last_name: 'Кузнецова',
+                email: 'performer@test.com',
+                phone: '+79994445566',
+                phone_verified: 1,
+                role: 'performer',
+                subscription_plan: 'premium',
+                subscription_status: 'active',
+                avatar_url: 'https://ui-avatars.com/api/?name=Анна+Кузнецова&background=3498DB&color=fff&bold=true'
+            };
+            
+            return true;
+        }
+        
+        // В продакшене показываем сообщение об ошибке
+        document.body.innerHTML = `
+            <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #3498DB, #2980B9); color: white; padding: 20px;">
+                <div style="text-align: center; max-width: 500px;">
+                    <h1 style="margin-bottom: 20px;"><i class="fas fa-exclamation-triangle"></i> Ошибка</h1>
+                    <p style="margin-bottom: 30px;">Произошла ошибка при загрузке панели исполнителя. Пожалуйста, войдите снова.</p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <a href="/index.html" style="padding: 10px 20px; background: white; color: #3498DB; border-radius: 8px; text-decoration: none;">
+                            <i class="fas fa-home"></i> Войти
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        return false;
+    }
+}
 
         // Загрузка данных исполнителя
         async function loadPerformerData() {
