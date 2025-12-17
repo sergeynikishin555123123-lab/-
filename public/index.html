@@ -2759,95 +2759,104 @@
             navigateToPage('home');
         }
         
-        // Создание задачи
-        async function createTask() {
-            if (!currentUser) {
-                showNotification('Для создания задачи необходимо войти в систему', 'error');
-                return;
+        // Создание задачи - исправленная версия
+async function createTask() {
+    if (!currentUser) {
+        showNotification('Для создания задачи необходимо войти в систему', 'error');
+        return;
+    }
+    
+    if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+        showNotification('Для создания задачи необходима активная подписка', 'error');
+        return;
+    }
+    
+    if (!selectedCategory || !selectedService) {
+        showNotification('Выберите категорию и услугу', 'error');
+        return;
+    }
+    
+    const taskTitle = document.getElementById('taskTitle')?.value;
+    const taskDescription = document.getElementById('taskDescription')?.value;
+    const taskAddress = document.getElementById('taskAddress')?.value;
+    const taskDeadline = document.getElementById('taskDeadline')?.value;
+    const taskContact = document.getElementById('taskContact')?.value;
+    const additionalRequirements = document.getElementById('additionalRequirements')?.value;
+    
+    // Валидация
+    if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
+        showNotification('Заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    // Проверка даты
+    const deadlineDate = new Date(taskDeadline);
+    if (deadlineDate < new Date()) {
+        showNotification('Дата дедлайна не может быть в прошлом', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Создание задачи...');
+        
+        const taskData = {
+            title: taskTitle,
+            description: taskDescription,
+            category_id: selectedCategory.id,
+            service_id: selectedService.id,
+            deadline: taskDeadline,
+            address: taskAddress,
+            contact_info: taskContact,
+            additional_requirements: additionalRequirements || '',
+            priority: 'medium',
+            status: 'searching'  // Важно: сразу ставим статус "в поиске исполнителя"
+        };
+        
+        console.log('Отправка задачи:', taskData);
+        
+        const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(taskData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
+            
+            // Обновляем текущего пользователя
+            if (data.data.user) {
+                currentUser = data.data.user;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
             }
             
-            if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
-                showNotification('Для создания задачи необходима активная подписка', 'error');
-                return;
-            }
+            // Обновляем интерфейс
+            updateUserInterface();
+            updateHomeStats();
             
-            if (!selectedCategory || !selectedService) {
-                showNotification('Выберите категорию и услугу', 'error');
-                return;
-            }
+            // Возвращаемся на главную
+            cancelTask();
             
-            const taskTitle = document.getElementById('taskTitle')?.value;
-            const taskDescription = document.getElementById('taskDescription')?.value;
-            const taskAddress = document.getElementById('taskAddress')?.value;
-            const taskDeadline = document.getElementById('taskDeadline')?.value;
-            const taskContact = document.getElementById('taskContact')?.value;
-            const additionalRequirements = document.getElementById('additionalRequirements')?.value;
+            // Через 3 секунды показываем уведомление для исполнителей
+            setTimeout(() => {
+                showNotification('Задача опубликована. Исполнители увидят её в списке доступных задач.', 'info');
+            }, 3000);
             
-            // Валидация
-            if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
-                showNotification('Заполните все обязательные поля', 'error');
-                return;
-            }
-            
-            // Проверка даты
-            const deadlineDate = new Date(taskDeadline);
-            if (deadlineDate < new Date()) {
-                showNotification('Дата дедлайна не может быть в прошлом', 'error');
-                return;
-            }
-            
-            try {
-                const taskData = {
-                    title: taskTitle,
-                    description: taskDescription,
-                    category_id: selectedCategory.id,
-                    service_id: selectedService.id,
-                    deadline: taskDeadline,
-                    address: taskAddress,
-                    contact_info: taskContact,
-                    additional_requirements: additionalRequirements || '',
-                    priority: 'medium'
-                };
-                
-                console.log('Отправка задачи:', taskData);
-                
-                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(taskData)
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || `HTTP ${response.status}: Ошибка создания задачи`);
-                }
-                
-                if (data.success) {
-                    showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
-                    
-                    // Обновляем текущего пользователя
-                    currentUser.tasks_used = data.data.tasks_used;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    
-                    // Обновляем интерфейс
-                    updateUserInterface();
-                    updateHomeStats();
-                    
-                    // Возвращаемся на главную
-                    cancelTask();
-                } else {
-                    throw new Error(data.error || 'Ошибка создания задачи');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка создания задачи:', error);
-                showNotification(error.message, 'error');
-            }
+        } else {
+            throw new Error(data.error || `HTTP ${response.status}: Ошибка создания задачи`);
         }
+        
+    } catch (error) {
+        console.error('Ошибка создания задачи:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // Загрузка подписок
         async function loadSubscriptions() {
