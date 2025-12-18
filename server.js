@@ -4953,26 +4953,29 @@ app.get('/api/performer/tasks/available/count', authMiddleware(['performer']), a
 
 // ==================== АДМИН API (ПОЛНЫЕ ВОЗМОЖНОСТИ) ====================
 
-// Аутентификация администратора (без подтверждения телефона)
+// Аутентификация администратора (по телефону)
 app.post('/api/admin/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { phone, password } = req.body; // Изменили email на phone
         
-        console.log('👑 Попытка входа администратора:', { email });
+        console.log('👑 Попытка входа администратора по телефону:', { phone });
         
-        if (!email || !password) {
+        if (!phone || !password) {
             return res.status(400).json({
                 success: false,
-                error: 'Укажите email и пароль'
+                error: 'Укажите телефон и пароль'
             });
         }
         
+        const formattedPhone = formatPhone(phone);
+        
         const user = await db.get(
-            `SELECT * FROM users WHERE email = ? AND role IN ('admin', 'superadmin', 'manager')`,
-            [email]
+            `SELECT * FROM users WHERE phone = ? AND role IN ('admin', 'superadmin', 'manager')`,
+            [formattedPhone]
         );
         
         if (!user) {
+            console.log(`❌ Админ с телефоном ${formattedPhone} не найден`);
             return res.status(401).json({
                 success: false,
                 error: 'Пользователь не найден или недостаточно прав'
@@ -4981,6 +4984,7 @@ app.post('/api/admin/login', async (req, res) => {
         
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
+            console.log(`❌ Неверный пароль для телефона ${formattedPhone}`);
             return res.status(401).json({
                 success: false,
                 error: 'Неверный пароль'
@@ -5020,14 +5024,14 @@ app.post('/api/admin/login', async (req, res) => {
             { 
                 id: user.id, 
                 role: user.role,
-                email: user.email,
+                phone: user.phone,
                 is_admin: true
             },
             process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
             { expiresIn: '30d' }
         );
         
-        console.log('✅ Успешный вход администратора:', user.email);
+        console.log(`✅ Успешный вход администратора: ${user.first_name} (${user.phone})`);
         
         res.json({
             success: true,
