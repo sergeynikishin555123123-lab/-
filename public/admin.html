@@ -1710,38 +1710,46 @@
     </div>
     
     <!-- Логин модалка -->
-    <div class="modal active" id="loginModal">
-        <div class="modal-content" style="max-width: 400px;">
-            <div class="modal-header">
-                <h3 class="modal-title">Вход в админ-панель</h3>
+    <!-- Логин модалка -->
+<div class="modal active" id="loginModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Вход в админ-панель</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="loginPhone">Телефон</label>
+                <input type="tel" id="loginPhone" class="form-input" 
+                       placeholder="+7 (999) 123-45-67" value="+79991112233">
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" class="form-input" placeholder="admin@concierge.ru">
-                </div>
-                
-                <div class="form-group">
-                    <label for="loginPassword">Пароль</label>
-                    <input type="password" id="loginPassword" class="form-input" placeholder="Введите пароль">
-                </div>
-                
-                <div class="form-group">
-                    <p style="font-size: 0.8rem; color: var(--graphite-medium); margin-top: 16px;">
-                        Для демо-режима используйте:<br>
-                        Email: superadmin@concierge.ru<br>
-                        Пароль: admin123
-                    </p>
-                </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Пароль</label>
+                <input type="password" id="loginPassword" class="form-input" 
+                       placeholder="Введите пароль" value="admin123">
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="adminLogin()" style="width: 100%;">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Войти
-                </button>
+            
+            <div class="form-group">
+                <p style="font-size: 0.8rem; color: var(--graphite-medium); margin-top: 16px;">
+                    🔑 Для демо-режима используйте:<br>
+                    📱 <strong>Телефон:</strong> +79991112233<br>
+                    🔐 <strong>Пароль:</strong> admin123<br><br>
+                    
+                    🔧 Другие тестовые аккаунты:<br>
+                    • Админ: +79992223344 / admin123<br>
+                    • Исполнитель 1: +79994445566 / performer123<br>
+                    • Клиент Премиум: +79997778899 / client123
+                </p>
             </div>
         </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="adminLogin()" style="width: 100%;">
+                <i class="fas fa-sign-in-alt"></i>
+                Войти
+            </button>
+        </div>
     </div>
+</div>
     
     <!-- Глобальный лоадер -->
     <div id="globalLoader" class="modal" style="display: none;">
@@ -1859,78 +1867,77 @@
             }, 3000);
         }
         
-        // Аутентификация
-        async function adminLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!email || !password) {
-                showNotification('Заполните все поля', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Вход...');
-                
-                const response = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentToken = data.data.token;
-                    currentUser = data.data.user;
-                    
-                    localStorage.setItem('adminToken', currentToken);
-                    localStorage.setItem('adminUser', JSON.stringify(currentUser));
-                    
-                    showNotification('Вход выполнен успешно!', 'success');
-                    closeModal('loginModal');
-                    updateUserInfo();
-                    loadDashboard();
-                } else {
-                    throw new Error(data.error || 'Ошибка входа');
-                }
-            } catch (error) {
-                console.error('Ошибка входа:', error);
-                showNotification(error.message || 'Ошибка входа. Проверьте подключение к серверу.', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+       async function adminLogin() {
+    const phone = document.getElementById('loginPhone').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!phone || !password) {
+        showNotification('Заполните все поля', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Вход...');
         
-        async function verifyToken() {
-            try {
-                const response = await fetch('/api/auth/check', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentUser = data.data.user;
-                    localStorage.setItem('adminUser', JSON.stringify(currentUser));
-                    updateUserInfo();
-                    loadDashboard();
-                } else {
-                    throw new Error('Токен недействителен');
-                }
-            } catch (error) {
-                console.error('Ошибка проверки токена:', error);
-                localStorage.removeItem('adminToken');
-                localStorage.removeItem('adminUser');
-                showModal('loginModal');
-                showNotification('Сессия истекла. Войдите снова.', 'error');
-            }
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ phone, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentToken = data.data.token;
+            currentUser = data.data.user;
+            
+            localStorage.setItem('adminToken', currentToken);
+            localStorage.setItem('adminUser', JSON.stringify(currentUser));
+            
+            showNotification('Вход выполнен успешно!', 'success');
+            closeModal('loginModal');
+            updateUserInfo();
+            loadDashboard();
+        } else {
+            throw new Error(data.error || 'Ошибка входа');
         }
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showNotification(error.message || 'Ошибка входа. Проверьте подключение к серверу.', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+        
+       async function verifyToken() {
+    try {
+        const response = await fetch('/api/auth/check', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data.user && ['admin', 'superadmin', 'manager'].includes(data.data.user.role)) {
+            currentUser = data.data.user;
+            localStorage.setItem('adminUser', JSON.stringify(currentUser));
+            updateUserInfo();
+            loadDashboard();
+        } else {
+            throw new Error('Требуется админская роль');
+        }
+    } catch (error) {
+        console.error('Ошибка проверки токена:', error);
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        showModal('loginModal');
+        showNotification('Сессия истекла или недостаточно прав. Войдите снова.', 'error');
+    }
+}
         
         function updateUserInfo() {
             if (currentUser) {
