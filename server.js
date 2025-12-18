@@ -801,20 +801,21 @@ const authMiddleware = (roles = []) => {
             const publicRoutes = [
                 'GET /',
                 'GET /health',
-                'GET /api/subscriptions',
-                'GET /api/categories',
-                'GET /api/categories/*',
-                'GET /api/services',
-                'GET /api/faq',
-                'GET /api/reviews',
-                'POST /api/auth/register',
-                'POST /api/auth/register-performer',
-                'POST /api/auth/login',
-                'POST /api/auth/verify-phone',
-                'POST /api/auth/send-verification',
-                'POST /api/auth/forgot-password',
-                'POST /api/auth/reset-password',
-                'OPTIONS /*'
+    'POST /api/admin/login',  // Добавьте эту строку
+    'GET /api/subscriptions',
+    'GET /api/categories',
+    'GET /api/categories/*',
+    'GET /api/services',
+    'GET /api/faq',
+    'GET /api/reviews',
+    'POST /api/auth/register',
+    'POST /api/auth/register-performer',
+    'POST /api/auth/login',
+    'POST /api/auth/verify-phone',
+    'POST /api/auth/send-verification',
+    'POST /api/auth/forgot-password',
+    'POST /api/auth/reset-password',
+    'OPTIONS /*'
             ];
             
             const currentRoute = `${req.method} ${req.path}`;
