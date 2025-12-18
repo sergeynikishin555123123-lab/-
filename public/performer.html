@@ -1071,6 +1071,93 @@
                 font-size: 0.65rem;
             }
         }
+
+/* Улучшение UX на мобильных */
+@media (hover: none) and (pointer: coarse) {
+    /* Делаем кнопки больше для пальцев */
+    .btn {
+        min-height: 44px; /* Минимальный размер для касания */
+        min-width: 44px;
+    }
+    
+    /* Увеличиваем область клика для инпутов */
+    input, select, textarea, button {
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+    
+    .filter-input, .filter-select {
+        min-height: 44px;
+    }
+    
+    /* Улучшаем таблицы для сенсорного ввода */
+    .task-history-table tr {
+        border-bottom: 2px solid rgba(61, 61, 61, 0.1);
+    }
+    
+    .task-history-table tr:active {
+        background-color: rgba(52, 152, 219, 0.1);
+    }
+    
+    /* Увеличиваем иконки в навигации */
+    .nav-item i {
+        font-size: 1.2rem;
+    }
+}
+
+/* Предотвращение выделения текста при тапах */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Разрешаем выделение текста только в полях ввода */
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Анимация нажатия для строк таблиц */
+.task-history-table tr {
+    transition: background-color 0.2s ease;
+}
+
+.task-history-table tr:active {
+    background-color: rgba(52, 152, 219, 0.1) !important;
+}
+
+/* Адаптивные модальные окна */
+.modal-content {
+    max-height: 85vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Фиксы для iOS */
+@supports (-webkit-touch-callout: none) {
+    /* Фикс для Safari */
+    input, textarea {
+        font-size: 16px;
+    }
+    
+    /* Фикс для fixed элементов */
+    .bottom-nav {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* Фиксы для Android Chrome */
+@media (-webkit-min-device-pixel-ratio: 0) {
+    select, 
+    input[type="date"],
+    input[type="number"],
+    input[type="tel"] {
+        font-size: 16px;
+    }
+}
         
         /* Стили для планшетов */
         @media (min-width: 769px) and (max-width: 1024px) {
@@ -1172,6 +1259,136 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--performer-blue-dark);
         }
+
+        /* Полная адаптивность для таблиц */
+@media (max-width: 768px) {
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .task-history-table {
+        min-width: 700px;
+    }
+    
+    .task-history-table th,
+    .task-history-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+    
+    /* Уменьшаем карточки на мобильных */
+    .card {
+        padding: 16px;
+    }
+    
+    .hero {
+        padding: 20px;
+    }
+    
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+    
+    /* Оптимизируем форму */
+    .form-input {
+        font-size: 16px; /* Убирает зумирование на iOS */
+        padding: 14px 12px;
+    }
+    
+    /* Оптимизируем навигацию */
+    .bottom-nav {
+        height: 60px;
+        padding: 0 5px;
+    }
+    
+    .nav-item {
+        min-width: 60px;
+        padding: 6px 8px;
+    }
+    
+    .nav-item i {
+        font-size: 1.1rem;
+        margin-bottom: 3px;
+    }
+    
+    .nav-item span {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-history-table {
+        min-width: 600px;
+    }
+    
+    .task-history-table th,
+    .task-history-table td {
+        padding: 8px 6px;
+        font-size: 13px;
+    }
+    
+    .filters {
+        padding: 15px;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    /* Оптимизация кнопок */
+    .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+    
+    .grid-2, 
+    .grid-3, 
+    .grid-4 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    /* Оптимизация чата */
+    .chat-messages-container {
+        height: 350px;
+        padding: 15px;
+    }
+    
+    .chat-input-area {
+        padding: 12px 15px;
+    }
+    
+    .chat-input {
+        font-size: 16px;
+        min-height: 44px;
+    }
+    
+    /* Убираем горизонтальную прокрутку */
+    .container {
+        padding: 0 12px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Оптимизация табов */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+    
+    .tab {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
     </style>
 </head>
 <body>
@@ -2404,41 +2621,38 @@
                 if (data.success && data.data.tasks && data.data.tasks.length > 0) {
                     availableTasks = data.data.tasks;
                     
-                    container.innerHTML = availableTasks.map(task => {
-                        const priorityClass = getPriorityClass(task.priority);
-                        const priorityText = getPriorityText(task.priority);
-                        
-                        return `
-                            <tr>
-                                <td>
-                                    <div style="font-weight: 600;">${task.title}</div>
-                                    <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
-                                        ${task.description.substring(0, 80)}...
-                                    </div>
-                                </td>
-                                <td>${task.category_name}</td>
-                                <td>
-                                    <div style="font-weight: 600; color: var(--success);">
-                                        ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                    </div>
-                                </td>
-                                <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
-                                <td>
-                                    <span class="status-badge ${priorityClass}">${priorityText}</span>
-                                </td>
-                                <td>
-                                    <div style="display: flex; gap: 8px;">
-                                        <button class="btn btn-secondary btn-sm" onclick="viewAvailableTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
-                                            <i class="fas fa-check"></i> Принять
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
+                   container.innerHTML = availableTasks.map(task => {
+    const priorityClass = getPriorityClass(task.priority);
+    const priorityText = getPriorityText(task.priority);
+    
+    return `
+        <tr onclick="viewAvailableTask(${task.id})" style="cursor: pointer;">
+            <td>
+                <div style="font-weight: 600;">${task.title}</div>
+                <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
+                    ${task.description.substring(0, 80)}...
+                </div>
+            </td>
+            <td>${task.category_name}</td>
+            <td>
+                <div style="font-weight: 600; color: var(--success);">
+                    ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
+                </div>
+            </td>
+            <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
+            <td>
+                <span class="status-badge ${priorityClass}">${priorityText}</span>
+            </td>
+            <td>
+                <div style="display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                    <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" style="padding: 6px 12px; font-size: 0.85rem;">
+                        <i class="fas fa-check"></i> Принять
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `;
+}).join('');
                     
                     noTasks.style.display = 'none';
                     container.closest('.table-container').style.display = 'block';
@@ -2486,52 +2700,49 @@
                 if (data.success && data.data.tasks && data.data.tasks.length > 0) {
                     myTasks = data.data.tasks;
                     
-                    container.innerHTML = myTasks.map(task => {
-                        const status = getStatusInfo(task.status);
-                        
-                        return `
-                            <tr>
-                                <td>
-                                    <div style="font-weight: 600;">${task.title}</div>
-                                    <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
-                                        #${task.task_number}
-                                    </div>
-                                </td>
-                                <td>${task.client_first_name} ${task.client_last_name || ''}</td>
-                                <td>
-                                    <span class="status-badge ${status.class}">${status.name}</span>
-                                </td>
-                                <td>
-                                    <div style="font-weight: 600; color: var(--success);">
-                                        ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                    </div>
-                                </td>
-                                <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
-                                <td>
-                                    <div style="display: flex; gap: 4px;">
-                                        <button class="btn btn-secondary btn-sm" onclick="viewTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        ${task.status === 'assigned' ? `
-                                            <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                        ` : ''}
-                                        ${task.status === 'in_progress' ? `
-                                            <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        ` : ''}
-                                        ${['assigned', 'in_progress'].includes(task.status) ? `
-                                            <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        ` : ''}
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
+                   container.innerHTML = myTasks.map(task => {
+    const status = getStatusInfo(task.status);
+    
+    return `
+        <tr onclick="viewTask(${task.id})" style="cursor: pointer;">
+            <td>
+                <div style="font-weight: 600;">${task.title}</div>
+                <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
+                    #${task.task_number}
+                </div>
+            </td>
+            <td>${task.client_first_name} ${task.client_last_name || ''}</td>
+            <td>
+                <span class="status-badge ${status.class}">${status.name}</span>
+            </td>
+            <td>
+                <div style="font-weight: 600; color: var(--success);">
+                    ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
+                </div>
+            </td>
+            <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
+            <td>
+                <div style="display: flex; gap: 4px;" onclick="event.stopPropagation()">
+                    ${task.status === 'assigned' ? `
+                        <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    ` : ''}
+                    ${task.status === 'in_progress' ? `
+                        <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    ` : ''}
+                    ${['assigned', 'in_progress'].includes(task.status) ? `
+                        <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `;
+}).join('');
                     
                     noTasks.style.display = 'none';
                     container.closest('.table-container').style.display = 'block';
