@@ -168,22 +168,23 @@ const initDatabase = async () => {
             )
         `);
 
-        // Категории
-       CREATE TABLE IF NOT EXISTS categories (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE NOT NULL,
-    display_name TEXT NOT NULL,
-    description TEXT NOT NULL,
-    icon TEXT NOT NULL,
-    image_url TEXT, -- ДОБАВИТЬ ЭТУ СТРОКУ
-    color TEXT DEFAULT '#FF6B8B',
-    sort_order INTEGER DEFAULT 0,
-    is_active INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
-        `);
-
+       // Категории
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        display_name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        icon TEXT NOT NULL,
+        image_url TEXT,
+        color TEXT DEFAULT '#FF6B8B',
+        sort_order INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+        
         // Услуги
         await db.exec(`
             CREATE TABLE IF NOT EXISTS services (
