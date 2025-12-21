@@ -13,22 +13,24 @@ const crypto = require('crypto');
 const app = express();
 
 // CORS настройки
-app.use(cors({
+const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
         ? ['https://yourdomain.com'] 
         : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080', 'http://localhost:5000', 'http://localhost:5500'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-}));
+};
 
-app.options('*', cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('public'));
+// Применяем CORS middleware
+app.use(cors(corsOptions));
 
 // Обработка preflight запросов
 app.options('*', cors(corsOptions));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.static('public'));
 
 // Парсинг JSON с увеличенным лимитом
 app.use(express.json({ 
@@ -378,6 +380,7 @@ const initDatabase = async () => {
         throw error;
     }
 };
+
 
 // ==================== ТЕСТОВЫЕ ДАННЫЕ ====================
 const createInitialData = async () => {
