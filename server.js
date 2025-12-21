@@ -1180,7 +1180,7 @@ app.post('/api/auth/register', async (req, res) => {
         
         const avatarUrl = generateAvatarUrl(first_name, last_name, 'client');
         
-        const result = await db.run(
+       const result = await db.run(
             `INSERT INTO users 
             (email, password, first_name, last_name, phone, phone_verified, role, 
              subscription_plan, subscription_status, subscription_expires,
@@ -1207,6 +1207,17 @@ app.post('/api/auth/register', async (req, res) => {
         );
         
         const userId = result.lastID;
+        
+        // Если в демо-режиме сразу активируем подписку
+        if (DEMO_MODE && subscription.initial_fee > 0 && !initialFeePaid) {
+            await db.run(
+                `UPDATE users SET 
+                    subscription_status = 'active',
+                    initial_fee_paid = 1
+                 WHERE id = ?`,
+                [userId]
+            );
+        }
         
         if (subscription.initial_fee > 0 && initialFeePaid) {
             try {
@@ -1241,65 +1252,85 @@ app.post('/api/auth/register', async (req, res) => {
             rating: user.user_rating
         };
         
-        const smsCode = generateVerificationCode();
-        const expiresAt = new Date();
-        expiresAt.setMinutes(expiresAt.getMinutes() + 10);
-        
-        await db.run(
-            `INSERT INTO phone_verification_codes (phone, code, expires_at) 
-             VALUES (?, ?, ?)`,
-            [formattedPhone, smsCode, expiresAt.toISOString()]
-        );
-        
-        const smsResult = await sendSmsCode(formattedPhone, smsCode);
-        
-        try {
-            await db.run(
-                `INSERT INTO notifications 
-                (user_id, type, title, message) 
-                VALUES (?, ?, ?, ?)`,
-                [
-                    userId,
-                    'welcome',
-                    'Добро пожаловать!',
-                    'Спасибо за регистрацию в Женском Консьерже. Подтвердите телефон для начала работы.'
-                ]
+        // Если в демо-режиме и уже оплачен вступительный взнос
+        // создаем токен сразу, без подтверждения телефона
+        if (DEMO_MODE && initialFeePaid) {
+            const token = jwt.sign(
+                { 
+                    id: user.id, 
+                    phone: user.phone, 
+                    phone_verified: user.phone_verified,
+                    role: user.role,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    subscription_plan: user.subscription_plan,
+                    initial_fee_paid: user.initial_fee_paid
+                },
+                process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
+                { expiresIn: '30d' }
             );
-        } catch (error) {
-            console.warn('Ошибка создания уведомления:', error.message);
-        }
-        
-        const token = jwt.sign(
-            { 
-                id: user.id, 
-                phone: user.phone, 
-                phone_verified: user.phone_verified,
-                role: user.role,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                subscription_plan: user.subscription_plan,
-                initial_fee_paid: user.initial_fee_paid
-            },
-            process.env.JWT_SECRET || 'concierge-secret-key-2024-prod',
-            { expiresIn: '30d' }
-        );
-        
-        res.status(201).json({
-            success: true,
-            message: 'Регистрация почти завершена! Подтвердите телефон для активации аккаунта.',
-            data: { 
-                user: userForResponse,
-                token: null,
-                requires_phone_verification: true,
-                phone_verification_sent: smsResult.success,
-                demo_mode: smsResult.demo || false,
-                expires_in_minutes: 10,
-                requires_initial_fee: !initialFeePaid && !DEMO_MODE,
-                initial_fee_amount: subscription.initial_fee,
-                phone: formattedPhone,
-                can_verify_immediately: true
+            
+            // В демо-режиме сразу отправляем на главную
+            res.status(201).json({
+                success: true,
+                message: 'Регистрация завершена успешно!',
+                data: { 
+                    user: userForResponse,
+                    token: token,
+                    requires_phone_verification: false,
+                    demo_mode: true,
+                    can_access_immediately: true
+                }
+            });
+        } else {
+            // Отправляем SMS код
+            const smsCode = generateVerificationCode();
+            const expiresAt = new Date();
+            expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+            
+            await db.run(
+                `INSERT INTO phone_verification_codes (phone, code, expires_at) 
+                 VALUES (?, ?, ?)`,
+                [formattedPhone, smsCode, expiresAt.toISOString()]
+            );
+            
+            const smsResult = await sendSmsCode(formattedPhone, smsCode);
+            
+            // Создаем уведомление
+            try {
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message) 
+                    VALUES (?, ?, ?, ?)`,
+                    [
+                        userId,
+                        'welcome',
+                        'Добро пожаловать!',
+                        'Спасибо за регистрацию в Женском Консьерже. Подтвердите телефон для начала работы.'
+                    ]
+                );
+            } catch (error) {
+                console.warn('Ошибка создания уведомления:', error.message);
             }
-        });
+            
+            // В обычном режиме требуем подтверждение телефона
+            res.status(201).json({
+                success: true,
+                message: 'Регистрация почти завершена! Подтвердите телефон для активации аккаунта.',
+                data: { 
+                    user: userForResponse,
+                    token: null,
+                    requires_phone_verification: true,
+                    phone_verification_sent: smsResult.success,
+                    demo_mode: smsResult.demo || false,
+                    expires_in_minutes: 10,
+                    requires_initial_fee: !initialFeePaid && !DEMO_MODE,
+                    initial_fee_amount: subscription.initial_fee,
+                    phone: formattedPhone,
+                    can_verify_immediately: true
+                }
+            });
+        }
         
     } catch (error) {
         console.error('Ошибка регистрации:', error.message);
@@ -7125,7 +7156,7 @@ app.get('/api/services', async (req, res) => {
     }
 });
 
-// API для выбора подписки - ДОБАВЬТЕ ЭТОТ МАРШРУТ
+// Выбор подписки - исправленная версия
 app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, res) => {
     try {
         const { subscription_plan } = req.body;
@@ -7143,6 +7174,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
             });
         }
         
+        // Проверяем, подтвержден ли телефон
         if (!req.user.phone_verified) {
             return res.status(403).json({
                 success: false,
@@ -7165,6 +7197,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
             });
         }
         
+        // В демо-режиме автоматически активируем подписку
         if (DEMO_MODE) {
             console.log(`📱 [DEMO MODE] Активация подписки ${subscription_plan} для пользователя: ${req.user.phone}`);
             
@@ -7184,6 +7217,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
                 [subscription_plan, expiryDateStr, subscription.tasks_limit, req.user.id]
             );
             
+            // Создаем транзакцию для вступительного взноса
             if (subscription.initial_fee > 0) {
                 await db.run(
                     `INSERT INTO transactions 
@@ -7199,6 +7233,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
                 );
             }
             
+            // Создаем уведомление
             await db.run(
                 `INSERT INTO notifications 
                 (user_id, type, title, message) 
@@ -7211,6 +7246,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
                 ]
             );
             
+            // Обновляем данные пользователя
             const updatedUser = await db.get(
                 `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
                         subscription_plan, subscription_status, subscription_expires,
@@ -7236,6 +7272,7 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
             });
         }
         
+        // В реальном режиме проверяем вступительный взнос
         if (subscription.initial_fee > 0 && !req.user.initial_fee_paid) {
             return res.status(402).json({
                 success: false,
