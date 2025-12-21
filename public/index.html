@@ -2094,6 +2094,25 @@
             padding: 6px 12px;
             font-size: 0.8rem;
         }
+
+/* Кнопка фильтра с иконкой */
+.filter-btn i {
+    margin-right: 6px;
+}
+
+/* Адаптивность для кнопок фильтра */
+@media (max-width: 768px) {
+    .service-filters {
+        overflow-x: auto;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .filter-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
         
         /* Стили для таблицы задач (только для десктопа) */
         @media (min-width: 769px) {
@@ -2358,40 +2377,45 @@
             </div>
         </div>
         
-        <!-- Страница всех услуг -->
-        <div id="all-services-page" class="page">
-            <div class="container">
-                <section class="section">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="navigateToPage('home')" style="padding: 8px 16px;">
-                            <i class="fas fa-arrow-left"></i>
-                        </button>
-                        <h2 class="section-title">Все услуги</h2>
-                    </div>
-                    
-                    <div class="all-services-header">
-                        <div class="search-box">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="serviceSearch" class="search-input" placeholder="Поиск услуг..." oninput="filterServices()">
-                        </div>
-                        <div>
-                            <button class="guides-btn" onclick="navigateToPage('guides')">
-                                <i class="fas fa-book"></i>
-                                Гайды
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="service-filters" id="serviceFilters">
-                        <!-- Фильтры загружаются динамически -->
-                    </div>
-                    
-                    <div class="grid grid-3" id="allServicesList">
-                        <!-- Все услуги загружаются динамически -->
-                    </div>
-                </section>
+      <!-- Страница всех услуг -->
+<div id="all-services-page" class="page">
+    <div class="container">
+        <section class="section">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-secondary" onclick="navigateToPage('home')" style="padding: 8px 16px;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="section-title" id="servicesPageTitle">Все услуги</h2>
             </div>
-        </div>
+            
+            <div class="all-services-header">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="serviceSearch" class="search-input" placeholder="Поиск услуг..." oninput="filterServices()">
+                </div>
+                <div>
+                    <button class="guides-btn" onclick="navigateToPage('guides')">
+                        <i class="fas fa-book"></i>
+                        Гайды
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Контейнер для категорий или услуг -->
+            <div class="grid grid-3" id="allServicesList">
+                <!-- Сначала показываются категории, при клике - услуги -->
+            </div>
+            
+            <!-- Кнопка "Назад к категориям" показывается только при просмотре услуг -->
+            <div style="text-align: center; margin-top: 30px; display: none;" id="backToCategoriesBtn">
+                <button class="btn btn-secondary" onclick="loadAllServicesPage()">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад ко всем категориям
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
         
         <!-- Страница гайдов -->
         <div id="guides-page" class="page">
@@ -2753,11 +2777,10 @@
         <i class="fas fa-home"></i>
         <span>Главная</span>
     </a>
-    <a href="#" class="nav-item" onclick="navigateToPage('all-services')">
+    <a href="#" class="nav-item" onclick="navigateToPage('categories')" data-page="categories"> <!-- ИЗМЕНЕНО -->
         <i class="fas fa-list"></i>
         <span>Услуги</span>
     </a>
-    <!-- УДАЛЕНО: Кнопка "Создать" -->
     <a href="#" class="nav-item" onclick="showTasksPopup()" id="quickTasksBtn">
         <i class="fas fa-tasks"></i>
         <span>Задачи</span>
@@ -3497,17 +3520,17 @@ async function fetchWithAuth(url, options = {}) {
         }
     }
     
-    // Загрузка страницы всех услуг
-    async function loadAllServicesPage() {
-        try {
-            await loadAllServices();
-            renderAllServices();
-            renderServiceFilters();
-        } catch (error) {
-            console.error('Ошибка загрузки всех услуг:', error);
-            showNotification('Ошибка загрузки услуг', 'error');
-        }
+   // Загрузка страницы всех услуг - ТЕПЕРЬ ЭТО СТРАНИЦА КАТЕГОРИЙ
+async function loadAllServicesPage() {
+    try {
+        await loadCategories();
+        renderAllCategoriesForServices();
+        loadCategoryImages(); // Загружаем изображения
+    } catch (error) {
+        console.error('Ошибка загрузки страницы услуг:', error);
+        showNotification('Ошибка загрузки услуг', 'error');
     }
+}
     
    function renderAllServices() {
     const container = document.getElementById('allServicesList');
@@ -3556,39 +3579,54 @@ async function fetchWithAuth(url, options = {}) {
     });
 }
     
-    // Рендер фильтров услуг
-    function renderServiceFilters() {
-        const container = document.getElementById('serviceFilters');
-        if (!container) return;
-        
-        const categoriesMap = {};
-        allServices.forEach(service => {
-            if (service.category_name && !categoriesMap[service.category_name]) {
-                categoriesMap[service.category_name] = service.category_id;
-            }
-        });
-        
-        const categoriesList = Object.keys(categoriesMap);
-        
-        container.innerHTML = `
-            <button class="filter-btn active" onclick="setServiceFilter('all')">Все</button>
-            ${categoriesList.map(category => `
-                <button class="filter-btn" onclick="setServiceFilter('${category}')">
-                    ${category}
-                </button>
-            `).join('')}
-        `;
+// Рендер фильтров услуг
+function renderServiceFilters() {
+    const container = document.getElementById('serviceFilters');
+    if (!container) return;
+    
+    const categoriesMap = {};
+    allServices.forEach(service => {
+        if (service.category_name && !categoriesMap[service.category_name]) {
+            categoriesMap[service.category_name] = service.category_id;
+        }
+    });
+    
+    const categoriesList = Object.keys(categoriesMap);
+    
+    container.innerHTML = `
+        <button class="filter-btn active" onclick="setServiceFilter('all')">
+            <i class="fas fa-th-large"></i> Все категории
+        </button>
+        ${categoriesList.map(category => `
+            <button class="filter-btn" onclick="setServiceFilter('${category}')">
+                <i class="fas fa-folder"></i> ${category}
+            </button>
+        `).join('')}
+    `;
+}
+    
+// Установка фильтра услуг (теперь для категорий)
+function setServiceFilter(category) {
+    const container = document.getElementById('allServicesList');
+    if (!container) return;
+    
+    // Сбрасываем выбранную категорию
+    selectedCategory = null;
+    
+    // Ищем категорию по имени
+    const categoryObj = categories.find(cat => cat.display_name === category);
+    if (categoryObj) {
+        selectCategoryForServices(categoryObj);
+    } else {
+        // Если выбрано "Все", показываем все категории
+        renderAllCategoriesForServices();
     }
     
-    // Установка фильтра услуг
-    function setServiceFilter(category) {
-        const container = document.getElementById('allServicesList');
-        if (!container) return;
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
         
         let filteredServices = allServices;
         if (category !== 'all') {
@@ -3631,58 +3669,278 @@ async function fetchWithAuth(url, options = {}) {
         });
     }
     
-    // Фильтрация услуг по поиску
-    function filterServices() {
-        const searchInput = document.getElementById('serviceSearch');
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        
-        const container = document.getElementById('allServicesList');
-        if (!container) return;
-        
-        let filteredServices = allServices;
-        
+   // Фильтрация услуг по поиску (работает только при просмотре услуг в категории)
+function filterServices() {
+    const searchInput = document.getElementById('serviceSearch');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    const container = document.getElementById('allServicesList');
+    if (!container) return;
+    
+    // Если мы на странице категорий, поиск не работает
+    const isViewingCategories = !selectedCategory;
+    if (isViewingCategories) {
         if (searchTerm) {
-            filteredServices = allServices.filter(service => 
-                service.name.toLowerCase().includes(searchTerm) ||
-                service.description.toLowerCase().includes(searchTerm) ||
-                (service.category_name && service.category_name.toLowerCase().includes(searchTerm))
-            );
+            showNotification('Для поиска выберите сначала категорию', 'info');
+            searchInput.value = '';
+        }
+        return;
+    }
+    
+    // Если мы смотрим услуги в категории
+    if (!services || services.length === 0) return;
+    
+    let filteredServices = services;
+    
+    if (searchTerm) {
+        filteredServices = services.filter(service => 
+            service.name.toLowerCase().includes(searchTerm) ||
+            service.description.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (filteredServices.length === 0) {
+        container.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                <p style="color: var(--graphite-medium;">По запросу "${searchTerm}" ничего не найдено</p>
+                <button class="btn btn-primary" onclick="loadAllServicesPage()" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад к категориям
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Обновляем только услуги, сохраняя заголовок
+    const header = container.querySelector('div[style*="grid-column"]');
+    container.innerHTML = '';
+    if (header) {
+        container.appendChild(header);
+    }
+    
+    filteredServices.forEach(service => {
+        const card = document.createElement('div');
+        card.className = 'card service-card';
+        card.onclick = () => selectService(service);
+        
+        let serviceIcon = service.icon || selectedCategory.icon || 'fas fa-star';
+        
+        card.innerHTML = `
+            <div class="service-image">
+                <i class="${serviceIcon}"></i>
+            </div>
+            <div class="service-header">
+                <h4>${service.name}</h4>
+            </div>
+            <p class="service-description">${service.description}</p>
+            <div class="service-footer">
+                <span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>
+                <span style="color: var(--primary-pink); font-weight: 600; font-size: 0.9rem;">
+                    Выбрать
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Рендер всех категорий на странице услуг
+function renderAllCategoriesForServices() {
+    const container = document.getElementById('allServicesList');
+    if (!container) return;
+    
+    if (!categories || categories.length === 0) {
+        container.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                <p style="color: var(--graphite-medium);">Категории не найдены</p>
+                <button class="btn btn-primary" onclick="navigateToPage('home')">
+                    <i class="fas fa-arrow-left"></i>
+                    На главную
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    categories.forEach(category => {
+        const card = document.createElement('div');
+        card.className = 'card category-card';
+        card.onclick = () => {
+            // Переходим к услугам в этой категории
+            selectCategoryForServices(category);
+        };
+        card.innerHTML = `
+            <div class="category-image" data-category="${category.display_name}">
+                <i class="${category.icon}"></i>
+            </div>
+            <h3>${category.display_name}</h3>
+            <p>${category.description}</p>
+            <div class="service-footer" style="margin-top: 10px;">
+                <span class="service-price">${category.services_count || 0} услуг</span>
+                <span style="color: var(--primary-pink); font-weight: 600; font-size: 0.9rem;">
+                    <i class="fas fa-arrow-right"></i> Смотреть
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+    // Скрываем кнопку "Назад к категориям"
+    const backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) {
+        backBtn.style.display = 'none';
+    }
+    
+    // Обновляем заголовок страницы
+    const pageTitle = document.getElementById('servicesPageTitle');
+    if (pageTitle) {
+        pageTitle.textContent = 'Все услуги';
+    }
+    
+    // Сбрасываем поиск
+    const searchInput = document.getElementById('serviceSearch');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Сбрасываем выбранную категорию
+    selectedCategory = null;
+    
+// Выбор категории на странице услуг
+async function selectCategoryForServices(category) {
+    console.log('Выбрана категория на странице услуг:', category);
+    
+    if (!currentUser) {
+        showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
+        showLoginModal();
+        return;
+    }
+    
+    if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+        showNotification('Для просмотра услуг необходима активная подписка', 'warning');
+        navigateToPage('subscription-required');
+        return;
+    }
+    
+    selectedCategory = category;
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/categories/${category.id}/services`);
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                services = result.data.services;
+                renderServicesInCategory();
+                return;
+            }
         }
         
-        filteredServices.sort((a, b) => a.name.localeCompare(b.name));
+        // Fallback на локальные данные
+        const filteredServices = allServices.filter(service => service.category_id === category.id);
         
-        if (filteredServices.length === 0) {
-            container.innerHTML = `
-                <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                    <i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                    <p style="color: var(--graphite-medium);">По запросу "${searchTerm}" ничего не найдено</p>
-                </div>
-            `;
-            return;
+        if (filteredServices.length > 0) {
+            services = filteredServices;
+            renderServicesInCategory();
+        } else {
+            showNotification('В этой категории пока нет услуг', 'info');
         }
+    } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        showNotification('Ошибка загрузки услуг', 'error');
+    }
+}
+
+// Рендер услуг в выбранной категории
+function renderServicesInCategory() {
+    const container = document.getElementById('allServicesList');
+    const pageTitle = document.querySelector('#all-services-page .section-title');
+    
+    if (!container) return;
+    
+    if (!services || services.length === 0) {
+        container.innerHTML = `
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">
+                    <button class="btn btn-secondary" onclick="loadAllServicesPage()" style="padding: 8px 16px;">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h3 style="font-size: 1.2rem;">${selectedCategory.display_name}</h3>
+                </div>
+                <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                <p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>
+                <button class="btn btn-primary" onclick="loadAllServicesPage()" style="margin-top: 20px;">
+                    <i class="fas fa-arrow-left"></i>
+                    Назад к категориям
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = selectedCategory.display_name;
+    }
+    
+    container.innerHTML = `
+        <div style="grid-column: 1 / -1; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <button class="btn btn-secondary" onclick="loadAllServicesPage()" style="padding: 8px 16px;">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h3 style="font-size: 1.5rem; font-weight: 600;">${selectedCategory.display_name}</h3>
+                <span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">
+                    ${services.length} услуг
+                </span>
+            </div>
+            <p style="color: var(--graphite-medium); margin-bottom: 20px; padding-left: 48px;">
+                ${selectedCategory.description}
+            </p>
+        </div>
+    `;
+    
+    services.forEach(service => {
+        const card = document.createElement('div');
+        card.className = 'card service-card';
+        card.onclick = () => selectService(service);
         
-        container.innerHTML = '';
-        filteredServices.forEach(service => {
-            const card = document.createElement('div');
-            card.className = 'card service-card';
-            card.onclick = () => selectService(service);
-            card.innerHTML = `
-                <div class="service-image">
-                    <i class="${service.icon || 'fas fa-star'}"></i>
-                </div>
-                <div class="service-header">
-                    <h4>${service.name}</h4>
-                </div>
-                <p class="service-description">${service.description}</p>
-                <div class="service-footer">
-                    <span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>
-                    <span style="color: var(--primary-pink); font-weight: 600; font-size: 0.9rem;">
-                        Выбрать
-                    </span>
-                </div>
-            `;
-            container.appendChild(card);
-        });
+        // Определяем иконку для услуги
+        let serviceIcon = service.icon || selectedCategory.icon || 'fas fa-star';
+        
+        card.innerHTML = `
+            <div class="service-image">
+                <i class="${serviceIcon}"></i>
+            </div>
+            <div class="service-header">
+                <h4>${service.name}</h4>
+            </div>
+            <p class="service-description">${service.description}</p>
+            <div class="service-footer">
+                <span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>
+                <span style="color: var(--primary-pink); font-weight: 600; font-size: 0.9rem;">
+                    Выбрать
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+    // Показываем кнопку "Назад к категориям"
+    const backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) {
+        backBtn.style.display = 'block';
+    }
+    
+    // Обновляем заголовок страницы
+    const pageTitle = document.getElementById('servicesPageTitle');
+    if (pageTitle) {
+        pageTitle.textContent = selectedCategory.display_name;
     }
     
     // Загрузка категорий - РЕАЛЬНАЯ ВЕРСИЯ С API
