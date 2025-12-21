@@ -5859,6 +5859,170 @@
                         <li>Отвечайте на сообщения в чате своевременно</li>
                         <li>Будьте вежливы и уважительны</li>
                         <li>Заранее обсудите все детали</li>
-                        <li>
+                        <li><strong>Будьте готовы предоставить доступ:</strong> Убедитесь, что исполнительница может попасть по указанному адресу</li>
+                        <li><strong>Оценивайте работу:</strong> После выполнения задачи оставьте честный отзыв</li>
+                    </ul>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="navigateToPage('all-services')">
+                            <i class="fas fa-plus"></i>
+                            Создать свою задачу
+                        </button>
+                    </div>
+                `
+            },
+            'safety': {
+                title: 'Безопасность',
+                content: `
+                    <h3>Основные правила безопасности:</h3>
+                    <ul>
+                        <li><strong>Проверяйте рейтинг:</strong> Выбирайте исполнительниц с высоким рейтингом и отзывами</li>
+                        <li><strong>Не передавайте деньги заранее:</strong> Все платежи обрабатываются через защищенную систему</li>
+                        <li><strong>Храните ценности:</strong> Уберите ценные вещи перед визитом помощницы</li>
+                        <li><strong>Используйте наш чат:</strong> Все общение должно происходить через встроенный чат</li>
+                        <li><strong>Сообщайте о проблемах:</strong> Если что-то пошло не так, немедленно свяжитесь с поддержкой</li>
+                    </ul>
+                    
+                    <h3>Безопасность при передаче доступа:</h3>
+                    <ul>
+                        <li>Предоставляйте доступ только на время выполнения работы</li>
+                        <li>Используйте временные коды для домофонов</li>
+                        <li>Не сообщайте постоянные пароли</li>
+                        <li>Присутствуйте при выполнении работ, если это возможно</li>
+                    </ul>
+                    
+                    <div class="mt-20">
+                        <button class="btn btn-primary" onclick="showHelp()">
+                            <i class="fas fa-shield-alt"></i>
+                            Связаться со службой безопасности
+                        </button>
+                    </div>
+                `
+            }
+        };
+
+        if (guides[guideId]) {
+            const guide = guides[guideId];
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.id = 'guideModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="modal-title">${guide.title}</h3>
+                        <button class="close-popup-btn" onclick="closeGuideModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        ${guide.content}
+                    </div>
+                    <button class="btn btn-primary" onclick="closeGuideModal()" style="width: 100%;">
+                        <i class="fas fa-check"></i>
+                        Закрыть
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closeGuideModal() {
+        const modal = document.getElementById('guideModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+    
+    // ==================== ДЕМО ДАННЫЕ ====================
+    
+    // Инициализация при загрузке страницы
+    window.addEventListener('DOMContentLoaded', async () => {
+        console.log('🌐 WOMAN HELP v2.0 - Инициализация...');
+        
+        // Инициализация счетчиков статистики
+        animateCounters();
+        
+        // Загружаем данные
+        await checkAuth();
+        await loadCategories();
+        await loadAllServices();
+        await loadSubscriptions();
+        
+        // Устанавливаем обработчики событий
+        setupEventListeners();
+        
+        // Устанавливаем начальную страницу
+        determineInitialScreen();
+        
+        // Устанавливаем минимальную дату для deadline
+        const deadlineInput = document.getElementById('taskDeadline');
+        if (deadlineInput) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            deadlineInput.min = new Date().toISOString().split('T')[0];
+            deadlineInput.value = tomorrow.toISOString().split('T')[0];
+        }
+        
+        updateUserInterface();
+        
+        console.log('✅ WOMAN HELP готов к работе!');
+        
+        // Показываем приветственное сообщение для новых пользователей
+        setTimeout(() => {
+            if (!currentUser) {
+                console.log('👋 Добро пожаловать в WOMAN HELP!');
+            }
+        }, 1000);
+    });
+
+    // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ HTML ====================
+    window.showLoginModal = showLoginModal;
+    window.showRegisterModal = showRegisterModal;
+    window.navigateToPage = navigateToPage;
+    window.showTasksPopup = showTasksPopup;
+    window.checkSubscription = checkSubscription;
+    window.showTaskDetailsCompact = showTaskDetailsCompact;
+    window.openSendCodeModal = openSendCodeModal;
+    window.sendVerificationCode = sendVerificationCode;
+    window.verifyPhoneCode = verifyPhoneCode;
+    window.selectSubscription = selectSubscription;
+    window.showGuide = showGuide;
+    window.closeGuideModal = closeGuideModal;
+    window.filterServices = filterServices;
+    window.setServiceFilter = setServiceFilter;
+    window.selectCategory = selectCategory;
+    window.selectService = selectService;
+    window.cancelTask = cancelTask;
+    window.showHelp = showHelp;
+    window.navigateToPerformerPanel = navigateToPerformerPanel;
+    window.logout = logout;
+    window.openVerifyPhoneModal = openVerifyPhoneModal;
+    window.filterTasks = filterTasks;
+    window.toggleTaskChat = toggleTaskChat;
+    window.sendInlineChatMessage = sendInlineChatMessage;
+    window.updateTaskStatus = updateTaskStatus;
+    window.completeTask = completeTask;
+    window.closeTasksPopup = closeTasksPopup;
+
+    // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ ПАНЕЛИ ИСПОЛНИТЕЛЯ ====================
+    window.performerLogin = performerLogin;
+    window.loadAvailableTasksForPerformer = loadAvailableTasksForPerformer;
+
+    // Общие функции для доступа из других файлов
+    window.formatPhone = formatPhone;
+    window.normalizePhone = normalizePhone;
+    window.showNotification = showNotification;
+    window.showLoading = showLoading;
+    window.hideLoading = hideLoading;
+
+    // Экспортируем данные для отладки
+    window.currentUser = currentUser;
+    window.categories = categories;
+    window.services = services;
+    window.allServices = allServices;
+    window.userTasks = userTasks;
+</script>
 </body>
 </html>
