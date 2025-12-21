@@ -2114,6 +2114,73 @@
                 flex-shrink: 0;
             }
         }
+
+/* Исправляем сетку категорий на квадратные карточки */
+#all-services-page .grid-3 {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+#all-services-page .category-card {
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+#all-services-page .category-image {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 15px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+}
+
+#all-services-page .category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+#all-services-page .category-card:hover .category-image img {
+    transform: scale(1.05);
+}
+
+#all-services-page .category-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#all-services-page .category-card p {
+    font-size: 0.85rem;
+    color: var(--graphite-medium);
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    #all-services-page .grid-3 {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+    
+    #all-services-page .category-card {
+        height: 240px;
+    }
+    
+    #all-services-page .category-image {
+        height: 120px;
+    }
+}
         
         /* Стили для таблицы задач (только для десктопа) */
         @media (min-width: 769px) {
@@ -3046,26 +3113,65 @@
         }, 16);
     }
     
-    // Определяем начальный экран в зависимости от состояния пользователя
     function determineInitialScreen() {
-        if (!currentUser) {
-            navigateToPage('auth');
-            return;
+    // Проверяем, есть ли пользователь в localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    const storedToken = localStorage.getItem('token');
+    
+    // Если есть сохраненные данные пользователя
+    if (storedUser && storedToken) {
+        try {
+            currentUser = JSON.parse(storedUser);
+            currentToken = storedToken;
+            
+            console.log('📱 Автоматический вход из localStorage:', currentUser.phone);
+            
+            // Если есть токен, проверяем его валидность
+            if (currentToken && currentUser) {
+                // Показываем главную страницу сразу
+                if (currentUser.phone_verified) {
+                    if (currentUser.subscription_status === 'active' && currentUser.initial_fee_paid) {
+                        navigateToPage('home');
+                    } else {
+                        navigateToPage('subscription-required');
+                    }
+                } else {
+                    // Телефон не подтвержден, но показываем главную
+                    navigateToPage('home');
+                }
+                return;
+            }
+        } catch (error) {
+            console.error('Ошибка парсинга пользователя:', error);
         }
-        
-        if (!currentUser.phone_verified) {
-            showNotification('Подтвердите телефон для активации аккаунта', 'warning');
-            openVerifyPhoneModal(currentUser.phone);
-            return;
-        }
-        
-        if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
-            navigateToPage('subscription-required');
-            return;
-        }
-        
-        navigateToPage('home');
     }
+    
+    // Если нет сохраненных данных
+    if (!currentUser) {
+        navigateToPage('auth');
+        return;
+    }
+    
+    // Если пользователь есть, но нет токена
+    if (!currentToken) {
+        navigateToPage('auth');
+        return;
+    }
+    
+    // Продолжаем обычную логику
+    if (!currentUser.phone_verified) {
+        showNotification('Подтвердите телефон для активации аккаунта', 'warning');
+        openVerifyPhoneModal(currentUser.phone);
+        return;
+    }
+    
+    if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+        navigateToPage('subscription-required');
+        return;
+    }
+    
+    navigateToPage('home');
+}
     
     // Установка обработчиков событий
     function setupEventListeners() {
