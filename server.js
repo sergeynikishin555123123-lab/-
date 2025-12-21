@@ -925,21 +925,23 @@ const authMiddleware = (roles = []) => {
             const publicRoutes = [
                 'GET /',
                 'GET /health',
-    'POST /api/admin/login',  // Добавьте эту строку
-    'GET /api/subscriptions',
-    'GET /api/categories',
-    'GET /api/categories/*',
-    'GET /api/services',
-    'GET /api/faq',
-    'GET /api/reviews',
-    'POST /api/auth/register',
-    'POST /api/auth/register-performer',
-    'POST /api/auth/login',
-    'POST /api/auth/verify-phone',
-    'POST /api/auth/send-verification',
-    'POST /api/auth/forgot-password',
-    'POST /api/auth/reset-password',
-    'OPTIONS /*'
+                'POST /api/admin/login',
+                'GET /api/subscriptions',
+                'GET /api/categories',
+                'GET /api/categories/*',
+                'GET /api/services',
+                'GET /api/services/top',  // ДОБАВИТЬ ЭТО
+                'GET /api/faq',
+                'GET /api/reviews',
+                'POST /api/auth/register',
+                'POST /api/auth/register-performer',
+                'POST /api/auth/login',
+                'POST /api/auth/verify-phone',
+                'POST /api/auth/send-verification',
+                'POST /api/auth/send-verification-code',  // ДОБАВИТЬ ЭТО
+                'POST /api/auth/forgot-password',
+                'POST /api/auth/reset-password',
+                'OPTIONS /*'
             ];
             
             const currentRoute = `${req.method} ${req.path}`;
@@ -7051,6 +7053,455 @@ function convertToCSV(data) {
     
     return csvRows.join('\n');
 }
+
+// ==================== ДОПОЛНИТЕЛЬНЫЕ API МАРШРУТЫ ====================
+
+// Получение топ услуг
+app.get('/api/services/top', async (req, res) => {
+    try {
+        const services = await db.all(`
+            SELECT s.*, c.display_name as category_name, c.icon as category_icon
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE s.is_active = 1 AND s.is_featured = 1
+            ORDER BY s.sort_order ASC, s.name ASC
+            LIMIT 6
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения топ услуг:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения топ услуг'
+        });
+    }
+});
+
+// Получение всех услуг
+app.get('/api/services', async (req, res) => {
+    try {
+        const services = await db.all(`
+            SELECT s.*, c.display_name as category_name, c.icon as category_icon
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE s.is_active = 1
+            ORDER BY c.sort_order ASC, s.sort_order ASC, s.name ASC
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения всех услуг:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
+        });
+    }
+});
+
+// API для выбора подписки - ДОБАВЬТЕ ЭТОТ МАРШРУТ
+app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, res) => {
+    try {
+        const { subscription_plan } = req.body;
+        
+        console.log('Выбор подписки:', { 
+            user_id: req.user.id, 
+            subscription_plan,
+            current_subscription: req.user.subscription_plan 
+        });
+        
+        if (!subscription_plan) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан тарифный план'
+            });
+        }
+        
+        if (!req.user.phone_verified) {
+            return res.status(403).json({
+                success: false,
+                error: 'Для выбора подписки необходимо подтвердить телефон',
+                requires_phone_verification: true,
+                user_phone: req.user.phone,
+                user_id: req.user.id
+            });
+        }
+        
+        const subscription = await db.get(
+            'SELECT * FROM subscriptions WHERE name = ? AND is_active = 1',
+            [subscription_plan]
+        );
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'Тарифный план не найден'
+            });
+        }
+        
+        if (DEMO_MODE) {
+            console.log(`📱 [DEMO MODE] Активация подписки ${subscription_plan} для пользователя: ${req.user.phone}`);
+            
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            const expiryDateStr = expiryDate.toISOString().split('T')[0];
+            
+            await db.run(
+                `UPDATE users SET 
+                    subscription_plan = ?,
+                    subscription_status = 'active',
+                    subscription_expires = ?,
+                    initial_fee_paid = 1,
+                    tasks_limit = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [subscription_plan, expiryDateStr, subscription.tasks_limit, req.user.id]
+            );
+            
+            if (subscription.initial_fee > 0) {
+                await db.run(
+                    `INSERT INTO transactions 
+                    (user_id, type, amount, description, status) 
+                    VALUES (?, ?, ?, ?, ?)`,
+                    [
+                        req.user.id,
+                        'initial_fee',
+                        -subscription.initial_fee,
+                        `Вступительный взнос: ${subscription.display_name}`,
+                        'completed'
+                    ]
+                );
+            }
+            
+            await db.run(
+                `INSERT INTO notifications 
+                (user_id, type, title, message) 
+                VALUES (?, ?, ?, ?)`,
+                [
+                    req.user.id,
+                    'subscription_activated',
+                    'Подписка активирована!',
+                    `Поздравляем! Вы успешно активировали подписку "${subscription.display_name}". Теперь вы можете создавать задачи.`
+                ]
+            );
+            
+            const updatedUser = await db.get(
+                `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                        subscription_plan, subscription_status, subscription_expires,
+                        initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, tasks_used,
+                        user_rating
+                 FROM users WHERE id = ?`,
+                [req.user.id]
+            );
+            
+            const userForResponse = {
+                ...updatedUser,
+                rating: updatedUser.user_rating
+            };
+            
+            return res.json({
+                success: true,
+                message: 'Подписка успешно активирована! (Демо-режим)',
+                data: {
+                    user: userForResponse,
+                    subscription,
+                    demo_mode: true
+                }
+            });
+        }
+        
+        if (subscription.initial_fee > 0 && !req.user.initial_fee_paid) {
+            return res.status(402).json({
+                success: false,
+                error: 'Для активации подписки необходимо оплатить вступительный взнос',
+                requires_initial_fee: true,
+                initial_fee_amount: subscription.initial_fee,
+                current_balance: req.user.balance
+            });
+        }
+        
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30);
+        const expiryDateStr = expiryDate.toISOString().split('T')[0];
+        
+        await db.run(
+            `UPDATE users SET 
+                subscription_plan = ?,
+                subscription_status = 'active',
+                subscription_expires = ?,
+                tasks_limit = ?,
+                updated_at = CURRENT_TIMESTAMP
+             WHERE id = ?`,
+            [subscription_plan, expiryDateStr, subscription.tasks_limit, req.user.id]
+        );
+        
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message) 
+            VALUES (?, ?, ?, ?)`,
+            [
+                req.user.id,
+                'subscription_activated',
+                'Подписка активирована!',
+                `Поздравляем! Вы успешно активировали подписку "${subscription.display_name}". Теперь вы можете создавать задачи.`
+            ]
+        );
+        
+        const updatedUser = await db.get(
+            `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, tasks_used,
+                    user_rating
+             FROM users WHERE id = ?`,
+            [req.user.id]
+        );
+        
+        const userForResponse = {
+            ...updatedUser,
+            rating: updatedUser.user_rating
+        };
+        
+        res.json({
+            success: true,
+            message: 'Подписка успешно активирована!',
+            data: {
+                user: userForResponse,
+                subscription,
+                demo_mode: false
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка выбора подписки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка выбора подписки'
+        });
+    }
+});
+
+// Получение последних задач пользователя
+app.get('/api/tasks/recent', authMiddleware(), async (req, res) => {
+    try {
+        const tasks = await db.all(`
+            SELECT t.*, c.display_name as category_name
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            WHERE t.client_id = ?
+            ORDER BY t.created_at DESC
+            LIMIT 5
+        `, [req.user.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks,
+                count: tasks.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения последних задач:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Отправка SMS кода - альтернативный маршрут
+app.post('/api/auth/send-verification-code', async (req, res) => {
+    try {
+        const { phone } = req.body;
+        
+        if (!phone) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан номер телефона'
+            });
+        }
+        
+        const formattedPhone = formatPhone(phone);
+        if (!validatePhone(formattedPhone)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректный номер телефона'
+            });
+        }
+        
+        const user = await db.get('SELECT id, phone_verified FROM users WHERE phone = ?', [formattedPhone]);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        if (user.phone_verified) {
+            return res.status(400).json({
+                success: false,
+                error: 'Телефон уже подтвержден'
+            });
+        }
+        
+        const lastCode = await db.get(
+            `SELECT created_at FROM phone_verification_codes 
+             WHERE phone = ? AND verified = 0 
+             ORDER BY created_at DESC LIMIT 1`,
+            [formattedPhone]
+        );
+        
+        if (lastCode) {
+            const lastSent = new Date(lastCode.created_at);
+            const now = new Date();
+            const diffSeconds = (now - lastSent) / 1000;
+            
+            if (diffSeconds < 60) {
+                return res.status(429).json({
+                    success: false,
+                    error: `Подождите ${Math.ceil(60 - diffSeconds)} секунд перед повторной отправкой`
+                });
+            }
+        }
+        
+        const smsCode = generateVerificationCode();
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 10);
+        
+        await db.run(
+            `INSERT INTO phone_verification_codes (phone, code, expires_at) 
+             VALUES (?, ?, ?)`,
+            [formattedPhone, smsCode, expiresAt.toISOString()]
+        );
+        
+        const smsResult = await sendSmsCode(formattedPhone, smsCode);
+        
+        if (!smsResult.success) {
+            return res.status(500).json({
+                success: false,
+                error: 'Ошибка отправки SMS',
+                demo_mode: DEMO_MODE
+            });
+        }
+        
+        res.json({
+            success: true,
+            message: 'Код подтверждения отправлен',
+            data: {
+                phone: formattedPhone,
+                demo_mode: smsResult.demo || false,
+                expires_in_minutes: 10,
+                can_resend_after_seconds: 60
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отправки кода подтверждения:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отправки кода подтверждения'
+        });
+    }
+});
+
+// Завершение задачи клиентом
+app.put('/api/tasks/:id/complete', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ?',
+            [taskId]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        if (req.user.id !== task.client_id && !['admin', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Только клиент или администратор может завершить задачу'
+            });
+        }
+        
+        if (!['assigned', 'in_progress'].includes(task.status)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Можно завершить только назначенные задачи или задачи в работе'
+            });
+        }
+        
+        await db.run(
+            `UPDATE tasks SET 
+                status = 'completed',
+                completed_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP 
+             WHERE id = ?`,
+            [taskId]
+        );
+        
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, 'completed', req.user.id, 'Задача завершена клиентом']
+        );
+        
+        if (task.performer_id) {
+            await db.run(
+                `INSERT INTO notifications 
+                (user_id, type, title, message, related_id, related_type) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    task.performer_id,
+                    'task_completed_by_client',
+                    'Задача завершена',
+                    `Клиент подтвердил завершение задачи "${task.title}"`,
+                    taskId,
+                    'task'
+                ]
+            );
+            
+            await db.run(
+                'UPDATE users SET completed_tasks = completed_tasks + 1 WHERE id = ?',
+                [task.performer_id]
+            );
+        }
+        
+        res.json({
+            success: true,
+            message: 'Задача успешно завершена',
+            data: {
+                task_id: taskId,
+                status: 'completed'
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка завершения задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка завершения задачи'
+        });
+    }
+});
 
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
