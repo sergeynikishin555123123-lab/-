@@ -169,19 +169,19 @@ const initDatabase = async () => {
         `);
 
         // Категории
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS categories (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE NOT NULL,
-                display_name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                icon TEXT NOT NULL,
-                color TEXT DEFAULT '#FF6B8B',
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+       CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL,
+    display_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    image_url TEXT, -- ДОБАВИТЬ ЭТУ СТРОКУ
+    color TEXT DEFAULT '#FF6B8B',
+    sort_order INTEGER DEFAULT 0,
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
         `);
 
         // Услуги
@@ -482,27 +482,27 @@ const createInitialData = async () => {
         // 4. Категории услуг
         const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
         if (!categoriesExist) {
-            const categories = [
-                ['home_and_household', 'Дом и быт', 'Уборка, готовка, уход за домом', '🏠', '#FF6B8B', 1, 1],
-                ['family_and_children', 'Дети и семья', 'Няни, репетиторы, помощь с детьми', '👨‍👩‍👧‍👦', '#3498DB', 2, 1],
-                ['beauty_and_health', 'Красота и здоровье', 'Маникюр, массаж, парикмахерские услуги', '💅', '#9B59B6', 3, 1],
-                ['courses_and_education', 'Курсы и образование', 'Репетиторство, обучение, курсы', '🎓', '#2ECC71', 4, 1],
-                ['shopping_and_delivery', 'Покупки и доставка', 'Покупка и доставка товаров', '🛒', '#E74C3C', 5, 1],
-                ['events_and_organization', 'События и организация', 'Организация мероприятий и праздников', '🎉', '#F39C12', 6, 1]
-            ];
+const categories = [
+    ['home_and_household', 'Дом и быт', 'Уборка, готовка, уход за домом', '🏠', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=200&fit=crop', '#FF6B8B', 1, 1],
+    ['family_and_children', 'Семья и дети', 'Няни, репетиторы, помощь с детьми', '👨‍👩‍👧‍👦', 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=200&fit=crop', '#3498DB', 2, 1],
+    ['beauty_and_health', 'Красота и здоровье', 'Маникюр, массаж, парикмахерские услуги', '💅', 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop', '#9B59B6', 3, 1],
+    ['courses_and_education', 'Образование', 'Репетиторство, обучение, курсы', '🎓', 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop', '#2ECC71', 4, 1],
+    ['shopping_and_delivery', 'Покупки и доставка', 'Покупка и доставка товаров', '🛒', 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop', '#E74C3C', 5, 1],
+    ['events_and_organization', 'События и организация', 'Организация мероприятий и праздников', '🎉', 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=200&fit=crop', '#F39C12', 6, 1]
+];
 
-            for (const cat of categories) {
-                try {
-                    await db.run(
-                        `INSERT OR IGNORE INTO categories 
-                        (name, display_name, description, icon, color, sort_order, is_active) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                        cat
-                    );
-                } catch (error) {
-                    console.warn('Ошибка вставки категории:', error.message);
-                }
-            }
+for (const cat of categories) {
+    try {
+        await db.run(
+            `INSERT OR IGNORE INTO categories 
+            (name, display_name, description, icon, image_url, color, sort_order, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            cat
+        );
+    } catch (error) {
+        console.warn('Ошибка вставки категории:', error.message);
+    }
+}
             console.log('✅ Категории услуг созданы');
         }
 
@@ -2442,7 +2442,6 @@ app.delete('/api/auth/account', authMiddleware(), async (req, res) => {
 
 // ==================== КАТЕГОРИИ И УСЛУГИ ====================
 
-// Получение всех категорий
 app.get('/api/categories', async (req, res) => {
     try {
         const categories = await db.all(
@@ -2455,10 +2454,22 @@ app.get('/api/categories', async (req, res) => {
              ORDER BY c.sort_order ASC`
         );
         
+        // Добавляем URL для изображений по умолчанию, если их нет
+        const processedCategories = categories.map(cat => {
+            if (!cat.image_url && cat.name === 'home_and_household') {
+                cat.image_url = 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=200&fit=crop';
+            } else if (!cat.image_url && cat.name === 'family_and_children') {
+                cat.image_url = 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=200&fit=crop';
+            }
+            // Добавьте остальные категории по аналогии...
+            
+            return cat;
+        });
+        
         res.json({
             success: true,
             data: {
-                categories,
+                categories: processedCategories,
                 count: categories.length
             }
         });
@@ -5474,10 +5485,9 @@ app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async 
     }
 });
 
-// Создание/обновление категории
 app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const { id, name, display_name, description, icon, color, sort_order, is_active } = req.body;
+        const { id, name, display_name, description, icon, color, sort_order, is_active, image_url } = req.body; // ДОБАВИЛИ image_url
         
         if (!name || !display_name || !description) {
             return res.status(400).json({
@@ -5494,13 +5504,14 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
                     display_name = ?,
                     description = ?,
                     icon = ?,
+                    image_url = ?,  // ДОБАВИЛИ
                     color = ?,
                     sort_order = ?,
                     is_active = ?,
                     updated_at = CURRENT_TIMESTAMP
                  WHERE id = ?`,
-                [name, display_name, description, icon || 'fas fa-folder', color || '#C5A880', 
-                 sort_order || 0, is_active ? 1 : 0, id]
+                [name, display_name, description, icon || 'fas fa-folder', image_url || null, // ДОБАВИЛИ
+                 color || '#C5A880', sort_order || 0, is_active ? 1 : 0, id]
             );
             
             const category = await db.get('SELECT * FROM categories WHERE id = ?', [id]);
@@ -5514,10 +5525,10 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
             // Создание новой категории
             const result = await db.run(
                 `INSERT INTO categories 
-                (name, display_name, description, icon, color, sort_order, is_active) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [name, display_name, description, icon || 'fas fa-folder', color || '#C5A880', 
-                 sort_order || 0, is_active ? 1 : 1]
+                (name, display_name, description, icon, image_url, color, sort_order, is_active)  // ДОБАВИЛИ
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [name, display_name, description, icon || 'fas fa-folder', image_url || null, // ДОБАВИЛИ
+                 color || '#C5A880', sort_order || 0, is_active ? 1 : 1]
             );
             
             const categoryId = result.lastID;
