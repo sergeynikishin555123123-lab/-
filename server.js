@@ -27,6 +27,49 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
+// Обработка preflight запросов
+app.options('*', cors(corsOptions));
+
+// Парсинг JSON с увеличенным лимитом
+app.use(express.json({ 
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        req.rawBody = buf.toString();
+    }
+}));
+
+app.use(express.urlencoded({ 
+    extended: true, 
+    limit: '50mb',
+    parameterLimit: 100000
+}));
+
+// Статические файлы с правильными заголовками
+app.use(express.static('public', {
+    setHeaders: (res, path) => {
+        // Кеширование статических файлов
+        res.set('Cache-Control', 'public, max-age=31536000');
+        // Безопасные заголовки для iOS
+        res.set('X-Content-Type-Options', 'nosniff');
+        res.set('X-Frame-Options', 'DENY');
+    }
+}));
+
+// Добавьте этот middleware для обработки ошибок CORS
+app.use((req, res, next) => {
+    // Устанавливаем заголовки безопасности для iOS
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    // Предотвращаем кеширование API запросов на iOS
+    if (req.path.startsWith('/api')) {
+        res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.header('Pragma', 'no-cache');
+        res.header('Expires', '0');
+    }
+    
+    next();
+});
+
 // ==================== КОНФИГУРАЦИЯ ====================
 const DEMO_MODE = true;
 
@@ -708,45 +751,123 @@ const validatePhone = (phone) => {
     // Форматируем телефон для проверки
     const formattedPhone = formatPhone(phone);
     
-    // Проверяем международный формат: +7/8 и 10 цифр после
-    const internationalRegex = /^\+[78]\d{10}$/;
+    console.log(`🔍 Проверка номера: ${phone} -> ${formattedPhone}`);
     
-    // Проверяем российские форматы без кода страны:
-    // 9XXXXXXXXX (10 цифр) или 79XXXXXXXXX (11 цифр) или 89XXXXXXXXX (11 цифр)
-    const russianRegex = /^(?:\+?[78]|8?)(9\d{9})$/;
+    // Проверяем российские форматы:
+    // +79XXXXXXXXX (11 цифр после +)
+    // +7XXXXXXXXX (10 цифр после +)
+    const russianRegex = /^\+7\d{10}$/;
     
-    return internationalRegex.test(formattedPhone) || russianRegex.test(phone);
+    // Также принимаем международный формат:
+    // + любая цифра (1-9) и 10-15 цифр после
+    const internationalRegex = /^\+\d{10,15}$/;
+    
+    const isValid = russianRegex.test(formattedPhone) || internationalRegex.test(formattedPhone);
+    
+    console.log(`📱 Валидация номера ${formattedPhone}: ${isValid ? '✅ ВЕРНО' : '❌ НЕВЕРНО'}`);
+    
+    return isValid;
 };
 
+// ЗАМЕНИТЬ СТАРУЮ ФУНКЦИЮ formatPhone НА ЭТУ:
 const formatPhone = (phone) => {
     if (!phone) return '';
     
-    // Убираем все нецифровые символы, кроме плюса
-    let cleaned = phone.toString().replace(/[^\d+]/g, '');
+    console.log(`📞 Исходный номер для форматирования: "${phone}"`);
     
-    // Если номер начинается с 7 или 8 без кода страны
-    if (/^[78]\d{10}$/.test(cleaned)) {
-        // Преобразуем 7xxxxxxxxxx или 8xxxxxxxxxx в +7xxxxxxxxxx
-        cleaned = '+7' + cleaned.substring(1);
-    }
-    // Если номер начинается с 9 (10 цифр без кода страны)
-    else if (/^9\d{9}$/.test(cleaned)) {
-        cleaned = '+7' + cleaned;
-    }
-    // Если номер начинается с +7 или +8
-    else if (/^\+[78]\d{10,}$/.test(cleaned)) {
-        // Уже в правильном формате
-    }
-    // Если номер начинается с 7 или 8 и больше 11 цифр (уже есть код страны)
-    else if (/^[78]\d{11,}$/.test(cleaned)) {
-        cleaned = '+' + cleaned;
-    }
-    // Для других форматов просто возвращаем с плюсом
-    else if (!cleaned.startsWith('+')) {
-        cleaned = '+' + cleaned;
+    // Убираем все нецифровые символы, кроме плюса в начале
+    let cleaned = phone.toString().trim();
+    
+    // Сохраняем начальный плюс если есть
+    const hasPlus = cleaned.startsWith('+');
+    
+    // Удаляем все нецифровые символы
+    cleaned = cleaned.replace(/[^\d]/g, '');
+    
+    if (cleaned.length === 0) {
+        console.log('❌ Номер не содержит цифр');
+        return '';
     }
     
-    return cleaned;
+    // Определяем код страны и оператора
+    let result = '';
+    
+    // Если номер начинается с 7 или 8 (российские форматы)
+    if (cleaned.startsWith('7')) {
+        // Формат: 7XXXXXXXXXX (11 цифр) -> +7XXXXXXXXXX
+        if (cleaned.length === 11) {
+            result = '+7' + cleaned.substring(1);
+        }
+        // Формат: 7XXXXXXXXX (10 цифр) -> +7XXXXXXXXX
+        else if (cleaned.length === 10) {
+            result = '+7' + cleaned;
+        }
+        // Формат: 7XXXXXXXX (9 цифр) -> +7XXXXXXXX
+        else if (cleaned.length === 9) {
+            result = '+79' + cleaned.substring(1); // Предполагаем, что это 9XXXXXXXX
+        }
+        else {
+            result = '+' + cleaned;
+        }
+    }
+    else if (cleaned.startsWith('8')) {
+        // Формат: 89XXXXXXXXX (11 цифр) -> +7XXXXXXXXXX
+        if (cleaned.length === 11) {
+            result = '+7' + cleaned.substring(1);
+        }
+        // Формат: 8XXXXXXXXX (10 цифр) -> +7XXXXXXXXX
+        else if (cleaned.length === 10) {
+            result = '+7' + cleaned.substring(1);
+        }
+        // Формат: 8XXXXXXXX (9 цифр) -> +7XXXXXXXX
+        else if (cleaned.length === 9) {
+            result = '+7' + cleaned;
+        }
+        else {
+            result = '+7' + cleaned.substring(1);
+        }
+    }
+    // Если номер начинается с 9 и нет кода страны
+    else if (cleaned.length === 10 && cleaned.startsWith('9')) {
+        // Формат: 9XXXXXXXXX -> +79XXXXXXXXX
+        result = '+7' + cleaned;
+    }
+    // Если номер начинается с 9 и меньше цифр
+    else if (cleaned.length < 10 && cleaned.startsWith('9')) {
+        // Формат: 9XXXXXXXX -> +79XXXXXXXX
+        result = '+7' + cleaned;
+    }
+    // Если номер уже с плюсом и 11 цифр после
+    else if (hasPlus && cleaned.length === 11) {
+        result = '+' + cleaned;
+    }
+    // Если номер уже с плюсом и 10 цифр после
+    else if (hasPlus && cleaned.length === 10) {
+        result = '+' + cleaned;
+    }
+    // Любой другой случай - просто добавляем +7
+    else {
+        if (cleaned.length >= 10) {
+            // Берем последние 10 цифр
+            const last10 = cleaned.substring(cleaned.length - 10);
+            result = '+7' + last10;
+        } else {
+            result = '+7' + cleaned;
+        }
+    }
+    
+    // Убедимся, что результат начинается с +7 и имеет правильную длину
+    if (!result.startsWith('+7')) {
+        result = '+7' + result.replace(/^\+/, '');
+    }
+    
+    // Удаляем лишние цифры (оставляем максимум 11 цифр после +)
+    if (result.length > 12) { // +7 + 10 цифр
+        result = result.substring(0, 12);
+    }
+    
+    console.log(`✅ Отформатированный номер: "${result}"`);
+    return result;
 };
 
 const generateAvatarUrl = (firstName, lastName, role) => {
@@ -963,12 +1084,17 @@ app.get('/health', async (req, res) => {
 
 // ==================== АУТЕНТИФИКАЦИЯ ====================
 
-// Регистрация клиента
+// Регистрация клиента - ОБНОВЛЕННАЯ ВЕРСИЯ
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password, first_name, last_name = '', phone, subscription_plan = 'essential' } = req.body;
         
-        console.log('Регистрация клиента:', { phone, first_name });
+        console.log('📝 Регистрация клиента:', { 
+            phone: phone, 
+            email: email, 
+            first_name: first_name,
+            raw_input: req.body 
+        });
         
         if (!phone || !password || !first_name) {
             return res.status(400).json({
@@ -984,11 +1110,14 @@ app.post('/api/auth/register', async (req, res) => {
             });
         }
         
+        // Форматируем телефон
         const formattedPhone = formatPhone(phone);
+        console.log(`📞 Форматированный телефон: ${phone} -> ${formattedPhone}`);
+        
         if (!validatePhone(formattedPhone)) {
             return res.status(400).json({
                 success: false,
-                error: 'Некорректный номер телефона'
+                error: 'Некорректный номер телефона. Используйте форматы: +7XXXXXXXXXX, 8XXXXXXXXXX, 9XXXXXXXXX'
             });
         }
         
@@ -1598,12 +1727,12 @@ app.post('/api/auth/verify-phone', async (req, res) => {
     }
 });
 
-// Вход
+// Вход - ОБНОВЛЕННАЯ ВЕРСИЯ
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, phone, password } = req.body;
         
-        console.log('Попытка входа:', { email, phone });
+        console.log('🔐 Попытка входа:', { email, phone });
         
         if ((!email && !phone) || !password) {
             return res.status(400).json({
@@ -1613,25 +1742,43 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         let user;
+        let loginType = '';
+        
         if (email && email.trim()) {
+            // Поиск по email
             user = await db.get(
                 `SELECT * FROM users WHERE email = ? AND is_active = 1`,
-                [email]
+                [email.trim().toLowerCase()]
             );
+            loginType = 'email';
         } else if (phone) {
+            // Форматируем телефон для поиска
             const formattedPhone = formatPhone(phone);
+            console.log(`📞 Поиск по телефону: ${phone} -> ${formattedPhone}`);
+            
+            if (!formattedPhone) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Некорректный номер телефона'
+                });
+            }
+            
             user = await db.get(
                 `SELECT * FROM users WHERE phone = ? AND is_active = 1`,
                 [formattedPhone]
             );
+            loginType = 'phone';
         }
         
         if (!user) {
+            console.log(`❌ Пользователь не найден (тип входа: ${loginType})`);
             return res.status(401).json({
                 success: false,
-                error: 'Пользователь не найден'
+                error: 'Пользователь не найден или учетная запись неактивна'
             });
         }
+        
+        console.log(`✅ Пользователь найден: ${user.email || user.phone}`);
         
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
