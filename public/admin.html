@@ -3099,11 +3099,12 @@ function clearImageUpload(inputId, previewId) {
   if (preview) preview.innerHTML = '';
 }
 
-async function uploadImage(file) {
+async function uploadImage(file, type = 'general') {
   if (!file) return null;
   
   const formData = new FormData();
   formData.append('image', file);
+  formData.append('type', type); // 'category', 'logo', 'general'
   
   try {
     showLoading('Загрузка изображения...');
@@ -3238,10 +3239,10 @@ document.addEventListener('DOMContentLoaded', function() {
   try {
     showLoading('Сохранение категории...');
     
-    // Загружаем изображение если есть
-    if (imageInput && imageInput.files[0]) {
-      imageUrl = await uploadImage(imageInput.files[0]);
-    }
+// Загружаем изображение если есть
+if (imageInput && imageInput.files[0]) {
+  imageUrl = await uploadImage(imageInput.files[0], 'category');
+}
     
     const response = await fetch('/api/admin/categories', {
       method: 'POST',
@@ -4540,12 +4541,12 @@ async function saveLogo() {
   try {
     showLoading('Сохранение настроек...');
     
-    // Сначала сохраняем логотип если есть
-    let logoUrl = null;
-    const logoInput = document.getElementById('logoUpload');
-    if (logoInput && logoInput.files[0]) {
-      logoUrl = await uploadImage(logoInput.files[0]);
-    }
+// Сначала сохраняем логотип если есть
+let logoUrl = null;
+const logoInput = document.getElementById('logoUpload');
+if (logoInput && logoInput.files[0]) {
+  logoUrl = await uploadImage(logoInput.files[0], 'logo');
+}
     
     const settings = {
       site_name: document.getElementById('settingAppName').value,
