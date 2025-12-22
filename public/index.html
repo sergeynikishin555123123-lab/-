@@ -2166,6 +2166,168 @@
     flex-grow: 1;
 }
 
+/* Квадратные карточки категорий - ОБЩИЙ СТИЛЬ */
+.category-grid-square {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.category-card-square {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    border: 1px solid rgba(45, 45, 45, 0.08);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    overflow: hidden;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-card-square:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+
+.category-image-container {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.category-card-square:hover .category-image-container img {
+    transform: scale(1.05);
+}
+
+.category-icon-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-pink);
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.category-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--graphite-dark);
+    line-height: 1.3;
+}
+
+.category-description {
+    font-size: 0.9rem;
+    color: var(--graphite-medium);
+    margin-bottom: 16px;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.category-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.services-count {
+    font-size: 0.85rem;
+    color: var(--graphite-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.select-service-btn {
+    color: var(--primary-pink);
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition-fast);
+}
+
+.select-service-btn:hover {
+    color: var(--primary-pink-dark);
+}
+
+/* Адаптивность для квадратной сетки */
+@media (max-width: 768px) {
+    .category-grid-square {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 15px;
+    }
+    
+    .category-card-square {
+        height: 240px;
+    }
+    
+    .category-image-container {
+        height: 130px;
+    }
+    
+    .category-content {
+        padding: 15px;
+    }
+    
+    .category-title {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+    
+    .category-description {
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-grid-square {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+    }
+    
+    .category-card-square {
+        height: 220px;
+    }
+    
+    .category-image-container {
+        height: 110px;
+    }
+    
+    .category-content {
+        padding: 12px;
+    }
+}
+        
 /* Для мобильных устройств */
 @media (max-width: 768px) {
     #all-services-page .grid-3 {
@@ -3256,38 +3418,50 @@
         }, 16);
     }
     
-    function determineInitialScreen() {
-    // Проверяем, есть ли пользователь в localStorage
+   function determineInitialScreen() {
+    console.log('📱 Определение начального экрана...');
+    
+    // Проверяем сохраненные данные
     const storedUser = localStorage.getItem('currentUser');
     const storedToken = localStorage.getItem('token');
     
-    // Если есть сохраненные данные пользователя
+    // Если есть сохраненные данные
     if (storedUser && storedToken) {
         try {
             currentUser = JSON.parse(storedUser);
             currentToken = storedToken;
             
-            console.log('📱 Автоматический вход из localStorage:', currentUser.phone);
+            console.log('✅ Найден сохраненный пользователь:', currentUser.phone);
             
-            // Если есть токен, проверяем его валидность
-            if (currentToken && currentUser) {
-                // Показываем главную страницу сразу
-                if (currentUser.phone_verified) {
-                    if (currentUser.subscription_status === 'active' && currentUser.initial_fee_paid) {
-                        navigateToPage('home');
-                    } else {
-                        navigateToPage('subscription-required');
-                    }
-                } else {
-                    // Телефон не подтвержден, но показываем главную
-                    navigateToPage('home');
-                }
+            // Проверяем статус пользователя
+            if (!currentUser.phone_verified) {
+                console.log('📱 Телефон не подтвержден, показываем окно подтверждения');
+                openVerifyPhoneModal(currentUser.phone);
+                navigateToPage('auth');
                 return;
             }
+            
+            if (currentUser.subscription_status !== 'active' || !currentUser.initial_fee_paid) {
+                console.log('📱 Подписка не активна, показываем выбор подписки');
+                navigateToPage('subscription');
+                return;
+            }
+            
+            // Если все в порядке - показываем главную
+            console.log('✅ Все проверки пройдены, показываем главную');
+            navigateToPage('home');
+            return;
+            
         } catch (error) {
             console.error('Ошибка парсинга пользователя:', error);
+            localStorage.clear();
         }
     }
+    
+    // Если нет сохраненных данных или ошибка
+    console.log('👋 Новый пользователь, показываем авторизацию');
+    navigateToPage('auth');
+}
     
     // Если нет сохраненных данных
     if (!currentUser) {
@@ -3520,36 +3694,47 @@
         }
     }
     
-    // Навигация по страницам
-    function navigateToPage(pageId) {
-        if (chatPollingInterval) {
-            clearInterval(chatPollingInterval);
-            chatPollingInterval = null;
-            currentChatTaskId = null;
-        }
+  // Навигация по страницам - ИСПРАВЛЕННАЯ ВЕРСИЯ
+function navigateToPage(pageId) {
+    if (chatPollingInterval) {
+        clearInterval(chatPollingInterval);
+        chatPollingInterval = null;
+        currentChatTaskId = null;
+    }
+    
+    closeUserMenu();
+    closeTasksPopup();
+    
+    // Скрываем все страницы
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Показываем нужную страницу
+    const pageElement = document.getElementById(pageId + '-page');
+    if (pageElement) {
+        pageElement.classList.add('active');
+    } else {
+        console.error('Страница не найдена:', pageId);
+        return;
+    }
+    
+    // Управляем видимостью нижней навигации
+    const bottomNav = document.getElementById('bottomNav');
+    const floatingBtn = document.getElementById('floatingTasksBtn');
+    
+    // Показываем нижнюю навигацию ТОЛЬКО для авторизованных пользователей
+    // И только на определенных страницах (не на auth, subscription-required)
+    if (currentUser && currentUser.phone_verified && 
+        currentUser.subscription_status === 'active' && 
+        currentUser.initial_fee_paid) {
         
-        closeUserMenu();
-        closeTasksPopup();
-        
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        
-        const pageElement = document.getElementById(pageId + '-page');
-        if (pageElement) {
-            pageElement.classList.add('active');
-        } else {
-            console.error('Страница не найдена:', pageId);
-            return;
-        }
-        
-        const bottomNav = document.getElementById('bottomNav');
-        const floatingBtn = document.getElementById('floatingTasksBtn');
-
-        if (currentUser && currentUser.phone_verified) {
+        // Проверяем, что мы не на страницах авторизации
+        if (!['auth', 'subscription-required'].includes(pageId)) {
             bottomNav.style.display = 'flex';
             floatingBtn.style.display = 'flex';
             
+            // Обновляем активный элемент в навигации
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
@@ -3564,28 +3749,38 @@
             bottomNav.style.display = 'none';
             floatingBtn.style.display = 'none';
         }
-        
-        switch(pageId) {
-            case 'profile':
-                loadUserProfile();
-                break;
-            case 'categories':
-                loadAllCategories();
-                break;
-            case 'home':
-                loadHomePage();
-                break;
-            case 'tasks':
-                loadUserTasks();
-                break;
-            case 'subscription':
-                loadSubscriptionPage();
-                break;
-            case 'all-services':
-                loadAllServicesPage();
-                break;
-        }
+    } else {
+        // Для неавторизованных или неактивных пользователей скрываем навигацию
+        bottomNav.style.display = 'none';
+        floatingBtn.style.display = 'none';
     }
+    
+    // Загружаем данные для страницы
+    switch(pageId) {
+        case 'profile':
+            loadUserProfile();
+            break;
+        case 'categories':
+            loadAllCategories();
+            break;
+        case 'home':
+            loadHomePage();
+            break;
+        case 'tasks':
+            loadUserTasks();
+            break;
+        case 'subscription':
+            loadSubscriptionPage();
+            break;
+        case 'all-services':
+            loadAllServicesPage();
+            break;
+        case 'auth':
+            // На странице авторизации анимируем счетчики
+            setTimeout(animateCounters, 500);
+            break;
+    }
+}
     
     // Загрузка главной страницы
     async function loadHomePage() {
@@ -3948,13 +4143,13 @@
         });
     }
 
-   function renderAllCategoriesForServices() {
+  function renderAllCategoriesForServices() {
     const container = document.getElementById('allServicesList');
     if (!container) return;
     
     if (!categories || categories.length === 0) {
         container.innerHTML = `
-            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                 <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
                 <p style="color: var(--graphite-medium);">Категории не найдены</p>
             </div>
@@ -3962,8 +4157,8 @@
         return;
     }
     
-    // Используем квадратную сетку вместо grid-3
-    container.className = 'square-grid';
+    // Используем квадратную сетку
+    container.className = 'category-grid-square';
     container.innerHTML = '';
     
     categories.forEach(category => {
@@ -3974,12 +4169,6 @@
         };
         
         const categoryImages = {
-            'Дом и быт': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=200&fit=crop&crop=center',
-            'Семья и дети': 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=200&fit=crop&crop=center',
-            'Красота и здоровье': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop&crop=center',
-            'Образование': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&h=200&fit=crop&crop=center',
-            'Покупки и доставка': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop&crop=center',
-            'Развлечения': 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=200&fit=crop&crop=center',
             'home_and_household': 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400&h=200&fit=crop&crop=center',
             'family_and_children': 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&h=200&fit=crop&crop=center',
             'beauty_and_health': 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&h=200&fit=crop&crop=center',
@@ -3988,7 +4177,7 @@
             'events_and_organization': 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&h=200&fit=crop&crop=center'
         };
         
-        const imageUrl = category.image_url || categoryImages[category.name] || categoryImages[category.display_name];
+        const imageUrl = category.image_url || categoryImages[category.name];
         const categoryIcon = category.icon || getCategoryIcon(category.display_name);
         
         card.innerHTML = `
@@ -4088,16 +4277,16 @@
         }
     }
 
-    function renderServicesInCategory() {
+  function renderServicesInCategory() {
     const container = document.getElementById('allServicesList');
     const pageTitle = document.querySelector('#all-services-page .section-title');
     
     if (!container) return;
     
     if (!services || services.length === 0) {
-        container.className = '';
+        container.className = 'category-grid-square';
         container.innerHTML = `
-            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">
                     <button class="btn btn-secondary" onclick="loadAllServicesPage()" style="padding: 8px 16px;">
                         <i class="fas fa-arrow-left"></i>
@@ -4120,7 +4309,7 @@
     }
     
     // Используем квадратную сетку для услуг
-    container.className = 'square-grid';
+    container.className = 'category-grid-square';
     container.innerHTML = `
         <div style="grid-column: 1 / -1; margin-bottom: 20px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -4998,47 +5187,55 @@ function renderHomeCategories() {
     }
 
     // Подтвердить телефон с кодом
-    async function verifyPhoneCode() {
-        const phoneNumber = document.getElementById('verifyPhoneNumber').value;
-        const code = document.getElementById('verifyPhoneCode').value;
+   // Подтвердить телефон с кодом - ИСПРАВЛЕННАЯ ВЕРСИЯ
+async function verifyPhoneCode() {
+    const phoneNumber = document.getElementById('verifyPhoneNumber').value;
+    const code = document.getElementById('verifyPhoneCode').value;
+    
+    if (!phoneNumber || !code) {
+        showNotification('Введите код подтверждения', 'error');
+        return;
+    }
+    
+    if (code.length !== 6) {
+        showNotification('Код должен содержать 6 цифр', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Проверка кода...');
         
-        if (!phoneNumber || !code) {
-            showNotification('Введите код подтверждения', 'error');
-            return;
+        const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': currentToken ? `Bearer ${currentToken}` : ''
+            },
+            body: JSON.stringify({
+                phone: normalizePhone(phoneNumber),
+                code: code
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        if (code.length !== 6) {
-            showNotification('Код должен содержать 6 цифр', 'error');
-            return;
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Ошибка подтверждения телефона');
         }
         
-        try {
-            showLoading('Проверка кода...');
-            
-            const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': currentToken ? `Bearer ${currentToken}` : ''
-                },
-                body: JSON.stringify({
-                    phone: normalizePhone(phoneNumber),
-                    code: code
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.error || 'Ошибка подтверждения телефона');
-            }
-            
-            showNotification('Телефон успешно подтвержден!', 'success');
-            closeVerifyPhoneModal();
+        // Сохраняем токен и обновляем пользователя
+        currentToken = result.data.token;
+        currentUser = result.data.user;
+        
+        localStorage.setItem('token', currentToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        showNotification('Телефон успешно подтвержден!', 'success');
+        closeVerifyPhoneModal();
             
             if (currentUser) {
                 currentUser.phone_verified = true;
@@ -5068,7 +5265,7 @@ function renderHomeCategories() {
         }
     }
     
-   async function selectSubscription(subscriptionName) {
+  async function selectSubscription(subscriptionName) {
     if (!currentUser) {
         showNotification('Для выбора подписки необходимо войти в систему', 'error');
         showLoginModal();
@@ -5078,6 +5275,12 @@ function renderHomeCategories() {
     if (!currentToken) {
         showNotification('Требуется авторизация. Войдите снова.', 'error');
         showLoginModal();
+        return;
+    }
+    
+    if (!currentUser.phone_verified) {
+        showNotification('Сначала подтвердите телефон', 'error');
+        openVerifyPhoneModal(currentUser.phone);
         return;
     }
     
@@ -5149,71 +5352,89 @@ function renderHomeCategories() {
     }
 }
     
-    // Обновление интерфейса пользователя
-    function updateUserInterface() {
-        const userAvatar = document.getElementById('userAvatar');
-        const profileAvatar = document.getElementById('profileAvatar');
-        const profileName = document.getElementById('profileName');
-        const profileEmail = document.getElementById('profileEmail');
-        const menuUserName = document.getElementById('menuUserName');
-        const menuUserEmail = document.getElementById('menuUserEmail');
-        const loginMenuBtn = document.getElementById('loginMenuBtn');
-        const logoutMenuBtn = document.getElementById('logoutMenuBtn');
-        const adminAccessBtn = document.getElementById('adminAccessBtn');
-        const performerAccessBtn = document.getElementById('performerAccessBtn');
-        const performerPanelLink = document.getElementById('performerPanelLink');
+   // Обновление интерфейса пользователя - ИСПРАВЛЕННАЯ ВЕРСИЯ
+function updateUserInterface() {
+    const userAvatar = document.getElementById('userAvatar');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const menuUserName = document.getElementById('menuUserName');
+    const menuUserEmail = document.getElementById('menuUserEmail');
+    const loginMenuBtn = document.getElementById('loginMenuBtn');
+    const logoutMenuBtn = document.getElementById('logoutMenuBtn');
+    const adminAccessBtn = document.getElementById('adminAccessBtn');
+    const performerAccessBtn = document.getElementById('performerAccessBtn');
+    const performerPanelLink = document.getElementById('performerPanelLink');
+    const bottomNav = document.getElementById('bottomNav');
+    const floatingBtn = document.getElementById('floatingTasksBtn');
+    
+    if (currentUser) {
+        const firstLetter = currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'Г';
         
-        if (currentUser) {
-            const firstLetter = currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'Г';
-            
-            if (userAvatar) userAvatar.textContent = firstLetter;
-            if (profileAvatar) profileAvatar.textContent = firstLetter;
-            if (profileName) profileName.textContent = currentUser.first_name || 'Пользователь';
-            if (profileEmail) profileEmail.textContent = currentUser.email || '';
-            if (menuUserName) menuUserName.textContent = currentUser.first_name || 'Пользователь';
-            if (menuUserEmail) menuUserEmail.textContent = currentUser.email || '';
-            
-            if (loginMenuBtn) loginMenuBtn.style.display = 'none';
-            if (logoutMenuBtn) logoutMenuBtn.style.display = 'block';
-            
-            if (adminAccessBtn && (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager')) {
-                adminAccessBtn.style.display = 'flex';
-            }
-            
-            if (performerAccessBtn && currentUser.role === 'performer') {
-                performerAccessBtn.style.display = 'flex';
-            }
-            
-            if (performerPanelLink && (currentUser.role === 'performer' || currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager')) {
-                performerPanelLink.style.display = 'block';
-            }
-            
-            updateProfileStats();
-            updateProfileSubscriptionCard();
-            
-        } else {
-            if (userAvatar) userAvatar.textContent = 'Г';
-            if (profileAvatar) profileAvatar.textContent = 'Г';
-            if (profileName) profileName.textContent = 'Гость';
-            if (profileEmail) profileEmail.textContent = 'Войдите в аккаунт';
-            if (menuUserName) menuUserName.textContent = 'Гость';
-            if (menuUserEmail) menuUserEmail.textContent = '';
-            
-            if (loginMenuBtn) loginMenuBtn.style.display = 'block';
-            if (logoutMenuBtn) logoutMenuBtn.style.display = 'none';
-            if (adminAccessBtn) adminAccessBtn.style.display = 'none';
-            if (performerAccessBtn) performerAccessBtn.style.display = 'none';
-            if (performerPanelLink) performerPanelLink.style.display = 'none';
-            
-            const statTasks = document.getElementById('statTasks');
-            const statRating = document.getElementById('statRating');
-            const statBalance = document.getElementById('statBalance');
-            
-            if (statTasks) statTasks.textContent = '0';
-            if (statRating) statRating.textContent = '0';
-            if (statBalance) statBalance.textContent = '0₽';
+        if (userAvatar) userAvatar.textContent = firstLetter;
+        if (profileAvatar) profileAvatar.textContent = firstLetter;
+        if (profileName) profileName.textContent = currentUser.first_name || 'Пользователь';
+        if (profileEmail) profileEmail.textContent = currentUser.email || '';
+        if (menuUserName) menuUserName.textContent = currentUser.first_name || 'Пользователь';
+        if (menuUserEmail) menuUserEmail.textContent = currentUser.email || '';
+        
+        if (loginMenuBtn) loginMenuBtn.style.display = 'none';
+        if (logoutMenuBtn) logoutMenuBtn.style.display = 'block';
+        
+        // Проверяем условия для показа нижней навигации
+        const shouldShowNav = currentUser && 
+                              currentUser.phone_verified && 
+                              currentUser.subscription_status === 'active' && 
+                              currentUser.initial_fee_paid;
+        
+        if (bottomNav) {
+            bottomNav.style.display = shouldShowNav ? 'flex' : 'none';
         }
+        
+        if (floatingBtn) {
+            floatingBtn.style.display = shouldShowNav ? 'flex' : 'none';
+        }
+        
+        if (adminAccessBtn && (currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager')) {
+            adminAccessBtn.style.display = 'flex';
+        }
+        
+        if (performerAccessBtn && currentUser.role === 'performer') {
+            performerAccessBtn.style.display = 'flex';
+        }
+        
+        if (performerPanelLink && (currentUser.role === 'performer' || currentUser.role === 'admin' || currentUser.role === 'superadmin' || currentUser.role === 'manager')) {
+            performerPanelLink.style.display = 'block';
+        }
+        
+        updateProfileStats();
+        updateProfileSubscriptionCard();
+        
+    } else {
+        if (userAvatar) userAvatar.textContent = 'Г';
+        if (profileAvatar) profileAvatar.textContent = 'Г';
+        if (profileName) profileName.textContent = 'Гость';
+        if (profileEmail) profileEmail.textContent = 'Войдите в аккаунт';
+        if (menuUserName) menuUserName.textContent = 'Гость';
+        if (menuUserEmail) menuUserEmail.textContent = '';
+        
+        if (loginMenuBtn) loginMenuBtn.style.display = 'block';
+        if (logoutMenuBtn) logoutMenuBtn.style.display = 'none';
+        if (adminAccessBtn) adminAccessBtn.style.display = 'none';
+        if (performerAccessBtn) performerAccessBtn.style.display = 'none';
+        if (performerPanelLink) performerPanelLink.style.display = 'none';
+        if (bottomNav) bottomNav.style.display = 'none';
+        if (floatingBtn) floatingBtn.style.display = 'none';
+        
+        const statTasks = document.getElementById('statTasks');
+        const statRating = document.getElementById('statRating');
+        const statBalance = document.getElementById('statBalance');
+        
+        if (statTasks) statTasks.textContent = '0';
+        if (statRating) statRating.textContent = '0';
+        if (statBalance) statBalance.textContent = '0₽';
     }
+}
     
     function updateProfileStats() {
         if (!currentUser) return;
@@ -6071,89 +6292,113 @@ function renderHomeCategories() {
         }
     }
     
-    // Функция регистрации с API
-    async function register() {
-        try {
-            const firstName = document.getElementById('registerFirstName').value;
-            const lastName = document.getElementById('registerLastName').value;
-            const email = document.getElementById('registerEmail').value;
-            const phone = document.getElementById('registerPhone').value;
-            const password = document.getElementById('registerPassword').value;
-            
-            if (!firstName || !phone || !password) {
-                showNotification('Заполните имя, телефон и пароль', 'error');
-                return;
-            }
-            
-            const normalizedPhone = normalizePhone(phone);
-            console.log('Регистрация. Введен телефон:', phone, 'Нормализован:', normalizedPhone);
-            
-            if (password.length < 6) {
-                showNotification('Пароль должен содержать не менее 6 символов', 'error');
-                return;
-            }
-            
-            showLoading('Регистрация...');
-            
-            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    phone: normalizedPhone,
-                    password: password,
-                    first_name: firstName,
-                    last_name: lastName,
-                    email: email || null,
-                    subscription_plan: 'essential'
-                })
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Ошибка регистрации:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.error);
-            }
-            
-            if (result.data.token) {
-                currentToken = result.data.token;
-                currentUser = result.data.user;
-                
-                localStorage.setItem('token', currentToken);
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                console.log('Токен сохранен после регистрации');
-            } else if (result.data.user) {
-                currentUser = result.data.user;
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            }
-            
-            showNotification('Регистрация почти завершена! Подтвердите телефон.', 'info');
-            closeModal('registerModal');
-            
-            if (result.data.requires_phone_verification) {
-                setTimeout(() => {
-                    openVerifyPhoneModal(result.data.phone || normalizedPhone);
-                }, 500);
-            } else {
-                updateUserInterface();
-                determineInitialScreen();
-            }
-            
-        } catch (error) {
-            console.error('Ошибка регистрации:', error);
-            showNotification(error.message, 'error');
-        } finally {
-            hideLoading();
+   // Функция регистрации - ИСПРАВЛЕННАЯ ВЕРСИЯ
+async function register() {
+    try {
+        const firstName = document.getElementById('registerFirstName').value;
+        const lastName = document.getElementById('registerLastName').value;
+        const email = document.getElementById('registerEmail').value;
+        const phone = document.getElementById('registerPhone').value;
+        const password = document.getElementById('registerPassword').value;
+        
+        if (!firstName || !phone || !password) {
+            showNotification('Заполните имя, телефон и пароль', 'error');
+            return;
         }
+        
+        const normalizedPhone = normalizePhone(phone);
+        console.log('📱 Регистрация пользователя:', normalizedPhone);
+        
+        if (password.length < 6) {
+            showNotification('Пароль должен содержать не менее 6 символов', 'error');
+            return;
+        }
+        
+        showLoading('Регистрация...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                phone: normalizedPhone,
+                password: password,
+                first_name: firstName,
+                last_name: lastName,
+                email: email || null,
+                subscription_plan: 'essential'
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Ошибка регистрации:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+        
+        // Сохраняем пользователя (но не токен, т.к. его нет до подтверждения телефона)
+        currentUser = result.data.user;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        showNotification('Регистрация почти завершена! Подтвердите телефон.', 'info');
+        closeModal('registerModal');
+        
+        // ВАЖНО: После регистрации сразу переходим к подтверждению телефона
+        if (result.data.requires_phone_verification) {
+            console.log('📱 Требуется подтверждение телефона');
+            
+            // Открываем окно подтверждения
+            setTimeout(() => {
+                openVerifyPhoneModal(result.data.phone || normalizedPhone);
+                
+                // На этом этапе пользователь НЕ должен видеть главную
+                // Показываем auth страницу, но с другим сообщением
+                navigateToPage('auth');
+                
+                // Обновляем сообщение на auth странице
+                const authPage = document.getElementById('auth-page');
+                if (authPage) {
+                    const authContent = authPage.querySelector('.auth-content');
+                    if (authContent) {
+                        authContent.innerHTML = `
+                            <div class="card auth-card">
+                                <div class="logo" style="justify-content: center; margin-bottom: 20px;">
+                                    <span class="logo-woman">WOMAN</span>
+                                    <span class="logo-help">HELP</span>
+                                </div>
+                                <i class="fas fa-mobile-alt auth-icon"></i>
+                                <h2 class="section-title">Подтверждение телефона</h2>
+                                <p class="section-subtitle">
+                                    Мы отправили SMS с кодом на номер ${result.data.phone || normalizedPhone}<br>
+                                    Введите код в открывшемся окне
+                                </p>
+                                <div class="auth-actions">
+                                    <button class="btn btn-secondary" onclick="openVerifyPhoneModal('${result.data.phone || normalizedPhone}')">
+                                        <i class="fas fa-redo"></i>
+                                        Показать окно ввода кода
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }, 500);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
     }
+}
     
     function logout() {
         localStorage.removeItem('token');
