@@ -947,6 +947,19 @@
         min-width: 0;
     }
 }
+         /* ДОБАВЛЯЕМ ЭТО ДЛЯ ВСЕХ РАЗДЕЛОВ: */
+  #settings, #transactions, #subscriptions {
+    display: block !important;
+  }
+  
+  .admin-section {
+    display: none;
+  }
+  
+  .admin-section.active {
+    display: block;
+  }
+}
         
 /* ОЧЕНЬ МАЛЕНЬКИЕ ЭКРАНЫ (до 480px) */
 @media (max-width: 480px) {
@@ -1597,7 +1610,19 @@ body, html {
                     <div class="table-header">
                         <h3><i class="fas fa-cog"></i> Настройки системы</h3>
                     </div>
-                    
+                    <div style="margin-bottom: 24px;">
+  <h3 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1.1rem;">Логотип сайта</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Загрузить логотип</label>
+      <input type="file" id="logoUpload" class="form-input" accept="image/*" 
+             style="padding: 8px;" onchange="previewLogo(this)">
+      <div id="logoPreview" style="margin-top: 10px;"></div>
+      <small style="color: var(--graphite-medium);">Рекомендуемый размер: 200×60px</small>
+    </div>
+  </div>
+  <div id="currentLogo" style="margin-top: 10px;"></div>
+</div>
                     <div style="padding: 20px;">
                         <div style="margin-bottom: 24px;">
                             <h3 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1.1rem;">Основные настройки</h3>
@@ -1699,26 +1724,26 @@ body, html {
                         <input type="tel" id="userPhone" class="form-input" placeholder="+7 (999) 123-45-67">
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="userRole">Роль *</label>
-                            <select id="userRole" class="form-input" required>
-                                <option value="client">Клиент</option>
-                                <option value="performer">Исполнитель</option>
-                                <option value="manager">Менеджер</option>
-                                <option value="admin">Администратор</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="userSubscription">Подписка</label>
-                            <select id="userSubscription" class="form-input">
-                                <option value="free">Бесплатная</option>
-                                <option value="basic">Базовая</option>
-                                <option value="premium">Премиум</option>
-                                <option value="vip">VIP</option>
-                            </select>
-                        </div>
-                    </div>
+<div class="form-row">
+  <div class="form-group">
+    <label for="userRole">Роль *</label>
+    <select id="userRole" class="form-input" required onchange="updateSubscriptionVisibility()">
+      <option value="client">Клиент</option>
+      <option value="performer">Исполнитель</option>
+      <option value="manager">Менеджер</option>
+      <option value="admin">Администратор</option>
+    </select>
+  </div>
+  <div class="form-group" id="subscriptionGroup">
+    <label for="userSubscription">Подписка</label>
+    <select id="userSubscription" class="form-input">
+      <option value="free">Бесплатная</option>
+      <option value="essential">Эссеншл</option>
+      <option value="premium">Премиум</option>
+      <option value="vip">VIP</option>
+    </select>
+  </div>
+</div>
                     
                     <div class="form-group">
                         <label for="userPassword">Пароль *</label>
@@ -1781,6 +1806,13 @@ body, html {
                             <input type="text" id="categoryIcon" class="form-input" required 
                                    placeholder="fas fa-broom">
                         </div>
+                        <div class="form-group">
+  <label for="categoryImageUpload">Изображение категории</label>
+  <input type="file" id="categoryImageUpload" class="form-input" 
+         accept="image/*" style="padding: 8px;">
+  <div id="categoryImagePreview" style="margin-top: 8px;"></div>
+  <small style="color: var(--graphite-medium);">Рекомендуемый размер: 400×200px</small>
+</div>
                         <div class="form-group">
                             <label for="categoryColor">Цвет</label>
                             <input type="color" id="categoryColor" class="form-input" value="#C5A880" 
@@ -2798,102 +2830,113 @@ body, html {
         }
         
         async function saveUser() {
-            const id = document.getElementById('userId').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const first_name = document.getElementById('userFirstName').value;
-            const last_name = document.getElementById('userLastName').value;
-            const phone = document.getElementById('userPhone').value;
-            const role = document.getElementById('userRole').value;
-            const subscription_plan = document.getElementById('userSubscription').value;
-            const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
-            
-            if (!email || !first_name || !role) {
-                showNotification('Заполните обязательные поля', 'error');
-                return;
-            }
-            
-            if (!id && !password) {
-                showNotification('Для нового пользователя укажите пароль', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Сохранение пользователя...');
-                
-                const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
-                const method = id ? 'PUT' : 'POST';
-                
-                const userData = {
-                    email,
-                    first_name,
-                    last_name: last_name || '',
-                    phone: phone || null,
-                    role,
-                    subscription_plan: role === 'client' ? subscription_plan : 'premium',
-                    phone_verified
-                };
-                
-                if (password) {
-                    userData.password = password;
-                }
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Пользователь успешно сохранен', 'success');
-                    closeModal('userModal');
-                    loadUsers();
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения пользователя');
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения пользователя:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+  const id = document.getElementById('userId').value;
+  const email = document.getElementById('userEmail').value;
+  const password = document.getElementById('userPassword').value;
+  const first_name = document.getElementById('userFirstName').value;
+  const last_name = document.getElementById('userLastName').value;
+  const phone = document.getElementById('userPhone').value;
+  const role = document.getElementById('userRole').value;
+  const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
+  const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
+  
+  if (!email || !first_name || !role) {
+    showNotification('Заполните обязательные поля', 'error');
+    return;
+  }
+  
+  if (!id && !password) {
+    showNotification('Для нового пользователя укажите пароль', 'error');
+    return;
+  }
+  
+  try {
+    showLoading('Сохранение пользователя...');
+    
+    const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
+    const method = id ? 'PUT' : 'POST';
+    
+    const userData = {
+      email,
+      first_name,
+      last_name: last_name || '',
+      phone: phone || null,
+      role,
+      subscription_plan: role === 'client' ? subscription_plan : 'premium',
+      subscription_status: 'active', // Активируем подписку сразу
+      phone_verified,
+      email_verified: 1,
+      is_active: 1
+    };
+    
+    // Если это клиент, устанавливаем срок подписки
+    if (role === 'client') {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+      userData.subscription_expires = expiryDate.toISOString().split('T')[0];
+      userData.initial_fee_paid = 1; // Оплачиваем взнос
+    }
+    
+    if (password) {
+      userData.password = password;
+    }
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: JSON.stringify(userData)
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showNotification('Пользователь успешно сохранен', 'success');
+      closeModal('userModal');
+      loadUsers();
+    } else {
+      throw new Error(data.error || 'Ошибка сохранения пользователя');
+    }
+  } catch (error) {
+    console.error('Ошибка сохранения пользователя:', error);
+    showNotification(error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
         
         async function deleteUser(userId) {
-            if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-                return;
-            }
-            
-            try {
-                showLoading('Удаление пользователя...');
-                
-                const response = await fetch(`/api/admin/users/${userId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Пользователь успешно удален', 'success');
-                    loadUsers();
-                } else {
-                    throw new Error(data.error || 'Ошибка удаления пользователя');
-                }
-            } catch (error) {
-                console.error('Ошибка удаления пользователя:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+  if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+    return;
+  }
+  
+  try {
+    showLoading('Удаление пользователя...');
+    
+    const response = await fetch(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${currentToken}`
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showNotification('Пользователь успешно удален', 'success');
+      loadUsers();
+    } else {
+      throw new Error(data.error || 'Ошибка удаления пользователя');
+    }
+  } catch (error) {
+    console.error('Ошибка удаления пользователя:', error);
+    showNotification(error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
         
         // Управление категориями
         async function loadCategories() {
@@ -3019,6 +3062,89 @@ body, html {
                 }
             }
         }
+
+// ==================== ЗАГРУЗКА ФАЙЛОВ ====================
+function setupImageUpload(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  
+  if (!input || !preview) return;
+  
+  input.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Показываем превью
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+          <img src="${e.target.result}" style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+          <button type="button" onclick="clearImageUpload('${inputId}', '${previewId}')" 
+                  style="position: absolute; top: 5px; right: 5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+            ×
+          </button>
+        </div>
+      `;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearImageUpload(inputId, previewId) {
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  
+  if (input) input.value = '';
+  if (preview) preview.innerHTML = '';
+}
+
+async function uploadImage(file) {
+  if (!file) return null;
+  
+  const formData = new FormData();
+  formData.append('image', file);
+  
+  try {
+    showLoading('Загрузка изображения...');
+    
+    const response = await fetch('/api/admin/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: formData
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showNotification('Изображение загружено', 'success');
+      return data.data.url;
+    } else {
+      throw new Error(data.error || 'Ошибка загрузки');
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки изображения:', error);
+    showNotification('Ошибка загрузки изображения', 'error');
+    return null;
+  } finally {
+    hideLoading();
+  }
+}
+
+// Инициализация загрузки изображений при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  // Настройка для категорий
+  setTimeout(() => {
+    if (document.getElementById('categoryImageUpload')) {
+      setupImageUpload('categoryImageUpload', 'categoryImagePreview');
+    }
+    if (document.getElementById('serviceImageUpload')) {
+      setupImageUpload('serviceImageUpload', 'serviceImagePreview');
+    }
+  }, 1000);
+});
         
         function showAddCategoryModal() {
             document.getElementById('categoryModalTitle').textContent = 'Добавить категорию';
@@ -3031,102 +3157,127 @@ body, html {
             showModal('categoryModal');
         }
         
-        async function editCategory(categoryId) {
-            try {
-                showLoading('Загрузка категории...');
-                
-                const response = await fetch('/api/admin/categories', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const category = data.data.categories.find(c => c.id == categoryId);
-                    if (category) {
-                        document.getElementById('categoryModalTitle').textContent = 'Редактировать категорию';
-                        document.getElementById('categoryId').value = category.id;
-                        document.getElementById('categoryName').value = category.name;
-                        document.getElementById('categoryDisplayName').value = category.display_name;
-                        document.getElementById('categoryDescription').value = category.description;
-                        document.getElementById('categoryIcon').value = category.icon;
-                        document.getElementById('categoryColor').value = category.color || '#C5A880';
-                        document.getElementById('categorySortOrder').value = category.sort_order || 0;
-                        
-                        const statusRadios = document.getElementsByName('categoryStatus');
-                        statusRadios.forEach(radio => {
-                            radio.checked = radio.value === (category.is_active ? 'active' : 'inactive');
-                        });
-                        
-                        showModal('categoryModal');
-                    } else {
-                        throw new Error('Категория не найдена');
-                    }
-                } else {
-                    throw new Error(data.error || 'Ошибка загрузки категории');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки категории:', error);
-                showNotification('Ошибка загрузки категории', 'error');
-            } finally {
-                hideLoading();
-            }
+       async function editCategory(categoryId) {
+  try {
+    showLoading('Загрузка категории...');
+    
+    const response = await fetch('/api/admin/categories', {
+      headers: {
+        'Authorization': `Bearer ${currentToken}`
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      const category = data.data.categories.find(c => c.id == categoryId);
+      if (category) {
+        document.getElementById('categoryModalTitle').textContent = 'Редактировать категорию';
+        document.getElementById('categoryId').value = category.id;
+        document.getElementById('categoryName').value = category.name;
+        document.getElementById('categoryDisplayName').value = category.display_name;
+        document.getElementById('categoryDescription').value = category.description;
+        document.getElementById('categoryIcon').value = category.icon;
+        document.getElementById('categoryColor').value = category.color || '#C5A880';
+        document.getElementById('categorySortOrder').value = category.sort_order || 0;
+        
+        // Показываем текущее изображение если есть
+        if (category.image_url) {
+          document.getElementById('categoryImagePreview').innerHTML = `
+            <div style="position: relative; display: inline-block;">
+              <img src="${category.image_url}" style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+              <button type="button" onclick="clearImageUpload('categoryImageUpload', 'categoryImagePreview')" 
+                      style="position: absolute; top: 5px; right: 5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                ×
+              </button>
+            </div>
+          `;
+        } else {
+          document.getElementById('categoryImagePreview').innerHTML = '';
         }
         
+        const statusRadios = document.getElementsByName('categoryStatus');
+        statusRadios.forEach(radio => {
+          radio.checked = radio.value === (category.is_active ? 'active' : 'inactive');
+        });
+        
+        showModal('categoryModal');
+      } else {
+        throw new Error('Категория не найдена');
+      }
+    } else {
+      throw new Error(data.error || 'Ошибка загрузки категории');
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки категории:', error);
+    showNotification('Ошибка загрузки категории', 'error');
+  } finally {
+    hideLoading();
+  }
+}
+        
         async function saveCategory() {
-            const id = document.getElementById('categoryId').value;
-            const name = document.getElementById('categoryName').value;
-            const display_name = document.getElementById('categoryDisplayName').value;
-            const description = document.getElementById('categoryDescription').value;
-            const icon = document.getElementById('categoryIcon').value;
-            const color = document.getElementById('categoryColor').value;
-            const sort_order = document.getElementById('categorySortOrder').value;
-            const is_active = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
-            
-            if (!name || !display_name || !description || !icon) {
-                showNotification('Заполните все обязательные поля', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Сохранение категории...');
-                
-                const response = await fetch('/api/admin/categories', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        id: id || null,
-                        name,
-                        display_name,
-                        description,
-                        icon,
-                        color,
-                        sort_order: parseInt(sort_order),
-                        is_active
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Категория успешно сохранена', 'success');
-                    closeModal('categoryModal');
-                    loadCategories();
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения категории');
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения категории:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+  const id = document.getElementById('categoryId').value;
+  const name = document.getElementById('categoryName').value;
+  const display_name = document.getElementById('categoryDisplayName').value;
+  const description = document.getElementById('categoryDescription').value;
+  const icon = document.getElementById('categoryIcon').value;
+  const color = document.getElementById('categoryColor').value;
+  const sort_order = document.getElementById('categorySortOrder').value;
+  const is_active = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
+  
+  // Получаем файл изображения
+  const imageInput = document.getElementById('categoryImageUpload');
+  let imageUrl = null;
+  
+  if (!name || !display_name || !description || !icon) {
+    showNotification('Заполните все обязательные поля', 'error');
+    return;
+  }
+  
+  try {
+    showLoading('Сохранение категории...');
+    
+    // Загружаем изображение если есть
+    if (imageInput && imageInput.files[0]) {
+      imageUrl = await uploadImage(imageInput.files[0]);
+    }
+    
+    const response = await fetch('/api/admin/categories', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: JSON.stringify({
+        id: id || null,
+        name,
+        display_name,
+        description,
+        icon,
+        color,
+        sort_order: parseInt(sort_order),
+        is_active,
+        image_url: imageUrl // ДОБАВЛЯЕМ ЭТО ПОЛЕ
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showNotification('Категория успешно сохранена', 'success');
+      closeModal('categoryModal');
+      loadCategories();
+    } else {
+      throw new Error(data.error || 'Ошибка сохранения категории');
+    }
+  } catch (error) {
+    console.error('Ошибка сохранения категории:', error);
+    showNotification(error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
         
         async function deleteCategory(categoryId) {
             if (!confirm('Вы уверены, что хотите удалить эту категорию?')) {
@@ -4288,87 +4439,155 @@ body, html {
                 hideLoading();
             }
         }
+
+// ==================== ЛОГОТИП ====================
+function previewLogo(input) {
+  const preview = document.getElementById('logoPreview');
+  if (!input.files[0]) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    preview.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="${e.target.result}" style="max-width: 200px; max-height: 60px; border-radius: 4px;">
+        <button type="button" class="btn btn-sm btn-secondary" onclick="clearLogoPreview()">
+          <i class="fas fa-times"></i> Удалить
+        </button>
+      </div>
+    `;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function clearLogoPreview() {
+  document.getElementById('logoPreview').innerHTML = '';
+  document.getElementById('logoUpload').value = '';
+}
+
+async function saveLogo() {
+  const logoInput = document.getElementById('logoUpload');
+  if (!logoInput.files[0]) return null;
+  
+  const logoUrl = await uploadImage(logoInput.files[0]);
+  if (logoUrl) {
+    // Сохраняем логотип в настройках
+    await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: JSON.stringify({ site_logo: logoUrl })
+    });
+    
+    return logoUrl;
+  }
+  return null;
+}
         
-        // Настройки системы
-        async function loadSettings() {
-            try {
-                showLoading('Загрузка настроек...');
-                
-                const response = await fetch('/api/admin/settings', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    const settings = data.data.settings;
-                    
-                    // Основные настройки
-                    document.getElementById('settingAppName').value = settings.site_name || 'Женский Консьерж';
-                    document.getElementById('settingPhone').value = settings.support_phone || '+7 (999) 123-45-67';
-                    document.getElementById('settingEmail').value = settings.support_email || 'info@women-concierge.ru';
-                    document.getElementById('settingCommission').value = settings.system_fee || '15';
-                    
-                    // Тексты для клиентов
-                    document.getElementById('settingTopServicesTitle').value = settings.top_services_title || 'Здесь собраны самые популярные услуги';
-                    document.getElementById('settingTaskHelpTitle').value = settings.task_help_title || 'Что не забыть при формировании заказа?';
-                    
-                    // Уведомления
-                    document.getElementById('settingEmailNotifications').checked = settings.email_notifications === 'true' || true;
-                    document.getElementById('settingSmsNotifications').checked = settings.sms_notifications === 'true' || false;
-                    document.getElementById('settingTelegramNotifications').checked = settings.telegram_notifications === 'true' || true;
-                } else {
-                    throw new Error(data.error || 'Ошибка загрузки настроек');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки настроек:', error);
-                showNotification('Ошибка загрузки настроек', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+      async function loadSettings() {
+  try {
+    showLoading('Загрузка настроек...');
+    
+    const response = await fetch('/api/admin/settings', {
+      headers: {
+        'Authorization': `Bearer ${currentToken}`
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      const settings = data.data.settings;
+      
+      // Логотип
+      const logoPreview = document.getElementById('currentLogo');
+      if (settings.site_logo) {
+        logoPreview.innerHTML = `
+          <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Текущий логотип:</p>
+          <img src="${settings.site_logo}" style="max-width: 200px; max-height: 60px; border-radius: 4px;">
+        `;
+      } else {
+        logoPreview.innerHTML = '<p style="color: var(--graphite-light);">Логотип не установлен</p>';
+      }
+      
+      // Основные настройки
+      document.getElementById('settingAppName').value = settings.site_name || 'Женский Консьерж';
+      document.getElementById('settingPhone').value = settings.support_phone || '+7 (999) 123-45-67';
+      document.getElementById('settingEmail').value = settings.support_email || 'info@women-concierge.ru';
+      document.getElementById('settingCommission').value = settings.system_fee || '15';
+      
+      // Тексты для клиентов
+      document.getElementById('settingTopServicesTitle').value = settings.top_services_title || 'Здесь собраны самые популярные услуги';
+      document.getElementById('settingTaskHelpTitle').value = settings.task_help_title || 'Что не забыть при формировании заказа?';
+      
+      // Уведомления
+      document.getElementById('settingEmailNotifications').checked = settings.email_notifications === 'true' || true;
+      document.getElementById('settingSmsNotifications').checked = settings.sms_notifications === 'true' || false;
+      document.getElementById('settingTelegramNotifications').checked = settings.telegram_notifications === 'true' || true;
+    } else {
+      throw new Error(data.error || 'Ошибка загрузки настроек');
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки настроек:', error.message);
+    showNotification('Ошибка загрузки настроек', 'error');
+  } finally {
+    hideLoading();
+  }
+}
         
-        async function saveSettings() {
-            try {
-                showLoading('Сохранение настроек...');
-                
-                const settings = {
-                    site_name: document.getElementById('settingAppName').value,
-                    support_phone: document.getElementById('settingPhone').value,
-                    support_email: document.getElementById('settingEmail').value,
-                    system_fee: document.getElementById('settingCommission').value,
-                    top_services_title: document.getElementById('settingTopServicesTitle').value,
-                    task_help_title: document.getElementById('settingTaskHelpTitle').value,
-                    email_notifications: document.getElementById('settingEmailNotifications').checked.toString(),
-                    sms_notifications: document.getElementById('settingSmsNotifications').checked.toString(),
-                    telegram_notifications: document.getElementById('settingTelegramNotifications').checked.toString()
-                };
-                
-                const response = await fetch('/api/admin/settings', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(settings)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Настройки успешно сохранены', 'success');
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения настроек');
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения настроек:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
-        }
+       async function saveSettings() {
+  try {
+    showLoading('Сохранение настроек...');
+    
+    // Сначала сохраняем логотип если есть
+    let logoUrl = null;
+    const logoInput = document.getElementById('logoUpload');
+    if (logoInput && logoInput.files[0]) {
+      logoUrl = await uploadImage(logoInput.files[0]);
+    }
+    
+    const settings = {
+      site_name: document.getElementById('settingAppName').value,
+      support_phone: document.getElementById('settingPhone').value,
+      support_email: document.getElementById('settingEmail').value,
+      system_fee: document.getElementById('settingCommission').value,
+      top_services_title: document.getElementById('settingTopServicesTitle').value,
+      task_help_title: document.getElementById('settingTaskHelpTitle').value,
+      email_notifications: document.getElementById('settingEmailNotifications').checked.toString(),
+      sms_notifications: document.getElementById('settingSmsNotifications').checked.toString(),
+      telegram_notifications: document.getElementById('settingTelegramNotifications').checked.toString()
+    };
+    
+    // Добавляем логотип если загружен
+    if (logoUrl) {
+      settings.site_logo = logoUrl;
+    }
+    
+    const response = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentToken}`
+      },
+      body: JSON.stringify(settings)
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      showNotification('Настройки успешно сохранены', 'success');
+      loadSettings(); // Перезагружаем чтобы показать новое лого
+    } else {
+      throw new Error(data.error || 'Ошибка сохранения настроек');
+    }
+  } catch (error) {
+    console.error('Ошибка сохранения настроек:', error);
+    showNotification(error.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
     </script>
 </body>
 </html>
