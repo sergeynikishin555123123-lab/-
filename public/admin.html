@@ -2039,27 +2039,28 @@
     </div>
 
     <!-- Логин модалка -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Вход в админ-панель</h3>
+<!-- В admin.html найдите модалку логина и обновите: -->
+<div class="modal" id="loginModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Вход в админ-панель</h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Телефон</label>
+                <input type="tel" class="form-control" id="loginPhone" placeholder="+79991234567">
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" class="form-control" id="loginEmail" placeholder="admin@example.com">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Пароль</label>
-                    <input type="password" class="form-control" id="loginPassword">
-                </div>
-                <div id="loginError" class="text-danger" style="display: none; margin-top: 10px;"></div>
+            <div class="form-group">
+                <label class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="loginPassword">
             </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary w-100" onclick="adminLogin()">Войти</button>
-            </div>
+            <div id="loginError" class="text-danger" style="display: none; margin-top: 10px;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary w-100" onclick="adminLogin()">Войти</button>
         </div>
     </div>
+</div>
 
     <script>
         // Глобальные переменные
@@ -2094,6 +2095,33 @@
             initDashboard();
         });
 
+  // Автоформатирование телефона
+    const phoneInput = document.getElementById('loginPhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (!value.startsWith('7')) {
+                    value = '7' + value;
+                }
+                if (value.length > 1) {
+                    value = '+7 (' + value.substring(1, 4);
+                }
+                if (value.length > 4) {
+                    value += ') ' + value.substring(4, 7);
+                }
+                if (value.length > 7) {
+                    value += '-' + value.substring(7, 9);
+                }
+                if (value.length > 9) {
+                    value += '-' + value.substring(9, 11);
+                }
+            }
+            e.target.value = value.substring(0, 18);
+        });
+    }
+});
+        
         function setupNavigation() {
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
@@ -2430,33 +2458,33 @@ function formatPhone(phone) {
         }
 
         // Дашборд
-        async function loadDashboard() {
-            try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        showModal('loginModal');
-                        return;
-                    }
-                    throw new Error('Ошибка загрузки дашборда');
-                }
-                
-                const data = await response.json();
-                
-                renderDashboard(data);
-                loadRecentTasks();
-                loadRecentUsers();
-                
-            } catch (error) {
-                console.error('Ошибка загрузки дашборда:', error);
-                showNotification('Ошибка загрузки дашборда', 'error');
+async function loadDashboard() {
+    try {
+        const response = await fetch(`${apiBaseUrl}/api/admin/stats`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
             }
+        });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                showModal('loginModal');
+                return;
+            }
+            throw new Error('Ошибка загрузки дашборда');
         }
+        
+        const data = await response.json();
+        
+        renderDashboard(data);
+        loadRecentTasks();
+        loadRecentUsers();
+        
+    } catch (error) {
+        console.error('Ошибка загрузки дашборда:', error);
+        showNotification('Ошибка загрузки дашборда', 'error');
+    }
+}
 
         function renderDashboard(data) {
             const container = document.getElementById('statsGrid');
