@@ -3030,16 +3030,17 @@
                     });
                 }
                 
-                const searchInput = document.getElementById('serviceSearch');
-                if (searchInput) {
-                    searchInput.addEventListener('input', () => this.filterServices());
-                }
-                
-                document.querySelectorAll('input[type="tel"], input[id*="Phone"]:not([id*="Code"])').forEach(input => {
-                    input.addEventListener('input', function(e) {
-                        this.formatPhoneInput(this);
-                    });
-                });
+                 const searchInput = document.getElementById('serviceSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => this.filterServices());
+    }
+    
+    // ИСПРАВЛЕННАЯ ЧАСТЬ:
+    document.querySelectorAll('input[type="tel"], input[id*="Phone"]:not([id*="Code"])').forEach(input => {
+        input.addEventListener('input', (e) => {
+            this.formatPhoneInput(e.target); // Передаем элемент input
+        });
+    });
                 
                 document.addEventListener('click', (event) => {
                     const userMenu = document.getElementById('userMenu');
