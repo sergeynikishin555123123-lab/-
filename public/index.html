@@ -2341,10 +2341,10 @@
                     
                     <!-- Кнопка поддержки под статистикой -->
                     <div style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-secondary" onclick="showHelp()" style="padding: 8px 16px; font-size: 0.85rem;">
-                            <i class="fas fa-headset"></i>
-                            Поддержка
-                        </button>
+                       <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="window.showHelp ? window.showHelp() : showHelp()">
+    <i class="fas fa-headset"></i>
+    Поддержка
+</button>
                     </div>
                 </div>
             </div>
@@ -6095,24 +6095,25 @@ function clearSearch() {
             }
         }
 
-        // Функция для нормализации телефона
-        function normalizePhone(phone) {
-            if (!phone) return '';
-            
-            let cleaned = phone.replace(/\D/g, '');
-            
-            if (/^[78]\d{10}$/.test(cleaned)) {
-                return '+7' + cleaned.substring(1);
-            } else if (/^9\d{9}$/.test(cleaned)) {
-                return '+7' + cleaned;
-            } else if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
-                return '+' + cleaned;
-            } else if (cleaned.startsWith('7')) {
-                return '+' + cleaned;
-            }
-            
-            return phone;
-        }
+       // Функция для нормализации телефона
+function normalizePhone(phone) {
+    if (!phone) return '';
+    
+    // Удаляем все нецифровые символы
+    let cleaned = phone.replace(/[^\d]/g, '');
+    
+    if (/^[78]\d{10}$/.test(cleaned)) {
+        return '+7' + cleaned.substring(1);
+    } else if (/^9\d{9}$/.test(cleaned)) {
+        return '+7' + cleaned;
+    } else if (cleaned.startsWith('7') || cleaned.startsWith('8')) {
+        return '+' + cleaned;
+    } else if (cleaned.startsWith('7')) {
+        return '+' + cleaned;
+    }
+    
+    return phone;
+}
         
         function showNotification(message, type = 'success') {
             const oldNotifications = document.querySelectorAll('.notification');
@@ -6591,11 +6592,12 @@ function setServiceFilter(filterType) {
 }
 
 // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ HTML ====================
-// УБЕДИТЕСЬ что эти строки есть:
 window.showLoginModal = showLoginModal;
 window.showRegisterModal = showRegisterModal;
 window.showForgotPasswordModal = showForgotPasswordModal;
-window.navigateToPage = navigateToPage; // ← ЭТА СТРОКА ДОЛЖНА БЫТЬ
+window.sendPasswordResetCode = sendPasswordResetCode;
+window.resetPassword = resetPassword;
+window.navigateToPage = navigateToPage;
 window.showTasksPopup = showTasksPopup;
 window.checkSubscription = checkSubscription;
 window.showTaskDetailsCompact = showTaskDetailsCompact;
@@ -6606,8 +6608,9 @@ window.selectSubscription = selectSubscription;
 window.showGuide = showGuide;
 window.closeGuideModal = closeGuideModal;
 window.filterServices = filterServices;
-window.setServiceFilter = setServiceFilter; // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+window.setServiceFilter = setServiceFilter;
 window.selectCategory = selectCategory;
+window.selectCategoryForServices = selectCategoryForServices;
 window.selectService = selectService;
 window.cancelTask = cancelTask;
 window.showHelp = showHelp;
@@ -6620,21 +6623,30 @@ window.sendInlineChatMessage = sendInlineChatMessage;
 window.updateTaskStatus = updateTaskStatus;
 window.completeTask = completeTask;
 window.closeTasksPopup = closeTasksPopup;
-        // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ ПАНЕЛИ ИСПОЛНИТЕЛЯ ====================
-        window.performerLogin = performerLogin;
-        window.loadAvailableTasksForPerformer = loadAvailableTasksForPerformer;
+window.closeVerifyPhoneModal = closeVerifyPhoneModal;
+window.closeModal = closeModal;
+window.closeAllModals = closeAllModals;
+window.toggleUserMenu = toggleUserMenu;
+window.closeUserMenu = closeUserMenu;
+window.clearSearch = clearSearch;
+window.loadAllServicesPage = loadAllServicesPage;
 
-        // Общие функции для доступа из других файлов
-        window.showNotification = showNotification;
-        window.showLoading = showLoading;
-        window.hideLoading = hideLoading;
+// Вспомогательные функции
+window.login = login;
+window.register = register;
+window.createTask = createTask;
 
-        // Экспортируем данные для отладки
-        window.currentUser = currentUser;
-        window.categories = categories;
-        window.services = services;
-        window.allServices = allServices;
-        window.userTasks = userTasks;
+// Общие функции для доступа из других файлов
+window.showNotification = showNotification;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
+
+// Экспортируем данные для отладки
+window.currentUser = currentUser;
+window.categories = categories;
+window.services = services;
+window.allServices = allServices;
+window.userTasks = userTasks;
     </script>
 </body>
 </html>
