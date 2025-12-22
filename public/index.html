@@ -4100,6 +4100,11 @@
             renderUserTasksCards();
             renderUserTasksTable();
         }
+
+// ДОБАВЬТЕ ЭТУ ФУНКЦИЮ:
+function filterTasks(filterType) {
+    loadUserTasks(filterType);
+}
         
         function renderUserTasksCards() {
             const container = document.getElementById('userTasksCards');
@@ -5090,50 +5095,50 @@
             console.log('✅ WOMAN HELP готов к работе!');
         });
         
-        // ==================== ЭКСПОРТ ФУНКЦИЙ ====================
-        
-        window.app = app;
-        window.navigateToPage = navigateToPage;
-        window.showLoginModal = showLoginModal;
-        window.showRegisterModal = showRegisterModal;
-        window.showForgotPasswordModal = showForgotPasswordModal;
-        window.sendPasswordResetCode = sendPasswordResetCode;
-        window.resetPassword = resetPassword;
-        window.showTasksPopup = showTasksPopup;
-        window.checkSubscription = checkSubscription;
-        window.showTaskDetailsCompact = showTaskDetailsCompact;
-        window.openSendCodeModal = openSendCodeModal;
-        window.sendVerificationCode = sendVerificationCode;
-        window.verifyPhoneCode = verifyPhoneCode;
-        window.selectSubscription = selectSubscription;
-        window.showGuide = showGuide;
-        window.closeGuideModal = closeGuideModal;
-        window.filterServices = filterServices;
-        window.selectCategory = selectCategory;
-        window.selectCategoryForServices = selectCategoryForServices;
-        window.selectService = selectService;
-        window.cancelTask = cancelTask;
-        window.showHelp = showHelp;
-        window.navigateToPerformerPanel = navigateToPerformerPanel;
-        window.logout = logout;
-        window.openVerifyPhoneModal = openVerifyPhoneModal;
-        window.filterTasks = filterTasks;
-        window.toggleTaskChat = toggleTaskChat;
-        window.sendInlineChatMessage = sendInlineChatMessage;
-        window.closeTasksPopup = closeTasksPopup;
-        window.closeVerifyPhoneModal = closeVerifyPhoneModal;
-        window.closeModal = closeModal;
-        window.closeAllModals = closeAllModals;
-        window.toggleUserMenu = toggleUserMenu;
-        window.closeUserMenu = closeUserMenu;
-        window.clearSearch = clearSearch;
-        window.loadAllServicesPage = loadAllServicesPage;
-        window.login = login;
-        window.register = register;
-        window.createTask = createTask;
-        window.showNotification = showNotification;
-        window.showLoading = showLoading;
-        window.hideLoading = hideLoading;
+// ==================== ЭКСПОРТ ФУНКЦИЙ ====================
+
+window.app = app;
+window.navigateToPage = navigateToPage;
+window.showLoginModal = showLoginModal;
+window.showRegisterModal = showRegisterModal;
+window.showForgotPasswordModal = showForgotPasswordModal;
+window.sendPasswordResetCode = sendPasswordResetCode;
+window.resetPassword = resetPassword;
+window.showTasksPopup = showTasksPopup;
+window.checkSubscription = checkSubscription;
+window.showTaskDetailsCompact = showTaskDetailsCompact;
+window.openSendCodeModal = openSendCodeModal;
+window.sendVerificationCode = sendVerificationCode;
+window.verifyPhoneCode = verifyPhoneCode;
+window.selectSubscription = selectSubscription;
+window.showGuide = showGuide;
+window.closeGuideModal = closeGuideModal;
+window.filterServices = filterServices;
+window.selectCategory = selectCategory;
+window.selectCategoryForServices = selectCategoryForServices;
+window.selectService = selectService;
+window.cancelTask = cancelTask;
+window.showHelp = showHelp;
+window.navigateToPerformerPanel = navigateToPerformerPanel;
+window.logout = logout;
+window.openVerifyPhoneModal = openVerifyPhoneModal;
+window.filterTasks = filterTasks; // ДОБАВЬТЕ ЭТУ СТРОКУ
+window.toggleTaskChat = toggleTaskChat;
+window.sendInlineChatMessage = sendInlineChatMessage;
+window.closeTasksPopup = closeTasksPopup;
+window.closeVerifyPhoneModal = closeVerifyPhoneModal;
+window.closeModal = closeModal;
+window.closeAllModals = closeAllModals;
+window.toggleUserMenu = toggleUserMenu;
+window.closeUserMenu = closeUserMenu;
+window.clearSearch = clearSearch;
+window.loadAllServicesPage = loadAllServicesPage;
+window.login = login;
+window.register = register;
+window.createTask = createTask;
+window.showNotification = showNotification;
+window.showLoading = showLoading;
+window.hideLoading = hideLoading;
     </script>
 </body>
 </html>
