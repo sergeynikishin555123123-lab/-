@@ -5538,6 +5538,157 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
     }
 });
 
+// ДОБАВЬТЕ В server.js после существующих API
+
+// Верификация админ токена
+app.get('/api/admin/verify', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        res.json({
+            success: true,
+            user: req.user
+        });
+    } catch (error) {
+        console.error('Ошибка проверки токена:', error.message);
+        res.status(401).json({
+            success: false,
+            error: 'Неверный токен'
+        });
+    }
+});
+
+// Получение статистики для админ панели
+app.get('/api/admin/stats', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        // 1. Статистика пользователей
+        const usersStats = await db.get(`
+            SELECT 
+                COUNT(*) as totalUsers,
+                SUM(CASE WHEN role = 'client' THEN 1 ELSE 0 END) as clients,
+                SUM(CASE WHEN role = 'performer' THEN 1 ELSE 0 END) as performers,
+                SUM(CASE WHEN role IN ('admin', 'superadmin', 'manager') THEN 1 ELSE 0 END) as admins,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as activeUsers,
+                SUM(CASE WHEN subscription_status = 'active' THEN 1 ELSE 0 END) as activeSubscriptions
+            FROM users
+        `);
+        
+        // 2. Статистика задач
+        const tasksStats = await db.get(`
+            SELECT 
+                COUNT(*) as totalTasks,
+                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completedTasks,
+                SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) as newTasks,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as inProgressTasks
+            FROM tasks
+        `);
+        
+        // 3. Финансовая статистика
+        const financeStats = await db.get(`
+            SELECT 
+                SUM(CASE WHEN status = 'completed' AND amount < 0 THEN ABS(amount) ELSE 0 END) as totalRevenue,
+                SUM(CASE WHEN type = 'initial_fee' AND status = 'completed' THEN ABS(amount) ELSE 0 END) as totalInitialFees,
+                SUM(CASE WHEN type = 'subscription' AND status = 'completed' THEN ABS(amount) ELSE 0 END) as totalSubscriptions
+            FROM transactions
+        `);
+        
+        // 4. Статистика за месяц
+        const monthlyStats = await db.get(`
+            SELECT 
+                SUM(CASE WHEN type = 'initial_fee' AND status = 'completed' 
+                         AND DATE(created_at) >= DATE('now', '-30 days') 
+                         THEN ABS(amount) ELSE 0 END) as monthlyRevenue,
+                COUNT(CASE WHEN DATE(created_at) >= DATE('now', '-30 days') THEN 1 END) as newTasksThisMonth
+            FROM transactions
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                totalUsers: usersStats?.totalUsers || 0,
+                totalTasks: tasksStats?.totalTasks || 0,
+                totalRevenue: financeStats?.totalRevenue || 0,
+                monthlyRevenue: monthlyStats?.monthlyRevenue || 0,
+                activeUsers: usersStats?.activeUsers || 0,
+                completedTasks: tasksStats?.completedTasks || 0,
+                activeSubscriptions: usersStats?.activeSubscriptions || 0,
+                premiumSubscriptions: await db.get(
+                    `SELECT COUNT(*) as count FROM users WHERE subscription_plan = 'premium' AND subscription_status = 'active'`
+                ).then(r => r.count) || 0
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения статистики:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
+        });
+    }
+});
+
+// Получение последних задач
+app.get('/api/admin/tasks/recent', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const tasks = await db.all(`
+            SELECT 
+                t.id,
+                t.task_number,
+                t.title,
+                t.status,
+                t.price,
+                t.created_at,
+                u.first_name as client_name,
+                u.last_name as client_last_name
+            FROM tasks t
+            LEFT JOIN users u ON t.client_id = u.id
+            ORDER BY t.created_at DESC
+            LIMIT 5
+        `);
+        
+        res.json({
+            success: true,
+            tasks
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения последних задач:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Получение последних пользователей
+app.get('/api/admin/users/recent', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const users = await db.all(`
+            SELECT 
+                id,
+                first_name,
+                last_name,
+                phone,
+                email,
+                role,
+                created_at
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 5
+        `);
+        
+        res.json({
+            success: true,
+            users
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения последних пользователей:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения пользователей'
+        });
+    }
+});
+
 // ==================== ДОПОЛНИТЕЛЬНЫЕ API МАРШРУТЫ ====================
 
 // Получение логотипа (добавьте этот код)
