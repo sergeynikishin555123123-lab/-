@@ -3617,44 +3617,47 @@ card.innerHTML = `
         }
         
         function renderTopServices(services) {
-            const container = document.getElementById('topServicesGrid');
-            if (!container) return;
-            
-            if (!services || services.length === 0) {
-                container.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                    <p style="color: var(--graphite-medium);">Услуги не найдены</p>
-                </div>`;
-                return;
-            }
-            
-            container.innerHTML = '';
-            services.forEach(service => {
-                const card = document.createElement('div');
-                card.className = 'card service-card';
-                card.onclick = () => selectService(service);
-                
-                card.innerHTML = `
-                    <div class="service-image">
-                        <i class="${service.icon || 'fas fa-star'}"></i>
-                    </div>
-                    <div class="service-header">
-                        <h4>${service.name}</h4>
-                        <span style="font-size: 0.8rem; color: var(--gold-metallic);">
-                            <i class="fas fa-star"></i> Топ
-                        </span>
-                    </div>
-                    <p class="service-description">${service.description}</p>
-                    <div class="service-footer">
-                        <span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>
-                        <span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">
-                            Выбрать
-                        </span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+    const container = document.getElementById('topServicesGrid');
+    if (!container) return;
+    
+    if (!services || services.length === 0) {
+        container.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+            <p style="color: var(--graphite-medium);">Услуги не найдены</p>
+        </div>`;
+        return;
+    }
+    
+    container.innerHTML = '';
+    services.forEach(service => {
+        const card = document.createElement('div');
+        card.className = 'card service-card';
+        card.onclick = () => selectService(service);
+        
+        card.innerHTML = `
+            <div class="service-image">
+                <i class="${service.icon || 'fas fa-star'}"></i>
+            </div>
+            <div class="service-header">
+                <h4>${service.name}</h4>
+                <span style="font-size: 0.8rem; color: var(--gold-metallic);">
+                    <i class="fas fa-star"></i> Топ
+                </span>
+            </div>
+            <p class="service-description">${service.description}</p>
+            <div class="service-footer">
+                <span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>
+                <span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">
+                    Выбрать
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    // УДАЛИТЕ ЭТОТ ЛИШНИЙ RETURN, ЕСЛИ ОН ЕСТЬ:
+    // return;
+}
         
         function selectService(service) {
             if (!app.currentUser) {
@@ -5161,7 +5164,7 @@ function filterTasks(filterType) {
             });
         }
         
-       // ==================== ГАЙДЫ ====================
+      // ==================== ГАЙДЫ ====================
 
 function showGuide(guideId) {
     const guides = {
@@ -5179,7 +5182,7 @@ function showGuide(guideId) {
                 </ol>
                 
                 <div class="mt-20">
-                    <button class="btn btn-primary" onclick="navigateToPage('all-services')">
+                    <button class="btn btn-primary" onclick="window.navigateToPage('all-services')">
                         <i class="fas fa-play-circle"></i>
                         Начать сейчас
                     </button>
@@ -5219,12 +5222,12 @@ function showGuide(guideId) {
             <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 class="modal-title">${guide.title}</h3>
-                    <button class="close-popup-btn" onclick="closeGuideModal()">
+                    <button class="close-popup-btn" onclick="window.closeGuideModal()">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div style="margin-bottom: 20px;">${guide.content}</div>
-                <button class="btn btn-primary" onclick="closeGuideModal()" style="width: 100%;">
+                <button class="btn btn-primary" onclick="window.closeGuideModal()" style="width: 100%;">
                     <i class="fas fa-check"></i>
                     Закрыть
                 </button>
@@ -5325,7 +5328,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await loadCategories();
     await loadAllServices();
     await loadSubscriptions();
-    await loadDefaultImages(); // Добавьте эту строку
+    await loadDefaultImages();
     
     setupEventListeners();
     determineInitialScreen();
@@ -5341,10 +5344,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     console.log('✅ WOMAN HELP готов к работе!');
 });
-        
+
 // ==================== ДЕФОЛТНЫЕ ИЗОБРАЖЕНИЯ ====================
 
-async function loadDefaultImages() {
+function loadDefaultImages() {
     setupDefaultImages();
 }
 
@@ -5393,6 +5396,11 @@ window.showNotification = showNotification;
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
 window.loadDefaultImages = loadDefaultImages;
+window.formatPhoneInput = formatPhoneInput;
+
+// Добавляем все функции, которые используются в HTML
+window.loadHomePage = loadHomePage;
+window.renderServicesInCategory = renderServicesInCategory; // Добавляем эту функцию
     </script>
 </body>
 </html>
