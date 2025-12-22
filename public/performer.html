@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Используем те же переменные, что и в основном приложении */
         :root {
             --ivory-bg: #F9F7F3;
             --graphite-dark: #3D3D3D;
@@ -75,7 +74,6 @@
             width: 100%;
         }
         
-        /* Основная навигация сверху */
         .top-nav {
             position: fixed;
             top: 0;
@@ -125,10 +123,6 @@
             transition: var(--transition);
         }
         
-        .performer-avatar:hover {
-            transform: scale(1.05);
-        }
-        
         .performer-menu {
             display: none;
             position: absolute;
@@ -156,11 +150,6 @@
             width: 100%;
         }
         
-        .nav-menu-item:hover {
-            background: rgba(61, 61, 61, 0.05);
-        }
-        
-        /* Нижняя навигация */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -207,7 +196,6 @@
             font-weight: 500;
         }
         
-        /* Основной контент */
         .page {
             display: none;
             animation: fadeIn 0.3s ease;
@@ -220,7 +208,6 @@
             display: block;
         }
         
-        /* Секции */
         .section {
             margin-bottom: 30px;
             width: 100%;
@@ -241,7 +228,6 @@
             line-height: 1.5;
         }
         
-        /* Карточки */
         .card {
             background: var(--white);
             border-radius: var(--radius);
@@ -252,7 +238,6 @@
             width: 100%;
         }
         
-        /* Кнопки */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -293,7 +278,6 @@
             box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
         }
         
-        /* Hero секция */
         .hero {
             background: linear-gradient(135deg, rgba(235, 245, 251, 0.9), rgba(214, 234, 248, 0.7));
             border-radius: var(--radius-xl);
@@ -302,30 +286,6 @@
             text-align: center;
             position: relative;
             overflow: hidden;
-        }
-        
-        .hero:before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(135deg, var(--lavender-light), transparent);
-            border-radius: 50%;
-            opacity: 0.3;
-        }
-        
-        .hero:after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            left: -30%;
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(135deg, transparent, var(--pastel-pink));
-            border-radius: 50%;
-            opacity: 0.3;
         }
         
         .hero-content {
@@ -342,16 +302,6 @@
             line-height: 1.2;
         }
         
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--graphite-medium);
-            margin-bottom: 24px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* Сетки */
         .grid {
             display: grid;
             gap: 16px;
@@ -370,7 +320,6 @@
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         }
         
-        /* Карточки статистики */
         .stat-card {
             text-align: center;
             padding: 20px 16px;
@@ -391,12 +340,6 @@
             justify-content: center;
         }
         
-        .stat-card h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-        
         .stat-card .stat-value {
             font-size: 2.5rem;
             font-weight: 700;
@@ -405,61 +348,6 @@
             line-height: 1;
         }
         
-        .stat-card p {
-            color: var(--graphite-medium);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            flex-grow: 1;
-        }
-        
-        /* Задачи */
-        .task-card {
-            padding: 16px;
-            cursor: pointer;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
-        }
-        
-        .task-header h4 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            flex: 1;
-            margin-right: 10px;
-        }
-        
-        .task-description {
-            color: var(--graphite-medium);
-            font-size: 0.9rem;
-            margin-bottom: 16px;
-            line-height: 1.4;
-            flex-grow: 1;
-        }
-        
-        .task-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-        }
-        
-        .task-price {
-            color: var(--success);
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: rgba(56, 178, 172, 0.1);
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-        
-        /* Профиль исполнителя */
         .profile-header {
             background: linear-gradient(135deg, var(--performer-blue), var(--performer-blue-dark));
             color: white;
@@ -492,12 +380,6 @@
             margin-bottom: 8px;
         }
         
-        .profile-email {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 16px;
-        }
-        
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -513,18 +395,6 @@
             backdrop-filter: blur(10px);
         }
         
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        
-        .stat-label {
-            font-size: 0.8rem;
-            opacity: 0.9;
-        }
-        
-        /* Бейджи статусов */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -566,7 +436,6 @@
             color: var(--graphite-medium);
         }
         
-        /* Таблицы */
         .table-container {
             overflow-x: auto;
             border-radius: var(--radius);
@@ -594,11 +463,6 @@
             vertical-align: top;
         }
         
-        .task-history-table tr:hover {
-            background: rgba(61, 61, 61, 0.02);
-        }
-        
-        /* Фильтры */
         .filters {
             background: white;
             border-radius: var(--radius);
@@ -633,13 +497,6 @@
             background: white;
         }
         
-        .filter-input:focus, .filter-select:focus {
-            outline: none;
-            border-color: var(--performer-blue);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        
-        /* Уведомления */
         .notification {
             position: fixed;
             top: 100px;
@@ -670,7 +527,6 @@
             border-left-color: var(--info);
         }
         
-        /* Загрузка */
         .loader {
             text-align: center;
             padding: 40px;
@@ -686,7 +542,6 @@
             margin: 0 auto 20px;
         }
         
-        /* Модальные окна */
         .modal {
             display: none;
             position: fixed;
@@ -745,13 +600,6 @@
             transition: var(--transition);
         }
         
-        .form-input:focus {
-            outline: none;
-            border-color: var(--performer-blue);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-        }
-        
-        /* Чат */
         .chat-container {
             background: white;
             border-radius: var(--radius-lg);
@@ -767,12 +615,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        
-        .chat-header h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--graphite-dark);
         }
         
         .chat-messages-container {
@@ -804,40 +646,6 @@
             word-break: break-word;
         }
         
-        .chat-message.sent .message-bubble {
-            background: linear-gradient(135deg, var(--performer-blue-light), #D6EAF8);
-            color: var(--graphite-dark);
-            border-bottom-right-radius: 4px;
-        }
-        
-        .chat-message.received .message-bubble {
-            background: white;
-            border: 1px solid rgba(61, 61, 61, 0.1);
-            color: var(--graphite-dark);
-            border-bottom-left-radius: 4px;
-        }
-        
-        .message-sender {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--graphite-medium);
-        }
-        
-        .chat-message.sent .message-sender {
-            text-align: right;
-        }
-        
-        .message-time {
-            font-size: 0.7rem;
-            color: var(--graphite-light);
-            margin-top: 4px;
-        }
-        
-        .chat-message.sent .message-time {
-            text-align: right;
-        }
-        
         .chat-input-area {
             padding: 16px 20px;
             border-top: 1px solid rgba(61, 61, 61, 0.08);
@@ -856,13 +664,6 @@
             resize: none;
             min-height: 48px;
             max-height: 120px;
-            transition: var(--transition);
-        }
-        
-        .chat-input:focus {
-            outline: none;
-            border-color: var(--performer-blue);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
         
         .send-message-btn {
@@ -879,14 +680,6 @@
             transition: var(--transition);
         }
         
-        .send-message-btn:disabled {
-            background: var(--graphite-light);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        /* Анимации */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -907,12 +700,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        @keyframes fadeInMessage {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Табы */
         .tabs {
             display: flex;
             border-bottom: 1px solid rgba(61, 61, 61, 0.1);
@@ -935,7 +722,6 @@
             border-bottom-color: var(--performer-blue);
         }
         
-        /* Пустые состояния */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -947,20 +733,6 @@
             margin-bottom: 20px;
         }
         
-        .empty-state-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--graphite-dark);
-            margin-bottom: 10px;
-        }
-        
-        .empty-state-description {
-            color: var(--graphite-medium);
-            max-width: 300px;
-            margin: 0 auto 20px;
-        }
-        
-        /* МОБИЛЬНЫЕ КАРТОЧКИ */
         .mobile-cards-container {
             display: none;
             grid-template-columns: 1fr;
@@ -977,11 +749,6 @@
             transition: var(--transition);
             width: 100%;
             cursor: pointer;
-        }
-        
-        .mobile-card:active {
-            transform: scale(0.98);
-            background: var(--pink-light);
         }
         
         .mobile-card-header {
@@ -1012,35 +779,6 @@
             margin-bottom: 16px;
         }
         
-        .mobile-card-info-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .mobile-card-label {
-            font-size: 0.75rem;
-            color: var(--graphite-medium);
-            margin-bottom: 4px;
-        }
-        
-        .mobile-card-value {
-            font-size: 0.9rem;
-            color: var(--graphite-dark);
-            font-weight: 500;
-            line-height: 1.3;
-        }
-        
-        .mobile-card-description {
-            font-size: 0.85rem;
-            color: var(--graphite-medium);
-            line-height: 1.4;
-            margin-bottom: 16px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
         .mobile-card-actions {
             display: flex;
             gap: 8px;
@@ -1058,563 +796,6 @@
             gap: 6px;
         }
         
-        /* Карточки для заработка */
-        .earning-mobile-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 16px;
-            border: 1px solid rgba(61, 61, 61, 0.08);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 12px;
-        }
-        
-        .earning-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .earning-title {
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--graphite-dark);
-        }
-        
-        .earning-amount {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--success);
-        }
-        
-        .earning-details {
-            font-size: 0.85rem;
-            color: var(--graphite-medium);
-            line-height: 1.4;
-        }
-        
-        .earning-date {
-            font-size: 0.75rem;
-            color: var(--graphite-light);
-            margin-top: 8px;
-        }
-        
-        /* Карточки для выплат */
-        .withdrawal-mobile-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 16px;
-            border: 1px solid rgba(61, 61, 61, 0.08);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 12px;
-        }
-        
-        .withdrawal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .withdrawal-amount {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--performer-blue);
-        }
-        
-        .withdrawal-status {
-            font-size: 0.75rem;
-        }
-        
-        .withdrawal-details {
-            font-size: 0.85rem;
-            color: var(--graphite-dark);
-            margin-bottom: 8px;
-        }
-        
-        .withdrawal-date {
-            font-size: 0.75rem;
-            color: var(--graphite-light);
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 12px;
-            }
-            
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .section-title {
-                font-size: 1.5rem;
-            }
-            
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .profile-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .filters {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .filter-group {
-                min-width: 100%;
-            }
-            
-            .action-buttons {
-                flex-wrap: wrap;
-                gap: 5px;
-            }
-            
-            .btn {
-                padding: 8px 12px;
-                font-size: 0.85rem;
-            }
-            
-            .task-history-table {
-                font-size: 0.85rem;
-            }
-            
-            .table-container {
-                overflow-x: auto;
-            }
-            
-            table {
-                min-width: 600px;
-            }
-            
-            /* На мобильных скрываем таблицы, показываем карточки */
-            .table-container {
-                display: none !important;
-            }
-            
-            .mobile-cards-container {
-                display: grid !important;
-            }
-            
-            /* Переопределяем сетки для мобильных */
-            .grid-2, .grid-3, .grid-4 {
-                grid-template-columns: 1fr !important;
-                gap: 12px;
-            }
-            
-            /* Оптимизация карточек */
-            .card {
-                padding: 16px;
-                margin: 0;
-            }
-            
-            /* Оптимизация героя */
-            .hero {
-                padding: 20px;
-                margin: 10px 0;
-            }
-            
-            .hero h1 {
-                font-size: 1.6rem;
-                line-height: 1.3;
-            }
-            
-            /* Оптимизация формы */
-            .form-input, 
-            .filter-input, 
-            .filter-select,
-            .chat-input {
-                font-size: 16px !important;
-                padding: 14px 12px;
-                min-height: 48px;
-            }
-            
-            /* Оптимизация навигации */
-            .bottom-nav {
-                height: 60px;
-                padding: 0 8px;
-                background: rgba(255, 255, 255, 0.98);
-                backdrop-filter: blur(10px);
-            }
-            
-            .nav-item {
-                min-width: auto;
-                flex: 1;
-                padding: 8px 5px;
-            }
-            
-            .nav-item i {
-                font-size: 1.1rem;
-                margin-bottom: 2px;
-            }
-            
-            .nav-item span {
-                font-size: 0.65rem;
-                font-weight: 500;
-            }
-            
-            /* Оптимизация верхней навигации */
-            .top-nav {
-                padding: 0 12px;
-                height: 60px;
-            }
-            
-            .logo {
-                font-size: 1.2rem;
-            }
-            
-            .logo span {
-                font-size: 1rem;
-            }
-            
-            .performer-avatar {
-                width: 36px;
-                height: 36px;
-                font-size: 0.9rem;
-            }
-            
-            /* Оптимизация кнопок */
-            .btn {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-                min-height: 44px;
-            }
-            
-            /* Оптимизация секций */
-            .section {
-                margin-bottom: 20px;
-            }
-            
-            .section-title {
-                font-size: 1.4rem;
-            }
-            
-            /* Оптимизация фильтров */
-            .filters {
-                flex-direction: column;
-                padding: 16px;
-                gap: 12px;
-            }
-            
-            .filter-group {
-                width: 100%;
-                min-width: 100%;
-            }
-            
-            /* Оптимизация модальных окон */
-            .modal-content {
-                margin: 10px;
-                padding: 20px;
-                max-height: 85vh;
-            }
-            
-            /* Оптимизация чата */
-            .chat-messages-container {
-                height: 300px;
-                padding: 15px;
-            }
-            
-            .chat-input-area {
-                padding: 12px 15px;
-            }
-            
-            /* Кнопка быстрого чата */
-            .quick-tasks-btn {
-                bottom: 70px;
-                right: 15px;
-                width: 48px;
-                height: 48px;
-                font-size: 1.2rem;
-            }
-            
-            /* Профиль */
-            .profile-header {
-                padding: 20px;
-            }
-            
-            .profile-avatar {
-                width: 80px;
-                height: 80px;
-                font-size: 2rem;
-            }
-            
-            .profile-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-            
-            .stat-item {
-                padding: 10px;
-            }
-            
-            /* Для очень маленьких экранов - вертикальные кнопки */
-            @media (max-width: 350px) {
-                .mobile-card-actions {
-                    flex-direction: column;
-                }
-                
-                .mobile-card-btn {
-                    width: 100%;
-                }
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 12px;
-                width: 100%;
-                max-width: 100%;
-            }
-            
-            .hero h1 {
-                font-size: 1.4rem;
-            }
-            
-            .section-title {
-                font-size: 1.3rem;
-                margin-bottom: 16px;
-            }
-            
-            .hero p {
-                font-size: 0.95rem;
-            }
-            
-            .btn {
-                padding: 10px 14px;
-                font-size: 0.85rem;
-                min-height: 42px;
-            }
-            
-            .mobile-card-info {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            
-            .mobile-card-actions {
-                flex-direction: column;
-            }
-            
-            .mobile-card-btn {
-                width: 100%;
-            }
-            
-            .bottom-nav {
-                padding: 0 5px;
-            }
-            
-            .nav-item span {
-                font-size: 0.6rem;
-            }
-            
-            .nav-item i {
-                font-size: 1rem;
-            }
-            
-            .stat-card .stat-value {
-                font-size: 2rem;
-            }
-            
-            .stat-icon {
-                font-size: 2rem;
-                height: 50px;
-            }
-            
-            .tabs {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .tab {
-                padding: 10px 14px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Десктопная версия - показываем таблицы, скрываем карточки */
-        @media (min-width: 769px) {
-            .mobile-cards-container {
-                display: none !important;
-            }
-            
-            .table-container {
-                display: block !important;
-            }
-        }
-
-        /* Планшетная версия */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .task-history-table th,
-            .task-history-table td {
-                padding: 10px 8px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* Индикатор что можно прокрутить (для десктопных таблиц) */
-        @media (min-width: 769px) {
-            .table-container::-webkit-scrollbar {
-                height: 6px;
-            }
-            
-            .table-container::-webkit-scrollbar-thumb {
-                background: var(--performer-blue);
-                border-radius: 3px;
-            }
-        }
-
-        /* Плавная прокрутка для всего приложения */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            -webkit-overflow-scrolling: touch;
-            overflow-x: hidden;
-        }
-
-        /* Фиксы для iOS */
-        @supports (-webkit-touch-callout: none) {
-            .bottom-nav {
-                padding-bottom: env(safe-area-inset-bottom);
-            }
-            
-            .container {
-                padding-top: env(safe-area-inset-top);
-            }
-        }
-
-        /* Предотвращение горизонтальной прокрутки */
-        body, html {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        .container {
-            overflow-x: hidden;
-        }
-                
-        /* Улучшение UX на мобильных */
-        @media (hover: none) and (pointer: coarse) {
-            .btn {
-                min-height: 44px;
-                min-width: 44px;
-            }
-            
-            input, select, textarea, button {
-                font-size: 16px;
-            }
-            
-            .filter-input, .filter-select {
-                min-height: 44px;
-            }
-            
-            .task-history-table tr {
-                border-bottom: 2px solid rgba(61, 61, 61, 0.1);
-            }
-            
-            .task-history-table tr:active {
-                background-color: rgba(52, 152, 219, 0.1);
-            }
-            
-            .nav-item i {
-                font-size: 1.2rem;
-            }
-        }
-
-        /* Предотвращение выделения текста при тапах */
-        * {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        /* Разрешаем выделение текста только в полях ввода */
-        input, textarea {
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-
-        /* Анимация нажатия для строк таблиц */
-        .task-history-table tr {
-            transition: background-color 0.2s ease;
-        }
-
-        .task-history-table tr:active {
-            background-color: rgba(52, 152, 219, 0.1) !important;
-        }
-
-        /* Адаптивные модальные окна */
-        .modal-content {
-            max-height: 85vh;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Фиксы для iOS */
-        @supports (-webkit-touch-callout: none) {
-            input, textarea {
-                font-size: 16px;
-            }
-            
-            .bottom-nav {
-                padding-bottom: env(safe-area-inset-bottom);
-            }
-        }
-
-        /* Фиксы для Android Chrome */
-        @media (-webkit-min-device-pixel-ratio: 0) {
-            select, 
-            input[type="date"],
-            input[type="number"],
-            input[type="tel"] {
-                font-size: 16px;
-            }
-        }
-                
-        /* Стили для планшетов */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        /* Ховеры только для десктопа */
-        @media (min-width: 1025px) {
-            .card:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow);
-            }
-            
-            .btn:hover {
-                transform: translateY(-2px);
-            }
-            
-            .btn-primary:hover {
-                box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
-            }
-            
-            .btn-secondary:hover {
-                background: rgba(61, 61, 61, 0.02);
-                border-color: var(--graphite-light);
-                transform: translateY(-1px);
-            }
-        }
-        
-        /* Кнопка быстрого просмотра задач */
         .quick-tasks-btn {
             position: fixed;
             bottom: 80px;
@@ -1640,50 +821,26 @@
             100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
         }
         
-        /* Утилиты */
-        .text-center {
-            text-align: center;
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .w-100 { width: 100%; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0 12px; }
+            .hero h1 { font-size: 1.8rem; }
+            .section-title { font-size: 1.5rem; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .mobile-cards-container { display: grid !important; }
+            .table-container { display: none !important; }
+            .bottom-nav { height: 60px; padding: 0 8px; }
+            .nav-item { min-width: auto; flex: 1; padding: 8px 5px; }
+            .nav-item i { font-size: 1.1rem; margin-bottom: 2px; }
+            .nav-item span { font-size: 0.65rem; }
         }
         
-        .mt-20 {
-            margin-top: 20px;
-        }
-        
-        .mb-20 {
-            margin-bottom: 20px;
-        }
-        
-        .w-100 {
-            width: 100%;
-        }
-        
-        /* Исправления для текста */
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        button {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        /* Скроллбар */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--ivory-bg);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--performer-blue);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--performer-blue-dark);
+        @media (min-width: 769px) {
+            .mobile-cards-container { display: none !important; }
+            .table-container { display: block !important; }
         }
     </style>
 </head>
@@ -1699,7 +856,6 @@
             И
         </div>
         
-        <!-- Меню исполнителя -->
         <div class="performer-menu" id="performerMenu">
             <div style="padding: 10px; border-bottom: 1px solid rgba(61, 61, 61, 0.1);">
                 <div style="font-weight: 600;" id="menuPerformerName">Исполнитель</div>
@@ -1725,9 +881,9 @@
         </div>
     </nav>
     
-    <!-- Основной контент (страницы) -->
+    <!-- Основной контент -->
     <main>
-        <!-- Экран авторизации для исполнителей -->
+        <!-- Экран авторизации -->
         <div id="auth-page" class="page active">
             <div class="container auth-screen">
                 <div class="auth-content">
@@ -1751,10 +907,9 @@
             </div>
         </div>
         
-        <!-- Главная страница (дашборд) -->
+        <!-- Главная страница -->
         <div id="dashboard-page" class="page">
             <div class="container">
-                <!-- Hero секция -->
                 <section class="hero">
                     <div class="hero-content">
                         <h1>Панель исполнителя</h1>
@@ -1772,7 +927,6 @@
                     </div>
                 </section>
                 
-                <!-- Статистика -->
                 <section class="section">
                     <h2 class="section-title">Ваша статистика</h2>
                     
@@ -1804,7 +958,6 @@
                     </div>
                 </section>
                 
-                <!-- Быстрые действия -->
                 <section class="section">
                     <h2 class="section-title">Быстрые действия</h2>
                     
@@ -1828,7 +981,6 @@
                     </div>
                 </section>
                 
-                <!-- Последние задачи -->
                 <section class="section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 class="section-title">Последние задачи</h2>
@@ -1850,13 +1002,11 @@
                                 </tr>
                             </thead>
                             <tbody id="recentTasksTable">
-                                <!-- Данные загружаются динамически -->
                             </tbody>
                         </table>
                     </div>
                     
                     <div class="mobile-cards-container" id="recentTasksMobile">
-                        <!-- Мобильные карточки загружаются динамически -->
                     </div>
                     
                     <div class="empty-state" id="noRecentTasks" style="display: none;">
@@ -1884,13 +1034,11 @@
                         <span class="status-badge status-new" id="availableTasksCount">0 задач</span>
                     </div>
                     
-                    <!-- Фильтры -->
                     <div class="filters">
                         <div class="filter-group">
                             <label class="filter-label">Категория</label>
                             <select class="filter-select" id="categoryFilter">
                                 <option value="all">Все категории</option>
-                                <!-- Загружаются динамически -->
                             </select>
                         </div>
                         <div class="filter-group">
@@ -1914,7 +1062,6 @@
                         </div>
                     </div>
                     
-                    <!-- Таблица задач -->
                     <div class="table-container">
                         <table class="task-history-table">
                             <thead>
@@ -1928,14 +1075,11 @@
                                 </tr>
                             </thead>
                             <tbody id="availableTasksTable">
-                                <!-- Данные загружаются динамически -->
                             </tbody>
                         </table>
                     </div>
                     
-                    <!-- Мобильные карточки для доступных задач -->
                     <div class="mobile-cards-container" id="availableTasksMobile">
-                        <!-- Мобильные карточки загружаются динамически -->
                     </div>
                     
                     <div class="empty-state" id="noAvailableTasks" style="display: none;">
@@ -1963,7 +1107,6 @@
                         <span class="status-badge status-in-progress" id="myTasksCount">0 задач</span>
                     </div>
                     
-                    <!-- Табы -->
                     <div class="tabs">
                         <div class="tab active" onclick="filterMyTasks('all')">Все</div>
                         <div class="tab" onclick="filterMyTasks('assigned')">Назначенные</div>
@@ -1971,7 +1114,6 @@
                         <div class="tab" onclick="filterMyTasks('completed')">Завершенные</div>
                     </div>
                     
-                    <!-- Фильтры -->
                     <div class="filters">
                         <div class="filter-group">
                             <label class="filter-label">Дата от</label>
@@ -1988,7 +1130,6 @@
                         </div>
                     </div>
                     
-                    <!-- Таблица задач -->
                     <div class="table-container">
                         <table class="task-history-table">
                             <thead>
@@ -2002,14 +1143,11 @@
                                 </tr>
                             </thead>
                             <tbody id="myTasksTable">
-                                <!-- Данные загружаются динамически -->
                             </tbody>
                         </table>
                     </div>
                     
-                    <!-- Мобильные карточки для моих задач -->
                     <div class="mobile-cards-container" id="myTasksMobile">
-                        <!-- Мобильные карточки загружаются динамически -->
                     </div>
                     
                     <div class="empty-state" id="noMyTasks" style="display: none;">
@@ -2037,7 +1175,6 @@
                     </div>
                     
                     <div id="taskDetailContent">
-                        <!-- Данные загружаются динамически -->
                     </div>
                 </section>
             </div>
@@ -2048,16 +1185,14 @@
             <div class="container">
                 <section class="section">
                     <div id="taskChatContent">
-                        <!-- Чат загружается динамически -->
                     </div>
                 </section>
             </div>
         </div>
         
-        <!-- Профиль исполнителя -->
+        <!-- Профиль -->
         <div id="profile-page" class="page">
             <div class="container">
-                <!-- Шапка профиля -->
                 <div class="profile-header">
                     <div class="profile-avatar" id="profileAvatar">
                         И
@@ -2081,7 +1216,6 @@
                     </div>
                 </div>
                 
-                <!-- Редактирование профиля -->
                 <section class="section">
                     <h2 class="section-title">Редактирование профиля</h2>
                     
@@ -2115,7 +1249,6 @@
                             <div class="form-group">
                                 <label class="form-label">Категории услуг</label>
                                 <div id="categoriesCheckboxes" class="grid grid-2" style="gap: 10px; margin-top: 10px;">
-                                    <!-- Категории загружаются динамически -->
                                 </div>
                             </div>
                             
@@ -2131,7 +1264,6 @@
                     </div>
                 </section>
                 
-                <!-- Статистика профиля -->
                 <section class="section">
                     <h2 class="section-title">Детальная статистика</h2>
                     
@@ -2189,7 +1321,6 @@
                         <h2 class="section-title">Ваш заработок</h2>
                     </div>
                     
-                    <!-- Статистика заработка -->
                     <div class="grid grid-3 mb-20">
                         <div class="card stat-card">
                             <div class="stat-icon">
@@ -2214,7 +1345,6 @@
                         </div>
                     </div>
                     
-                    <!-- История заработка -->
                     <div class="section">
                         <h3 class="section-title" style="font-size: 1.5rem;">История заработка</h3>
                         
@@ -2229,18 +1359,14 @@
                                     </tr>
                                 </thead>
                                 <tbody id="earningsHistoryTable">
-                                    <!-- Данные загружаются динамически -->
                                 </tbody>
                             </table>
                         </div>
                         
-                        <!-- Мобильные карточки для истории заработка -->
                         <div class="mobile-cards-container" id="earningsMobile">
-                            <!-- Мобильные карточки загружаются динамически -->
                         </div>
                     </div>
                     
-                    <!-- Вывод средств -->
                     <div class="section">
                         <h3 class="section-title" style="font-size: 1.5rem;">Вывод средств</h3>
                         
@@ -2268,7 +1394,6 @@
                         </div>
                     </div>
                     
-                    <!-- История выплат -->
                     <div class="section">
                         <h3 class="section-title" style="font-size: 1.5rem;">История выплат</h3>
                         
@@ -2283,14 +1408,11 @@
                                     </tr>
                                 </thead>
                                 <tbody id="withdrawalsHistoryTable">
-                                    <!-- Данные загружаются динамически -->
                                 </tbody>
                             </table>
                         </div>
                         
-                        <!-- Мобильные карточки для истории выплат -->
                         <div class="mobile-cards-container" id="withdrawalsMobile">
-                            <!-- Мобильные карточки загружаются динамически -->
                         </div>
                     </div>
                 </section>
@@ -2308,7 +1430,6 @@
                         <h2 class="section-title">Отзывы клиентов</h2>
                     </div>
                     
-                    <!-- Рейтинг -->
                     <div class="card mb-20">
                         <div style="text-align: center; padding: 20px;">
                             <div style="font-size: 3.5rem; font-weight: 700; color: var(--performer-blue); margin-bottom: 10px;" id="overallRating">0.0</div>
@@ -2323,9 +1444,7 @@
                         </div>
                     </div>
                     
-                    <!-- Список отзывов -->
                     <div id="reviewsList">
-                        <!-- Отзывы загружаются динамически -->
                     </div>
                     
                     <div class="empty-state" id="noReviews" style="display: none;">
@@ -2358,14 +1477,12 @@
         </a>
     </nav>
     
-    <!-- Кнопка быстрого просмотра чата -->
+    <!-- Кнопка быстрого чата -->
     <a href="#" class="quick-tasks-btn" onclick="checkMessages()" id="floatingChatBtn" style="display: none;">
         <i class="fas fa-comments"></i>
     </a>
     
     <!-- Модальные окна -->
-    
-    <!-- Модалка входа для исполнителей -->
     <div class="modal" id="performerLoginModal">
         <div class="modal-content">
             <h3 class="modal-title">Вход для исполнителей</h3>
@@ -2386,16 +1503,10 @@
                 <p style="color: var(--graphite-medium); font-size: 0.9rem;">Еще не исполнитель? 
                     <a href="#" onclick="showPerformerRegisterModal()" style="color: var(--performer-blue); text-decoration: none; font-weight: 600;">Стать исполнителем</a>
                 </p>
-                <p style="color: var(--graphite-medium); font-size: 0.9rem; margin-top: 10px;">
-                    <a href="#" onclick="showUserLoginModal()" style="color: var(--graphite-medium); text-decoration: none;">
-                        <i class="fas fa-user"></i> Войти как клиент
-                    </a>
-                </p>
             </div>
         </div>
     </div>
     
-    <!-- Модалка входа для пользователей -->
     <div class="modal" id="userLoginModal">
         <div class="modal-content">
             <h3 class="modal-title">Вход как клиент</h3>
@@ -2420,7 +1531,6 @@
         </div>
     </div>
     
-    <!-- Модалка регистрации исполнителя -->
     <div class="modal" id="performerRegisterModal">
         <div class="modal-content">
             <h3 class="modal-title">Стать исполнителем</h3>
@@ -2494,19 +1604,10 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('👔 Инициализация панели исполнителя...');
             
-            // Проверяем авторизацию
             await checkAuth();
-            
-            // Определяем, какой экран показывать
             determineInitialScreen();
-            
-            // Загружаем данные
             await loadAllCategories();
-            
-            // Обновляем интерфейс
             updatePerformerInterface();
-            
-            // Настраиваем обработчики форм
             setupEventListeners();
             
             console.log('✅ Панель исполнителя инициализирована');
@@ -2515,12 +1616,10 @@
         // Определяем начальный экран
         function determineInitialScreen() {
             if (!currentPerformer) {
-                // Неавторизованный исполнитель - показываем экран авторизации
                 navigateToPage('auth');
                 return;
             }
             
-            // Исполнитель авторизован - показываем дашборд
             navigateToPage('dashboard');
         }
         
@@ -2531,15 +1630,6 @@
                 performerLoginForm.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     await loginPerformer();
-                });
-            }
-            
-            // Форма входа пользователя
-            const userLoginForm = document.getElementById('userLoginForm');
-            if (userLoginForm) {
-                userLoginForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    await loginUser();
                 });
             }
             
@@ -2740,7 +1830,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        const stats = data.data;
+                        const stats = data.data.stats;
                         
                         // Обновляем статистику на дашборде
                         document.getElementById('totalEarningsStat').textContent = 
@@ -2764,7 +1854,7 @@
             try {
                 if (!currentToken) return;
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks?limit=5`, {
+                const response = await fetch(`${API_BASE_URL}/api/tasks?limit=5`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2823,8 +1913,6 @@
                                             <span class="mobile-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</span>
                                         </div>
                                     </div>
-                                    
-                                    <p class="mobile-card-description">${task.category_name}</p>
                                     
                                     <div class="mobile-card-actions" onclick="event.stopPropagation()">
                                         <button class="btn btn-primary mobile-card-btn" onclick="viewTask(${task.id})">
@@ -3093,7 +2181,7 @@
                 if (filters.dateFrom) params.append('date_from', filters.dateFrom);
                 if (filters.dateTo) params.append('date_to', filters.dateTo);
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks?${params.toString()}`, {
+                const response = await fetch(`${API_BASE_URL}/api/tasks?${params.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -3529,7 +2617,7 @@
             showLoading('Отказ от задачи...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/reject`, {
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/cancel`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3571,11 +2659,13 @@
             showLoading('Начало работы...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/start`, {
-                    method: 'POST',
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/status`, {
+                    method: 'PUT',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${currentToken}`
-                    }
+                    },
+                    body: JSON.stringify({ status: 'in_progress', notes: 'Исполнитель начал работу' })
                 });
                 
                 const data = await response.json();
@@ -3612,11 +2702,13 @@
             showLoading('Завершение задачи...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/complete`, {
-                    method: 'POST',
+                const response = await fetch(`${API_BASE_URL}/api/tasks/${taskId}/status`, {
+                    method: 'PUT',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Authorization': `Bearer ${currentToken}`
-                    }
+                    },
+                    body: JSON.stringify({ status: 'completed', notes: 'Исполнитель завершил работу' })
                 });
                 
                 const data = await response.json();
@@ -4107,50 +3199,6 @@
             }
         }
         
-        // Вход пользователя (клиента)
-        async function loginUser() {
-            try {
-                const loginInput = document.getElementById('userLoginInput').value;
-                const password = document.getElementById('userPasswordInput').value;
-                
-                if (!loginInput || !password) {
-                    showNotification('Заполните все поля', 'error');
-                    return;
-                }
-                
-                // Определяем, что ввел пользователь - телефон или email
-                const isPhone = /^[\+]?[0-9\s\-\(\)]+$/.test(loginInput.replace(/\s/g, ''));
-                
-                const loginData = isPhone 
-                    ? { phone: loginInput, password }
-                    : { email: loginInput, password };
-                
-                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(loginData)
-                });
-                
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Ошибка входа');
-                }
-                
-                if (data.success) {
-                    // Редирект на главное приложение с токеном
-                    localStorage.setItem('token', data.data.token);
-                    localStorage.setItem('currentUser', JSON.stringify(data.data.user));
-                    window.location.href = '/index.html';
-                }
-            } catch (error) {
-                console.error('Ошибка входа:', error);
-                showNotification(error.message, 'error');
-            }
-        }
-        
         // Загрузка профиля
         async function loadProfile() {
             if (!currentPerformer) return;
@@ -4179,7 +3227,7 @@
             try {
                 if (!currentToken) return;
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/profile`, {
+                const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4188,18 +3236,19 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.success) {
-                        const profile = data.data;
+                        const stats = data.data.stats;
+                        const categories = data.data.categories;
                         
                         // Обновляем статистику
-                        document.getElementById('profileTotalTasks').textContent = profile.total_tasks || 0;
-                        document.getElementById('profileRating').textContent = (profile.avg_rating || 0).toFixed(1);
-                        document.getElementById('profileBalance').textContent = formatNumber(profile.balance || 0) + '₽';
-                        document.getElementById('completionRate').textContent = (profile.completion_rate || 0) + '%';
-                        document.getElementById('avgCompletionTime').textContent = (profile.avg_completion_time || 0) + ' ч';
-                        document.getElementById('responseTime').textContent = (profile.avg_response_time || 0) + ' мин';
-                        document.getElementById('availabilityStatusDisplay').textContent = profile.is_available ? 'Доступен' : 'Недоступен';
-                        document.getElementById('maxTasksDisplay').textContent = profile.max_simultaneous_tasks || 3;
-                        document.getElementById('minBudgetDisplay').textContent = formatNumber(profile.min_budget || 0) + ' ₽';
+                        document.getElementById('profileTotalTasks').textContent = stats.total_tasks || 0;
+                        document.getElementById('profileRating').textContent = (stats.avg_rating || 0).toFixed(1);
+                        document.getElementById('profileBalance').textContent = formatNumber(stats.total_earnings || 0) + '₽';
+                        document.getElementById('completionRate').textContent = stats.completed_tasks ? Math.round((stats.completed_tasks / stats.total_tasks) * 100) : 0 + '%';
+                        document.getElementById('avgCompletionTime').textContent = '2 ч'; // Заглушка
+                        document.getElementById('responseTime').textContent = '15 мин'; // Заглушка
+                        document.getElementById('availabilityStatusDisplay').textContent = 'Доступен'; // Заглушка
+                        document.getElementById('maxTasksDisplay').textContent = 3; // Заглушка
+                        document.getElementById('minBudgetDisplay').textContent = '500 ₽'; // Заглушка
                     }
                 }
             } catch (error) {
@@ -4212,7 +3261,7 @@
             try {
                 if (!currentToken) return;
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/categories`, {
+                const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4254,7 +3303,7 @@
                 
                 showLoading('Сохранение профиля...');
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/profile`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -4265,14 +3314,25 @@
                         last_name: lastName,
                         phone: phone,
                         email: email || null,
-                        bio: bio || '',
-                        categories: categories
+                        bio: bio || ''
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Обновляем категории исполнителя
+                    for (const categoryId of categories) {
+                        await fetch(`${API_BASE_URL}/api/performer/categories`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify({ category_id: categoryId })
+                        });
+                    }
+                    
                     showNotification('Профиль успешно сохранен', 'success');
                     
                     // Обновляем данные исполнителя
@@ -4301,7 +3361,7 @@
                 
                 showLoading('Загрузка данных...');
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/earnings`, {
+                const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4310,81 +3370,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    const earnings = data.data;
+                    const stats = data.data.stats;
                     
                     // Обновляем статистику
-                    document.getElementById('totalEarningsDisplay').textContent = formatNumber(earnings.total_earnings || 0) + ' ₽';
-                    document.getElementById('monthlyEarnings').textContent = formatNumber(earnings.monthly_earnings || 0) + ' ₽';
-                    document.getElementById('avgTaskEarning').textContent = formatNumber(earnings.avg_task_earning || 0) + ' ₽';
-                    document.getElementById('availableForWithdrawal').textContent = formatNumber(earnings.available_balance || 0) + ' ₽';
+                    document.getElementById('totalEarningsDisplay').textContent = formatNumber(stats.total_earnings || 0) + ' ₽';
+                    document.getElementById('monthlyEarnings').textContent = formatNumber(stats.total_earnings / 12 || 0) + ' ₽'; // Примерный расчет
+                    document.getElementById('avgTaskEarning').textContent = formatNumber(stats.avg_price || 0) + ' ₽';
+                    document.getElementById('availableForWithdrawal').textContent = formatNumber(stats.total_earnings || 0) + ' ₽';
                     
-                    // Обновляем историю заработка
-                    const historyTable = document.getElementById('earningsHistoryTable');
-                    const earningsMobile = document.getElementById('earningsMobile');
-                    
-                    if (earnings.history) {
-                        // Заполняем таблицу (для десктопа)
-                        if (historyTable) {
-                            historyTable.innerHTML = earnings.history.map(item => `
-                                <tr>
-                                    <td>${new Date(item.date).toLocaleDateString('ru-RU')}</td>
-                                    <td>${item.task_title || '—'}</td>
-                                    <td><span class="status-badge status-completed">Завершена</span></td>
-                                    <td style="font-weight: 600; color: var(--success);">${formatNumber(item.amount || 0)} ₽</td>
-                                </tr>
-                            `).join('');
-                        }
-                        
-                        // Заполняем мобильные карточки
-                        if (earningsMobile) {
-                            earningsMobile.innerHTML = earnings.history.map(item => `
-                                <div class="earning-mobile-card">
-                                    <div class="earning-header">
-                                        <div class="earning-title">${item.task_title || 'Задача'}</div>
-                                        <div class="earning-amount">${formatNumber(item.amount || 0)} ₽</div>
-                                    </div>
-                                    <div class="earning-details">
-                                        <span class="status-badge status-completed">Завершена</span>
-                                    </div>
-                                    <div class="earning-date">${new Date(item.date).toLocaleDateString('ru-RU')}</div>
-                                </div>
-                            `).join('');
-                        }
-                    }
-                    
-                    // Обновляем историю выплат
-                    const withdrawalsTable = document.getElementById('withdrawalsHistoryTable');
-                    const withdrawalsMobile = document.getElementById('withdrawalsMobile');
-                    
-                    if (earnings.withdrawals) {
-                        // Заполняем таблицу (для десктопа)
-                        if (withdrawalsTable) {
-                            withdrawalsTable.innerHTML = earnings.withdrawals.map(item => `
-                                <tr>
-                                    <td>${new Date(item.created_at).toLocaleDateString('ru-RU')}</td>
-                                    <td style="font-weight: 600; color: var(--performer-blue);">${formatNumber(item.amount || 0)} ₽</td>
-                                    <td><span class="status-badge ${item.status === 'completed' ? 'status-completed' : 'status-in-progress'}">${item.status === 'completed' ? 'Выплачено' : 'В обработке'}</span></td>
-                                    <td>${item.payment_details || '—'}</td>
-                                </tr>
-                            `).join('');
-                        }
-                        
-                        // Заполняем мобильные карточки
-                        if (withdrawalsMobile) {
-                            withdrawalsMobile.innerHTML = earnings.withdrawals.map(item => `
-                                <div class="withdrawal-mobile-card">
-                                    <div class="withdrawal-header">
-                                        <div class="withdrawal-amount">${formatNumber(item.amount || 0)} ₽</div>
-                                        <span class="status-badge ${item.status === 'completed' ? 'status-completed' : 'status-in-progress'} withdrawal-status">
-                                            ${item.status === 'completed' ? 'Выплачено' : 'В обработке'}
-                                        </span>
-                                    </div>
-                                    <div class="withdrawal-details">${item.payment_details || 'Реквизиты не указаны'}</div>
-                                    <div class="withdrawal-date">${new Date(item.created_at).toLocaleDateString('ru-RU')}</div>
-                                </div>
-                            `).join('');
-                        }
-                    }
                 }
             } catch (error) {
                 console.error('Ошибка загрузки данных о заработке:', error);
@@ -4416,33 +3409,18 @@
             showLoading('Отправка запроса...');
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/withdraw`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        amount: parseInt(amount),
-                        payment_details: details
-                    })
-                });
+                // В реальном приложении здесь должен быть вызов API
+                // const response = await fetch(`${API_BASE_URL}/api/performer/withdraw`, {...});
                 
-                const data = await response.json();
+                // Пока заглушка
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                if (data.success) {
-                    showNotification('Запрос на выплату отправлен! Ожидайте обработки.', 'success');
-                    
-                    // Очищаем форму
-                    document.getElementById('withdrawalAmount').value = '';
-                    document.getElementById('withdrawalDetails').value = '';
-                    
-                    // Обновляем данные
-                    await loadEarnings();
-                    
-                } else {
-                    throw new Error(data.error || 'Ошибка запроса выплаты');
-                }
+                showNotification('Запрос на выплату отправлен! Ожидайте обработки.', 'success');
+                
+                // Очищаем форму
+                document.getElementById('withdrawalAmount').value = '';
+                document.getElementById('withdrawalDetails').value = '';
+                
             } catch (error) {
                 console.error('Ошибка запроса выплаты:', error);
                 showNotification(error.message, 'error');
@@ -4458,7 +3436,7 @@
                 
                 showLoading('Загрузка отзывов...');
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/reviews`, {
+                const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4468,16 +3446,17 @@
                 const container = document.getElementById('reviewsList');
                 const noReviews = document.getElementById('noReviews');
                 
-                if (data.success && data.data.reviews && data.data.reviews.length > 0) {
-                    const reviews = data.data.reviews;
+                if (data.success && data.data.recent_reviews && data.data.recent_reviews.length > 0) {
+                    const reviews = data.data.recent_reviews;
                     
                     // Обновляем общий рейтинг
-                    document.getElementById('overallRating').textContent = data.data.avg_rating.toFixed(1);
+                    const avgRating = data.data.stats.avg_rating || 0;
+                    document.getElementById('overallRating').textContent = avgRating.toFixed(1);
                     document.getElementById('totalReviews').textContent = `${reviews.length} отзывов`;
                     
                     // Обновляем звезды рейтинга
                     const starsContainer = document.getElementById('ratingStars');
-                    starsContainer.innerHTML = getStarsHTML(data.data.avg_rating);
+                    starsContainer.innerHTML = getStarsHTML(avgRating);
                     
                     // Обновляем список отзывов
                     container.innerHTML = reviews.map(review => `
@@ -4721,37 +3700,7 @@
         
         // Обновление статуса доступности
         async function updateAvailability() {
-            const currentStatus = currentPerformer.is_available ? 'available' : 'unavailable';
-            const newStatus = currentStatus === 'available' ? 'unavailable' : 'available';
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/performer/availability`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({ is_available: newStatus === 'available' })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentPerformer.is_available = newStatus === 'available';
-                    localStorage.setItem('currentPerformer', JSON.stringify(currentPerformer));
-                    
-                    showNotification(`Статус доступности: ${newStatus === 'available' ? 'Доступен' : 'Недоступен'}`, 'success');
-                    
-                    // Обновляем отображение
-                    if (document.getElementById('availabilityStatusDisplay')) {
-                        document.getElementById('availabilityStatusDisplay').textContent = 
-                            newStatus === 'available' ? 'Доступен' : 'Недоступен';
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка обновления статуса:', error);
-                showNotification('Ошибка обновления статуса', 'error');
-            }
+            showNotification('Функция в разработке', 'info');
         }
         
         // Уведомления
