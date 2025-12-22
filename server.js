@@ -1257,6 +1257,64 @@ app.post('/api/admin/upload-user-avatar', authMiddleware(['admin', 'superadmin']
     }
 });
 
+// Простая загрузка файла (для использования из admin.html)
+app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
+    try {
+        console.log('📤 Загрузка файла через универсальный endpoint...');
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл не был загружен'
+            });
+        }
+        
+        // Определяем URL файла
+        let fileUrl = `/uploads/${req.file.filename}`;
+        
+        // Если загружается логотип - сохраняем в настройки
+        if (req.body.type === 'logo') {
+            fileUrl = `/uploads/logo/${req.file.filename}`;
+            
+            // Обновляем настройку в базе данных
+            await db.run(
+                `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
+                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                ['site_logo', fileUrl, 'Логотип сайта', 'appearance']
+            );
+            
+            console.log(`✅ Логотип сохранен в настройках: ${fileUrl}`);
+        }
+        // Если загружается изображение категории
+        else if (req.body.type === 'category') {
+            fileUrl = `/uploads/categories/${req.file.filename}`;
+            console.log(`✅ Изображение категории сохранено: ${fileUrl}`);
+        }
+        
+        console.log(`✅ Файл сохранен: ${fileUrl}`);
+        
+        res.json({
+            success: true,
+            message: 'Файл успешно загружен',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+                url: fileUrl,
+                path: req.file.path
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки файла:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка загрузки файла'
+        });
+    }
+});
+
 // Общая загрузка файла
 app.post('/api/admin/upload-file', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('file'), async (req, res) => {
     try {
