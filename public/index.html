@@ -4520,83 +4520,96 @@
             }
         }
 
-        // Подтвердить телефон с кодом
-        async function verifyPhoneCode() {
-            const phoneNumber = document.getElementById('verifyPhoneNumber').value;
-            const code = document.getElementById('verifyPhoneCode').value;
-            
-            if (!phoneNumber || !code) {
-                showNotification('Введите код подтверждения', 'error');
-                return;
-            }
-            
-            if (code.length !== 6) {
-                showNotification('Код должен содержать 6 цифр', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Проверка кода...');
-                
-                const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': currentToken ? `Bearer ${currentToken}` : ''
-                    },
-                    body: JSON.stringify({
-                        phone: normalizePhone(phoneNumber),
-                        code: code
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                if (!result.success) {
-                    throw new Error(result.error || 'Ошибка подтверждения телефона');
-                }
-                
-                // Сохраняем токен и обновляем пользователя
-                currentToken = result.data.token;
-                currentUser = result.data.user;
-                
-                localStorage.setItem('token', currentToken);
-                localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                
-                showNotification('Телефон успешно подтвержден!', 'success');
-                closeVerifyPhoneModal();
-                    
-                if (currentUser) {
-                    currentUser.phone_verified = true;
-                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    updateUserInterface();
-                }
-                
-                if (currentUser && !currentUser.subscription_plan) {
-                    showNotification('Регистрация завершена! Добро пожаловать!', 'success');
-                    
-                    setTimeout(() => {
-                        navigateToPage('subscription');
-                    }, 1000);
-                } else {
-                    showNotification('Теперь вы можете активировать подписку', 'success');
-                    
-                    setTimeout(() => {
-                        navigateToPage('subscription');
-                    }, 1000);
-                }
-                
-            } catch (error) {
-                console.error('Ошибка подтверждения телефона:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
-            }
+       async function verifyPhoneCode() {
+    const phoneNumber = document.getElementById('verifyPhoneNumber').value;
+    const code = document.getElementById('verifyPhoneCode').value;
+    
+    if (!phoneNumber || !code) {
+        showNotification('Введите код подтверждения', 'error');
+        return;
+    }
+    
+    if (code.length !== 6) {
+        showNotification('Код должен содержать 6 цифр', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Проверка кода...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/auth/verify-phone`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': currentToken ? `Bearer ${currentToken}` : ''
+            },
+            body: JSON.stringify({
+                phone: normalizePhone(phoneNumber),
+                code: code
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Ошибка подтверждения телефона');
+        }
+        
+        // Сохраняем токен и обновляем пользователя
+        currentToken = result.data.token;
+        currentUser = result.data.user;
+        
+        localStorage.setItem('token', currentToken);
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        
+        showNotification('Телефон успешно подтвержден!', 'success');
+        closeVerifyPhoneModal();
+            
+        if (currentUser) {
+            currentUser.phone_verified = true;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateUserInterface();
+        }
+        
+        // Проверяем, нужно ли переходить к выбору подписки
+        if (currentUser && !currentUser.subscription_plan) {
+            showNotification('Регистрация завершена! Добро пожаловать!', 'success');
+            
+            // В демо-режиме сразу показываем подписку
+            if (result.data.demo_mode_after_verification) {
+                setTimeout(() => {
+                    navigateToPage('subscription');
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    navigateToPage('auth'); // Возвращаем на экран авторизации
+                }, 1000);
+            }
+        } else if (currentUser && currentUser.subscription_status === 'active') {
+            showNotification('Аккаунт подтвержден! Теперь вы можете создавать задачи.', 'success');
+            
+            setTimeout(() => {
+                navigateToPage('home');
+            }, 1000);
+        } else {
+            showNotification('Теперь вы можете активировать подписку', 'success');
+            
+            setTimeout(() => {
+                navigateToPage('subscription');
+            }, 1000);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка подтверждения телефона:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         async function selectSubscription(subscriptionName) {
             if (!currentUser) {
