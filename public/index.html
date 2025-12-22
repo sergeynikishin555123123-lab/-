@@ -946,6 +946,29 @@
             background: rgba(33, 150, 243, 0.1);
             color: #1565C0;
         }
+
+.category-image, .service-image, .category-image-container {
+    position: relative;
+}
+
+.category-image i, .service-image i, .category-image-container i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+.category-image::before, .service-image::before, .category-image-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink));
+    z-index: 0;
+}
         
         /* Кнопка "Все услуги" */
         .view-all-btn {
@@ -2790,37 +2813,127 @@
             }
         };
 
+// ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
+
+function createDefaultLogo() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 36;
+    canvas.height = 36;
+    const ctx = canvas.getContext('2d');
+    
+    // Создаем розово-золотой градиент
+    const gradient = ctx.createLinearGradient(0, 0, 36, 36);
+    gradient.addColorStop(0, '#F2DDE6');  // pastel-pink
+    gradient.addColorStop(1, '#C5A880');  // gold-metallic
+    
+    // Фон
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 36, 36);
+    
+    // Скругленные углы
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 36, 36, 8);
+    ctx.clip();
+    
+    // Буква W
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('W', 18, 18);
+    
+    return canvas.toDataURL();
+}
+
+function setupDefaultImages() {
+    // Логотипы
+    const logoImages = document.querySelectorAll('.logo-img');
+    logoImages.forEach(img => {
+        if (!img.src || img.src === window.location.href) {
+            img.src = createDefaultLogo();
+            img.style.borderRadius = '8px';
+            img.style.padding = '4px';
+        }
+    });
+    
+    // Категории на главной
+    document.querySelectorAll('.category-image').forEach(container => {
+        if (!container.querySelector('i')) {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-star';
+            icon.style.fontSize = '2.5rem';
+            icon.style.color = 'var(--pastel-pink)';
+            container.appendChild(icon);
+        }
+    });
+    
+    // Услуги на главной
+    document.querySelectorAll('.service-image').forEach(container => {
+        if (!container.querySelector('i')) {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-concierge-bell';
+            icon.style.fontSize = '2rem';
+            icon.style.color = 'var(--pastel-pink)';
+            container.appendChild(icon);
+        }
+    });
+    
+    // Квадратные карточки категорий
+    document.querySelectorAll('.category-image-container').forEach(container => {
+        if (!container.querySelector('i')) {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-star';
+            icon.style.fontSize = '3rem';
+            icon.style.color = 'var(--pastel-pink)';
+            icon.style.position = 'absolute';
+            icon.style.top = '50%';
+            icon.style.left = '50%';
+            icon.style.transform = 'translate(-50%, -50%)';
+            container.appendChild(icon);
+        }
+    });
+}
+        
         // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
         
-        function fetchWithAuth(url, options = {}) {
-            const headers = {
-                'Content-Type': 'application/json',
-                ...options.headers
-            };
-            
+      function fetchWithAuth(url, options = {}) {
+    if (!app.currentToken && !url.includes('/api/auth/')) {
+        return Promise.resolve({
+            ok: false,
+            status: 401
+        });
+    }
+    
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+    };
+    
+    if (app.currentToken) {
+        headers['Authorization'] = `Bearer ${app.currentToken}`;
+    }
+    
+    return fetch(url, {
+        ...options,
+        headers
+    }).then(response => {
+        if (response.status === 401) {
             if (app.currentToken) {
-                headers['Authorization'] = `Bearer ${app.currentToken}`;
+                localStorage.removeItem('token');
+                localStorage.removeItem('currentUser');
+                app.currentToken = null;
+                app.currentUser = null;
+                showNotification('Сессия истекла. Войдите снова.', 'error');
+                setTimeout(() => navigateToPage('auth'), 1000);
             }
-            
-            return fetch(url, {
-                ...options,
-                headers
-            }).then(response => {
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('currentUser');
-                    app.currentToken = null;
-                    app.currentUser = null;
-                    showNotification('Сессия истекла. Войдите снова.', 'error');
-                    setTimeout(() => navigateToPage('auth'), 1000);
-                }
-                return response;
-            }).catch(error => {
-                console.error('Ошибка запроса:', error);
-                showNotification('Ошибка соединения с сервером', 'error');
-                throw error;
-            });
         }
+        return response;
+    }).catch(error => {
+        console.error('Ошибка запроса:', error);
+        showNotification('Ошибка соединения с сервером', 'error');
+        return { ok: false };
+    });
+}
         
       function animateCounters() {
     updateServiceStats();
@@ -3038,29 +3151,68 @@ function animateCounter(element, target, duration) {
         
         // ==================== ФУНКЦИИ ДЛЯ КАТЕГОРИЙ И УСЛУГ ====================
         
-        async function loadCategories() {
-            try {
-                const response = await fetch(`${app.API_BASE_URL}/api/categories`);
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success) {
-                        app.categories = result.data.categories;
-                        return app.categories;
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки категорий:', error);
+async function loadCategories() {
+    try {
+        const response = await fetch(`${app.API_BASE_URL}/api/categories`);
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                app.categories = result.data.categories;
+                return app.categories;
             }
-            
-            // Fallback данные
-            app.categories = [
-                { id: 1, name: "home", display_name: "Дом и быт", description: "Уборка, ремонт, помощь по хозяйству", icon: "fas fa-home", services_count: 8 },
-                { id: 2, name: "family", display_name: "Семья и дети", description: "Няни, репетиторы, помощь с детьми", icon: "fas fa-child", services_count: 6 },
-                { id: 3, name: "beauty", display_name: "Красота и здоровье", description: "Маникюр, парикмахер, массаж на дому", icon: "fas fa-spa", services_count: 5 },
-                { id: 4, name: "education", display_name: "Образование", description: "Репетиторы, курсы, подготовка к экзаменам", icon: "fas fa-graduation-cap", services_count: 4 }
-            ];
-            return app.categories;
         }
+    } catch (error) {
+        console.error('Ошибка загрузки категорий:', error);
+        // ... fallback данные ...
+    } finally {
+        // После загрузки категорий настраиваем дефолтные изображения
+        setupDefaultImages();
+    }
+    
+    return app.categories;
+}
+    
+    // Fallback данные с дефолтными иконками
+    app.categories = [
+        { 
+            id: 1, 
+            name: "home", 
+            display_name: "Дом и быт", 
+            description: "Уборка, ремонт, помощь по хозяйству", 
+            icon: "fas fa-home", 
+            services_count: 8,
+            image_url: null 
+        },
+        { 
+            id: 2, 
+            name: "family", 
+            display_name: "Семья и дети", 
+            description: "Няни, репетиторы, помощь с детьми", 
+            icon: "fas fa-child", 
+            services_count: 6,
+            image_url: null 
+        },
+        { 
+            id: 3, 
+            name: "beauty", 
+            display_name: "Красота и здоровье", 
+            description: "Маникюр, парикмахер, массаж на дому", 
+            icon: "fas fa-spa", 
+            services_count: 5,
+            image_url: null 
+        },
+        { 
+            id: 4, 
+            name: "education", 
+            display_name: "Образование", 
+            description: "Репетиторы, курсы, подготовка к экзаменам", 
+            icon: "fas fa-graduation-cap", 
+            services_count: 4,
+            image_url: null 
+        }
+    ];
+    return app.categories;
+}
         
         async function loadAllServices() {
             try {
@@ -3072,9 +3224,16 @@ function animateCounter(element, target, duration) {
                         return app.allServices;
                     }
                 }
-            } catch (error) {
-                console.error('Ошибка загрузки услуг:', error);
-            }
+             } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        // ... fallback данные ...
+    } finally {
+        // После загрузки услуг обновляем изображения
+        setupDefaultImages();
+    }
+    
+    return app.allServices;
+}
             
             // Fallback данные
             app.allServices = [
@@ -3084,21 +3243,21 @@ function animateCounter(element, target, duration) {
             return app.allServices;
         }
         
-        async function loadAllServicesPage() {
-            try {
-                await loadAllServices();
-                if (app.selectedCategory) {
-                    app.services = app.allServices.filter(service => service.category_id === app.selectedCategory.id);
-                    renderServicesByCategory();
-                } else {
-                    app.services = app.allServices;
-                    renderAllServices();
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки страницы услуг:', error);
-                showNotification('Ошибка загрузки услуг', 'error');
-            }
+       async function loadAllServicesPage() {
+    try {
+        await loadAllServices();
+        if (app.selectedCategory) {
+            app.services = app.allServices.filter(service => service.category_id === app.selectedCategory.id);
+            renderServicesInCategory(); // ИЗМЕНИТЕ ЭТУ СТРОКУ
+        } else {
+            app.services = app.allServices;
+            renderAllServices();
         }
+    } catch (error) {
+        console.error('Ошибка загрузки страницы услуг:', error);
+        showNotification('Ошибка загрузки услуг', 'error');
+    }
+}
         
         function renderAllCategoriesForServices() {
             const container = document.getElementById('allServicesList');
@@ -3120,29 +3279,27 @@ function animateCounter(element, target, duration) {
                 card.className = 'category-card-square';
                 card.onclick = () => selectCategoryForServices(category);
                 
-                card.innerHTML = `
-                    <div class="category-image-container">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink)); display: flex; align-items: center; justify-content: center;">
-                            <i class="${category.icon || 'fas fa-star'}" style="font-size: 3rem; color: var(--pastel-pink);"></i>
-                        </div>
-                        <div class="category-icon-badge">
-                            <i class="${category.icon || 'fas fa-star'}"></i>
-                        </div>
-                    </div>
-                    <div class="category-content">
-                        <h3 class="category-title">${category.display_name}</h3>
-                        <p class="category-description">${category.description}</p>
-                        <div class="category-footer">
-                            <span class="services-count">
-                                <i class="fas fa-list"></i>
-                                ${category.services_count || 0} услуг
-                            </span>
-                            <span class="select-service-btn">
-                                Выбрать <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    </div>
-                `;
+card.innerHTML = `
+    <div class="category-image-container">
+        <!-- Убрали лишний div, оставляем только иконку через CSS -->
+        <div class="category-icon-badge">
+            <i class="${category.icon || 'fas fa-star'}"></i>
+        </div>
+    </div>
+    <div class="category-content">
+        <h3 class="category-title">${category.display_name}</h3>
+        <p class="category-description">${category.description}</p>
+        <div class="category-footer">
+            <span class="services-count">
+                <i class="fas fa-list"></i>
+                ${category.services_count || 0} услуг
+            </span>
+            <span class="select-service-btn">
+                Выбрать <i class="fas fa-arrow-right"></i>
+            </span>
+        </div>
+    </div>
+`;
                 
                 container.appendChild(card);
             });
@@ -3241,29 +3398,27 @@ function animateCounter(element, target, duration) {
                 card.className = 'category-card-square';
                 card.onclick = () => selectService(service);
                 
-                card.innerHTML = `
-                    <div class="category-image-container">
-                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink)); display: flex; align-items: center; justify-content: center;">
-                            <i class="${service.icon || app.selectedCategory.icon || 'fas fa-star'}" style="font-size: 3rem; color: var(--pastel-pink);"></i>
-                        </div>
-                        <div class="category-icon-badge">
-                            <i class="${service.icon || app.selectedCategory.icon || 'fas fa-star'}"></i>
-                        </div>
-                    </div>
-                    <div class="category-content">
-                        <h3 class="category-title">${service.name}</h3>
-                        <p class="category-description">${service.description}</p>
-                        <div class="category-footer">
-                            <span class="services-count">
-                                <i class="fas fa-crown" style="color: var(--gold-metallic);"></i>
-                                Включено в подписку
-                            </span>
-                            <span class="select-service-btn">
-                                Выбрать <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    </div>
-                `;
+               card.innerHTML = `
+    <div class="category-image-container">
+        <!-- Убрали лишний div -->
+        <div class="category-icon-badge">
+            <i class="${service.icon || app.selectedCategory.icon || 'fas fa-star'}"></i>
+        </div>
+    </div>
+    <div class="category-content">
+        <h3 class="category-title">${service.name}</h3>
+        <p class="category-description">${service.description}</p>
+        <div class="category-footer">
+            <span class="services-count">
+                <i class="fas fa-crown" style="color: var(--gold-metallic);"></i>
+                Включено в подписку
+            </span>
+            <span class="select-service-btn">
+                Выбрать <i class="fas fa-arrow-right"></i>
+            </span>
+        </div>
+    </div>
+`;
                 container.appendChild(card);
             });
             
@@ -5168,29 +5323,30 @@ function filterTasks(filterType) {
         
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         
-        window.addEventListener('DOMContentLoaded', async () => {
-            console.log('🌐 WOMAN HELP v2.0 - Инициализация...');
-            
-            animateCounters();
-            await loadLogo();
-            await loadCategories();
-            await loadAllServices();
-            await loadSubscriptions();
-            
-            setupEventListeners();
-            determineInitialScreen();
-            updateUserInterface();
-            
-            const deadlineInput = document.getElementById('taskDeadline');
-            if (deadlineInput) {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                deadlineInput.min = new Date().toISOString().split('T')[0];
-                deadlineInput.value = tomorrow.toISOString().split('T')[0];
-            }
-            
-            console.log('✅ WOMAN HELP готов к работе!');
-        });
+       window.addEventListener('DOMContentLoaded', async () => {
+    console.log('🌐 WOMAN HELP v2.0 - Инициализация...');
+    
+    animateCounters();
+    await loadLogo();
+    await loadCategories();
+    await loadAllServices();
+    await loadSubscriptions();
+    await loadDefaultImages(); // ДОБАВЬТЕ ЭТУ СТРОКУ
+    
+    setupEventListeners();
+    determineInitialScreen();
+    updateUserInterface();
+    
+    const deadlineInput = document.getElementById('taskDeadline');
+    if (deadlineInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        deadlineInput.min = new Date().toISOString().split('T')[0];
+        deadlineInput.value = tomorrow.toISOString().split('T')[0];
+    }
+    
+    console.log('✅ WOMAN HELP готов к работе!');
+});
         
 // ==================== ЭКСПОРТ ФУНКЦИЙ ====================
 
