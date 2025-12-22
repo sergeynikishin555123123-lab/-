@@ -3149,9 +3149,7 @@ function animateCounter(element, target, duration) {
             return phone;
         }
         
-        // ==================== ФУНКЦИИ ДЛЯ КАТЕГОРИЙ И УСЛУГ ====================
-        
-async function loadCategories() {
+      async function loadCategories() {
     try {
         const response = await fetch(`${app.API_BASE_URL}/api/categories`);
         if (response.ok) {
@@ -3163,54 +3161,50 @@ async function loadCategories() {
         }
     } catch (error) {
         console.error('Ошибка загрузки категорий:', error);
-        // ... fallback данные ...
+        // Fallback данные с дефолтными иконками
+        app.categories = [
+            { 
+                id: 1, 
+                name: "home", 
+                display_name: "Дом и быт", 
+                description: "Уборка, ремонт, помощь по хозяйству", 
+                icon: "fas fa-home", 
+                services_count: 8,
+                image_url: null 
+            },
+            { 
+                id: 2, 
+                name: "family", 
+                display_name: "Семья и дети", 
+                description: "Няни, репетиторы, помощь с детьми", 
+                icon: "fas fa-child", 
+                services_count: 6,
+                image_url: null 
+            },
+            { 
+                id: 3, 
+                name: "beauty", 
+                display_name: "Красота и здоровье", 
+                description: "Маникюр, парикмахер, массаж на дому", 
+                icon: "fas fa-spa", 
+                services_count: 5,
+                image_url: null 
+            },
+            { 
+                id: 4, 
+                name: "education", 
+                display_name: "Образование", 
+                description: "Репетиторы, курсы, подготовка к экзаменам", 
+                icon: "fas fa-graduation-cap", 
+                services_count: 4,
+                image_url: null 
+            }
+        ];
     } finally {
         // После загрузки категорий настраиваем дефолтные изображения
         setupDefaultImages();
     }
     
-    return app.categories;
-}
-    
-    // Fallback данные с дефолтными иконками
-    app.categories = [
-        { 
-            id: 1, 
-            name: "home", 
-            display_name: "Дом и быт", 
-            description: "Уборка, ремонт, помощь по хозяйству", 
-            icon: "fas fa-home", 
-            services_count: 8,
-            image_url: null 
-        },
-        { 
-            id: 2, 
-            name: "family", 
-            display_name: "Семья и дети", 
-            description: "Няни, репетиторы, помощь с детьми", 
-            icon: "fas fa-child", 
-            services_count: 6,
-            image_url: null 
-        },
-        { 
-            id: 3, 
-            name: "beauty", 
-            display_name: "Красота и здоровье", 
-            description: "Маникюр, парикмахер, массаж на дому", 
-            icon: "fas fa-spa", 
-            services_count: 5,
-            image_url: null 
-        },
-        { 
-            id: 4, 
-            name: "education", 
-            display_name: "Образование", 
-            description: "Репетиторы, курсы, подготовка к экзаменам", 
-            icon: "fas fa-graduation-cap", 
-            services_count: 4,
-            image_url: null 
-        }
-    ];
     return app.categories;
 }
         
@@ -5167,163 +5161,163 @@ function filterTasks(filterType) {
             });
         }
         
-        // ==================== ГАЙДЫ ====================
-        
-        function showGuide(guideId) {
-            const guides = {
-                'getting-started': {
-                    title: 'Начало работы',
-                    content: `
-                        <h3>Как создать свою первую задачу:</h3>
-                        <ol>
-                            <li>Войдите в систему или зарегистрируйтесь</li>
-                            <li>Выберите подходящую подписку</li>
-                            <li>Перейдите в раздел "Услуги" или "Все услуги"</li>
-                            <li>Выберите категорию и конкретную услугу</li>
-                            <li>Заполните форму создания задачи с деталями</li>
-                            <li>Нажмите "Создать задачу"</li>
-                        </ol>
-                        
-                        <div class="mt-20">
-                            <button class="btn btn-primary" onclick="navigateToPage('all-services')">
-                                <i class="fas fa-play-circle"></i>
-                                Начать сейчас
-                            </button>
-                        </div>
-                    `
-                },
-                'tips': {
-                    title: 'Советы по задачам',
-                    content: `
-                        <h3>Как правильно описать задачу:</h3>
-                        <ul>
-                            <li><strong>Будьте конкретны:</strong> Чем подробнее описание, тем точнее исполнитель поймет ваши ожидания</li>
-                            <li><strong>Указывайте адрес точно:</strong> Включая подъезд, этаж, код домофона</li>
-                            <li><strong>Определите приоритет:</strong> Выберите срочность задачи</li>
-                        </ul>
-                    `
-                },
-                'safety': {
-                    title: 'Безопасность',
-                    content: `
-                        <h3>Основные правила безопасности:</h3>
-                        <ul>
-                            <li><strong>Проверяйте рейтинг:</strong> Выбирайте исполнительниц с высоким рейтингом и отзывами</li>
-                            <li><strong>Не передавайте деньги заранее:</strong> Все платежи обрабатываются через защищенную систему</li>
-                            <li><strong>Храните ценности:</strong> Уберите ценные вещи перед визитом помощницы</li>
-                        </ul>
-                    `
-                }
-            };
+       // ==================== ГАЙДЫ ====================
 
-            if (guides[guideId]) {
-                const guide = guides[guideId];
-                const modal = document.createElement('div');
-                modal.className = 'modal';
-                modal.id = 'guideModal';
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3 class="modal-title">${guide.title}</h3>
-                            <button class="close-popup-btn" onclick="closeGuideModal()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <div style="margin-bottom: 20px;">${guide.content}</div>
-                        <button class="btn btn-primary" onclick="closeGuideModal()" style="width: 100%;">
-                            <i class="fas fa-check"></i>
-                            Закрыть
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(modal);
-                modal.style.display = 'flex';
+function showGuide(guideId) {
+    const guides = {
+        'getting-started': {
+            title: 'Начало работы',
+            content: `
+                <h3>Как создать свою первую задачу:</h3>
+                <ol>
+                    <li>Войдите в систему или зарегистрируйтесь</li>
+                    <li>Выберите подходящую подписку</li>
+                    <li>Перейдите в раздел "Услуги" или "Все услуги"</li>
+                    <li>Выберите категорию и конкретную услугу</li>
+                    <li>Заполните форму создания задачи с деталями</li>
+                    <li>Нажмите "Создать задачу"</li>
+                </ol>
+                
+                <div class="mt-20">
+                    <button class="btn btn-primary" onclick="navigateToPage('all-services')">
+                        <i class="fas fa-play-circle"></i>
+                        Начать сейчас
+                    </button>
+                </div>
+            `
+        },
+        'tips': {
+            title: 'Советы по задачам',
+            content: `
+                <h3>Как правильно описать задачу:</h3>
+                <ul>
+                    <li><strong>Будьте конкретны:</strong> Чем подробнее описание, тем точнее исполнитель поймет ваши ожидания</li>
+                    <li><strong>Указывайте адрес точно:</strong> Включая подъезд, этаж, код домофона</li>
+                    <li><strong>Определите приоритет:</strong> Выберите срочность задачи</li>
+                </ul>
+            `
+        },
+        'safety': {
+            title: 'Безопасность',
+            content: `
+                <h3>Основные правила безопасности:</h3>
+                <ul>
+                    <li><strong>Проверяйте рейтинг:</strong> Выбирайте исполнительниц с высоким рейтингом и отзывами</li>
+                    <li><strong>Не передавайте деньги заранее:</strong> Все платежи обрабатываются через защищенную систему</li>
+                    <li><strong>Храните ценности:</strong> Уберите ценные вещи перед визитом помощницы</li>
+                </ul>
+            `
+        }
+    };
+
+    if (guides[guideId]) {
+        const guide = guides[guideId];
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.id = 'guideModal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="modal-title">${guide.title}</h3>
+                    <button class="close-popup-btn" onclick="closeGuideModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div style="margin-bottom: 20px;">${guide.content}</div>
+                <button class="btn btn-primary" onclick="closeGuideModal()" style="width: 100%;">
+                    <i class="fas fa-check"></i>
+                    Закрыть
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+}
+
+function closeGuideModal() {
+    const modal = document.getElementById('guideModal');
+    if (modal) modal.remove();
+}
+
+// ==================== МОДАЛЬНЫЕ ОКНА ====================
+
+function showLoginModal() {
+    closeAllModals();
+    const modal = document.getElementById('loginModal');
+    if (modal) modal.classList.add('active');
+    closeUserMenu();
+}
+
+function showRegisterModal() {
+    closeAllModals();
+    const modal = document.getElementById('registerModal');
+    if (modal) modal.classList.add('active');
+}
+
+function showForgotPasswordModal() {
+    closeAllModals();
+    const modal = document.getElementById('forgotPasswordModal');
+    if (modal) modal.classList.add('active');
+}
+
+function showResetPasswordModal() {
+    closeAllModals();
+    const modal = document.getElementById('resetPasswordModal');
+    if (modal) modal.classList.add('active');
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.classList.remove('active');
+    });
+}
+
+// ==================== НАВИГАЦИЯ ====================
+
+function navigateToPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    const targetPage = document.getElementById(pageId + '-page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-page') === pageId) {
+                item.classList.add('active');
             }
+        });
+        
+        switch(pageId) {
+            case 'home': loadHomePage(); break;
+            case 'all-services': loadAllServicesPage(); break;
+            case 'profile': loadUserProfile(); break;
+            case 'tasks': loadUserTasks('all'); break;
+            case 'subscription': loadSubscriptionPage(); break;
         }
         
-        function closeGuideModal() {
-            const modal = document.getElementById('guideModal');
-            if (modal) modal.remove();
+        const userMenu = document.getElementById('userMenu');
+        if (userMenu && userMenu.style.display === 'block') {
+            userMenu.style.display = 'none';
         }
-        
-        // ==================== МОДАЛЬНЫЕ ОКНА ====================
-        
-        function showLoginModal() {
-            closeAllModals();
-            const modal = document.getElementById('loginModal');
-            if (modal) modal.classList.add('active');
-            closeUserMenu();
-        }
-        
-        function showRegisterModal() {
-            closeAllModals();
-            const modal = document.getElementById('registerModal');
-            if (modal) modal.classList.add('active');
-        }
-        
-        function showForgotPasswordModal() {
-            closeAllModals();
-            const modal = document.getElementById('forgotPasswordModal');
-            if (modal) modal.classList.add('active');
-        }
-        
-        function showResetPasswordModal() {
-            closeAllModals();
-            const modal = document.getElementById('resetPasswordModal');
-            if (modal) modal.classList.add('active');
-        }
-        
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.remove('active');
-        }
-        
-        function closeAllModals() {
-            document.querySelectorAll('.modal').forEach(modal => {
-                modal.classList.remove('active');
-            });
-        }
-        
-        // ==================== НАВИГАЦИЯ ====================
-        
-        function navigateToPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            const targetPage = document.getElementById(pageId + '-page');
-            if (targetPage) {
-                targetPage.classList.add('active');
-                
-                document.querySelectorAll('.nav-item').forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('data-page') === pageId) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                switch(pageId) {
-                    case 'home': loadHomePage(); break;
-                    case 'all-services': loadAllServicesPage(); break;
-                    case 'profile': loadUserProfile(); break;
-                    case 'tasks': loadUserTasks('all'); break;
-                    case 'subscription': loadSubscriptionPage(); break;
-                }
-                
-                const userMenu = document.getElementById('userMenu');
-                if (userMenu && userMenu.style.display === 'block') {
-                    userMenu.style.display = 'none';
-                }
-            }
-        }
-        
-        function navigateToPerformerPanel() {
-            window.location.href = '/performer.html';
-        }
-        
-        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-        
-       window.addEventListener('DOMContentLoaded', async () => {
+    }
+}
+
+function navigateToPerformerPanel() {
+    window.location.href = '/performer.html';
+}
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+
+window.addEventListener('DOMContentLoaded', async () => {
     console.log('🌐 WOMAN HELP v2.0 - Инициализация...');
     
     animateCounters();
@@ -5331,7 +5325,7 @@ function filterTasks(filterType) {
     await loadCategories();
     await loadAllServices();
     await loadSubscriptions();
-    await loadDefaultImages(); // ДОБАВЬТЕ ЭТУ СТРОКУ
+    await loadDefaultImages(); // Добавьте эту строку
     
     setupEventListeners();
     determineInitialScreen();
@@ -5348,6 +5342,12 @@ function filterTasks(filterType) {
     console.log('✅ WOMAN HELP готов к работе!');
 });
         
+// ==================== ДЕФОЛТНЫЕ ИЗОБРАЖЕНИЯ ====================
+
+async function loadDefaultImages() {
+    setupDefaultImages();
+}
+
 // ==================== ЭКСПОРТ ФУНКЦИЙ ====================
 
 window.app = app;
@@ -5375,7 +5375,7 @@ window.showHelp = showHelp;
 window.navigateToPerformerPanel = navigateToPerformerPanel;
 window.logout = logout;
 window.openVerifyPhoneModal = openVerifyPhoneModal;
-window.filterTasks = filterTasks; // ДОБАВЬТЕ ЭТУ СТРОКУ
+window.filterTasks = filterTasks;
 window.toggleTaskChat = toggleTaskChat;
 window.sendInlineChatMessage = sendInlineChatMessage;
 window.closeTasksPopup = closeTasksPopup;
@@ -5392,6 +5392,7 @@ window.createTask = createTask;
 window.showNotification = showNotification;
 window.showLoading = showLoading;
 window.hideLoading = hideLoading;
+window.loadDefaultImages = loadDefaultImages;
     </script>
 </body>
 </html>
