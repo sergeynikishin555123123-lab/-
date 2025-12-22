@@ -5540,6 +5540,70 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
 
 // ==================== ДОПОЛНИТЕЛЬНЫЕ API МАРШРУТЫ ====================
 
+// Получение логотипа (добавьте этот код)
+app.get('/api/logo', async (req, res) => {
+    try {
+        console.log('📷 Запрос логотипа сайта...');
+        
+        const logoSetting = await db.get(
+            "SELECT value FROM settings WHERE key = 'site_logo'"
+        );
+        
+        let logoUrl = '/uploads/logo/logo.png'; // значение по умолчанию
+        
+        if (logoSetting && logoSetting.value) {
+            logoUrl = logoSetting.value;
+            console.log(`✅ Найден логотип: ${logoUrl}`);
+        } else {
+            console.log('ℹ️ Используется логотип по умолчанию');
+        }
+        
+        // Проверяем существование файла
+        const logoPath = path.join(__dirname, 'public', logoUrl);
+        const logoExists = fsSync.existsSync(logoPath);
+        
+        if (!logoExists) {
+            console.log(`⚠️ Файл логотипа не найден: ${logoPath}`);
+            
+            // Создаем дефолтный логотип если нет
+            const defaultLogoPath = path.join(__dirname, 'public', 'uploads', 'logo', 'logo.png');
+            if (!fsSync.existsSync(path.dirname(defaultLogoPath))) {
+                fsSync.mkdirSync(path.dirname(defaultLogoPath), { recursive: true });
+            }
+            
+            // Создаем простой логотип если нет файла
+            if (!fsSync.existsSync(defaultLogoPath)) {
+                console.log('🎨 Создаем дефолтный логотип...');
+                // Можно создать простую картинку или использовать заглушку
+                logoUrl = '/uploads/logo/logo.png';
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: 'Логотип получен',
+            data: {
+                logo_url: logoUrl,
+                exists: logoExists,
+                timestamp: new Date().toISOString()
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения логотипа:', error.message);
+        
+        res.json({
+            success: true,
+            data: {
+                logo_url: '/uploads/logo/logo.png',
+                exists: false,
+                error: error.message,
+                timestamp: new Date().toISOString()
+            }
+        });
+    }
+});
+
 // Получение топ услуг
 app.get('/api/services/top', async (req, res) => {
     try {
@@ -5778,11 +5842,40 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
     }
 });
 
-// Получение последних задач пользователя
+// ==================== ЗАДАЧИ ====================
+
+// ... (после других маршрутов задач)
+
+// Получение недавних задач пользователя (добавьте этот код)
 app.get('/api/tasks/recent', authMiddleware(), async (req, res) => {
     try {
+        console.log(`📋 Получение недавних задач для пользователя: ${req.user.id}`);
+        
+        // Если пользователь не авторизован, возвращаем пустой список
+        if (!req.user.id) {
+            return res.json({
+                success: true,
+                data: {
+                    tasks: [],
+                    count: 0
+                }
+            });
+        }
+        
         const tasks = await db.all(`
-            SELECT t.*, c.display_name as category_name
+            SELECT 
+                t.id,
+                t.task_number,
+                t.title,
+                t.description,
+                t.status,
+                t.created_at,
+                t.updated_at,
+                t.priority,
+                t.address,
+                t.deadline,
+                c.display_name as category_name,
+                c.icon as category_icon
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.client_id = ?
@@ -5790,23 +5883,30 @@ app.get('/api/tasks/recent', authMiddleware(), async (req, res) => {
             LIMIT 5
         `, [req.user.id]);
         
+        console.log(`✅ Найдено недавних задач: ${tasks.length}`);
+        
         res.json({
             success: true,
+            message: 'Недавние задачи получены',
             data: {
                 tasks,
-                count: tasks.length
+                count: tasks.length,
+                timestamp: new Date().toISOString()
             }
         });
         
     } catch (error) {
-        console.error('Ошибка получения последних задач:', error.message);
+        console.error('❌ Ошибка получения недавних задач:', error.message);
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения задач'
+            error: 'Ошибка получения недавних задач',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
 
+// ==================== ЧАТ ЗАДАЧИ ====================
 // Отправка SMS кода
 app.post('/api/auth/send-verification-code', async (req, res) => {
     try {
