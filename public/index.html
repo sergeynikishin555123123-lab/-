@@ -16,13 +16,12 @@
         --graphite-light: #888888;
         --pastel-pink: #F2DDE6;
         --pink-light: #FAF2F6;
-        --dusty-pink: #E8CCD9;
+        --pink-medium: #E8CCD9;
+        --pink-dark: #D4B8C7;
         --gold-metallic: #C5A880;
         --gold-dark: #A78B65;
         --lavender: #B9AFFF;
         --lavender-light: #F0EEFF;
-        --aquamarine: #7FE0D1;
-        --aqua-light: #E8F9F6;
         --white: #FFFFFF;
         --success: #38B2AC;
         --warning: #ED8936;
@@ -32,12 +31,12 @@
         --primary-accent-dark: var(--gold-dark);
         --secondary-accent: var(--lavender);
         --secondary-accent-light: var(--lavender-light);
-        --action-color: var(--aquamarine);
-        --action-dark: #6BC9BB;
+        --action-color: var(--pastel-pink);
+        --action-dark: var(--pink-medium);
         
         --primary-gradient: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
         --secondary-gradient: linear-gradient(135deg, var(--lavender), #A396FF);
-        --action-gradient: linear-gradient(135deg, var(--aquamarine), #6BC9BB);
+        --action-gradient: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
         --pink-gradient: linear-gradient(135deg, var(--pastel-pink), var(--pink-light));
         
         --shadow-sm: 0 2px 8px rgba(61, 61, 61, 0.04);
@@ -227,8 +226,8 @@
     }
     
     .nav-item.active {
-        color: var(--gold-metallic);
-        background: rgba(197, 168, 128, 0.08);
+        color: var(--pastel-pink);
+        background: rgba(242, 221, 230, 0.08);
     }
     
     .nav-item i {
@@ -317,7 +316,7 @@
     
     .btn-action {
         background: var(--action-gradient);
-        color: white;
+        color: var(--graphite-dark);
         border: none;
     }
     
@@ -373,7 +372,7 @@
     
     .hero .tagline {
         font-size: 1.8rem;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-weight: 600;
         margin-bottom: 24px;
     }
@@ -434,7 +433,7 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: var(--gold-metallic);
+        background: var(--pastel-pink);
         transform: scaleX(0);
         transition: transform 0.3s ease;
     }
@@ -445,7 +444,7 @@
     
     .category-icon {
         font-size: 2.5rem;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         margin-bottom: 15px;
         height: 60px;
         display: flex;
@@ -463,7 +462,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-size: 2.5rem;
         position: relative;
         overflow: hidden;
@@ -496,13 +495,13 @@
         flex-direction: column;
         min-height: 220px;
         transition: all 0.3s ease;
-        border: 1px solid rgba(197, 168, 128, 0.1);
+        border: 1px solid rgba(242, 221, 230, 0.1);
     }
     
     .service-card:hover {
         transform: translateY(-4px);
         box-shadow: var(--shadow);
-        border-color: var(--gold-metallic);
+        border-color: var(--pastel-pink);
     }
     
     .service-image {
@@ -515,7 +514,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-size: 2.5rem;
     }
     
@@ -556,10 +555,10 @@
     }
     
     .service-price {
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-weight: 600;
         font-size: 0.9rem;
-        background: rgba(197, 168, 128, 0.08);
+        background: rgba(242, 221, 230, 0.08);
         padding: 4px 8px;
         border-radius: 6px;
         display: flex;
@@ -592,7 +591,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-size: 2.5rem;
         font-weight: 700;
         border: 4px solid rgba(255, 255, 255, 0.3);
@@ -655,7 +654,7 @@
     }
     
     .subscription-card.popular {
-        border-color: var(--gold-metallic);
+        border-color: var(--pastel-pink);
     }
     
     .popular-badge {
@@ -663,8 +662,8 @@
         top: -10px;
         left: 50%;
         transform: translateX(-50%);
-        background: var(--primary-gradient);
-        color: white;
+        background: var(--action-gradient);
+        color: var(--graphite-dark);
         padding: 4px 16px;
         border-radius: var(--radius-full);
         font-size: 0.75rem;
@@ -681,7 +680,7 @@
     .subscription-price {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         margin: 16px 0;
     }
     
@@ -706,7 +705,7 @@
     }
     
     .subscription-features i {
-        color: var(--aquamarine);
+        color: var(--pastel-pink);
         font-size: 0.9rem;
     }
     
@@ -730,14 +729,14 @@
     .stat-card {
         padding: 20px;
         border-radius: var(--radius);
-        background: linear-gradient(135deg, rgba(197, 168, 128, 0.05), rgba(167, 139, 101, 0.05));
-        border: 1px solid rgba(197, 168, 128, 0.1);
+        background: linear-gradient(135deg, rgba(242, 221, 230, 0.05), rgba(232, 204, 217, 0.05));
+        border: 1px solid rgba(242, 221, 230, 0.1);
     }
     
     .stat-number {
         font-size: 2.5rem;
         font-weight: 700;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         margin-bottom: 10px;
     }
     
@@ -762,7 +761,7 @@
     
     /* Баннер с рекламой/акцией */
     .promo-banner {
-        background: linear-gradient(135deg, var(--gold-metallic), var(--lavender));
+        background: linear-gradient(135deg, var(--gold-metallic), var(--pastel-pink));
         color: white;
         padding: 30px;
         border-radius: var(--radius-lg);
@@ -797,7 +796,7 @@
         border-radius: var(--radius);
         padding: 16px;
         box-shadow: var(--shadow-lg);
-        border-left: 4px solid var(--aquamarine);
+        border-left: 4px solid var(--pastel-pink);
         animation: slideInRight 0.3s ease;
         display: flex;
         align-items: center;
@@ -828,7 +827,7 @@
         width: 40px;
         height: 40px;
         border: 4px solid rgba(61, 61, 61, 0.1);
-        border-top: 4px solid var(--aquamarine);
+        border-top: 4px solid var(--pastel-pink);
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin: 0 auto 20px;
@@ -895,8 +894,8 @@
     
     .form-input:focus {
         outline: none;
-        border-color: var(--aquamarine);
-        box-shadow: 0 0 0 3px rgba(127, 224, 209, 0.1);
+        border-color: var(--pastel-pink);
+        box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.1);
     }
     
     /* Создание задачи */
@@ -985,8 +984,8 @@
         gap: 8px;
         padding: 12px 24px;
         background: white;
-        color: var(--aquamarine);
-        border: 2px solid var(--aquamarine);
+        color: var(--pastel-pink);
+        border: 2px solid var(--pastel-pink);
         border-radius: var(--radius);
         font-weight: 600;
         cursor: pointer;
@@ -996,7 +995,7 @@
     }
 
     .view-all-btn:hover {
-        background: var(--aquamarine);
+        background: var(--pastel-pink);
         color: white;
     }
 
@@ -1049,7 +1048,7 @@
 
     .guide-icon {
         font-size: 2.5rem;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         margin-bottom: 15px;
     }
 
@@ -1093,9 +1092,9 @@
     }
 
     @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(127, 224, 209, 0.3); }
-        70% { box-shadow: 0 0 0 10px rgba(127, 224, 209, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(127, 224, 209, 0); }
+        0% { box-shadow: 0 0 0 0 rgba(242, 221, 230, 0.3); }
+        70% { box-shadow: 0 0 0 10px rgba(242, 221, 230, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(242, 221, 230, 0); }
     }
     
     /* Адаптивность */
@@ -1282,7 +1281,7 @@
         }
         
         .btn-action:hover {
-            background: linear-gradient(135deg, var(--action-dark), var(--aquamarine));
+            background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
             transform: translateY(-2px);
         }
         
@@ -1321,7 +1320,7 @@
         width: 50px;
         height: 50px;
         background: var(--action-gradient);
-        color: white;
+        color: var(--graphite-dark);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1387,7 +1386,7 @@
     
     /* Фокус состояния */
     :focus {
-        outline: 2px solid var(--aquamarine);
+        outline: 2px solid var(--pastel-pink);
         outline-offset: 2px;
     }
     
@@ -1402,12 +1401,12 @@
     }
     
     ::-webkit-scrollbar-thumb {
-        background: var(--aquamarine);
+        background: var(--pastel-pink);
         border-radius: 4px;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-        background: var(--action-dark);
+        background: var(--pink-medium);
     }
     
     /* Новые стили для состояний пользователя */
@@ -1434,7 +1433,7 @@
     
     .auth-icon {
         font-size: 4rem;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         margin-bottom: 20px;
     }
     
@@ -1469,8 +1468,8 @@
     }
     
     .tab.active {
-        color: var(--aquamarine);
-        border-bottom-color: var(--aquamarine);
+        color: var(--pastel-pink);
+        border-bottom-color: var(--pastel-pink);
     }
     
     /* Пустые состояния */
@@ -1552,7 +1551,7 @@
     }
     
     .chat-message.sent .message-bubble {
-        background: linear-gradient(135deg, var(--pastel-pink), #E6CCDB);
+        background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
         color: var(--graphite-dark);
         border-bottom-right-radius: 4px;
     }
@@ -1608,13 +1607,13 @@
     
     .chat-input:focus {
         outline: none;
-        border-color: var(--aquamarine);
-        box-shadow: 0 0 0 3px rgba(127, 224, 209, 0.1);
+        border-color: var(--pastel-pink);
+        box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.1);
     }
     
     .send-message-btn {
         background: var(--action-gradient);
-        color: white;
+        color: var(--graphite-dark);
         border: none;
         border-radius: 50%;
         width: 48px;
@@ -1716,8 +1715,8 @@
     
     .tasks-popup-header {
         padding: 20px;
-        background: var(--primary-gradient);
-        color: white;
+        background: var(--action-gradient);
+        color: var(--graphite-dark);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1729,9 +1728,9 @@
     }
     
     .close-popup-btn {
-        background: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.5);
         border: none;
-        color: white;
+        color: var(--graphite-dark);
         width: 36px;
         height: 36px;
         border-radius: 50%;
@@ -1795,7 +1794,7 @@
         width: 50px;
         height: 50px;
         background: var(--action-gradient);
-        color: white;
+        color: var(--graphite-dark);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1833,8 +1832,8 @@
 
     .search-input:focus {
         outline: none;
-        border-color: var(--aquamarine);
-        box-shadow: 0 0 0 3px rgba(127, 224, 209, 0.1);
+        border-color: var(--pastel-pink);
+        box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.1);
     }
 
     .search-icon {
@@ -1863,14 +1862,14 @@
     }
 
     .filter-btn.active {
-        background: var(--aquamarine);
+        background: var(--pastel-pink);
         color: white;
-        border-color: var(--aquamarine);
+        border-color: var(--pastel-pink);
     }
 
     /* Стили для страницы гайдов */
     .guides-page .hero {
-        background: linear-gradient(135deg, rgba(197, 168, 128, 0.1), rgba(185, 175, 255, 0.1));
+        background: linear-gradient(135deg, rgba(242, 221, 230, 0.1), rgba(185, 175, 255, 0.1));
     }
     
     /* Цвета статусов задач */
@@ -1995,7 +1994,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--gold-metallic);
+        color: var(--pastel-pink);
         font-size: 1.2rem;
         box-shadow: var(--shadow-sm);
     }
@@ -2039,7 +2038,7 @@
     }
 
     .select-service-btn {
-        color: var(--aquamarine);
+        color: var(--pastel-pink);
         font-weight: 600;
         font-size: 0.9rem;
         display: flex;
@@ -2049,7 +2048,7 @@
     }
 
     .select-service-btn:hover {
-        color: var(--action-dark);
+        color: var(--pink-medium);
     }
 
     /* Адаптивность для квадратной сетки */
