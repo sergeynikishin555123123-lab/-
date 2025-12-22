@@ -1,51 +1,39 @@
-# Используем официальный образ Node.js
-FROM node:22-slim
+FROM node:18-alpine
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Устанавливаем системные зависимости для сборки native модулей
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    sqlite3 \
-    libsqlite3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Устанавливаем системные утилиты
+RUN apk add --no-cache curl
 
-# Копируем файлы зависимостей
+# Копируем package.json
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
 
-# Если используется pnpm, устанавливаем его
-RUN if [ -f pnpm-lock.yaml ]; then \
-      echo "Detected pnpm workspace"; \
-      npm install -g pnpm; \
+# Устанавливаем зависимости с кешем
+RUN npm config set registry https://registry.npmjs.org/ && \
+    npm config set fetch-retries 5 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000
+
+# Создаем package-lock.json если его нет
+RUN if [ ! -f package-lock.json ]; then \
+        npm install --package-lock-only --no-audit --no-save; \
     fi
 
 # Устанавливаем зависимости
-RUN if [ -f pnpm-lock.yaml ]; then \
-      pnpm install --frozen-lockfile --prod; \
-    elif [ -f package-lock.json ]; then \
-      echo "Detected npm project"; \
-      npm ci --only=production; \
-    else \
-      echo "No lockfile, fallback to basic install"; \
-      npm install --only=production; \
-    fi
+RUN npm ci --only=production --no-audit --prefer-offline
 
-# Копируем остальные файлы приложения
+# Копируем исходный код
 COPY . .
 
-# Создаем необходимые директории для загрузки файлов
-RUN mkdir -p public/uploads/categories \
-    public/uploads/users \
-    public/uploads/services \
-    public/uploads/tasks \
-    public/uploads/logo
+# Создаем public директорию (только ее)
+RUN mkdir -p public
 
 # Открываем порт
 EXPOSE 3000
 
-# Запускаем приложение
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+# Запуск
 CMD ["node", "server.js"]
