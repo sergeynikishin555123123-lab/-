@@ -6236,7 +6236,7 @@
             await loadLogo();
             
             // Загружаем данные
-            await checkAuth();
+           await determineInitialScreen();
             await loadCategories();
             await loadAllServices();
             await loadSubscriptions();
@@ -6267,36 +6267,158 @@
             }, 1000);
         });
 
-        // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ HTML ====================
-        window.showLoginModal = showLoginModal;
-        window.showRegisterModal = showRegisterModal;
-        window.showForgotPasswordModal = showForgotPasswordModal;
-        window.navigateToPage = navigateToPage;
-        window.showTasksPopup = showTasksPopup;
-        window.checkSubscription = checkSubscription;
-        window.showTaskDetailsCompact = showTaskDetailsCompact;
-        window.openSendCodeModal = openSendCodeModal;
-        window.sendVerificationCode = sendVerificationCode;
-        window.verifyPhoneCode = verifyPhoneCode;
-        window.selectSubscription = selectSubscription;
-        window.showGuide = showGuide;
-        window.closeGuideModal = closeGuideModal;
-        window.filterServices = filterServices;
-       window.setServiceFilter = setServiceFilter;
-        window.selectCategory = selectCategory;
-        window.selectService = selectService;
-        window.cancelTask = cancelTask;
-        window.showHelp = showHelp;
-        window.navigateToPerformerPanel = navigateToPerformerPanel;
-        window.logout = logout;
-        window.openVerifyPhoneModal = openVerifyPhoneModal;
-        window.filterTasks = filterTasks;
-        window.toggleTaskChat = toggleTaskChat;
-        window.sendInlineChatMessage = sendInlineChatMessage;
-        window.updateTaskStatus = updateTaskStatus;
-        window.completeTask = completeTask;
-        window.closeTasksPopup = closeTasksPopup;
+// ==================== ФУНКЦИИ ДЛЯ ФИЛЬТРАЦИИ УСЛУГ ====================
 
+// Функция для установки фильтра услуг
+function setServiceFilter(filterType) {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => btn.classList.remove('active'));
+    
+    const activeBtn = document.querySelector(`.filter-btn[data-filter="${filterType}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Применяем фильтр если выбрана категория
+    if (selectedCategory && allServices.length > 0) {
+        let filteredServices = allServices;
+        
+        if (filterType === 'featured') {
+            filteredServices = allServices.filter(service => service.is_featured);
+        } else if (filterType === 'popular') {
+            filteredServices = allServices.filter(service => service.rating > 4);
+        }
+        
+        services = filteredServices.filter(service => service.category_id === selectedCategory.id);
+        if (document.getElementById('allServicesList')) {
+            renderServicesInCategory();
+        }
+    }
+}
+
+// Экспортируем для глобального доступа
+window.setServiceFilter = setServiceFilter;
+
+// ==================== НАВИГАЦИЯ ПО СТРАНИЦАМ ====================
+
+function navigateToPage(pageId) {
+    console.log('🚀 Навигация на страницу:', pageId);
+    
+    // Скрываем все страницы
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    
+    // Показываем целевую страницу
+    const targetPage = document.getElementById(pageId + '-page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+        
+        // Обновляем активный пункт в нижней навигации
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-page') === pageId) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Загружаем данные для страницы
+        switch(pageId) {
+            case 'home':
+                loadHomePage();
+                break;
+            case 'all-services':
+                loadAllServicesPage();
+                break;
+            case 'guides':
+                // Страница гайдов уже загружена
+                break;
+            case 'profile':
+                loadUserProfile();
+                break;
+            case 'tasks':
+                loadUserTasks('all');
+                break;
+            case 'subscription':
+                loadSubscriptionPage();
+                break;
+            case 'auth':
+                // Страница авторизации
+                break;
+        }
+        
+        // Скрываем меню пользователя если открыто
+        const userMenu = document.getElementById('userMenu');
+        if (userMenu && userMenu.style.display === 'block') {
+            userMenu.style.display = 'none';
+        }
+    } else {
+        console.error('❌ Страница не найдена:', pageId);
+    }
+}
+        
+       // ==================== ФУНКЦИИ ДЛЯ ФИЛЬТРАЦИИ УСЛУГ ====================
+
+function setServiceFilter(filterType) {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => btn.classList.remove('active'));
+    
+    const activeBtn = document.querySelector(`.filter-btn[data-filter="${filterType}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+    
+    // Применяем фильтр если выбрана категория
+    if (selectedCategory && allServices.length > 0) {
+        let filteredServices = allServices;
+        
+        if (filterType === 'featured') {
+            filteredServices = allServices.filter(service => service.is_featured);
+        } else if (filterType === 'popular') {
+            filteredServices = allServices.filter(service => service.is_featured); // В демо одинаково
+        }
+        
+        services = filteredServices.filter(service => {
+            if (!service.category_id) return false;
+            return service.category_id === selectedCategory.id;
+        });
+        
+        if (document.getElementById('allServicesList')) {
+            renderServicesInCategory();
+        }
+    }
+}
+
+// ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ HTML ====================
+// УБЕДИТЕСЬ что эти строки есть:
+window.showLoginModal = showLoginModal;
+window.showRegisterModal = showRegisterModal;
+window.showForgotPasswordModal = showForgotPasswordModal;
+window.navigateToPage = navigateToPage; // ← ЭТА СТРОКА ДОЛЖНА БЫТЬ
+window.showTasksPopup = showTasksPopup;
+window.checkSubscription = checkSubscription;
+window.showTaskDetailsCompact = showTaskDetailsCompact;
+window.openSendCodeModal = openSendCodeModal;
+window.sendVerificationCode = sendVerificationCode;
+window.verifyPhoneCode = verifyPhoneCode;
+window.selectSubscription = selectSubscription;
+window.showGuide = showGuide;
+window.closeGuideModal = closeGuideModal;
+window.filterServices = filterServices;
+window.setServiceFilter = setServiceFilter; // ← ДОБАВЬТЕ ЭТУ СТРОКУ
+window.selectCategory = selectCategory;
+window.selectService = selectService;
+window.cancelTask = cancelTask;
+window.showHelp = showHelp;
+window.navigateToPerformerPanel = navigateToPerformerPanel;
+window.logout = logout;
+window.openVerifyPhoneModal = openVerifyPhoneModal;
+window.filterTasks = filterTasks;
+window.toggleTaskChat = toggleTaskChat;
+window.sendInlineChatMessage = sendInlineChatMessage;
+window.updateTaskStatus = updateTaskStatus;
+window.completeTask = completeTask;
+window.closeTasksPopup = closeTasksPopup;
         // ==================== ПУБЛИЧНЫЕ ФУНКЦИИ ДЛЯ ПАНЕЛИ ИСПОЛНИТЕЛЯ ====================
         window.performerLogin = performerLogin;
         window.loadAvailableTasksForPerformer = loadAvailableTasksForPerformer;
