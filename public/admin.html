@@ -2272,61 +2272,124 @@
         }
 
         // Функции авторизации
-        async function adminLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+async function adminLogin() {
+    let phone = document.getElementById('loginEmail').value; // Поменяйте ID на loginPhone
+    const password = document.getElementById('loginPassword').value;
+    
+    // Форматируем телефон
+    phone = formatPhone(phone);
+    
+    if (!phone || !password) {
+        showNotification('Заполните все поля', 'error');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const response = await fetch(`${apiBaseUrl}/api/admin/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                phone: phone, // Используем телефон
+                password: password
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.token) {
+            currentToken = data.token;
+            currentUser = data.user;
             
-            if (!email || !password) {
-                showNotification('Заполните все поля', 'error');
-                return;
-            }
+            localStorage.setItem('adminToken', currentToken);
+            localStorage.setItem('adminUser', JSON.stringify(currentUser));
             
-            try {
-                showLoading();
-                
-                const response = await fetch(`${apiBaseUrl}/api/admin/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        password: password
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.token) {
-                    currentToken = data.token;
-                    currentUser = data.user;
-                    
-                    localStorage.setItem('adminToken', currentToken);
-                    localStorage.setItem('adminUser', JSON.stringify(currentUser));
-                    
-                    showNotification('Вход выполнен успешно', 'success');
-                    closeModal('loginModal');
-                    updateUserInfo();
-                    loadDashboard();
-                    hideLoading();
-                } else {
-                    showNotification(data.message || 'Ошибка входа', 'error');
-                    hideLoading();
-                }
-            } catch (error) {
-                console.error('Ошибка входа:', error);
-                showNotification('Ошибка входа', 'error');
-                hideLoading();
-            }
+            showNotification('Вход выполнен успешно', 'success');
+            closeModal('loginModal');
+            updateUserInfo();
+            loadDashboard();
+            hideLoading();
+        } else {
+            showNotification(data.message || 'Ошибка входа', 'error');
+            hideLoading();
         }
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showNotification('Ошибка входа', 'error');
+        hideLoading();
+    }
+}
 
+function formatPhone(phone) {
+    if (!phone) return '';
+    
+    let cleaned = phone.toString().trim();
+    const hasPlus = cleaned.startsWith('+');
+    cleaned = cleaned.replace(/[^\d]/g, '');
+    
+    if (cleaned.length === 0) return '';
+    
+    let result = '';
+    
+    if (cleaned.startsWith('7')) {
+        if (cleaned.length === 11) {
+            result = '+7' + cleaned.substring(1);
+        } else if (cleaned.length === 10) {
+            result = '+7' + cleaned;
+        } else if (cleaned.length === 9) {
+            result = '+79' + cleaned.substring(1);
+        } else {
+            result = '+' + cleaned;
+        }
+    } else if (cleaned.startsWith('8')) {
+        if (cleaned.length === 11) {
+            result = '+7' + cleaned.substring(1);
+        } else if (cleaned.length === 10) {
+            result = '+7' + cleaned.substring(1);
+        } else if (cleaned.length === 9) {
+            result = '+7' + cleaned;
+        } else {
+            result = '+7' + cleaned.substring(1);
+        }
+    } else if (cleaned.length === 10 && cleaned.startsWith('9')) {
+        result = '+7' + cleaned;
+    } else if (cleaned.length < 10 && cleaned.startsWith('9')) {
+        result = '+7' + cleaned;
+    } else if (hasPlus && cleaned.length === 11) {
+        result = '+' + cleaned;
+    } else if (hasPlus && cleaned.length === 10) {
+        result = '+' + cleaned;
+    } else {
+        if (cleaned.length >= 10) {
+            const last10 = cleaned.substring(cleaned.length - 10);
+            result = '+7' + last10;
+        } else {
+            result = '+7' + cleaned;
+        }
+    }
+    
+    if (!result.startsWith('+7')) {
+        result = '+7' + result.replace(/^\+/, '');
+    }
+    
+    if (result.length > 12) {
+        result = result.substring(0, 12);
+    }
+    
+    return result;
+}
+        
         async function verifyToken() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/verify`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
+               const response = await fetch(`${apiBaseUrl}/api/auth/check`, { // ВМЕСТО /api/admin/verify
+    headers: {
+        'Authorization': `Bearer ${currentToken}`
+    }
+});
+
                 
                 if (response.ok) {
                     const storedUser = localStorage.getItem('adminUser');
