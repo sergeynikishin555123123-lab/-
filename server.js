@@ -8,6 +8,8 @@ const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
 const path = require('path');
 const crypto = require('crypto');
+const multer = require('multer');
+const fs = require('fs').promises;
 
 // ==================== ИНИЦИАЛИЗАЦИЯ ====================
 const app = express();
@@ -75,6 +77,40 @@ app.use((req, res, next) => {
 // ==================== КОНФИГУРАЦИЯ ====================
 const DEMO_MODE = true;
 
+// ==================== НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = 'public/uploads';
+    // Создаем директорию если ее нет
+    if (!fs.existsSync) {
+      const fsSync = require('fs');
+      if (!fsSync.existsSync(uploadDir)) {
+        fsSync.mkdirSync(uploadDir, { recursive: true });
+      }
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|gif|svg|webp/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Только изображения разрешены'));
+    }
+  }
+});
 // ==================== БАЗА ДАННЫХ ====================
 let db;
 
@@ -5086,6 +5122,78 @@ app.get('/api/performer/tasks/available/count', authMiddleware(['performer']), a
             error: 'Ошибка подсчета задач'
         });
     }
+});
+
+// ==================== API ЗАГРУЗКИ ФАЙЛОВ ====================
+
+// Загрузка изображения
+app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'Файл не был загружен'
+      });
+    }
+    
+    const fileUrl = `/uploads/${req.file.filename}`;
+    
+    res.json({
+      success: true,
+      message: 'Файл успешно загружен',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+        url: fileUrl,
+        path: req.file.path
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Ошибка загрузки файла:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка загрузки файла'
+    });
+  }
+});
+
+// Получение списка загруженных изображений
+app.get('/api/admin/uploads', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+  try {
+    const uploadsDir = path.join(__dirname, 'public/uploads');
+    
+    try {
+      await fs.access(uploadsDir);
+    } catch {
+      await fs.mkdir(uploadsDir, { recursive: true });
+      return res.json({
+        success: true,
+        data: { files: [] }
+      });
+    }
+    
+    const files = await fs.readdir(uploadsDir);
+    const fileList = files.map(filename => ({
+      filename,
+      url: `/uploads/${filename}`,
+      path: path.join(uploadsDir, filename)
+    }));
+    
+    res.json({
+      success: true,
+      data: { files: fileList }
+    });
+    
+  } catch (error) {
+    console.error('❌ Ошибка получения списка файлов:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Ошибка получения файлов'
+    });
+  }
 });
 
 // ==================== АДМИН API (ПОЛНЫЕ ВОЗМОЖНОСТИ) ====================
