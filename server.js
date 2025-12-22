@@ -6404,6 +6404,145 @@ app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), asyn
     }
 });
 
+// ==================== УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (АДМИН) ====================
+app.delete('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const currentUserId = req.user.id;
+    
+    console.log(`❌ Попытка удаления пользователя ${userId} администратором ${currentUserId}`);
+    
+    // Проверяем, не пытаемся ли удалить себя
+    if (parseInt(userId) === parseInt(currentUserId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Нельзя удалить самого себя'
+      });
+    }
+    
+    // Получаем информацию о пользователе
+    const user = await db.get('SELECT id, role, email, phone FROM users WHERE id = ?', [userId]);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Пользователь не найден'
+      });
+    }
+    
+    // Не даем удалять суперадминов обычным админам
+    if (user.role === 'superadmin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Недостаточно прав для удаления суперадминистратора'
+      });
+    }
+    
+    // Проверяем, есть ли связанные задачи у пользователя
+    const hasClientTasks = await db.get(
+      'SELECT 1 FROM tasks WHERE client_id = ? LIMIT 1',
+      [userId]
+    );
+    
+    const hasPerformerTasks = await db.get(
+      'SELECT 1 FROM tasks WHERE performer_id = ? LIMIT 1',
+      [userId]
+    );
+    
+    const hasTasks = hasClientTasks || hasPerformerTasks;
+    
+    // Проверяем, есть ли транзакции
+    const hasTransactions = await db.get(
+      'SELECT 1 FROM transactions WHERE user_id = ? LIMIT 1',
+      [userId]
+    );
+    
+    if (hasTasks || hasTransactions) {
+      // Есть связанные данные - деактивируем вместо удаления
+      console.log(`⚠️ Деактивация пользователя ${userId} (есть связанные данные)`);
+      
+      await db.run(
+        'UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+        [userId]
+      );
+      
+      // Создаем уведомление
+      await db.run(
+        `INSERT INTO notifications 
+        (user_id, type, title, message) 
+        VALUES (?, ?, ?, ?)`,
+        [
+          userId,
+          'account_deactivated',
+          'Аккаунт деактивирован',
+          'Ваш аккаунт был деактивирован администратором.'
+        ]
+      );
+      
+      return res.json({
+        success: true,
+        message: 'Пользователь деактивирован (есть связанные задачи или транзакции)',
+        data: { 
+          id: userId,
+          deactivated: true,
+          email: user.email,
+          phone: user.phone
+        }
+      });
+    }
+    
+    // Нет связанных данных - удаляем полностью
+    console.log(`🗑️ Полное удаление пользователя ${userId}`);
+    
+    // Начинаем транзакцию для безопасного удаления
+    await db.exec('BEGIN TRANSACTION');
+    
+    try {
+      // Удаляем связанные записи в правильном порядке
+      await db.run('DELETE FROM phone_verification_codes WHERE phone = ?', [user.phone]);
+      await db.run('DELETE FROM notifications WHERE user_id = ?', [userId]);
+      await db.run('DELETE FROM performer_categories WHERE performer_id = ?', [userId]);
+      
+      // Удаляем пользователя
+      await db.run('DELETE FROM users WHERE id = ?', [userId]);
+      
+      await db.exec('COMMIT');
+      
+      console.log(`✅ Пользователь ${userId} успешно удален`);
+      
+      res.json({
+        success: true,
+        message: 'Пользователь успешно удален',
+        data: { 
+          id: userId,
+          email: user.email,
+          phone: user.phone,
+          permanently_deleted: true
+        }
+      });
+      
+    } catch (transactionError) {
+      await db.exec('ROLLBACK');
+      throw transactionError;
+    }
+    
+  } catch (error) {
+    console.error('❌ Ошибка удаления пользователя:', error.message);
+    
+    // Проверяем ошибки уникальности
+    if (error.message.includes('SQLITE_CONSTRAINT') || error.message.includes('FOREIGN KEY')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Не удалось удалить пользователя из-за связанных данных. Попробуйте деактивировать аккаунт.'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Внутренняя ошибка сервера при удалении пользователя'
+    });
+  }
+});
+
 // Полное управление пользователями
 app.get('/api/admin/users-detailed', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
