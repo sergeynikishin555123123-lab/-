@@ -8,27 +8,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --gold: #C5A880;
-            --lavender: #B9AFFF;
-            --aquamarine: #7FE0D1;
-            --graphite: #2C3E50;
-            --light-graphite: #5D6D7E;
-            --bg-primary: #F8F9FA;
-            --bg-secondary: #FFFFFF;
+            --gold-light: #D4A574;
+            --gold-dark: #B8860B;
+            --bg-primary: #F5E6D3;
+            --bg-secondary: #FFE4E1;
             --bg-sidebar: #2C3E50;
             --text-primary: #2C3E50;
             --text-secondary: #5D6D7E;
             --text-light: #85929E;
-            --accent-primary: #C5A880;
-            --accent-secondary: #A88B5E;
-            --accent-success: #2ECC71;
+            --accent-primary: #D4A574;
+            --accent-secondary: #B8860B;
+            --accent-success: #27AE60;
             --accent-warning: #F39C12;
             --accent-danger: #E74C3C;
             --accent-info: #3498DB;
-            --border-color: #E3E8EF;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-            --shadow: 0 4px 8px rgba(0,0,0,0.08);
-            --shadow-lg: 0 10px 20px rgba(0,0,0,0.1);
+            --border-color: #E8C4B4;
+            --shadow-sm: 0 2px 8px rgba(212, 165, 116, 0.1);
+            --shadow: 0 4px 12px rgba(212, 165, 116, 0.15);
+            --shadow-lg: 0 8px 24px rgba(212, 165, 116, 0.2);
             --radius-sm: 8px;
             --radius: 12px;
             --radius-lg: 16px;
@@ -75,6 +72,11 @@
             z-index: 1000;
             transition: var(--transition);
             box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transform: translateX(0);
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
         }
 
         .sidebar-header {
@@ -83,11 +85,11 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.1), rgba(185, 175, 255, 0.1));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(184, 134, 11, 0.2));
         }
 
         .sidebar-header i {
-            color: var(--gold);
+            color: var(--gold-light);
             font-size: 1.75rem;
             background: rgba(255, 255, 255, 0.1);
             width: 48px;
@@ -101,9 +103,7 @@
         .sidebar-header h1 {
             font-size: 1.4rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold), var(--lavender));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: white;
         }
 
         .nav-menu {
@@ -125,16 +125,16 @@
         }
 
         .nav-item:hover {
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.1), rgba(185, 175, 255, 0.1));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(184, 134, 11, 0.15));
             color: white;
             transform: translateX(4px);
         }
 
         .nav-item.active {
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.2), rgba(185, 175, 255, 0.2));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.25), rgba(184, 134, 11, 0.25));
             color: white;
-            border-left-color: var(--gold);
-            box-shadow: 0 4px 12px rgba(197, 168, 128, 0.2);
+            border-left-color: var(--gold-light);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.2);
         }
 
         .nav-item i {
@@ -166,14 +166,14 @@
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold), var(--lavender));
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 700;
             font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.3);
         }
 
         .user-details h4 {
@@ -215,10 +215,15 @@
         /* Основной контент */
         .main-content {
             flex: 1;
-            margin-left: 280px;
             padding: 30px;
             min-height: 100vh;
             transition: var(--transition);
+            width: 100%;
+        }
+
+        .with-sidebar .main-content {
+            margin-left: 280px;
+            width: calc(100% - 280px);
         }
 
         .top-bar {
@@ -228,6 +233,8 @@
             padding-bottom: 24px;
             margin-bottom: 32px;
             border-bottom: 2px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .mobile-menu-btn {
@@ -240,6 +247,8 @@
             padding: 10px;
             border-radius: var(--radius-sm);
             transition: var(--transition);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
         }
 
         .mobile-menu-btn:hover {
@@ -249,9 +258,14 @@
         .page-title {
             font-size: 2rem;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--gold), var(--lavender));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--gold-dark);
+            flex: 1;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .content-section {
@@ -299,7 +313,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(135deg, var(--gold), var(--lavender));
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
         }
 
         .stat-icon {
@@ -311,14 +325,14 @@
             justify-content: center;
             font-size: 1.5rem;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, var(--aquamarine), rgba(127, 224, 209, 0.1));
-            color: var(--aquamarine);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(184, 134, 11, 0.1));
+            color: var(--gold-dark);
         }
 
-        .stat-icon.users { background: linear-gradient(135deg, #3498DB, rgba(52, 152, 219, 0.1)); color: #3498DB; }
-        .stat-icon.tasks { background: linear-gradient(135deg, #2ECC71, rgba(46, 204, 113, 0.1)); color: #2ECC71; }
-        .stat-icon.revenue { background: linear-gradient(135deg, var(--gold), rgba(197, 168, 128, 0.1)); color: var(--gold); }
-        .stat-icon.subscriptions { background: linear-gradient(135deg, var(--lavender), rgba(185, 175, 255, 0.1)); color: var(--lavender); }
+        .stat-icon.users { background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1)); color: #3498DB; }
+        .stat-icon.tasks { background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1)); color: #2ECC71; }
+        .stat-icon.revenue { background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(184, 134, 11, 0.1)); color: var(--gold-dark); }
+        .stat-icon.subscriptions { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1), rgba(142, 68, 173, 0.1)); color: #9B59B6; }
 
         .stat-value {
             font-size: 2.2rem;
@@ -333,7 +347,7 @@
             font-weight: 500;
         }
 
-        /* Таблицы */
+        /* Таблицы и карточки */
         .table-wrapper {
             background: var(--bg-secondary);
             border-radius: var(--radius-lg);
@@ -354,7 +368,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.05), rgba(185, 175, 255, 0.05));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.05), rgba(184, 134, 11, 0.05));
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .table-header h3 {
@@ -363,13 +379,54 @@
             color: var(--text-primary);
         }
 
-        table {
+        /* Таблицы для десктопа */
+        .desktop-table {
             width: 100%;
             border-collapse: collapse;
+            display: table;
+        }
+
+        /* Карточки для мобильных */
+        .mobile-cards {
+            display: none;
+            padding: 20px;
+        }
+
+        .card-item {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-row:last-child {
+            border-bottom: none;
+        }
+
+        .card-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .card-value {
+            color: var(--text-primary);
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
         }
 
         th {
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.1), rgba(185, 175, 255, 0.1));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(184, 134, 11, 0.1));
             padding: 16px 24px;
             text-align: left;
             font-weight: 700;
@@ -392,8 +449,7 @@
         }
 
         tr:hover {
-            background: linear-gradient(135deg, rgba(127, 224, 209, 0.05), rgba(185, 175, 255, 0.05));
-            transform: scale(1.01);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.05), rgba(184, 134, 11, 0.05));
         }
 
         /* Бейджи */
@@ -429,14 +485,14 @@
             border: 1px solid rgba(52, 152, 219, 0.2);
         }
         .badge-primary { 
-            background: linear-gradient(135deg, var(--gold), rgba(197, 168, 128, 0.1)); 
-            color: var(--accent-secondary); 
-            border: 1px solid rgba(197, 168, 128, 0.2);
+            background: linear-gradient(135deg, var(--gold-light), rgba(212, 165, 116, 0.1)); 
+            color: var(--gold-dark); 
+            border: 1px solid rgba(212, 165, 116, 0.2);
         }
-        .badge-lavender { 
-            background: linear-gradient(135deg, var(--lavender), rgba(185, 175, 255, 0.1)); 
+        .badge-purple { 
+            background: linear-gradient(135deg, #9B59B6, rgba(155, 89, 182, 0.1)); 
             color: #8E44AD; 
-            border: 1px solid rgba(185, 175, 255, 0.2);
+            border: 1px solid rgba(155, 89, 182, 0.2);
         }
 
         /* Кнопки */
@@ -463,23 +519,23 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--gold), var(--accent-secondary));
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
             color: white;
         }
 
         .btn-primary:hover {
-            background: linear-gradient(135deg, var(--accent-secondary), var(--gold));
-            box-shadow: 0 6px 16px rgba(197, 168, 128, 0.3);
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
+            box-shadow: 0 6px 16px rgba(212, 165, 116, 0.3);
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, var(--bg-secondary), #F1F2F6);
+            background: linear-gradient(135deg, var(--bg-secondary), #FFD7D1);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: linear-gradient(135deg, #F1F2F6, var(--bg-secondary));
+            background: linear-gradient(135deg, #FFD7D1, var(--bg-secondary));
             box-shadow: 0 6px 16px rgba(44, 62, 80, 0.1);
         }
 
@@ -537,14 +593,14 @@
             border-radius: var(--radius);
             font-size: 0.95rem;
             transition: var(--transition);
-            background: var(--bg-secondary);
+            background: white;
             font-family: 'Inter', sans-serif;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--aquamarine);
-            box-shadow: 0 0 0 4px rgba(127, 224, 209, 0.2);
+            border-color: var(--gold-light);
+            box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.2);
         }
 
         .form-row {
@@ -606,7 +662,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.05), rgba(185, 175, 255, 0.05));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.05), rgba(184, 134, 11, 0.05));
         }
 
         .modal-title {
@@ -646,7 +702,7 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.05), rgba(185, 175, 255, 0.05));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.05), rgba(184, 134, 11, 0.05));
         }
 
         /* Загрузка изображений */
@@ -657,18 +713,18 @@
             text-align: center;
             cursor: pointer;
             transition: var(--transition);
-            background: linear-gradient(135deg, rgba(197, 168, 128, 0.02), rgba(185, 175, 255, 0.02));
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.02), rgba(184, 134, 11, 0.02));
         }
 
         .image-upload:hover {
-            border-color: var(--aquamarine);
-            background: linear-gradient(135deg, rgba(127, 224, 209, 0.05), rgba(185, 175, 255, 0.05));
+            border-color: var(--gold-light);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.05), rgba(184, 134, 11, 0.05));
             transform: translateY(-2px);
         }
 
         .image-upload i {
             font-size: 3rem;
-            color: var(--aquamarine);
+            color: var(--gold-dark);
             margin-bottom: 16px;
         }
 
@@ -734,15 +790,15 @@
             border: 2px solid var(--border-color);
             border-radius: var(--radius);
             font-size: 0.95rem;
-            background: var(--bg-secondary);
+            background: white;
             transition: var(--transition);
             font-family: 'Inter', sans-serif;
         }
 
         .filter-select:focus, .filter-input:focus {
             outline: none;
-            border-color: var(--aquamarine);
-            box-shadow: 0 0 0 3px rgba(127, 224, 209, 0.2);
+            border-color: var(--gold-light);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.2);
         }
 
         /* Адаптивность */
@@ -751,9 +807,9 @@
                 width: 260px;
             }
             
-            .main-content {
+            .with-sidebar .main-content {
                 margin-left: 260px;
-                padding: 24px;
+                width: calc(100% - 260px);
             }
             
             .stats-grid {
@@ -770,8 +826,9 @@
                 transform: translateX(0);
             }
             
-            .main-content {
+            .with-sidebar .main-content {
                 margin-left: 0;
+                width: 100%;
             }
             
             .mobile-menu-btn {
@@ -781,19 +838,24 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            /* На мобильных показываем карточки вместо таблиц */
+            .desktop-table {
+                display: none;
+            }
+            
+            .mobile-cards {
+                display: block;
+            }
+            
+            .table-wrapper {
+                overflow-x: visible;
+            }
         }
 
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px;
-            }
-            
-            .table-wrapper {
-                overflow-x: auto;
-            }
-            
-            table {
-                min-width: 800px;
             }
             
             .form-row {
@@ -812,6 +874,21 @@
             .modal-content {
                 margin: 0;
                 max-height: 95vh;
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .top-bar-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .page-title {
+                text-align: center;
+                font-size: 1.8rem;
             }
         }
 
@@ -836,6 +913,14 @@
                 padding: 10px 20px;
                 font-size: 0.9rem;
             }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 1.8rem;
+            }
         }
 
         /* Утилиты */
@@ -849,13 +934,14 @@
         .w-100 { width: 100%; }
         .ml-2 { margin-left: 8px; }
         .ml-4 { margin-left: 16px; }
+        .mr-2 { margin-right: 8px; }
 
         /* Лоадер */
         .loader {
-            border: 4px solid rgba(197, 168, 128, 0.1);
-            border-top: 4px solid var(--gold);
-            border-right: 4px solid var(--lavender);
-            border-bottom: 4px solid var(--aquamarine);
+            border: 4px solid rgba(212, 165, 116, 0.1);
+            border-top: 4px solid var(--gold-light);
+            border-right: 4px solid var(--gold-dark);
+            border-bottom: 4px solid var(--accent-info);
             border-radius: 50%;
             width: 60px;
             height: 60px;
@@ -915,7 +1001,7 @@
             font-size: 4rem;
             margin-bottom: 24px;
             opacity: 0.3;
-            color: var(--aquamarine);
+            color: var(--gold-dark);
         }
 
         .empty-state h3 {
@@ -951,7 +1037,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, var(--border-color), #E3E8EF);
+            background: linear-gradient(135deg, var(--border-color), #E8C4B4);
             transition: var(--transition);
             border-radius: 34px;
         }
@@ -970,7 +1056,7 @@
         }
 
         input:checked + .toggle-slider {
-            background: linear-gradient(135deg, var(--aquamarine), #2ECC71);
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
         }
 
         input:checked + .toggle-slider:before {
@@ -983,6 +1069,7 @@
             border-bottom: 2px solid var(--border-color);
             margin-bottom: 24px;
             overflow-x: auto;
+            flex-wrap: wrap;
         }
 
         .tab {
@@ -1004,7 +1091,7 @@
         }
 
         .tab.active {
-            color: var(--gold);
+            color: var(--gold-dark);
         }
 
         .tab.active::after {
@@ -1014,7 +1101,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(135deg, var(--gold), var(--lavender));
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
             border-radius: 3px 3px 0 0;
         }
 
@@ -1049,7 +1136,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(135deg, var(--lavender), var(--aquamarine));
+            background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
         }
 
         .category-icon {
@@ -1061,8 +1148,8 @@
             justify-content: center;
             font-size: 1.8rem;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, rgba(185, 175, 255, 0.1), rgba(127, 224, 209, 0.1));
-            color: var(--lavender);
+            background: linear-gradient(135deg, rgba(212, 165, 116, 0.1), rgba(184, 134, 11, 0.1));
+            color: var(--gold-dark);
         }
 
         .category-image {
@@ -1073,55 +1160,58 @@
             margin-bottom: 16px;
         }
 
-        /* Прогресс-бары */
-        .progress-bar {
-            width: 100%;
-            height: 12px;
-            background: var(--border-color);
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, var(--aquamarine), var(--lavender));
-            border-radius: 6px;
-            transition: width 0.6s ease;
-        }
-
-        /* Хлебные крошки */
-        .breadcrumbs {
+        /* Двухколоночный макет для дашборда */
+        .row {
             display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding: 16px;
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            margin: 0 -12px;
         }
 
-        .breadcrumb-item {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: var(--transition);
+        .col-md-6 {
+            flex: 0 0 50%;
+            max-width: 50%;
+            padding: 0 12px;
         }
 
-        .breadcrumb-item:hover {
-            color: var(--gold);
+        @media (max-width: 768px) {
+            .col-md-6 {
+                flex: 0 0 100%;
+                max-width: 100%;
+                margin-bottom: 24px;
+            }
+            
+            .row {
+                margin: 0;
+            }
         }
 
-        .breadcrumb-item.active {
-            color: var(--text-primary);
-            font-weight: 600;
+        /* Мобильный оверлей для сайдбара */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
         }
 
-        .breadcrumb-separator {
-            color: var(--text-light);
-            font-size: 0.9rem;
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Улучшенные карточки для мобильных */
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+
+        .card-actions .btn {
+            padding: 6px 12px;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -1194,21 +1284,20 @@
             </div>
         </aside>
 
+        <!-- Оверлей для мобильного сайдбара -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
         <!-- Основной контент -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
             <div class="top-bar">
                 <button class="mobile-menu-btn" onclick="toggleSidebar()">
                     <i class="fas fa-bars"></i>
                 </button>
                 <h2 class="page-title" id="pageTitle">Дашборд</h2>
-                <div>
-                    <a href="/" class="btn btn-secondary mr-2">
+                <div class="top-bar-actions">
+                    <a href="/" class="btn btn-secondary">
                         <i class="fas fa-home"></i>
                         <span>На сайт</span>
-                    </a>
-                    <a href="/performer.html" class="btn btn-secondary">
-                        <i class="fas fa-user-tie"></i>
-                        <span>Исполнители</span>
                     </a>
                 </div>
             </div>
@@ -1220,7 +1309,7 @@
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-6 mb-8">
+                    <div class="col-md-6">
                         <div class="table-wrapper">
                             <div class="table-header">
                                 <h3>Последние задачи</h3>
@@ -1235,7 +1324,7 @@
                         </div>
                     </div>
                     
-                    <div class="col-md-6 mb-8">
+                    <div class="col-md-6">
                         <div class="table-wrapper">
                             <div class="table-header">
                                 <h3>Новые пользователи</h3>
@@ -1258,34 +1347,24 @@
                     <div class="filter-group">
                         <label class="filter-label">Роль</label>
                         <select class="filter-select" id="roleFilter" onchange="loadUsers()">
-                            <option value="all">Все роли</option>
+                            <option value="">Все роли</option>
                             <option value="client">Клиенты</option>
                             <option value="performer">Исполнители</option>
                             <option value="admin">Администраторы</option>
-                            <option value="superadmin">Супер-админ</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="statusFilter" onchange="loadUsers()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="active">Активные</option>
                             <option value="inactive">Неактивные</option>
                         </select>
                     </div>
                     <div class="filter-group">
-                        <label class="filter-label">Подписка</label>
-                        <select class="filter-select" id="subscriptionFilter" onchange="loadUsers()">
-                            <option value="all">Все</option>
-                            <option value="essential">Эссеншл</option>
-                            <option value="premium">Премиум</option>
-                            <option value="pending">Ожидание</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
                         <label class="filter-label">Поиск</label>
                         <input type="text" class="filter-input" id="searchUsers" 
-                               placeholder="Имя, email или телефон" oninput="debounce(loadUsers, 500)">
+                               placeholder="Имя, email или телефон" oninput="debouncedLoadUsers()">
                     </div>
                     <div class="filter-group">
                         <button class="btn btn-primary w-100" onclick="showUserModal()" style="margin-top: 22px;">
@@ -1298,7 +1377,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Пользователи</h3>
-                        <span id="usersCount" class="badge badge-lavender">0 пользователей</span>
+                        <span id="usersCount" class="badge badge-primary">0 пользователей</span>
                     </div>
                     <div id="usersTable">
                         <div class="loader"></div>
@@ -1312,9 +1391,9 @@
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="categoryStatusFilter" onchange="loadCategories()">
-                            <option value="all">Все</option>
-                            <option value="active">Активные</option>
-                            <option value="inactive">Неактивные</option>
+                            <option value="">Все</option>
+                            <option value="true">Активные</option>
+                            <option value="false">Неактивные</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1336,23 +1415,23 @@
                     <div class="filter-group">
                         <label class="filter-label">Категория</label>
                         <select class="filter-select" id="serviceCategoryFilter" onchange="loadServices()">
-                            <option value="all">Все категории</option>
+                            <option value="">Все категории</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="serviceStatusFilter" onchange="loadServices()">
-                            <option value="all">Все</option>
-                            <option value="active">Активные</option>
-                            <option value="inactive">Неактивные</option>
+                            <option value="">Все</option>
+                            <option value="true">Активные</option>
+                            <option value="false">Неактивные</option>
                         </select>
                     </div>
                     <div class="filter-group">
                         <label class="filter-label">Популярные</label>
                         <select class="filter-select" id="serviceFeaturedFilter" onchange="loadServices()">
-                            <option value="all">Все</option>
-                            <option value="featured">Популярные</option>
-                            <option value="not_featured">Обычные</option>
+                            <option value="">Все</option>
+                            <option value="true">Популярные</option>
+                            <option value="false">Обычные</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1366,7 +1445,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Услуги</h3>
-                        <span id="servicesCount" class="badge badge-lavender">0 услуг</span>
+                        <span id="servicesCount" class="badge badge-primary">0 услуг</span>
                     </div>
                     <div id="servicesTable">
                         <div class="loader"></div>
@@ -1380,7 +1459,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="taskStatusFilter" onchange="loadTasks()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="new">Новые</option>
                             <option value="searching">Поиск</option>
                             <option value="assigned">Назначенные</option>
@@ -1392,7 +1471,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Категория</label>
                         <select class="filter-select" id="taskCategoryFilter" onchange="loadTasks()">
-                            <option value="all">Все категории</option>
+                            <option value="">Все категории</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -1408,7 +1487,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Задачи</h3>
-                        <span id="totalTasksCount" class="badge badge-lavender">0 задач</span>
+                        <span id="totalTasksCount" class="badge badge-primary">0 задач</span>
                     </div>
                     <div id="tasksTable">
                         <div class="loader"></div>
@@ -1422,7 +1501,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="subscriptionStatusFilter" onchange="loadSubscriptions()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="active">Активные</option>
                             <option value="inactive">Неактивные</option>
                         </select>
@@ -1438,7 +1517,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Подписки</h3>
-                        <span id="subscriptionsCount" class="badge badge-lavender">0 подписок</span>
+                        <span id="subscriptionsCount" class="badge badge-primary">0 подписок</span>
                     </div>
                     <div id="subscriptionsTable">
                         <div class="loader"></div>
@@ -1452,7 +1531,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Тип</label>
                         <select class="filter-select" id="transactionTypeFilter" onchange="loadTransactions()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="initial_fee">Вступительный взнос</option>
                             <option value="subscription">Подписка</option>
                             <option value="payout">Выплата</option>
@@ -1461,7 +1540,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="transactionStatusFilter" onchange="loadTransactions()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="completed">Завершено</option>
                             <option value="pending">Ожидание</option>
                             <option value="failed">Ошибка</option>
@@ -1475,18 +1554,12 @@
                         <label class="filter-label">Дата по</label>
                         <input type="date" class="filter-input" id="transDateTo" onchange="loadTransactions()">
                     </div>
-                    <div class="filter-group">
-                        <button class="btn btn-primary w-100" onclick="exportTransactions()" style="margin-top: 22px;">
-                            <i class="fas fa-download"></i>
-                            <span>Экспорт</span>
-                        </button>
-                    </div>
                 </div>
                 
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Транзакции</h3>
-                        <span id="transactionsCount" class="badge badge-lavender">0 транзакций</span>
+                        <span id="transactionsCount" class="badge badge-primary">0 транзакций</span>
                     </div>
                     <div id="transactionsTable">
                         <div class="loader"></div>
@@ -1500,7 +1573,7 @@
                     <div class="filter-group">
                         <label class="filter-label">Рейтинг</label>
                         <select class="filter-select" id="reviewRatingFilter" onchange="loadReviews()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="5">5 звёзд</option>
                             <option value="4">4 звезды</option>
                             <option value="3">3 звезды</option>
@@ -1511,17 +1584,9 @@
                     <div class="filter-group">
                         <label class="filter-label">Статус</label>
                         <select class="filter-select" id="reviewStatusFilter" onchange="loadReviews()">
-                            <option value="all">Все</option>
+                            <option value="">Все</option>
                             <option value="approved">Одобренные</option>
                             <option value="pending">На проверке</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label class="filter-label">Популярные</label>
-                        <select class="filter-select" id="reviewFeaturedFilter" onchange="loadReviews()">
-                            <option value="all">Все</option>
-                            <option value="featured">Популярные</option>
-                            <option value="not_featured">Обычные</option>
                         </select>
                     </div>
                 </div>
@@ -1529,7 +1594,7 @@
                 <div class="table-wrapper">
                     <div class="table-header">
                         <h3>Отзывы</h3>
-                        <span id="reviewsCount" class="badge badge-lavender">0 отзывов</span>
+                        <span id="reviewsCount" class="badge badge-primary">0 отзывов</span>
                     </div>
                     <div id="reviewsTable">
                         <div class="loader"></div>
@@ -1621,7 +1686,6 @@
                 <div class="tabs mb-6">
                     <button class="tab active" data-tab="general">Основные</button>
                     <button class="tab" data-tab="financial">Финансы</button>
-                    <button class="tab" data-tab="sms">SMS</button>
                     <button class="tab" data-tab="system">Система</button>
                 </div>
                 
@@ -1682,40 +1746,6 @@
                                         <input type="checkbox" id="demoMode">
                                         <span class="toggle-slider"></span>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="tab-content" id="smsSettingsTab" style="display: none;">
-                    <div class="table-wrapper">
-                        <div class="table-header">
-                            <h3>Настройки SMS</h3>
-                        </div>
-                        <div style="padding: 24px;">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Демо-режим SMS</label>
-                                    <div class="toggle-switch mt-2">
-                                        <input type="checkbox" id="smsDemoMode">
-                                        <span class="toggle-slider"></span>
-                                    </div>
-                                    <small class="text-muted">В демо-режиме коды выводятся в консоль</small>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Время жизни кода (минут)</label>
-                                    <input type="number" class="form-control" id="smsCodeExpiry" min="1" max="60">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Максимум попыток</label>
-                                    <input type="number" class="form-control" id="maxSmsAttempts" min="1" max="10">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Задержка отправки (сек)</label>
-                                    <input type="number" class="form-control" id="smsCooldown" min="10" max="300">
                                 </div>
                             </div>
                         </div>
@@ -1785,25 +1815,25 @@
                             <input type="email" class="form-control" id="email" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Телефон</label>
-                            <input type="tel" class="form-control" id="phone">
+                            <label class="form-label">Телефон *</label>
+                            <input type="tel" class="form-control" id="phone" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Роль *</label>
                             <select class="form-control" id="role" required>
+                                <option value="">Выберите роль</option>
                                 <option value="client">Клиент</option>
                                 <option value="performer">Исполнитель</option>
                                 <option value="admin">Администратор</option>
-                                <option value="superadmin">Супер-админ</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Подписка</label>
-                            <select class="form-control" id="subscriptionPlan">
-                                <option value="essential">Эссеншл</option>
-                                <option value="premium">Премиум</option>
+                            <label class="form-label">Статус</label>
+                            <select class="form-control" id="userStatus">
+                                <option value="true">Активен</option>
+                                <option value="false">Неактивен</option>
                             </select>
                         </div>
                     </div>
@@ -1839,10 +1869,6 @@
                         <input type="text" class="form-control" id="categoryName" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Отображаемое название *</label>
-                        <input type="text" class="form-control" id="categoryDisplayName" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Описание *</label>
                         <textarea class="form-control" id="categoryDescription" rows="3" required></textarea>
                     </div>
@@ -1850,10 +1876,11 @@
                         <div class="form-group">
                             <label class="form-label">Иконка *</label>
                             <input type="text" class="form-control" id="categoryIcon" placeholder="fas fa-icon" required>
+                            <small class="text-muted">Например: fas fa-cut для парикмахера</small>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Цвет</label>
-                            <input type="color" class="form-control" id="categoryColor" value="#C5A880">
+                            <input type="color" class="form-control" id="categoryColor" value="#D4A574">
                         </div>
                     </div>
                     <div class="form-row">
@@ -1864,20 +1891,10 @@
                         <div class="form-group">
                             <label class="form-label">Статус</label>
                             <select class="form-control" id="categoryActive">
-                                <option value="1">Активна</option>
-                                <option value="0">Неактивна</option>
+                                <option value="true">Активна</option>
+                                <option value="false">Неактивна</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Изображение</label>
-                        <div class="image-upload" onclick="document.getElementById('categoryImageInput').click()">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>Нажмите для загрузки изображения</p>
-                            <small>Рекомендуемый размер: 800×400px</small>
-                            <input type="file" id="categoryImageInput" accept="image/*" onchange="previewImage(event, 'categoryPreview')">
-                        </div>
-                        <div class="image-preview" id="categoryPreview"></div>
                     </div>
                 </form>
             </div>
@@ -1930,15 +1947,15 @@
                         <div class="form-group">
                             <label class="form-label">Статус</label>
                             <select class="form-control" id="serviceActive">
-                                <option value="1">Активна</option>
-                                <option value="0">Неактивна</option>
+                                <option value="true">Активна</option>
+                                <option value="false">Неактивна</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Популярная</label>
                             <select class="form-control" id="serviceFeatured">
-                                <option value="0">Нет</option>
-                                <option value="1">Да</option>
+                                <option value="false">Нет</option>
+                                <option value="true">Да</option>
                             </select>
                         </div>
                     </div>
@@ -1963,12 +1980,12 @@
                     <input type="hidden" id="subscriptionId">
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Ключ *</label>
+                            <label class="form-label">Название *</label>
                             <input type="text" class="form-control" id="subscriptionName" required>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Название *</label>
-                            <input type="text" class="form-control" id="subscriptionDisplayName" required>
+                            <label class="form-label">Ключ *</label>
+                            <input type="text" class="form-control" id="subscriptionKey" required placeholder="premium">
                         </div>
                     </div>
                     <div class="form-group">
@@ -1981,24 +1998,15 @@
                             <input type="number" class="form-control" id="subscriptionPriceMonthly" required min="0">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Цена в год (₽)</label>
-                            <input type="number" class="form-control" id="subscriptionPriceYearly" min="0">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label">Вступительный взнос (₽)</label>
-                            <input type="number" class="form-control" id="subscriptionInitialFee" min="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Лимит задач</label>
+                            <label class="form-label">Лимит задач в месяц</label>
                             <input type="number" class="form-control" id="subscriptionTasksLimit" min="0">
+                            <small class="text-muted">0 = безлимит</small>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label">Цвет темы</label>
-                            <input type="color" class="form-control" id="subscriptionColor" value="#C5A880">
+                            <input type="color" class="form-control" id="subscriptionColor" value="#D4A574">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Порядок</label>
@@ -2007,23 +2015,17 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Особенности (JSON)</label>
-                            <textarea class="form-control" id="subscriptionFeatures" rows="3" placeholder='["До 5 задач", "Поддержка 24/7"]'></textarea>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
                             <label class="form-label">Популярная</label>
                             <select class="form-control" id="subscriptionPopular">
-                                <option value="0">Нет</option>
-                                <option value="1">Да</option>
+                                <option value="false">Нет</option>
+                                <option value="true">Да</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Статус</label>
                             <select class="form-control" id="subscriptionActive">
-                                <option value="1">Активна</option>
-                                <option value="0">Неактивна</option>
+                                <option value="true">Активна</option>
+                                <option value="false">Неактивна</option>
                             </select>
                         </div>
                     </div>
@@ -2031,26 +2033,27 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('subscriptionModal')">Отмена</button>
-                                <button class="btn btn-primary" onclick="saveSubscription()">Сохранить</button>
+                <button class="btn btn-primary" onclick="saveSubscription()">Сохранить</button>
             </div>
         </div>
     </div>
 
     <!-- Логин модалка -->
-    <div class="modal active" id="loginModal">
+    <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Вход в админ-панель</h3>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Телефон</label>
-                    <input type="tel" class="form-control" id="loginPhone" value="+79991112233" placeholder="+79991234567">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="loginEmail" placeholder="admin@example.com">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Пароль</label>
-                    <input type="password" class="form-control" id="loginPassword" value="admin123">
+                    <input type="password" class="form-control" id="loginPassword">
                 </div>
+                <div id="loginError" class="text-danger" style="display: none; margin-top: 10px;"></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary w-100" onclick="adminLogin()">Войти</button>
@@ -2062,9 +2065,8 @@
         // Глобальные переменные
         let currentUser = null;
         let currentToken = localStorage.getItem('adminToken');
-        let apiBaseUrl = window.location.origin;
-        let currentImageFile = null;
-        let currentLogoFile = null;
+        let apiBaseUrl = 'https://sergeynikishin555123123-lab--86fa.twc1.net';
+        let debounceTimer;
 
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -2076,6 +2078,10 @@
             
             // Настройка дат
             setupDates();
+            
+            // Адаптация под размер экрана
+            checkScreenSize();
+            window.addEventListener('resize', checkScreenSize);
             
             // Проверка авторизации
             if (currentToken) {
@@ -2106,7 +2112,7 @@
                     
                     // Закрываем сайдбар на мобильных
                     if (window.innerWidth <= 1024) {
-                        document.getElementById('sidebar').classList.remove('active');
+                        toggleSidebar();
                     }
                 });
             });
@@ -2168,8 +2174,30 @@
             });
         }
 
+        function checkScreenSize() {
+            const isMobile = window.innerWidth <= 1024;
+            const container = document.querySelector('.container');
+            const mainContent = document.getElementById('mainContent');
+            
+            if (isMobile) {
+                container.classList.remove('with-sidebar');
+                document.getElementById('sidebar').classList.add('hidden');
+            } else {
+                container.classList.add('with-sidebar');
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('sidebarOverlay').classList.remove('active');
+            }
+        }
+
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isMobile = window.innerWidth <= 1024;
+            
+            if (isMobile) {
+                sidebar.classList.toggle('hidden');
+                overlay.classList.toggle('active');
+            }
         }
 
         function showSection(sectionId) {
@@ -2236,8 +2264,6 @@
                 case 'uploads':
                     loadUploads();
                     loadCurrentLogo();
-                    loadCategoryImages();
-                    loadUserImages();
                     break;
                 case 'settings':
                     loadSettings();
@@ -2247,10 +2273,10 @@
 
         // Функции авторизации
         async function adminLogin() {
-            const phone = document.getElementById('loginPhone').value;
+            const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
-            if (!phone || !password) {
+            if (!email || !password) {
                 showNotification('Заполните все поля', 'error');
                 return;
             }
@@ -2264,16 +2290,16 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        phone: phone,
+                        email: email,
                         password: password
                     })
                 });
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    currentToken = data.data.token;
-                    currentUser = data.data.user;
+                if (data.token) {
+                    currentToken = data.token;
+                    currentUser = data.user;
                     
                     localStorage.setItem('adminToken', currentToken);
                     localStorage.setItem('adminUser', JSON.stringify(currentUser));
@@ -2284,7 +2310,7 @@
                     loadDashboard();
                     hideLoading();
                 } else {
-                    showNotification(data.error || 'Ошибка входа', 'error');
+                    showNotification(data.message || 'Ошибка входа', 'error');
                     hideLoading();
                 }
             } catch (error) {
@@ -2296,7 +2322,7 @@
 
         async function verifyToken() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/dashboard-stats`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/verify`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2325,7 +2351,6 @@
                 document.getElementById('userName').textContent = 
                     `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim();
                 document.getElementById('userRole').textContent = 
-                    currentUser.role === 'superadmin' ? 'Супер-админ' :
                     currentUser.role === 'admin' ? 'Администратор' :
                     currentUser.role === 'performer' ? 'Исполнитель' : 'Клиент';
             }
@@ -2344,7 +2369,7 @@
         // Дашборд
         async function loadDashboard() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/dashboard-stats`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/stats`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2360,11 +2385,10 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    renderDashboard(data.data);
-                    loadRecentTasks();
-                    loadRecentUsers();
-                }
+                renderDashboard(data);
+                loadRecentTasks();
+                loadRecentUsers();
+                
             } catch (error) {
                 console.error('Ошибка загрузки дашборда:', error);
                 showNotification('Ошибка загрузки дашборда', 'error');
@@ -2380,31 +2404,31 @@
             const stats = [
                 {
                     icon: 'users',
-                    value: data.users?.total_users || 0,
+                    value: data.totalUsers || 0,
                     label: 'Пользователи',
                     color: 'users',
-                    detail: `${data.users?.clients || 0} клиентов, ${data.users?.performers || 0} исполнителей`
+                    detail: `${data.activeUsers || 0} активных`
                 },
                 {
                     icon: 'tasks',
-                    value: data.tasks?.total_tasks || 0,
+                    value: data.totalTasks || 0,
                     label: 'Задачи',
                     color: 'tasks',
-                    detail: `${data.tasks?.completed_tasks || 0} завершено, ${data.tasks?.in_progress_tasks || 0} в работе`
+                    detail: `${data.completedTasks || 0} завершено`
                 },
                 {
                     icon: 'revenue',
-                    value: formatCurrency(data.tasks?.total_revenue || 0),
+                    value: formatCurrency(data.totalRevenue || 0),
                     label: 'Выручка',
                     color: 'revenue',
-                    detail: `Средний чек: ${formatCurrency(data.tasks?.avg_task_price || 0)}`
+                    detail: `За месяц: ${formatCurrency(data.monthlyRevenue || 0)}`
                 },
                 {
                     icon: 'subscriptions',
-                    value: data.users?.active_subscriptions || 0,
+                    value: data.activeSubscriptions || 0,
                     label: 'Подписки',
                     color: 'subscriptions',
-                    detail: `${data.finance?.total_initial_fees || 0} ₽ вступительных`
+                    detail: `${data.premiumSubscriptions || 0} премиум`
                 }
             ];
             
@@ -2427,7 +2451,7 @@
 
         async function loadRecentTasks() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/tasks?limit=5`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/tasks/recent`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2435,10 +2459,13 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderRecentTasks(data.data?.tasks || []);
+                    renderRecentTasks(data.tasks || []);
+                } else {
+                    renderRecentTasks([]);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки задач:', error);
+                renderRecentTasks([]);
             }
         }
 
@@ -2446,11 +2473,13 @@
             const container = document.getElementById('recentTasks');
             if (!container) return;
             
-            if (tasks.length === 0) {
+            if (!tasks || tasks.length === 0) {
                 container.innerHTML = `
-                    <div style="padding: 40px; text-align: center; color: var(--text-light);">
-                        <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;"></i>
-                        <p>Нет задач</p>
+                    <div class="mobile-cards">
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-tasks" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.3;"></i>
+                            <p>Нет задач</p>
+                        </div>
                     </div>
                 `;
                 return;
@@ -2465,15 +2494,15 @@
                 'cancelled': '<span class="badge badge-danger">Отменена</span>'
             };
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Задача</th>
                             <th>Клиент</th>
                             <th>Статус</th>
-                            <th>Дата</th>
                             <th>Сумма</th>
                         </tr>
                     </thead>
@@ -2482,9 +2511,8 @@
                             <tr onclick="viewTask(${task.id})" style="cursor: pointer;">
                                 <td>#${task.id}</td>
                                 <td>${task.title}</td>
-                                <td>${task.client_first_name || ''} ${task.client_last_name || ''}</td>
+                                <td>${task.client_name || '-'}</td>
                                 <td>${statusBadges[task.status] || task.status}</td>
-                                <td>${formatDate(task.created_at)}</td>
                                 <td>${formatCurrency(task.price)}</td>
                             </tr>
                         `).join('')}
@@ -2492,12 +2520,42 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${tasks.map(task => `
+                        <div class="card-item" onclick="viewTask(${task.id})" style="cursor: pointer;">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${task.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Задача</div>
+                                <div class="card-value">${task.title}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Клиент</div>
+                                <div class="card-value">${task.client_name || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">${statusBadges[task.status] || task.status}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Сумма</div>
+                                <div class="card-value">${formatCurrency(task.price)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         async function loadRecentUsers() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/users-detailed?limit=5`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/users/recent`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2505,10 +2563,13 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderRecentUsers(data.data?.users || []);
+                    renderRecentUsers(data.users || []);
+                } else {
+                    renderRecentUsers([]);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error);
+                renderRecentUsers([]);
             }
         }
 
@@ -2516,11 +2577,13 @@
             const container = document.getElementById('recentUsers');
             if (!container) return;
             
-            if (users.length === 0) {
+            if (!users || users.length === 0) {
                 container.innerHTML = `
-                    <div style="padding: 40px; text-align: center; color: var(--text-light);">
-                        <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.3;"></i>
-                        <p>Нет пользователей</p>
+                    <div class="mobile-cards">
+                        <div class="empty-state" style="padding: 20px;">
+                            <i class="fas fa-users" style="font-size: 2rem; margin-bottom: 12px; opacity: 0.3;"></i>
+                            <p>Нет пользователей</p>
+                        </div>
                     </div>
                 `;
                 return;
@@ -2529,12 +2592,12 @@
             const roleBadges = {
                 'client': '<span class="badge badge-info">Клиент</span>',
                 'performer': '<span class="badge badge-warning">Исполнитель</span>',
-                'admin': '<span class="badge badge-success">Админ</span>',
-                'superadmin': '<span class="badge badge-danger">Супер-админ</span>'
+                'admin': '<span class="badge badge-success">Админ</span>'
             };
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -2542,7 +2605,6 @@
                             <th>Роль</th>
                             <th>Телефон</th>
                             <th>Дата</th>
-                            <th>Статус</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2553,34 +2615,64 @@
                                 <td>${roleBadges[user.role] || user.role}</td>
                                 <td>${user.phone || '-'}</td>
                                 <td>${formatDate(user.created_at)}</td>
-                                <td>
-                                    <span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">
-                                        ${user.is_active ? 'Активен' : 'Неактивен'}
-                                    </span>
-                                </td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${users.map(user => `
+                        <div class="card-item" onclick="editUser(${user.id})" style="cursor: pointer;">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${user.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Имя</div>
+                                <div class="card-value">${user.first_name} ${user.last_name}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Роль</div>
+                                <div class="card-value">${roleBadges[user.role] || user.role}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Телефон</div>
+                                <div class="card-value">${user.phone || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Дата регистрации</div>
+                                <div class="card-value">${formatDate(user.created_at)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         // Управление пользователями
+        function debouncedLoadUsers() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                loadUsers();
+            }, 500);
+        }
+
         async function loadUsers() {
             try {
                 const roleFilter = document.getElementById('roleFilter').value;
                 const statusFilter = document.getElementById('statusFilter').value;
-                const subscriptionFilter = document.getElementById('subscriptionFilter').value;
                 const search = document.getElementById('searchUsers').value;
                 
-                let url = `${apiBaseUrl}/api/admin/users-detailed?`;
+                let url = `${apiBaseUrl}/api/admin/users?`;
                 const params = [];
                 
-                if (roleFilter !== 'all') params.push(`role=${roleFilter}`);
-                if (statusFilter !== 'all') params.push(`is_active=${statusFilter === 'active' ? 1 : 0}`);
-                if (subscriptionFilter !== 'all') params.push(`subscription_status=${subscriptionFilter}`);
+                if (roleFilter) params.push(`role=${roleFilter}`);
+                if (statusFilter) params.push(`active=${statusFilter}`);
                 if (search) params.push(`search=${encodeURIComponent(search)}`);
                 
                 url += params.join('&');
@@ -2594,8 +2686,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки пользователей');
                 
                 const data = await response.json();
-                renderUsers(data.data?.users || []);
-                document.getElementById('usersCount').textContent = `${data.data?.users?.length || 0} пользователей`;
+                renderUsers(data.users || []);
+                document.getElementById('usersCount').textContent = `${data.users?.length || 0} пользователей`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки пользователей:', error);
@@ -2625,30 +2717,18 @@
             const roleBadges = {
                 'client': '<span class="badge badge-info">Клиент</span>',
                 'performer': '<span class="badge badge-warning">Исполнитель</span>',
-                'admin': '<span class="badge badge-success">Админ</span>',
-                'superadmin': '<span class="badge badge-danger">Супер-админ</span>'
+                'admin': '<span class="badge badge-success">Админ</span>'
             };
             
-            const statusBadges = {
-                'active': '<span class="badge badge-success">Активен</span>',
-                'pending': '<span class="badge badge-warning">Ожидание</span>',
-                'inactive': '<span class="badge badge-danger">Неактивен</span>'
-            };
-            
-            const subscriptionBadges = {
-                'essential': '<span class="badge badge-primary">Эссеншл</span>',
-                'premium': '<span class="badge badge-lavender">Премиум</span>'
-            };
-            
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Имя</th>
                             <th>Контакт</th>
                             <th>Роль</th>
-                            <th>Подписка</th>
                             <th>Статус</th>
                             <th>Дата регистрации</th>
                             <th>Действия</th>
@@ -2664,16 +2744,11 @@
                                 </td>
                                 <td>
                                     <div>${user.phone || '-'}</div>
-                                    <div class="text-secondary" style="font-size: 0.85rem;">${user.phone_verified ? '✓ Подтверждён' : '✗ Не подтверждён'}</div>
                                 </td>
                                 <td>${roleBadges[user.role] || user.role}</td>
                                 <td>
-                                    ${subscriptionBadges[user.subscription_plan] || user.subscription_plan}
-                                    <div style="font-size: 0.85rem; color: var(--text-light);">
-                                        ${statusBadges[user.subscription_status] || user.subscription_status}
-                                    </div>
+                                    ${user.active ? '<span class="badge badge-success">Активен</span>' : '<span class="badge badge-danger">Неактивен</span>'}
                                 </td>
-                                <td>${user.is_active ? '<span class="badge badge-success">Активен</span>' : '<span class="badge badge-danger">Неактивен</span>'}</td>
                                 <td>${formatDate(user.created_at)}</td>
                                 <td>
                                     <div style="display: flex; gap: 8px;">
@@ -2691,7 +2766,55 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${users.map(user => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${user.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Имя</div>
+                                <div class="card-value">${user.first_name} ${user.last_name}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Email</div>
+                                <div class="card-value">${user.email || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Телефон</div>
+                                <div class="card-value">${user.phone || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Роль</div>
+                                <div class="card-value">${roleBadges[user.role] || user.role}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">
+                                    ${user.active ? '<span class="badge badge-success">Активен</span>' : '<span class="badge badge-danger">Неактивен</span>'}
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Дата регистрации</div>
+                                <div class="card-value">${formatDate(user.created_at)}</div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="editUser(${user.id})">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         function showUserModal(id = null) {
@@ -2706,6 +2829,7 @@
                 title.textContent = 'Добавить пользователя';
                 form.reset();
                 document.getElementById('userId').value = '';
+                document.getElementById('userStatus').value = 'true';
                 document.getElementById('password').required = true;
             }
             
@@ -2714,7 +2838,7 @@
 
         async function loadUserData(id) {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/users-detailed?search=${id}`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/users/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2722,15 +2846,15 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const user = data.data?.users?.find(u => u.id == id);
+                    const user = data.user;
                     if (user) {
                         document.getElementById('userId').value = user.id;
-                        document.getElementById('firstName').value = user.first_name;
+                        document.getElementById('firstName').value = user.first_name || '';
                         document.getElementById('lastName').value = user.last_name || '';
                         document.getElementById('email').value = user.email || '';
                         document.getElementById('phone').value = user.phone || '';
-                        document.getElementById('role').value = user.role;
-                        document.getElementById('subscriptionPlan').value = user.subscription_plan || 'essential';
+                        document.getElementById('role').value = user.role || 'client';
+                        document.getElementById('userStatus').value = user.active ? 'true' : 'false';
                         document.getElementById('userBio').value = user.bio || '';
                         document.getElementById('password').required = false;
                         document.getElementById('password').placeholder = 'Оставьте пустым, если не нужно менять';
@@ -2744,20 +2868,19 @@
 
         async function saveUser() {
             const form = document.getElementById('userForm');
-            const formData = new FormData(form);
             const userId = document.getElementById('userId').value;
             
             const userData = {
-                first_name: formData.get('firstName'),
-                last_name: formData.get('lastName'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                role: formData.get('role'),
-                subscription_plan: formData.get('subscriptionPlan'),
-                bio: formData.get('userBio')
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                role: document.getElementById('role').value,
+                active: document.getElementById('userStatus').value === 'true',
+                bio: document.getElementById('userBio').value
             };
             
-            const password = formData.get('password');
+            const password = document.getElementById('password').value;
             if (password) {
                 userData.password = password;
             }
@@ -2784,12 +2907,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification(userId ? 'Пользователь обновлен' : 'Пользователь создан', 'success');
                     closeModal('userModal');
                     loadUsers();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка сохранения', 'error');
                 }
                 
                 hideLoading();
@@ -2816,13 +2939,12 @@
                     }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification('Пользователь удален', 'success');
                     loadUsers();
                 } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -2840,8 +2962,8 @@
                 const statusFilter = document.getElementById('categoryStatusFilter').value;
                 
                 let url = `${apiBaseUrl}/api/admin/categories`;
-                if (statusFilter !== 'all') {
-                    url += `?is_active=${statusFilter === 'active' ? 1 : 0}`;
+                if (statusFilter) {
+                    url += `?active=${statusFilter}`;
                 }
                 
                 const response = await fetch(url, {
@@ -2853,7 +2975,7 @@
                 if (!response.ok) throw new Error('Ошибка загрузки категорий');
                 
                 const data = await response.json();
-                renderCategories(data.data?.categories || []);
+                renderCategories(data.categories || []);
                 
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
@@ -2882,23 +3004,22 @@
             
             container.innerHTML = categories.map(cat => `
                 <div class="category-card">
-                    ${cat.image_url ? `<img src="${cat.image_url}" alt="${cat.name}" class="category-image">` : ''}
-                    <div class="category-icon">
-                        <i class="${cat.icon}"></i>
+                    <div class="category-icon" style="background-color: ${cat.color || '#D4A574'}20; color: ${cat.color || '#D4A574'};">
+                        <i class="${cat.icon || 'fas fa-folder'}"></i>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                         <div style="flex: 1;">
-                            <h4 style="margin-bottom: 4px; font-size: 1.2rem;">${cat.display_name}</h4>
+                            <h4 style="margin-bottom: 4px; font-size: 1.2rem;">${cat.name}</h4>
                             <p style="color: var(--text-secondary); font-size: 0.9rem;">${cat.description}</p>
                         </div>
-                        <span class="badge ${cat.is_active ? 'badge-success' : 'badge-danger'}">
-                            ${cat.is_active ? 'Активна' : 'Неактивна'}
+                        <span class="badge ${cat.active ? 'badge-success' : 'badge-danger'}">
+                            ${cat.active ? 'Активна' : 'Неактивна'}
                         </span>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                                Услуг: ${cat.services_count || 0} | Задач: ${cat.tasks_count || 0}
+                                Услуг: ${cat.services_count || 0}
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -2916,7 +3037,7 @@
 
         async function loadCategoriesForSelects() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/categories`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/categories`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2924,7 +3045,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const categories = data.data?.categories || [];
+                    const categories = data.categories || [];
                     
                     // Заполняем выпадающие списки
                     const selectors = ['serviceCategoryFilter', 'taskCategoryFilter', 'serviceCategoryId'];
@@ -2932,13 +3053,19 @@
                         const select = document.getElementById(selector);
                         if (select) {
                             const currentValue = select.value;
-                            select.innerHTML = '<option value="all">Все категории</option>' +
-                                categories.map(cat => `<option value="${cat.id}">${cat.display_name}</option>`).join('');
+                            select.innerHTML = '<option value="">Все категории</option>' +
+                                categories.filter(c => c.active).map(cat => 
+                                    `<option value="${cat.id}">${cat.name}</option>`
+                                ).join('');
                             if (selector === 'serviceCategoryId') {
                                 select.innerHTML = '<option value="">Выберите категорию</option>' +
-                                    categories.map(cat => `<option value="${cat.id}">${cat.display_name}</option>`).join('');
+                                    categories.filter(c => c.active).map(cat => 
+                                        `<option value="${cat.id}">${cat.name}</option>`
+                                    ).join('');
                             }
-                            select.value = currentValue;
+                            if (currentValue) {
+                                select.value = currentValue;
+                            }
                         }
                     });
                 }
@@ -2959,10 +3086,9 @@
                 title.textContent = 'Добавить категорию';
                 form.reset();
                 document.getElementById('categoryId').value = '';
-                document.getElementById('categoryColor').value = '#C5A880';
+                document.getElementById('categoryColor').value = '#D4A574';
                 document.getElementById('categorySortOrder').value = '0';
-                document.getElementById('categoryActive').value = '1';
-                document.getElementById('categoryPreview').innerHTML = '';
+                document.getElementById('categoryActive').value = 'true';
             }
             
             showModal('categoryModal');
@@ -2970,7 +3096,7 @@
 
         async function loadCategoryData(id) {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/categories`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/categories/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -2978,25 +3104,15 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const category = data.data?.categories?.find(c => c.id == id);
+                    const category = data.category;
                     if (category) {
                         document.getElementById('categoryId').value = category.id;
                         document.getElementById('categoryName').value = category.name;
-                        document.getElementById('categoryDisplayName').value = category.display_name;
                         document.getElementById('categoryDescription').value = category.description;
-                        document.getElementById('categoryIcon').value = category.icon;
-                        document.getElementById('categoryColor').value = category.color || '#C5A880';
+                        document.getElementById('categoryIcon').value = category.icon || '';
+                        document.getElementById('categoryColor').value = category.color || '#D4A574';
                         document.getElementById('categorySortOrder').value = category.sort_order || 0;
-                        document.getElementById('categoryActive').value = category.is_active ? '1' : '0';
-                        
-                        if (category.image_url) {
-                            document.getElementById('categoryPreview').innerHTML = `
-                                <img src="${category.image_url}" alt="${category.name}" style="max-height: 200px;">
-                                <button type="button" class="btn btn-danger btn-sm mt-2" onclick="clearPreview('categoryPreview')">
-                                    Удалить
-                                </button>
-                            `;
-                        }
+                        document.getElementById('categoryActive').value = category.active ? 'true' : 'false';
                     }
                 }
             } catch (error) {
@@ -3005,97 +3121,32 @@
             }
         }
 
-        function previewImage(event, previewId) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Проверяем размер файла (максимум 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                showNotification('Файл слишком большой. Максимальный размер: 5MB', 'error');
-                event.target.value = '';
-                return;
-            }
-            
-            // Проверяем тип файла
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-            if (!allowedTypes.includes(file.type)) {
-                showNotification('Недопустимый тип файла. Используйте изображения (JPEG, PNG, GIF, WebP, SVG)', 'error');
-                event.target.value = '';
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById(previewId);
-                preview.innerHTML = `
-                    <img src="${e.target.result}" alt="Превью" style="max-height: 200px;">
-                    <button type="button" class="btn btn-danger btn-sm mt-2" onclick="clearPreview('${previewId}')">
-                        Удалить
-                    </button>
-                `;
-            };
-            reader.readAsDataURL(file);
-            
-            // Сохраняем файл для отправки
-            if (previewId === 'categoryPreview') {
-                currentImageFile = file;
-            } else if (previewId === 'logoPreview') {
-                currentLogoFile = file;
-            }
-        }
-
-        function clearPreview(previewId) {
-            document.getElementById(previewId).innerHTML = '';
-            if (previewId === 'categoryPreview') {
-                currentImageFile = null;
-                document.getElementById('categoryImageInput').value = '';
-            } else if (previewId === 'logoPreview') {
-                currentLogoFile = null;
-                document.getElementById('logoUpload').value = '';
-            }
-        }
-
         async function saveCategory() {
             const form = document.getElementById('categoryForm');
-            const formData = new FormData(form);
+            const categoryId = document.getElementById('categoryId').value;
             
             const categoryData = {
-                id: formData.get('categoryId') || null,
-                name: formData.get('categoryName'),
-                display_name: formData.get('categoryDisplayName'),
-                description: formData.get('categoryDescription'),
-                icon: formData.get('categoryIcon'),
-                color: formData.get('categoryColor'),
-                sort_order: formData.get('categorySortOrder') || 0,
-                is_active: formData.get('categoryActive') === '1' ? true : false
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value,
+                icon: document.getElementById('categoryIcon').value,
+                color: document.getElementById('categoryColor').value,
+                sort_order: parseInt(document.getElementById('categorySortOrder').value) || 0,
+                active: document.getElementById('categoryActive').value === 'true'
             };
             
             try {
                 showLoading();
                 
-                // Если есть изображение, загружаем его отдельно
-                if (currentImageFile) {
-                    const imageFormData = new FormData();
-                    imageFormData.append('image', currentImageFile);
-                    
-                    const uploadResponse = await fetch(`${apiBaseUrl}/api/admin/upload-category-image`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${currentToken}`
-                        },
-                        body: imageFormData
-                    });
-                    
-                    if (uploadResponse.ok) {
-                        const uploadData = await uploadResponse.json();
-                        if (uploadData.success) {
-                            categoryData.image_url = uploadData.data.url;
-                        }
-                    }
+                let url = `${apiBaseUrl}/api/admin/categories`;
+                let method = 'POST';
+                
+                if (categoryId) {
+                    url = `${apiBaseUrl}/api/admin/categories/${categoryId}`;
+                    method = 'PUT';
                 }
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/categories`, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
@@ -3105,14 +3156,13 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification(categoryId ? 'Категория обновлена' : 'Категория создана', 'success');
                     closeModal('categoryModal');
-                    currentImageFile = null;
                     loadCategories();
                     loadCategoriesForSelects();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка сохранения', 'error');
                 }
                 
                 hideLoading();
@@ -3139,14 +3189,13 @@
                     }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification('Категория удалена', 'success');
                     loadCategories();
                     loadCategoriesForSelects();
                 } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -3168,9 +3217,9 @@
                 let url = `${apiBaseUrl}/api/admin/services?`;
                 const params = [];
                 
-                if (categoryFilter !== 'all') params.push(`category_id=${categoryFilter}`);
-                if (statusFilter !== 'all') params.push(`is_active=${statusFilter === 'active' ? 1 : 0}`);
-                if (featuredFilter !== 'all') params.push(`is_featured=${featuredFilter === 'featured' ? 1 : 0}`);
+                if (categoryFilter) params.push(`category_id=${categoryFilter}`);
+                if (statusFilter) params.push(`active=${statusFilter}`);
+                if (featuredFilter) params.push(`featured=${featuredFilter}`);
                 
                 url += params.join('&');
                 
@@ -3183,8 +3232,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки услуг');
                 
                 const data = await response.json();
-                renderServices(data.data?.services || []);
-                document.getElementById('servicesCount').textContent = `${data.data?.services?.length || 0} услуг`;
+                renderServices(data.services || []);
+                document.getElementById('servicesCount').textContent = `${data.services?.length || 0} услуг`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки услуг:', error);
@@ -3211,8 +3260,9 @@
                 return;
             }
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -3222,7 +3272,6 @@
                             <th>Время</th>
                             <th>Статус</th>
                             <th>Популярная</th>
-                            <th>Задач</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
@@ -3233,23 +3282,22 @@
                                 <td>
                                     <div style="font-weight: 600;">${service.name}</div>
                                     <div style="font-size: 0.85rem; color: var(--text-light);">
-                                        ${service.description.substring(0, 50)}${service.description.length > 50 ? '...' : ''}
+                                        ${service.description ? (service.description.substring(0, 50) + (service.description.length > 50 ? '...' : '')) : ''}
                                     </div>
                                 </td>
                                 <td>${service.category_name || '-'}</td>
-                                <td>${formatCurrency(service.base_price)}</td>
+                                <td>${formatCurrency(service.price)}</td>
                                 <td>${service.estimated_time || '-'}</td>
                                 <td>
-                                    <span class="badge ${service.is_active ? 'badge-success' : 'badge-danger'}">
-                                        ${service.is_active ? 'Активна' : 'Неактивна'}
+                                    <span class="badge ${service.active ? 'badge-success' : 'badge-danger'}">
+                                        ${service.active ? 'Активна' : 'Неактивна'}
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge ${service.is_featured ? 'badge-lavender' : 'badge-secondary'}">
-                                        ${service.is_featured ? 'Да' : 'Нет'}
+                                    <span class="badge ${service.featured ? 'badge-purple' : 'badge-secondary'}">
+                                        ${service.featured ? 'Да' : 'Нет'}
                                     </span>
                                 </td>
-                                <td>${service.tasks_count || 0}</td>
                                 <td>
                                     <div style="display: flex; gap: 8px;">
                                         <button class="btn btn-secondary btn-icon" onclick="editService(${service.id})">
@@ -3266,7 +3314,65 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${services.map(service => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${service.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Название</div>
+                                <div class="card-value">${service.name}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Категория</div>
+                                <div class="card-value">${service.category_name || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Описание</div>
+                                <div class="card-value">${service.description || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Цена</div>
+                                <div class="card-value">${formatCurrency(service.price)}</td>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Время</div>
+                                <div class="card-value">${service.estimated_time || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">
+                                    <span class="badge ${service.active ? 'badge-success' : 'badge-danger'}">
+                                        ${service.active ? 'Активна' : 'Неактивна'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Популярная</div>
+                                <div class="card-value">
+                                    <span class="badge ${service.featured ? 'badge-purple' : 'badge-secondary'}">
+                                        ${service.featured ? 'Да' : 'Нет'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="editService(${service.id})">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         function showServiceModal(id = null) {
@@ -3280,42 +3386,21 @@
                 title.textContent = 'Добавить услугу';
                 document.getElementById('serviceForm').reset();
                 document.getElementById('serviceId').value = '';
-                document.getElementById('servicePrice').value = '0';
+                document.getElementById('servicePrice').value = '';
                 document.getElementById('serviceSortOrder').value = '0';
-                document.getElementById('serviceActive').value = '1';
-                document.getElementById('serviceFeatured').value = '0';
+                document.getElementById('serviceActive').value = 'true';
+                document.getElementById('serviceFeatured').value = 'false';
             }
             
             // Загрузка категорий для выпадающего списка
-            loadCategoriesForService();
+            loadCategoriesForSelects();
             
             showModal('serviceModal');
         }
 
-        async function loadCategoriesForService() {
-            try {
-                const response = await fetch(`${apiBaseUrl}/api/categories`, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const categories = data.data?.categories || [];
-                    
-                    const select = document.getElementById('serviceCategoryId');
-                    select.innerHTML = '<option value="">Выберите категорию</option>' +
-                        categories.map(cat => `<option value="${cat.id}">${cat.display_name}</option>`).join('');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки категорий для услуг:', error);
-            }
-        }
-
         async function loadServiceData(id) {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/services`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/services/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -3323,17 +3408,17 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const service = data.data?.services?.find(s => s.id == id);
+                    const service = data.service;
                     if (service) {
                         document.getElementById('serviceId').value = service.id;
                         document.getElementById('serviceCategoryId').value = service.category_id;
                         document.getElementById('serviceName').value = service.name;
                         document.getElementById('serviceDescription').value = service.description;
-                        document.getElementById('servicePrice').value = service.base_price || 0;
+                        document.getElementById('servicePrice').value = service.price || '';
                         document.getElementById('serviceTime').value = service.estimated_time || '';
                         document.getElementById('serviceSortOrder').value = service.sort_order || 0;
-                        document.getElementById('serviceActive').value = service.is_active ? '1' : '0';
-                        document.getElementById('serviceFeatured').value = service.is_featured ? '1' : '0';
+                        document.getElementById('serviceActive').value = service.active ? 'true' : 'false';
+                        document.getElementById('serviceFeatured').value = service.featured ? 'true' : 'false';
                     }
                 }
             } catch (error) {
@@ -3344,25 +3429,32 @@
 
         async function saveService() {
             const form = document.getElementById('serviceForm');
-            const formData = new FormData(form);
+            const serviceId = document.getElementById('serviceId').value;
             
             const serviceData = {
-                id: formData.get('serviceId') || null,
-                category_id: formData.get('serviceCategoryId'),
-                name: formData.get('serviceName'),
-                description: formData.get('serviceDescription'),
-                base_price: formData.get('servicePrice') || 0,
-                estimated_time: formData.get('serviceTime') || null,
-                sort_order: formData.get('serviceSortOrder') || 0,
-                is_active: formData.get('serviceActive') === '1' ? true : false,
-                is_featured: formData.get('serviceFeatured') === '1' ? true : false
+                category_id: parseInt(document.getElementById('serviceCategoryId').value),
+                name: document.getElementById('serviceName').value,
+                description: document.getElementById('serviceDescription').value,
+                price: document.getElementById('servicePrice').value ? parseFloat(document.getElementById('servicePrice').value) : null,
+                estimated_time: document.getElementById('serviceTime').value || null,
+                sort_order: parseInt(document.getElementById('serviceSortOrder').value) || 0,
+                active: document.getElementById('serviceActive').value === 'true',
+                featured: document.getElementById('serviceFeatured').value === 'true'
             };
             
             try {
                 showLoading();
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/services`, {
-                    method: 'POST',
+                let url = `${apiBaseUrl}/api/admin/services`;
+                let method = 'POST';
+                
+                if (serviceId) {
+                    url = `${apiBaseUrl}/api/admin/services/${serviceId}`;
+                    method = 'PUT';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
@@ -3372,12 +3464,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification(serviceId ? 'Услуга обновлена' : 'Услуга создана', 'success');
                     closeModal('serviceModal');
                     loadServices();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка сохранения', 'error');
                 }
                 
                 hideLoading();
@@ -3404,13 +3496,12 @@
                     }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification('Услуга удалена', 'success');
                     loadServices();
                 } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -3433,10 +3524,10 @@
                 let url = `${apiBaseUrl}/api/admin/tasks?`;
                 const params = [];
                 
-                if (statusFilter !== 'all') params.push(`status=${statusFilter}`);
-                if (categoryFilter !== 'all') params.push(`category_id=${categoryFilter}`);
-                if (dateFrom) params.push(`date_from=${dateFrom}`);
-                if (dateTo) params.push(`date_to=${dateTo}`);
+                if (statusFilter) params.push(`status=${statusFilter}`);
+                if (categoryFilter) params.push(`category_id=${categoryFilter}`);
+                if (dateFrom) params.push(`from=${dateFrom}`);
+                if (dateTo) params.push(`to=${dateTo}`);
                 
                 url += params.join('&');
                 
@@ -3449,8 +3540,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки задач');
                 
                 const data = await response.json();
-                renderTasks(data.data?.tasks || []);
-                document.getElementById('totalTasksCount').textContent = `${data.data?.tasks?.length || 0} задач`;
+                renderTasks(data.tasks || []);
+                document.getElementById('totalTasksCount').textContent = `${data.tasks?.length || 0} задач`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки задач:', error);
@@ -3462,7 +3553,7 @@
             const container = document.getElementById('tasksTable');
             if (!container) return;
             
-            if (tasks.length === 0) {
+            if (!tasks || tasks.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-tasks"></i>
@@ -3482,14 +3573,14 @@
                 'cancelled': '<span class="badge badge-danger">Отменена</span>'
             };
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Задача</th>
                             <th>Клиент</th>
-                            <th>Исполнитель</th>
                             <th>Статус</th>
                             <th>Категория</th>
                             <th>Дедлайн</th>
@@ -3504,11 +3595,10 @@
                                 <td>
                                     <div style="font-weight: 600;">${task.title}</div>
                                     <div style="font-size: 0.85rem; color: var(--text-light);">
-                                        ${task.description.substring(0, 50)}${task.description.length > 50 ? '...' : ''}
+                                        ${task.description ? (task.description.substring(0, 50) + (task.description.length > 50 ? '...' : '')) : ''}
                                     </div>
                                 </td>
-                                <td>${task.client_first_name || ''} ${task.client_last_name || ''}</td>
-                                <td>${task.performer_first_name || ''} ${task.performer_last_name || '-'}</td>
+                                <td>${task.client_name || '-'}</td>
                                 <td>${statusBadges[task.status] || task.status}</td>
                                 <td>${task.category_name || '-'}</td>
                                 <td>${formatDate(task.deadline)}</td>
@@ -3529,11 +3619,60 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${tasks.map(task => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${task.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Задача</div>
+                                <div class="card-value">${task.title}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Описание</div>
+                                <div class="card-value">${task.description || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Клиент</div>
+                                <div class="card-value">${task.client_name || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">${statusBadges[task.status] || task.status}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Категория</div>
+                                <div class="card-value">${task.category_name || '-'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Дедлайн</div>
+                                <div class="card-value">${formatDate(task.deadline)}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Сумма</div>
+                                <div class="card-value">${formatCurrency(task.price)}</div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="viewTask(${task.id})">
+                                    <i class="fas fa-eye"></i> Просмотр
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         function viewTask(id) {
-            // Реализация просмотра задачи
             showNotification(`Просмотр задачи #${id}`, 'info');
         }
 
@@ -3545,11 +3684,21 @@
             try {
                 showLoading();
                 
-                // В реальном приложении здесь должен быть DELETE запрос к API
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch(`${apiBaseUrl}/api/admin/tasks/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
                 
-                showNotification('Задача удалена', 'success');
-                loadTasks();
+                if (response.ok) {
+                    showNotification('Задача удалена', 'success');
+                    loadTasks();
+                } else {
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
+                }
+                
                 hideLoading();
                 
             } catch (error) {
@@ -3565,8 +3714,8 @@
                 const statusFilter = document.getElementById('subscriptionStatusFilter').value;
                 
                 let url = `${apiBaseUrl}/api/admin/subscriptions`;
-                if (statusFilter !== 'all') {
-                    url += `?is_active=${statusFilter === 'active' ? 1 : 0}`;
+                if (statusFilter) {
+                    url += `?active=${statusFilter}`;
                 }
                 
                 const response = await fetch(url, {
@@ -3578,8 +3727,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки подписок');
                 
                 const data = await response.json();
-                renderSubscriptions(data.data?.subscriptions || []);
-                document.getElementById('subscriptionsCount').textContent = `${data.data?.subscriptions?.length || 0} подписок`;
+                renderSubscriptions(data.subscriptions || []);
+                document.getElementById('subscriptionsCount').textContent = `${data.subscriptions?.length || 0} подписок`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки подписок:', error);
@@ -3606,68 +3755,103 @@
                 return;
             }
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>Название</th>
+                            <th>Ключ</th>
                             <th>Цена</th>
-                            <th>Вступительный взнос</th>
                             <th>Лимит задач</th>
-                            <th>Пользователей</th>
                             <th>Статус</th>
                             <th>Действия</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${subscriptions.map(sub => {
-                            const features = typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features || [];
-                            return `
-                                <tr>
-                                    <td>
-                                        <div style="font-weight: 600;">${sub.display_name}</div>
-                                        <div style="font-size: 0.85rem; color: var(--text-light);">
-                                            ${features.slice(0, 2).join(', ')}${features.length > 2 ? '...' : ''}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div>${formatCurrency(sub.price_monthly)}/мес</div>
-                                        <div style="font-size: 0.85rem; color: var(--text-light);">
-                                            ${sub.price_yearly ? formatCurrency(sub.price_yearly) + '/год' : ''}
-                                        </div>
-                                    </td>
-                                    <td>${formatCurrency(sub.initial_fee)}</td>
-                                    <td>${sub.tasks_limit === 999 ? '∞' : sub.tasks_limit}</td>
-                                    <td>
-                                        <div>${sub.user_count || 0} всего</div>
-                                        <div style="font-size: 0.85rem; color: var(--text-light);">
-                                            ${sub.active_users || 0} активных
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge ${sub.is_active ? 'badge-success' : 'badge-danger'}">
-                                            ${sub.is_active ? 'Активна' : 'Неактивна'}
-                                        </span>
-                                        ${sub.is_popular ? '<span class="badge badge-lavender ml-2">Популярная</span>' : ''}
-                                    </td>
-                                    <td>
-                                        <div style="display: flex; gap: 8px;">
-                                            <button class="btn btn-secondary btn-icon" onclick="editSubscription(${sub.id})">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button class="btn btn-danger btn-icon" onclick="deleteSubscription(${sub.id})">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
+                        ${subscriptions.map(sub => `
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600;">${sub.name}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-light);">
+                                        ${sub.description}
+                                    </div>
+                                </td>
+                                <td>${sub.key}</td>
+                                <td>
+                                    <div>${formatCurrency(sub.price_monthly)}/мес</div>
+                                </td>
+                                <td>${sub.tasks_limit === 0 ? '∞' : sub.tasks_limit}</td>
+                                <td>
+                                    <span class="badge ${sub.active ? 'badge-success' : 'badge-danger'}">
+                                        ${sub.active ? 'Активна' : 'Неактивна'}
+                                    </span>
+                                    ${sub.popular ? '<span class="badge badge-purple ml-2">Популярная</span>' : ''}
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-secondary btn-icon" onclick="editSubscription(${sub.id})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-icon" onclick="deleteSubscription(${sub.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
                     </tbody>
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${subscriptions.map(sub => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">Название</div>
+                                <div class="card-value">${sub.name}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Ключ</div>
+                                <div class="card-value">${sub.key}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Описание</div>
+                                <div class="card-value">${sub.description}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Цена</div>
+                                <div class="card-value">${formatCurrency(sub.price_monthly)}/мес</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Лимит задач</div>
+                                <div class="card-value">${sub.tasks_limit === 0 ? 'Безлимит' : sub.tasks_limit}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">
+                                    <span class="badge ${sub.active ? 'badge-success' : 'badge-danger'}">
+                                        ${sub.active ? 'Активна' : 'Неактивна'}
+                                    </span>
+                                    ${sub.popular ? '<span class="badge badge-purple ml-2">Популярная</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="editSubscription(${sub.id})">
+                                    <i class="fas fa-edit"></i> Редактировать
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteSubscription(${sub.id})">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         function showSubscriptionModal(id = null) {
@@ -3681,11 +3865,11 @@
                 title.textContent = 'Добавить подписку';
                 document.getElementById('subscriptionForm').reset();
                 document.getElementById('subscriptionId').value = '';
-                document.getElementById('subscriptionColor').value = '#C5A880';
+                document.getElementById('subscriptionColor').value = '#D4A574';
                 document.getElementById('subscriptionSortOrder').value = '0';
-                document.getElementById('subscriptionPopular').value = '0';
-                document.getElementById('subscriptionActive').value = '1';
-                document.getElementById('subscriptionFeatures').value = '["До 5 задач в месяц", "Базовые услуги", "Поддержка по email"]';
+                document.getElementById('subscriptionPopular').value = 'false';
+                document.getElementById('subscriptionActive').value = 'true';
+                document.getElementById('subscriptionTasksLimit').value = '0';
             }
             
             showModal('subscriptionModal');
@@ -3693,7 +3877,7 @@
 
         async function loadSubscriptionData(id) {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/subscriptions`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/subscriptions/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -3701,30 +3885,18 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const subscription = data.data?.subscriptions?.find(s => s.id == id);
+                    const subscription = data.subscription;
                     if (subscription) {
                         document.getElementById('subscriptionId').value = subscription.id;
                         document.getElementById('subscriptionName').value = subscription.name;
-                        document.getElementById('subscriptionDisplayName').value = subscription.display_name;
+                        document.getElementById('subscriptionKey').value = subscription.key;
                         document.getElementById('subscriptionDescription').value = subscription.description;
                         document.getElementById('subscriptionPriceMonthly').value = subscription.price_monthly;
-                        document.getElementById('subscriptionPriceYearly').value = subscription.price_yearly || '';
-                        document.getElementById('subscriptionInitialFee').value = subscription.initial_fee || '';
-                        document.getElementById('subscriptionTasksLimit').value = subscription.tasks_limit;
-                        document.getElementById('subscriptionColor').value = subscription.color_theme || '#C5A880';
+                        document.getElementById('subscriptionTasksLimit').value = subscription.tasks_limit || 0;
+                        document.getElementById('subscriptionColor').value = subscription.color || '#D4A574';
                         document.getElementById('subscriptionSortOrder').value = subscription.sort_order || 0;
-                        document.getElementById('subscriptionPopular').value = subscription.is_popular ? '1' : '0';
-                        document.getElementById('subscriptionActive').value = subscription.is_active ? '1' : '0';
-                        
-                        let features = subscription.features;
-                        if (typeof features === 'string') {
-                            try {
-                                features = JSON.parse(features);
-                            } catch (e) {
-                                features = [];
-                            }
-                        }
-                        document.getElementById('subscriptionFeatures').value = JSON.stringify(features, null, 2);
+                        document.getElementById('subscriptionPopular').value = subscription.popular ? 'true' : 'false';
+                        document.getElementById('subscriptionActive').value = subscription.active ? 'true' : 'false';
                     }
                 }
             } catch (error) {
@@ -3735,36 +3907,33 @@
 
         async function saveSubscription() {
             const form = document.getElementById('subscriptionForm');
-            const formData = new FormData(form);
-            
-            let features;
-            try {
-                features = JSON.parse(formData.get('subscriptionFeatures') || '[]');
-            } catch (error) {
-                features = [];
-            }
+            const subscriptionId = document.getElementById('subscriptionId').value;
             
             const subscriptionData = {
-                id: formData.get('subscriptionId') || null,
-                name: formData.get('subscriptionName'),
-                display_name: formData.get('subscriptionDisplayName'),
-                description: formData.get('subscriptionDescription'),
-                price_monthly: parseFloat(formData.get('subscriptionPriceMonthly')) || 0,
-                price_yearly: parseFloat(formData.get('subscriptionPriceYearly')) || null,
-                initial_fee: parseFloat(formData.get('subscriptionInitialFee')) || 0,
-                tasks_limit: parseInt(formData.get('subscriptionTasksLimit')) || 0,
-                features: features,
-                color_theme: formData.get('subscriptionColor'),
-                sort_order: parseInt(formData.get('subscriptionSortOrder')) || 0,
-                is_popular: formData.get('subscriptionPopular') === '1' ? true : false,
-                is_active: formData.get('subscriptionActive') === '1' ? true : false
+                name: document.getElementById('subscriptionName').value,
+                key: document.getElementById('subscriptionKey').value,
+                description: document.getElementById('subscriptionDescription').value,
+                price_monthly: parseFloat(document.getElementById('subscriptionPriceMonthly').value) || 0,
+                tasks_limit: parseInt(document.getElementById('subscriptionTasksLimit').value) || 0,
+                color: document.getElementById('subscriptionColor').value,
+                sort_order: parseInt(document.getElementById('subscriptionSortOrder').value) || 0,
+                popular: document.getElementById('subscriptionPopular').value === 'true',
+                active: document.getElementById('subscriptionActive').value === 'true'
             };
             
             try {
                 showLoading();
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/subscriptions`, {
-                    method: 'POST',
+                let url = `${apiBaseUrl}/api/admin/subscriptions`;
+                let method = 'POST';
+                
+                if (subscriptionId) {
+                    url = `${apiBaseUrl}/api/admin/subscriptions/${subscriptionId}`;
+                    method = 'PUT';
+                }
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
@@ -3774,12 +3943,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification(subscriptionId ? 'Подписка обновлена' : 'Подписка создана', 'success');
                     closeModal('subscriptionModal');
                     loadSubscriptions();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка сохранения', 'error');
                 }
                 
                 hideLoading();
@@ -3806,13 +3975,12 @@
                     }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification(data.message, 'success');
+                if (response.ok) {
+                    showNotification('Подписка удалена', 'success');
                     loadSubscriptions();
                 } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -3835,10 +4003,10 @@
                 let url = `${apiBaseUrl}/api/admin/transactions?`;
                 const params = [];
                 
-                if (typeFilter !== 'all') params.push(`type=${typeFilter}`);
-                if (statusFilter !== 'all') params.push(`status=${statusFilter}`);
-                if (dateFrom) params.push(`date_from=${dateFrom}`);
-                if (dateTo) params.push(`date_to=${dateTo}`);
+                if (typeFilter) params.push(`type=${typeFilter}`);
+                if (statusFilter) params.push(`status=${statusFilter}`);
+                if (dateFrom) params.push(`from=${dateFrom}`);
+                if (dateTo) params.push(`to=${dateTo}`);
                 
                 url += params.join('&');
                 
@@ -3851,8 +4019,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки транзакций');
                 
                 const data = await response.json();
-                renderTransactions(data.data?.transactions || []);
-                document.getElementById('transactionsCount').textContent = `${data.data?.transactions?.length || 0} транзакций`;
+                renderTransactions(data.transactions || []);
+                document.getElementById('transactionsCount').textContent = `${data.transactions?.length || 0} транзакций`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки транзакций:', error);
@@ -3877,7 +4045,7 @@
             
             const typeBadges = {
                 'initial_fee': '<span class="badge badge-primary">Вступительный взнос</span>',
-                'subscription': '<span class="badge badge-lavender">Подписка</span>',
+                'subscription': '<span class="badge badge-purple">Подписка</span>',
                 'payout': '<span class="badge badge-info">Выплата</span>'
             };
             
@@ -3887,8 +4055,9 @@
                 'failed': '<span class="badge badge-danger">Ошибка</span>'
             };
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -3925,12 +4094,49 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
-        }
-
-        function exportTransactions() {
-            showNotification('Экспорт транзакций начат', 'info');
-            // Реализация экспорта
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${transactions.map(trans => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">ID</div>
+                                <div class="card-value">#${trans.id}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Пользователь</div>
+                                <div class="card-value">${trans.user_name || 'Неизвестно'}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Тип</div>
+                                <div class="card-value">${typeBadges[trans.type] || trans.type}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Сумма</div>
+                                <div class="card-value">
+                                    <span style="color: ${trans.amount < 0 ? 'var(--accent-danger)' : 'var(--accent-success)'};">
+                                        ${trans.amount < 0 ? '-' : ''}${formatCurrency(Math.abs(trans.amount))}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Описание</div>
+                                <div class="card-value">${trans.description}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Статус</div>
+                                <div class="card-value">${statusBadges[trans.status] || trans.status}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Дата</div>
+                                <div class="card-value">${formatDate(trans.created_at)}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         // Отзывы
@@ -3938,14 +4144,12 @@
             try {
                 const ratingFilter = document.getElementById('reviewRatingFilter').value;
                 const statusFilter = document.getElementById('reviewStatusFilter').value;
-                const featuredFilter = document.getElementById('reviewFeaturedFilter').value;
                 
                 let url = `${apiBaseUrl}/api/admin/reviews?`;
                 const params = [];
                 
-                if (ratingFilter !== 'all') params.push(`rating=${ratingFilter}`);
-                if (statusFilter !== 'all') params.push(`status=${statusFilter}`);
-                if (featuredFilter !== 'all') params.push(`featured=${featuredFilter === 'featured' ? 1 : 0}`);
+                if (ratingFilter) params.push(`rating=${ratingFilter}`);
+                if (statusFilter) params.push(`approved=${statusFilter}`);
                 
                 url += params.join('&');
                 
@@ -3958,8 +4162,8 @@
                 if (!response.ok) throw new Error('Ошибка загрузки отзывов');
                 
                 const data = await response.json();
-                renderReviews(data.data?.reviews || []);
-                document.getElementById('reviewsCount').textContent = `${data.data?.reviews?.length || 0} отзывов`;
+                renderReviews(data.reviews || []);
+                document.getElementById('reviewsCount').textContent = `${data.reviews?.length || 0} отзывов`;
                 
             } catch (error) {
                 console.error('Ошибка загрузки отзывов:', error);
@@ -3982,14 +4186,14 @@
                 return;
             }
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Задача</th>
                             <th>Клиент</th>
-                            <th>Исполнитель</th>
                             <th>Рейтинг</th>
                             <th>Комментарий</th>
                             <th>Статус</th>
@@ -4005,11 +4209,10 @@
                                     <td>#${review.id}</td>
                                     <td>${review.task_title || '-'}</td>
                                     <td>
-                                        ${review.is_anonymous ? 'Аноним' : `${review.client_first_name || ''} ${review.client_last_name || ''}`}
+                                        ${review.client_name || 'Аноним'}
                                     </td>
-                                    <td>${review.performer_first_name || ''} ${review.performer_last_name || ''}</td>
                                     <td>
-                                        <div style="color: var(--gold); font-size: 1.2rem;">${stars}</div>
+                                        <div style="color: var(--gold-dark); font-size: 1.2rem;">${stars}</div>
                                         <div style="font-size: 0.85rem; color: var(--text-light);">${review.rating}/5</div>
                                     </td>
                                     <td>
@@ -4018,10 +4221,9 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="badge ${review.admin_approved ? 'badge-success' : 'badge-warning'}">
-                                            ${review.admin_approved ? 'Одобрен' : 'На проверке'}
+                                        <span class="badge ${review.approved ? 'badge-success' : 'badge-warning'}">
+                                            ${review.approved ? 'Одобрен' : 'На проверке'}
                                         </span>
-                                        ${review.is_featured ? '<span class="badge badge-lavender ml-2">Популярный</span>' : ''}
                                     </td>
                                     <td>${formatDate(review.created_at)}</td>
                                     <td>
@@ -4041,7 +4243,63 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${reviews.map(review => {
+                        const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                        return `
+                            <div class="card-item">
+                                <div class="card-row">
+                                    <div class="card-label">ID</div>
+                                    <div class="card-value">#${review.id}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Задача</div>
+                                    <div class="card-value">${review.task_title || '-'}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Клиент</div>
+                                    <div class="card-value">${review.client_name || 'Аноним'}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Рейтинг</div>
+                                    <div class="card-value">
+                                        <div style="color: var(--gold-dark);">${stars}</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-light);">${review.rating}/5</div>
+                                    </div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Комментарий</div>
+                                    <div class="card-value">${review.comment || '-'}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Статус</div>
+                                    <div class="card-value">
+                                        <span class="badge ${review.approved ? 'badge-success' : 'badge-warning'}">
+                                            ${review.approved ? 'Одобрен' : 'На проверке'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-label">Дата</div>
+                                    <div class="card-value">${formatDate(review.created_at)}</div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn btn-secondary btn-sm" onclick="editReview(${review.id})">
+                                        <i class="fas fa-edit"></i> Редактировать
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteReview(${review.id})">
+                                        <i class="fas fa-trash"></i> Удалить
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         // Медиа загрузки
@@ -4056,7 +4314,7 @@
                 if (!response.ok) throw new Error('Ошибка загрузки файлов');
                 
                 const data = await response.json();
-                renderUploads(data.data?.files || []);
+                renderUploads(data.files || []);
                 
             } catch (error) {
                 console.error('Ошибка загрузки файлов:', error);
@@ -4079,8 +4337,9 @@
                 return;
             }
             
-            const tableHTML = `
-                <table>
+            // Для десктопа - таблица
+            const desktopHTML = `
+                <table class="desktop-table">
                     <thead>
                         <tr>
                             <th>Файл</th>
@@ -4095,12 +4354,12 @@
                             <tr>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 12px;">
-                                        ${file.isImage ? `<img src="${file.url}" alt="${file.filename}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` : 
+                                        ${file.type?.startsWith('image/') ? `<img src="${file.url}" alt="${file.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">` : 
                                             `<div style="width: 60px; height: 60px; background: var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                                                 <i class="fas fa-file" style="font-size: 1.5rem; color: var(--text-light);"></i>
                                             </div>`}
                                         <div>
-                                            <div style="font-weight: 600;">${file.filename}</div>
+                                            <div style="font-weight: 600;">${file.name}</div>
                                             <div style="font-size: 0.85rem; color: var(--text-light);">
                                                 ${file.url}
                                             </div>
@@ -4108,18 +4367,18 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge ${file.isImage ? 'badge-lavender' : 'badge-secondary'}">
-                                        ${file.isImage ? 'Изображение' : 'Файл'} ${file.extension}
+                                    <span class="badge ${file.type?.startsWith('image/') ? 'badge-purple' : 'badge-secondary'}">
+                                        ${file.type || 'Файл'}
                                     </span>
                                 </td>
                                 <td>${formatFileSize(file.size)}</td>
-                                <td>${formatDate(file.modified)}</td>
+                                <td>${formatDate(file.created_at)}</td>
                                 <td>
                                     <div style="display: flex; gap: 8px;">
-                                        ${file.isImage ? `<button class="btn btn-secondary btn-icon" onclick="copyUrl('${file.url}')">
+                                        ${file.type?.startsWith('image/') ? `<button class="btn btn-secondary btn-icon" onclick="copyUrl('${file.url}')">
                                             <i class="fas fa-copy"></i>
                                         </button>` : ''}
-                                        <button class="btn btn-danger btn-icon" onclick="deleteFile('${file.filename}')">
+                                        <button class="btn btn-danger btn-icon" onclick="deleteFile('${file.id}')">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -4130,12 +4389,60 @@
                 </table>
             `;
             
-            container.innerHTML = tableHTML;
+            // Для мобильных - карточки
+            const mobileHTML = `
+                <div class="mobile-cards">
+                    ${files.map(file => `
+                        <div class="card-item">
+                            <div class="card-row">
+                                <div class="card-label">Файл</div>
+                                <div class="card-value">
+                                    ${file.type?.startsWith('image/') ? 
+                                        `<img src="${file.url}" alt="${file.name}" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">` : 
+                                        `<div style="text-align: center;">
+                                            <i class="fas fa-file" style="font-size: 2rem; color: var(--text-light); margin-bottom: 8px;"></i>
+                                        </div>`
+                                    }
+                                    <div style="font-weight: 600;">${file.name}</div>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Тип</div>
+                                <div class="card-value">
+                                    <span class="badge ${file.type?.startsWith('image/') ? 'badge-purple' : 'badge-secondary'}">
+                                        ${file.type || 'Файл'}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Размер</div>
+                                <div class="card-value">${formatFileSize(file.size)}</div>
+                            </div>
+                            <div class="card-row">
+                                <div class="card-label">Дата</div>
+                                <div class="card-value">${formatDate(file.created_at)}</div>
+                            </div>
+                            <div class="card-actions">
+                                ${file.type?.startsWith('image/') ? 
+                                    `<button class="btn btn-secondary btn-sm" onclick="copyUrl('${file.url}')">
+                                        <i class="fas fa-copy"></i> Копировать URL
+                                    </button>` : ''
+                                }
+                                <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.id}')">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            container.innerHTML = desktopHTML + mobileHTML;
         }
 
         async function loadCurrentLogo() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/settings`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/settings/logo`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4143,7 +4450,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    const logoUrl = data.data?.settings?.site_logo;
+                    const logoUrl = data.logo_url;
                     if (logoUrl) {
                         document.getElementById('logoPreview').innerHTML = `
                             <img src="${logoUrl}" alt="Логотип">
@@ -4160,7 +4467,7 @@
 
         async function loadCategoryImages() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/uploads?type=categories`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/uploads?type=category`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4168,7 +4475,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderCategoryImages(data.data?.files || []);
+                    renderCategoryImages(data.files || []);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки изображений категорий:', error);
@@ -4193,16 +4500,16 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
                     ${files.map(file => `
                         <div style="border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden;">
-                            <img src="${file.url}" alt="${file.filename}" style="width: 100%; height: 150px; object-fit: cover;">
+                            <img src="${file.url}" alt="${file.name}" style="width: 100%; height: 150px; object-fit: cover;">
                             <div style="padding: 12px; background: var(--bg-secondary);">
                                 <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
-                                    ${file.filename}
+                                    ${file.name}
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button class="btn btn-secondary btn-sm" onclick="copyUrl('${file.url}')">
                                         <i class="fas fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.filename}')">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.id}')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -4215,7 +4522,7 @@
 
         async function loadUserImages() {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/admin/uploads?type=users`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/uploads?type=user`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
@@ -4223,7 +4530,7 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    renderUserImages(data.data?.files || []);
+                    renderUserImages(data.files || []);
                 }
             } catch (error) {
                 console.error('Ошибка загрузки аватаров пользователей:', error);
@@ -4248,16 +4555,16 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px;">
                     ${files.map(file => `
                         <div style="border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden;">
-                            <img src="${file.url}" alt="${file.filename}" style="width: 100%; height: 150px; object-fit: cover;">
+                            <img src="${file.url}" alt="${file.name}" style="width: 100%; height: 150px; object-fit: cover;">
                             <div style="padding: 12px; background: var(--bg-secondary); text-align: center;">
                                 <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px;">
-                                    ${file.filename}
+                                    ${file.name}
                                 </div>
                                 <div style="display: flex; gap: 8px; justify-content: center;">
                                     <button class="btn btn-secondary btn-sm" onclick="copyUrl('${file.url}')">
                                         <i class="fas fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.filename}')">
+                                    <button class="btn btn-danger btn-sm" onclick="deleteFile('${file.id}')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -4290,7 +4597,7 @@
                 const formData = new FormData();
                 formData.append('logo', file);
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/upload-logo`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/upload/logo`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -4300,11 +4607,11 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Логотип успешно загружен', 'success');
                     loadCurrentLogo();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка загрузки', 'error');
                 }
                 
                 hideLoading();
@@ -4337,8 +4644,9 @@
                 
                 const formData = new FormData();
                 formData.append('image', file);
+                formData.append('type', 'category');
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/upload-category-image`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/upload`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -4348,12 +4656,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Изображение успешно загружено', 'success');
                     loadCategoryImages();
                     loadUploads();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка загрузки', 'error');
                 }
                 
                 hideLoading();
@@ -4385,9 +4693,10 @@
                 showLoading('Загрузка аватара...');
                 
                 const formData = new FormData();
-                formData.append('avatar', file);
+                formData.append('image', file);
+                formData.append('type', 'user');
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/upload-user-avatar`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/upload`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -4397,12 +4706,12 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Аватар успешно загружен', 'success');
                     loadUserImages();
                     loadUploads();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка загрузки', 'error');
                 }
                 
                 hideLoading();
@@ -4429,7 +4738,7 @@
                 const formData = new FormData();
                 formData.append('file', file);
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/upload-file`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/upload`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -4439,11 +4748,11 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Файл успешно загружен', 'success');
                     loadUploads();
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка загрузки', 'error');
                 }
                 
                 hideLoading();
@@ -4455,7 +4764,7 @@
             }
         }
 
-        async function deleteFile(filename) {
+        async function deleteFile(id) {
             if (!confirm('Вы уверены, что хотите удалить этот файл?')) {
                 return;
             }
@@ -4463,22 +4772,21 @@
             try {
                 showLoading();
                 
-                const response = await fetch(`${apiBaseUrl}/api/admin/uploads/${filename}`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/uploads/${id}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
                 });
                 
-                const data = await response.json();
-                
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Файл удалён', 'success');
                     loadUploads();
                     loadCategoryImages();
                     loadUserImages();
                 } else {
-                    showNotification(data.error, 'error');
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -4498,33 +4806,19 @@
             try {
                 showLoading();
                 
-                // Получаем текущий логотип из настроек
-                const settingsResponse = await fetch(`${apiBaseUrl}/api/admin/settings`, {
+                const response = await fetch(`${apiBaseUrl}/api/admin/upload/logo`, {
+                    method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
                 });
                 
-                if (settingsResponse.ok) {
-                    const settingsData = await settingsResponse.json();
-                    const logoUrl = settingsData.data?.settings?.site_logo;
-                    
-                    if (logoUrl) {
-                        // Удаляем настройку логотипа
-                        const updateResponse = await fetch(`${apiBaseUrl}/api/admin/settings`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${currentToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ site_logo: '' })
-                        });
-                        
-                        if (updateResponse.ok) {
-                            showNotification('Логотип удалён', 'success');
-                            document.getElementById('logoPreview').innerHTML = '';
-                        }
-                    }
+                if (response.ok) {
+                    showNotification('Логотип удалён', 'success');
+                    document.getElementById('logoPreview').innerHTML = '';
+                } else {
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
                 }
                 
                 hideLoading();
@@ -4554,7 +4848,7 @@
                 if (!response.ok) throw new Error('Ошибка загрузки настроек');
                 
                 const data = await response.json();
-                const settings = data.data?.settings || {};
+                const settings = data.settings || {};
                 
                 // Основные
                 document.getElementById('appName').value = settings.site_name || '';
@@ -4565,18 +4859,12 @@
                 document.getElementById('maxTaskPrice').value = settings.max_task_price || '';
                 
                 // Финансы
-                document.getElementById('commission').value = settings.system_fee || '';
-                document.getElementById('demoMode').checked = settings.system_fee === '1';
-                
-                // SMS
-                document.getElementById('smsDemoMode').checked = settings.sms_demo_mode === '1';
-                document.getElementById('smsCodeExpiry').value = settings.sms_code_expiry_minutes || '';
-                document.getElementById('maxSmsAttempts').value = settings.max_sms_attempts || '';
-                document.getElementById('smsCooldown').value = settings.sms_cooldown_seconds || '';
+                document.getElementById('commission').value = settings.commission_percent || '';
+                document.getElementById('demoMode').checked = settings.demo_mode || false;
                 
                 // Система
-                document.getElementById('maintenanceMode').checked = settings.site_maintenance === '1';
-                document.getElementById('loggingEnabled').checked = settings.logging_enabled === '1';
+                document.getElementById('maintenanceMode').checked = settings.maintenance_mode || false;
+                document.getElementById('loggingEnabled').checked = settings.logging_enabled || true;
                 
             } catch (error) {
                 console.error('Ошибка загрузки настроек:', error);
@@ -4591,22 +4879,16 @@
                 site_description: document.getElementById('appDescription').value,
                 support_phone: document.getElementById('supportPhone').value,
                 support_email: document.getElementById('supportEmail').value,
-                min_task_price: document.getElementById('minTaskPrice').value,
-                max_task_price: document.getElementById('maxTaskPrice').value,
+                min_task_price: document.getElementById('minTaskPrice').value ? parseFloat(document.getElementById('minTaskPrice').value) : null,
+                max_task_price: document.getElementById('maxTaskPrice').value ? parseFloat(document.getElementById('maxTaskPrice').value) : null,
                 
                 // Финансы
-                system_fee: document.getElementById('commission').value,
-                demo_mode: document.getElementById('demoMode').checked ? '1' : '0',
-                
-                // SMS
-                sms_demo_mode: document.getElementById('smsDemoMode').checked ? '1' : '0',
-                sms_code_expiry_minutes: document.getElementById('smsCodeExpiry').value,
-                max_sms_attempts: document.getElementById('maxSmsAttempts').value,
-                sms_cooldown_seconds: document.getElementById('smsCooldown').value,
+                commission_percent: document.getElementById('commission').value ? parseFloat(document.getElementById('commission').value) : null,
+                demo_mode: document.getElementById('demoMode').checked,
                 
                 // Система
-                site_maintenance: document.getElementById('maintenanceMode').checked ? '1' : '0',
-                logging_enabled: document.getElementById('loggingEnabled').checked ? '1' : '0'
+                maintenance_mode: document.getElementById('maintenanceMode').checked,
+                logging_enabled: document.getElementById('loggingEnabled').checked
             };
             
             try {
@@ -4623,10 +4905,10 @@
                 
                 const data = await response.json();
                 
-                if (data.success) {
+                if (response.ok) {
                     showNotification('Настройки сохранены', 'success');
                 } else {
-                    showNotification(data.error, 'error');
+                    showNotification(data.message || 'Ошибка сохранения', 'error');
                 }
                 
                 hideLoading();
@@ -4639,18 +4921,6 @@
         }
 
         // Утилиты
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
         function showModal(modalId) {
             document.getElementById(modalId).classList.add('active');
         }
@@ -4698,7 +4968,7 @@
             `;
             
             loadingOverlay.innerHTML = `
-                <div class="loader" style="border-color: rgba(255, 255, 255, 0.1); border-top-color: var(--gold);"></div>
+                <div class="loader" style="border-color: rgba(255, 255, 255, 0.1); border-top-color: var(--gold-light);"></div>
                 <div style="margin-top: 20px; font-size: 1rem;">${text}</div>
             `;
             
@@ -4717,7 +4987,7 @@
         }
 
         function formatCurrency(amount) {
-            if (!amount && amount !== 0) return '0 ₽';
+            if (amount === null || amount === undefined) return '0 ₽';
             return new Intl.NumberFormat('ru-RU', {
                 style: 'currency',
                 currency: 'RUB',
@@ -4737,7 +5007,7 @@
         }
 
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Б';
+            if (!bytes) return '0 Б';
             const k = 1024;
             const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -4759,10 +5029,9 @@
 
         function editReview(id) {
             showNotification(`Редактирование отзыва #${id}`, 'info');
-            // Реализация редактирования отзыва
         }
 
-        function deleteReview(id) {
+        async function deleteReview(id) {
             if (!confirm('Вы уверены, что хотите удалить отзыв?')) {
                 return;
             }
@@ -4770,12 +5039,22 @@
             try {
                 showLoading();
                 
-                // В реальном приложении здесь должен быть DELETE запрос к API
-                setTimeout(() => {
+                const response = await fetch(`${apiBaseUrl}/api/admin/reviews/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                if (response.ok) {
                     showNotification('Отзыв удалён', 'success');
                     loadReviews();
-                    hideLoading();
-                }, 1000);
+                } else {
+                    const data = await response.json();
+                    showNotification(data.message || 'Ошибка удаления', 'error');
+                }
+                
+                hideLoading();
                 
             } catch (error) {
                 console.error('Ошибка удаления отзыва:', error);
