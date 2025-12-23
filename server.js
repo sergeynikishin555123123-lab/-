@@ -5037,6 +5037,175 @@ app.delete('/api/admin/subscriptions/:id', authMiddleware(['admin', 'superadmin'
     }
 });
 
+// Админ: Подробные задачи
+app.get('/api/admin/tasks-detailed', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { status, category_id, date_from, date_to, limit = 50 } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   u1.first_name as client_first_name,
+                   u1.last_name as client_last_name,
+                   u2.first_name as performer_first_name,
+                   u2.last_name as performer_last_name
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u1 ON t.client_id = u1.id
+            LEFT JOIN users u2 ON t.performer_id = u2.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        if (category_id && category_id !== 'all') {
+            query += ' AND t.category_id = ?';
+            params.push(category_id);
+        }
+        
+        if (date_from) {
+            query += ' AND DATE(t.created_at) >= ?';
+            params.push(date_from);
+        }
+        
+        if (date_to) {
+            query += ' AND DATE(t.created_at) <= ?';
+            params.push(date_to);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const tasks = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks,
+                count: tasks.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения подробных задач:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
+
+// Админ: Удаление задачи
+app.delete('/api/admin/tasks/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        
+        console.log(`🗑️ Админ удаляет задачу ${taskId}`);
+        
+        const task = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        await db.exec('BEGIN TRANSACTION');
+        
+        try {
+            // Удаляем связанные данные
+            await db.run('DELETE FROM task_status_history WHERE task_id = ?', [taskId]);
+            await db.run('DELETE FROM task_messages WHERE task_id = ?', [taskId]);
+            await db.run('DELETE FROM reviews WHERE task_id = ?', [taskId]);
+            
+            // Удаляем саму задачу
+            await db.run('DELETE FROM tasks WHERE id = ?', [taskId]);
+            
+            await db.exec('COMMIT');
+            
+            res.json({
+                success: true,
+                message: 'Задача успешно удалена',
+                data: { id: taskId }
+            });
+            
+        } catch (transactionError) {
+            await db.exec('ROLLBACK');
+            throw transactionError;
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления задачи'
+        });
+    }
+});
+
+// Админ: Транзакции
+app.get('/api/admin/transactions', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { type, status, date_from, date_to, limit = 50 } = req.query;
+        
+        let query = `
+            SELECT t.*, 
+                   u.first_name || ' ' || u.last_name as user_name,
+                   u.phone as user_phone
+            FROM transactions t
+            LEFT JOIN users u ON t.user_id = u.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (type && type !== 'all') {
+            query += ' AND t.type = ?';
+            params.push(type);
+        }
+        
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        if (date_from) {
+            query += ' AND DATE(t.created_at) >= ?';
+            params.push(date_from);
+        }
+        
+        if (date_to) {
+            query += ' AND DATE(t.created_at) <= ?';
+            params.push(date_to);
+        }
+        
+        query += ' ORDER BY t.created_at DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const transactions = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                transactions,
+                count: transactions.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения транзакций:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения транзакций'
+        });
+    }
+});
+
 // Получение настроек
 app.get('/api/admin/settings', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
