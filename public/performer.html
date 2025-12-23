@@ -2045,7 +2045,7 @@
             try {
                 if (!currentToken) return;
                 
-                showLoading('Загрузка задач...');
+                showLoading('Загрузка доступных задач...');
                 
                 // Собираем параметры фильтра
                 const params = new URLSearchParams();
@@ -2053,13 +2053,21 @@
                 if (filters.budgetFrom) params.append('min_price', filters.budgetFrom);
                 if (filters.priority !== 'all') params.append('priority', filters.priority);
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/available?${params.toString()}`, {
+                console.log(`📡 Запрос доступных задач с фильтрами: ${params.toString()}`);
+                
+                // Используем правильный URL
+                const response = await fetch(`${API_BASE_URL}/api/performer/available-tasks?${params.toString()}`, {
                     headers: {
-                        'Authorization': `Bearer ${currentToken}`
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Accept': 'application/json'
                     }
                 });
                 
+                console.log('Статус ответа:', response.status);
+                
                 const data = await response.json();
+                console.log('Данные ответа:', data);
+                
                 const container = document.getElementById('availableTasksTable');
                 const mobileContainer = document.getElementById('availableTasksMobile');
                 const noTasks = document.getElementById('noAvailableTasks');
@@ -2067,6 +2075,9 @@
                 
                 if (data.success && data.data.tasks && data.data.tasks.length > 0) {
                     availableTasks = data.data.tasks;
+                    
+                    // Обновляем счетчик
+                    countBadge.textContent = `${availableTasks.length} задач`;
                     
                     // Заполняем таблицу (для десктопа)
                     container.innerHTML = availableTasks.map(task => {
@@ -2078,7 +2089,7 @@
                                 <td>
                                     <div style="font-weight: 600;">${task.title}</div>
                                     <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
-                                        ${task.description.substring(0, 80)}...
+                                        ${(task.description || '').substring(0, 80)}...
                                     </div>
                                 </td>
                                 <td>${task.category_name}</td>
@@ -2093,8 +2104,13 @@
                                 </td>
                                 <td>
                                     <div style="display: flex; gap: 8px;" onclick="event.stopPropagation()">
-                                        <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" style="padding: 6px 12px; font-size: 0.85rem;">
+                                        <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" 
+                                                style="padding: 6px 12px; font-size: 0.85rem; white-space: nowrap;">
                                             <i class="fas fa-check"></i> Принять
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" onclick="viewAvailableTask(${task.id})" 
+                                                style="padding: 6px 12px; font-size: 0.85rem;">
+                                            <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -2109,7 +2125,7 @@
                             const priorityText = getPriorityText(task.priority);
                             
                             return `
-                                <div class="mobile-card" onclick="viewAvailableTask(${task.id})">
+                                <div class="mobile-card">
                                     <div class="mobile-card-header">
                                         <div class="mobile-card-title">${task.title}</div>
                                         <span class="status-badge ${priorityClass} mobile-card-badge">${priorityText}</span>
@@ -2136,11 +2152,14 @@
                                         </div>
                                     </div>
                                     
-                                    <p class="mobile-card-description">${task.description.substring(0, 100)}...</p>
+                                    <p class="mobile-card-description">${(task.description || '').substring(0, 100)}...</p>
                                     
-                                    <div class="mobile-card-actions" onclick="event.stopPropagation()">
+                                    <div class="mobile-card-actions">
                                         <button class="btn btn-primary mobile-card-btn" onclick="acceptTask(${task.id})">
                                             <i class="fas fa-check"></i> Принять
+                                        </button>
+                                        <button class="btn btn-secondary mobile-card-btn" onclick="viewAvailableTask(${task.id})">
+                                            <i class="fas fa-eye"></i> Просмотр
                                         </button>
                                     </div>
                                 </div>
@@ -2151,18 +2170,22 @@
                     noTasks.style.display = 'none';
                     container.closest('.table-container').style.display = 'block';
                     
-                    // Обновляем счетчик
-                    countBadge.textContent = `${availableTasks.length} задач`;
                 } else {
                     container.innerHTML = '';
                     if (mobileContainer) mobileContainer.innerHTML = '';
                     container.closest('.table-container').style.display = 'none';
                     noTasks.style.display = 'block';
                     countBadge.textContent = '0 задач';
+                    
+                    // Показываем сообщение из API
+                    if (data.data && data.data.message) {
+                        noTasks.querySelector('.empty-state-description').textContent = data.data.message;
+                    }
                 }
             } catch (error) {
-                console.error('Ошибка загрузки доступных задач:', error);
-                showNotification('Ошибка загрузки задач', 'error');
+                console.error('🔥 Ошибка загрузки доступных задач:', error);
+                showNotification('Ошибка загрузки задач: ' + error.message, 'error');
+                document.getElementById('noAvailableTasks').style.display = 'block';
             } finally {
                 hideLoading();
             }
@@ -2181,6 +2204,8 @@
                 if (filters.dateFrom) params.append('date_from', filters.dateFrom);
                 if (filters.dateTo) params.append('date_to', filters.dateTo);
                 
+                // Ключевое изменение: фильтруем только задачи, где исполнитель - текущий пользователь
+                // ИЛИ статус не 'searching' (новые задачи, которые еще никто не принял)
                 const response = await fetch(`${API_BASE_URL}/api/tasks?${params.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -2194,7 +2219,12 @@
                 const countBadge = document.getElementById('myTasksCount');
                 
                 if (data.success && data.data.tasks && data.data.tasks.length > 0) {
-                    myTasks = data.data.tasks;
+                    // Фильтруем задачи: показываем только те, где мы исполнитель
+                    // ИЛИ статус не 'searching' (новые задачи)
+                    myTasks = data.data.tasks.filter(task => 
+                        task.performer_id === currentPerformer.id || 
+                        !['searching', 'new'].includes(task.status)
+                    );
                     
                     // Заполняем таблицу (для десктопа)
                     container.innerHTML = myTasks.map(task => {
@@ -2221,20 +2251,27 @@
                                 <td>
                                     <div style="display: flex; gap: 4px;" onclick="event.stopPropagation()">
                                         ${task.status === 'assigned' ? `
-                                            <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
+                                            <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" 
+                                                    style="padding: 4px 8px; font-size: 0.8rem;">
                                                 <i class="fas fa-play"></i>
                                             </button>
                                         ` : ''}
                                         ${task.status === 'in_progress' ? `
-                                            <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem;">
+                                            <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" 
+                                                    style="padding: 4px 8px; font-size: 0.8rem;">
                                                 <i class="fas fa-check"></i>
                                             </button>
                                         ` : ''}
                                         ${['assigned', 'in_progress'].includes(task.status) ? `
-                                            <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
+                                            <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" 
+                                                    style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         ` : ''}
+                                        <button class="btn btn-secondary btn-sm" onclick="viewTask(${task.id})" 
+                                                style="padding: 4px 8px; font-size: 0.8rem;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -2560,7 +2597,7 @@
                 return;
             }
             
-            if (!confirm(`Принять задачу "${task.title}"?`)) {
+            if (!confirm(`Принять задачу "${task.title}"?\n\nБюджет: ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}\nДедлайн: ${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : 'Не указан'}`)) {
                 return;
             }
             
@@ -2580,7 +2617,10 @@
                 console.log('Ответ сервера:', data);
                 
                 if (data.success) {
-                    showNotification('🎉 Задача успешно принята! Вы теперь исполнитель.', 'success');
+                    showNotification('🎉 Задача успешно принята! Теперь она в разделе "Мои задачи".', 'success');
+                    
+                    // Удаляем задачу из списка доступных
+                    availableTasks = availableTasks.filter(t => t.id !== taskId);
                     
                     // Обновляем все данные
                     setTimeout(async () => {
@@ -2599,6 +2639,9 @@
             } catch (error) {
                 console.error('Ошибка принятия задачи:', error);
                 showNotification(error.message, 'error');
+                
+                // Перезагружаем список задач
+                loadAvailableTasks();
             } finally {
                 hideLoading();
             }
