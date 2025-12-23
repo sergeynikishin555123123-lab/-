@@ -50,81 +50,54 @@ app.use('/uploads', (req, res, next) => {
     next();
 });
 
-// Middleware для обслуживания статических файлов с обработкой ошибок
-app.use('/uploads', (req, res, next) => {
-    const filePath = path.join(__dirname, 'public', 'uploads', req.path);
-    const ext = path.extname(filePath).toLowerCase();
-    
-    // Проверяем существование файла
-    fsSync.access(filePath, fsSync.constants.F_OK, (err) => {
-        if (err) {
-            // Файл не найден - возвращаем SVG placeholder
-            console.log(`🖼️ Файл не найден: ${req.path}, создаем placeholder`);
-            
-            const svgPlaceholder = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
-                    <rect width="200" height="150" fill="#F9F7F3"/>
-                    <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
-                    <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
-                        ${path.basename(req.path, ext).charAt(0).toUpperCase()}
-                    </text>
-                    <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
-                        ${path.basename(req.path)}
-                    </text>
-                </svg>
-            `;
-            
-            res.set('Content-Type', 'image/svg+xml');
-            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-            res.send(svgPlaceholder);
-        } else {
-            // Файл существует - отдаем его
-            const mimeTypes = {
-                '.jpg': 'image/jpeg',
-                '.jpeg': 'image/jpeg',
-                '.png': 'image/png',
-                '.gif': 'image/gif',
-                '.webp': 'image/webp',
-                '.svg': 'image/svg+xml'
-            };
-            
-            if (mimeTypes[ext]) {
-                res.set('Content-Type', mimeTypes[ext]);
-                res.set('Cache-Control', 'public, max-age=31536000, immutable');
-            }
-            
-            // Отдаем файл
-            express.static(path.join(__dirname, 'public/uploads'))(req, res, next);
+// Статические файлы - исправленная версия
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon'
+        };
+        
+        if (mimeTypes[ext]) {
+            res.set('Content-Type', mimeTypes[ext]);
+            res.set('Cache-Control', 'public, max-age=31536000, immutable');
         }
-    });
-});
+    },
+    fallthrough: true // Разрешаем дальнейшую обработку
+}));
 
-// Обработка 404 для статических файлов
+// Обработка 404 для статических файлов (возвращаем placeholder)
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     
+    // Только для изображений возвращаем placeholder
     if (ext.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
-        // Возвращаем placeholder-изображение
-        console.log(`🖼️ Placeholder для: ${req.path}`);
+        console.log(`🖼️ Файл не найден: ${req.path}, возвращаем placeholder`);
         
-        // Создаем SVG placeholder
-        const svgPlaceholder = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
-                <rect width="200" height="150" fill="#F5F5F5"/>
-                <rect x="50" y="50" width="100" height="50" fill="#E0E0E0" rx="5"/>
-                <text x="100" y="85" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">${path.basename(req.path)}</text>
-                <text x="100" y="105" font-family="Arial" font-size="10" text-anchor="middle" fill="#AAA">Файл не найден</text>
-            </svg>
-        `;
+        // Определяем тип изображения по пути
+        let type = 'default';
+        if (req.path.includes('/categories/')) {
+            type = 'category';
+        } else if (req.path.includes('/logo/')) {
+            type = 'logo';
+        } else if (req.path.includes('/users/')) {
+            type = 'user';
+        } else if (req.path.includes('/services/')) {
+            type = 'service';
+        }
         
-        res.set('Content-Type', 'image/svg+xml');
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return res.send(svgPlaceholder);
+        // Используем маршрут test для placeholder
+        return res.redirect(`/api/images/test/${type}`);
     }
     
-    res.status(404).json({ error: 'Файл не найден' });
+    next();
 });
-
 // Парсинг JSON с увеличенным лимитом
 app.use(express.json({ 
     limit: '50mb',
@@ -1402,7 +1375,7 @@ app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), uplo
     }
 });
 
-// Загрузка изображения категории
+// Загрузка изображения категории - исправленная версия
 app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmin']), uploadCategoryImage.single('image'), async (req, res) => {
     try {
         console.log('📤 Загрузка изображения категории...');
@@ -1417,6 +1390,15 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
         const fileUrl = `/uploads/categories/${req.file.filename}`;
         console.log(`✅ Изображение категории сохранено: ${fileUrl}`);
         
+        // Если передан ID категории, обновляем её в БД
+        if (req.body.category_id) {
+            await db.run(
+                'UPDATE categories SET image_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [fileUrl, req.body.category_id]
+            );
+            console.log(`✅ Изображение привязано к категории ID: ${req.body.category_id}`);
+        }
+        
         res.json({
             success: true,
             message: 'Изображение категории успешно загружено',
@@ -1426,7 +1408,8 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
                 size: req.file.size,
                 mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path
+                path: req.file.path,
+                category_id: req.body.category_id || null
             }
         });
         
