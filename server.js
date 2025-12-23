@@ -50,27 +50,31 @@ app.use('/uploads', (req, res, next) => {
     next();
 });
 
-// Статические файлы - исправленная версия
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
-    setHeaders: (res, filePath) => {
+// Упрощенный маршрут для статических файлов
+app.get('/uploads/*', (req, res) => {
+    const filePath = path.join(__dirname, 'public', req.path);
+    
+    if (fsSync.existsSync(filePath)) {
         const ext = path.extname(filePath).toLowerCase();
         const mimeTypes = {
+            '.svg': 'image/svg+xml',
+            '.png': 'image/png',
             '.jpg': 'image/jpeg',
             '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.gif': 'image/gif',
             '.webp': 'image/webp',
-            '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon'
+            '.gif': 'image/gif'
         };
         
         if (mimeTypes[ext]) {
             res.set('Content-Type', mimeTypes[ext]);
-            res.set('Cache-Control', 'public, max-age=31536000, immutable');
         }
-    },
-    fallthrough: true // Разрешаем дальнейшую обработку
-}));
+        
+        return res.sendFile(filePath);
+    }
+    
+    // Если файл не найден, возвращаем placeholder
+    res.redirect(`/api/images/test/${req.path.includes('logo') ? 'logo' : 'default'}`);
+});
 
 // Обработка 404 для статических файлов (возвращаем placeholder)
 app.use('/uploads', (req, res, next) => {
