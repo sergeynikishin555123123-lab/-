@@ -5398,8 +5398,40 @@ setupDefaultImages: function() {
                 window.location.href = '/performer.html';
             },
 
-            // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-          init: async function() {
+// Новая функция для обработки ошибок изображений
+setupImageErrorHandling: function() {
+    // Глобальный обработчик ошибок изображений
+    document.addEventListener('error', function(e) {
+        if (e.target.tagName === 'IMG') {
+            console.warn('Ошибка загрузки изображения:', e.target.src);
+            
+            // Создаем дефолтное изображение
+            const createFallback = (text, color = '#C5A880') => {
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="${color}" rx="10"/>
+                    <text x="50" y="50" font-family="Arial" font-size="30" fill="white" text-anchor="middle" dy=".3em">${text}</text>
+                </svg>`;
+                return `data:image/svg+xml;base64,${btoa(svg)}`;
+            };
+            
+            // Определяем тип по src
+            const src = e.target.src || '';
+            let fallbackText = '!';
+            
+            if (src.includes('logo')) fallbackText = 'W';
+            else if (src.includes('category')) fallbackText = 'C';
+            else if (src.includes('user')) fallbackText = 'U';
+            else if (src.includes('service')) fallbackText = 'S';
+            
+            e.target.src = createFallback(fallbackText);
+            e.target.style.objectFit = 'cover';
+        }
+    }, true);
+}
+},
+
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+init: async function() {
     console.log('🌐 WOMAN HELP v2.0 - Инициализация...');
     
     this.animateCounters();
@@ -5421,7 +5453,6 @@ setupDefaultImages: function() {
         deadlineInput.value = tomorrow.toISOString().split('T')[0];
     }
     
-    // === ШАГ 12: Мониторинг динамических изображений ===
     // Мониторинг динамически создаваемых изображений
     if (window.MutationObserver) {
         const imageObserver = new MutationObserver((mutations) => {
@@ -5499,46 +5530,11 @@ setupDefaultImages: function() {
     } else {
         console.log('⚠️ MutationObserver не поддерживается, динамические изображения могут не работать');
     }
-    // === КОНЕЦ ШАГА 12 ===
     
-  // === КОНЕЦ ШАГА 12 ===
-    
-console.log('✅ WOMAN HELP готов к работе!');
-},
+    console.log('✅ WOMAN HELP готов к работе!');
+}
+};
 
-// Новая функция для обработки ошибок изображений
-setupImageErrorHandling: function() {
-    // Глобальный обработчик ошибок изображений
-    document.addEventListener('error', function(e) {
-        if (e.target.tagName === 'IMG') {
-            console.warn('Ошибка загрузки изображения:', e.target.src);
-            
-            // Создаем дефолтное изображение
-            const createFallback = (text, color = '#C5A880') => {
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                    <rect width="100" height="100" fill="${color}" rx="10"/>
-                    <text x="50" y="50" font-family="Arial" font-size="30" fill="white" text-anchor="middle" dy=".3em">${text}</text>
-                </svg>`;
-                return `data:image/svg+xml;base64,${btoa(svg)}`;
-            };
-            
-            // Определяем тип по src
-            const src = e.target.src || '';
-            let fallbackText = '!';
-            
-            if (src.includes('logo')) fallbackText = 'W';
-            else if (src.includes('category')) fallbackText = 'C';
-            else if (src.includes('user')) fallbackText = 'U';
-            else if (src.includes('service')) fallbackText = 'S';
-            
-            e.target.src = createFallback(fallbackText);
-            e.target.style.objectFit = 'cover';
-        }
-    }, true);
-},
-
-            // ==================== ДЕФОЛТНЫЕ ИЗОБРАЖЕНИЯ ====================
-       // Инициализация при загрузке страницы
 // Инициализация при загрузке страницы
 window.addEventListener('DOMContentLoaded', () => {
     try {
