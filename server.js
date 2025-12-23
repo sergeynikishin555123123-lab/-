@@ -564,8 +564,6 @@ const initDatabase = async () => {
        // В функции initDatabase(), найдите вызов createInitialData():
 await createInitialData();
 
-// ДОБАВЬТЕ СРАЗУ ПОСЛЕ НЕГО:
-await generateDefaultImages();
         
         return db;
     } catch (error) {
