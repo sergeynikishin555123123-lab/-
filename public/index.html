@@ -2832,25 +2832,32 @@
 
            // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
 getImageUrl: function(imageUrl, type = 'default') {
-    // Если есть реальный URL, используем его
-    if (imageUrl && imageUrl.trim() !== '') {
-        // Проверяем разные форматы URL
+    // Если передан null, undefined или пустая строка, возвращаем placeholder
+    if (!imageUrl || imageUrl.trim() === '') {
+        return `${this.API_BASE_URL}/api/images/test/${type}?t=${Date.now()}`;
+    }
+    
+    // Если это относительный путь (начинается с /)
+    if (imageUrl.startsWith('/')) {
+        // Проверяем, это путь к uploads или что-то еще
         if (imageUrl.startsWith('/uploads/')) {
-            // Относительный путь - добавляем базовый URL
+            // Путь к загруженным файлам
             return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
-        } else if (imageUrl.startsWith('/')) {
+        } else if (imageUrl.startsWith('/api/')) {
+            // Путь к API (уже полный)
+            return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
+        } else {
             // Любой другой относительный путь
             return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
-        } else if (imageUrl.includes('://')) {
-            // Абсолютный URL (уже полный)
-            return imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('uploads/')) {
-            // Без начального слеша
-            return `${this.API_BASE_URL}/${imageUrl}?t=${Date.now()}`;
         }
     }
     
-    // Иначе возвращаем placeholder
+    // Если это полный URL (уже содержит http:// или https://)
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl + '?t=' + Date.now();
+    }
+    
+    // По умолчанию возвращаем placeholder
     return `${this.API_BASE_URL}/api/images/test/${type}?t=${Date.now()}`;
 },
 
@@ -2858,40 +2865,46 @@ loadLogo: async function() {
     try {
         console.log('📥 Загрузка логотипа...');
         
+        // Используем прямой путь к placeholder на случай ошибки
+        const fallbackLogoUrl = `${this.API_BASE_URL}/api/images/test/logo?t=${Date.now()}`;
+        
+        // Пробуем получить информацию о логотипе
         const response = await fetch(`${this.API_BASE_URL}/api/logo`);
+        
         if (response.ok) {
             const result = await response.json();
-            if (result.success && result.data.logo_url) {
-                let logoUrl = result.data.logo_url;
+            if (result.success && result.data) {
+                // Используем URL из API или fallback
+                const logoUrl = result.data.logo_url 
+                    ? this.getImageUrl(result.data.logo_url, 'logo')
+                    : fallbackLogoUrl;
                 
-                // Если это относительный путь, делаем его абсолютным
-                if (logoUrl.startsWith('/')) {
-                    logoUrl = `${this.API_BASE_URL}${logoUrl}`;
-                }
-                
-                logoUrl += `?t=${Date.now()}`;
-                console.log(`✅ Логотип: ${logoUrl}`);
+                console.log(`✅ Логотип URL: ${logoUrl}`);
                 
                 // Обновляем все логотипы на странице
                 document.querySelectorAll('.logo-img').forEach(img => {
-                    const tempImg = new Image();
-                    tempImg.onload = () => {
-                        img.src = logoUrl;
-                        img.style.opacity = '1';
-                    };
-                    tempImg.onerror = () => {
+                    img.src = logoUrl;
+                    img.onerror = function() {
                         console.warn('Ошибка загрузки логотипа, использую placeholder');
-                        img.src = `${this.API_BASE_URL}/api/images/test/logo?t=${Date.now()}`;
-                        img.onerror = null;
+                        this.src = fallbackLogoUrl;
+                        this.onerror = null;
                     };
-                    tempImg.src = logoUrl;
                 });
                 return true;
             }
         }
     } catch (error) {
-        console.log('⚠️ Ошибка загрузки логотипа, использую placeholder:', error.message);
+        console.log('⚠️ Ошибка API логотипа, использую placeholder:', error.message);
     }
+    
+    // Fallback на placeholder
+    const fallbackLogoUrl = `${this.API_BASE_URL}/api/images/test/logo?t=${Date.now()}`;
+    document.querySelectorAll('.logo-img').forEach(img => {
+        img.src = fallbackLogoUrl;
+        img.onerror = null;
+    });
+    return false;
+},
     
     // Fallback на placeholder
     document.querySelectorAll('.logo-img').forEach(img => {
@@ -3004,43 +3017,6 @@ setupDefaultImages: function() {
     this.loadLogo();
 },
 
-// Загрузка логотипа с сервера
-loadLogo: async function() {
-    try {
-        console.log('📥 Загрузка логотипа...');
-        
-        const response = await fetch(`${this.API_BASE_URL}/api/logo`);
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data.logo_url) {
-                const logoUrl = result.data.full_url || `${this.API_BASE_URL}${result.data.logo_url}`;
-                console.log(`✅ Логотип: ${logoUrl}`);
-                
-                // Обновляем все логотипы на странице
-                document.querySelectorAll('.logo-img').forEach(img => {
-                    const tempImg = new Image();
-                    tempImg.onload = () => {
-                        img.src = logoUrl;
-                        img.style.opacity = '1';
-                    };
-                    tempImg.onerror = () => {
-                        console.warn('Ошибка загрузки логотипа, использую дефолтный');
-                        this.setupDefaultImages();
-                    };
-                    tempImg.src = logoUrl;
-                });
-                
-                return true;
-            }
-        }
-    } catch (error) {
-        console.log('⚠️ Ошибка загрузки логотипа, использую дефолтный:', error.message);
-    }
-    
-    // Используем дефолтные изображения
-    return false;
-},
-
             // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
             fetchWithAuth: function(url, options = {}) {
                 if (!this.currentToken && !url.includes('/api/auth/')) {
@@ -3119,22 +3095,6 @@ loadLogo: async function() {
                     }
                 } catch (error) {
                     console.log('Используем локальную статистику');
-                }
-            },
-
-            loadLogo: async function() {
-                try {
-                    const response = await fetch(`${this.API_BASE_URL}/api/logo`);
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success && result.data.logo_url) {
-                            document.querySelectorAll('.logo-img').forEach(img => {
-                                img.src = result.data.logo_url;
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.log('Используется логотип по умолчанию');
                 }
             },
 
