@@ -6709,7 +6709,19 @@ app.put('/api/tasks/:id/complete', authMiddleware(['client', 'admin', 'superadmi
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
 // Обслуживание статических файлов
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        // Для изображений устанавливаем правильный Content-Type
+        if (ext.match(/\.(svg)$/)) {
+            res.set('Content-Type', 'image/svg+xml');
+        } else if (ext.match(/\.(jpg|jpeg)$/)) {
+            res.set('Content-Type', 'image/jpeg');
+        } else if (ext.match(/\.(png)$/)) {
+            res.set('Content-Type', 'image/png');
+        }
+    }
+}));
 
 // Обработка 404 для API маршрутов
 app.use('/api/*', (req, res) => {
