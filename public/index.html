@@ -5407,7 +5407,7 @@ setupDefaultImages: function() {
     await this.loadCategories();
     await this.loadAllServices();
     await this.loadSubscriptions();
-    await this.loadDefaultImages();
+    this.setupDefaultImages();
     
     this.setupEventListeners();
     this.determineInitialScreen();
@@ -5538,11 +5538,6 @@ setupImageErrorHandling: function() {
 },
 
             // ==================== ДЕФОЛТНЫЕ ИЗОБРАЖЕНИЯ ====================
-            loadDefaultImages: function() {
-                this.setupDefaultImages();
-            }
-        };
-
        // Инициализация при загрузке страницы
 // Инициализация при загрузке страницы
 window.addEventListener('DOMContentLoaded', () => {
