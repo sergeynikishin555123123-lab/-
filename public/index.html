@@ -2780,10 +2780,11 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-            getImageUrl: function(imageUrl, type) {
-                // Если передан null, undefined или пустая строка, возвращаем placeholder
+                       getImageUrl: function(imageUrl, type) {
+                // Если передан null, undefined или пустая строка, возвращаем fallback
                 if (!imageUrl || imageUrl.trim() === '') {
-                    return this.API_BASE_URL + '/api/images/test/' + (type || 'default') + '?t=' + Date.now();
+                    // Используем SVG fallback вместо API запроса
+                    return this.createSvgFallback(type);
                 }
                 
                 // Если это относительный путь (начинается с /)
@@ -2796,8 +2797,28 @@
                     return imageUrl + '?t=' + Date.now();
                 }
                 
-                // По умолчанию возвращаем placeholder
-                return this.API_BASE_URL + '/api/images/test/' + (type || 'default') + '?t=' + Date.now();
+                // По умолчанию возвращаем SVG fallback
+                return this.createSvgFallback(type);
+            },
+
+            createSvgFallback: function(type) {
+                var colors = {
+                    'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
+                    'category': { bg: '#E8CCD9', text: '#A78B65', char: 'C' },
+                    'service': { bg: '#D4B8C7', text: '#8B7355', char: 'S' },
+                    'user': { bg: '#B9AFFF', text: '#FFFFFF', char: 'U' },
+                    'default': { bg: '#F9F7F3', text: '#888888', char: '?' }
+                };
+                
+                var config = colors[type] || colors['default'];
+                
+                var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">' +
+                    '<rect width="200" height="200" fill="' + config.bg + '" rx="10"/>' +
+                    '<text x="100" y="100" font-family="Arial, sans-serif" font-size="80" fill="' + config.text + '" ' +
+                    'text-anchor="middle" dominant-baseline="middle" font-weight="bold">' + config.char + '</text>' +
+                    '</svg>';
+                
+                return 'data:image/svg+xml;base64,' + btoa(svg);
             },
 
             loadLogo: async function() {
@@ -2845,7 +2866,7 @@
                 return false;
             },
 
-            setupDefaultImages: function() {
+                        setupDefaultImages: function() {
                 console.log('🖼️ Настройка изображений...');
                 
                 // Обработчик ошибок для всех изображений
@@ -2864,20 +2885,30 @@
                         type = 'user';
                     }
                     
-                    // Заменяем на placeholder
-                    this.src = app.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+                    // Заменяем на SVG fallback
+                    this.src = app.createSvgFallback(type);
                     this.onerror = null; // Предотвращаем зацикливание
                 };
                 
                 // Применяем обработчик ко всем изображениям
                 document.querySelectorAll('img').forEach(function(img) {
-                    // Сохраняем оригинальный src
-                    if (img.src && img.src !== '') {
-                        img.setAttribute('data-original-src', img.src);
-                    }
-                    
                     // Устанавливаем обработчик ошибок
                     img.onerror = handleImageError;
+                    
+                    // Если у изображения нет src или он пустой, устанавливаем fallback
+                    if (!img.src || img.src === '' || img.src === window.location.href) {
+                        let type = 'default';
+                        if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
+                            type = 'logo';
+                        } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                            type = 'category';
+                        } else if (img.closest('.service-image')) {
+                            type = 'service';
+                        } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
+                            type = 'user';
+                        }
+                        img.src = app.createSvgFallback(type);
+                    }
                 });
                 
                 // Загружаем логотип с сервера
@@ -3174,46 +3205,48 @@
                 return this.categories;
             },
 
-renderHomeCategories: function() {
-    var container = document.getElementById('categoriesGrid');
-    if (!container) return;
-    
-    if (!this.categories || this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-            '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    var self = this;
-    this.categories.forEach(function(category) {
-        var card = document.createElement('div');
-        card.className = 'card category-card';
-        card.onclick = function() { 
-            self.selectCategory(category); 
-        };
-        
-        card.innerHTML = '<div class="category-image">' +
-            '<img src="' + self.getImageUrl(category.image_url, 'category') + '" ' +
-                 'alt="' + category.display_name + '"' +
-                 'loading="lazy"' +
-                 'onerror="this.onerror=null; this.src=\'/api/images/test/category\';"' +
-                 'style="width: 100%; height: 100%; object-fit: cover;">' +
-            '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 1.5rem; color: var(--pastel-pink); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;"></i>' +
-        '</div>' +
-        '<h3>' + category.display_name + '</h3>' +
-        '<p>' + category.description + '</p>' +
-        '<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
-            '<span>' + (category.services_count || '0') + ' услуг</span>' +
-            '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
-        '</div>';
-        
-        container.appendChild(card);
-    });
-},
+            renderHomeCategories: function() {
+                var container = document.getElementById('categoriesGrid');
+                if (!container) return;
+                
+                if (!this.categories || this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                        '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                var self = this;
+                this.categories.forEach(function(category) {
+                    var card = document.createElement('div');
+                    card.className = 'card category-card';
+                    card.onclick = function() { 
+                        self.selectCategory(category); 
+                    };
+                    
+                    // Используем SVG fallback вместо API запроса
+                    var imageUrl = self.createSvgFallback('category');
+                    
+                    card.innerHTML = '<div class="category-image">' +
+                        '<img src="' + imageUrl + '" ' +
+                             'alt="' + category.display_name + '"' +
+                             'loading="lazy"' +
+                             'style="width: 100%; height: 100%; object-fit: cover;">' +
+                        '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 1.5rem; color: var(--pastel-pink); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;"></i>' +
+                    '</div>' +
+                    '<h3>' + category.display_name + '</h3>' +
+                    '<p>' + category.description + '</p>' +
+                    '<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
+                        '<span>' + (category.services_count || '0') + ' услуг</span>' +
+                        '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
+                    '</div>';
+                    
+                    container.appendChild(card);
+                });
+            },
             
             loadAllServices: async function() {
                 try {
@@ -3289,7 +3322,9 @@ loadAllServicesPage: async function() {
             self.selectCategoryForServices(category); 
         };
         
-        var imageUrl = self.getImageUrl(category.image_url || category.icon_url, 'category');
+       var imageUrl = category.image_url ? 
+    self.getImageUrl(category.image_url, 'category') : 
+    self.createSvgFallback('category');
         
         card.innerHTML = '<div class="category-image-container">' +
             '<img src="' + imageUrl + '" ' +
@@ -3379,8 +3414,9 @@ loadAllServicesPage: async function() {
                         self.selectCategoryForServices(category); 
                     };
                     
-                    var imageUrl = self.getImageUrl(category.image_url || category.icon_url, 'category');
-                    
+                    var imageUrl = category.image_url ? 
+    self.getImageUrl(category.image_url, 'category') : 
+    self.createSvgFallback('category');
                     card.innerHTML = '<div class="category-image-container">' +
                         '<img src="' + imageUrl + '" ' +
                              'alt="' + category.display_name + '"' +
@@ -3501,7 +3537,7 @@ loadAllServicesPage: async function() {
         card.onclick = function() { self.selectService(service); };
         
         card.innerHTML = '<div class="category-image-container">' +
-            '<img src="/api/images/test/service" ' +
+            '<img src="' + self.createSvgFallback('service') + '" ' +
                  'alt="' + service.name + '"' +
                  'loading="lazy"' +
                  'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;"' +
@@ -3605,7 +3641,7 @@ loadAllServicesPage: async function() {
                     card.onclick = function() { self.selectService(service); };
                     
                     card.innerHTML = '<div class="service-image">' +
-                        '<img src="/api/images/test/service" ' +
+                        '<img src="' + self.createSvgFallback('service') + '" ' +
                              'alt="' + service.name + '"' +
                              'loading="lazy"' +
                              'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;"' +
