@@ -3274,11 +3274,862 @@
             }
         }
         
-        // Остальные функции (loadServices, loadTasks, etc.) должны быть реализованы аналогично
-        // Для краткости опускаю их, но они должны быть организованы так же
+       // ==================== УПРАВЛЕНИЕ УСЛУГАМИ ====================
+async function loadServices() {
+    try {
+        showLoading('Загрузка услуг...');
         
-        // Функции для других разделов должны быть реализованы по аналогии
+        const categoryFilter = document.getElementById('serviceCategoryFilter').value;
+        const statusFilter = document.getElementById('serviceStatusFilter').value;
+        const search = document.getElementById('serviceSearch').value;
         
+        let url = '/api/admin/services?';
+        const params = [];
+        
+        if (categoryFilter !== 'all') {
+            params.push(`category_id=${categoryFilter}`);
+        }
+        if (statusFilter !== 'all') {
+            params.push(`is_active=${statusFilter === 'active' ? 1 : 0}`);
+        }
+        if (search) {
+            params.push(`search=${encodeURIComponent(search)}`);
+        }
+        
+        if (params.length > 0) {
+            url += params.join('&');
+        }
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderServices(data.data.services);
+            if (isMobile) {
+                renderMobileCards(data.data.services, 'servicesMobile', 'service');
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки услуг');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        showNotification('Ошибка загрузки услуг', 'error');
+        document.getElementById('servicesTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Ошибка загрузки услуг</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderServices(services) {
+    document.getElementById('servicesCount').textContent = `${services.length} услуг`;
+    
+    if (services.length === 0) {
+        document.getElementById('servicesTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-star"></i>
+                <p>Услуги не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let servicesHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Описание</th>
+                    <th>Цена</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    services.forEach(service => {
+        servicesHtml += `
+            <tr>
+                <td>${service.id}</td>
+                <td>
+                    <div style="font-weight: 600;">${service.name}</div>
+                    <div style="font-size: 0.8rem; color: var(--graphite-medium);">
+                        ${service.is_featured ? '⭐ Рекомендуемая' : ''}
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="color: ${service.category_color || '#C5A880'};">
+                            <i class="${service.category_icon || 'fas fa-folder'}"></i>
+                        </div>
+                        <span>${service.category_name}</span>
+                    </div>
+                </td>
+                <td style="max-width: 250px;">${service.description.substring(0, 100)}${service.description.length > 100 ? '...' : ''}</td>
+                <td>${service.base_price ? formatNumber(service.base_price) + ' ₽' : 'Договорная'}</td>
+                <td>
+                    <span style="background: ${service.is_active ? 'var(--success)' : 'var(--error)'}; color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                        ${service.is_active ? 'Активна' : 'Неактивна'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editService(${service.id})" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-icon" onclick="deleteService(${service.id})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    servicesHtml += '</tbody></table>';
+    
+    document.getElementById('servicesTable').innerHTML = servicesHtml;
+}
+
+function showAddServiceModal() {
+    document.getElementById('serviceModalTitle').textContent = 'Добавить услугу';
+    document.getElementById('serviceForm').reset();
+    document.getElementById('serviceId').value = '';
+    document.getElementById('serviceBasePrice').value = '0';
+    document.getElementById('serviceEstimatedTime').value = '';
+    document.getElementById('serviceSortOrder').value = '0';
+    document.getElementById('serviceIsFeatured').checked = false;
+    document.querySelector('input[name="serviceStatus"][value="active"]').checked = true;
+    
+    // Загружаем категории
+    loadCategoriesForServiceSelect();
+    
+    showModal('serviceModal');
+}
+
+async function loadCategoriesForServiceSelect() {
+    try {
+        const response = await fetch('/api/admin/categories', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const select = document.getElementById('serviceCategorySelect');
+            select.innerHTML = '<option value="">Выберите категорию</option>';
+            
+            data.data.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.display_name;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки категорий:', error);
+    }
+}
+
+async function editService(serviceId) {
+    try {
+        showLoading('Загрузка услуги...');
+        
+        const response = await fetch('/api/admin/services', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const service = data.data.services.find(s => s.id == serviceId);
+            if (service) {
+                document.getElementById('serviceModalTitle').textContent = 'Редактировать услугу';
+                document.getElementById('serviceId').value = service.id;
+                document.getElementById('serviceName').value = service.name;
+                document.getElementById('serviceDescription').value = service.description;
+                document.getElementById('serviceBasePrice').value = service.base_price || 0;
+                document.getElementById('serviceEstimatedTime').value = service.estimated_time || '';
+                document.getElementById('serviceSortOrder').value = service.sort_order || 0;
+                document.getElementById('serviceIsFeatured').checked = service.is_featured == 1;
+                
+                // Загружаем категории
+                await loadCategoriesForServiceSelect();
+                document.getElementById('serviceCategorySelect').value = service.category_id;
+                
+                const statusRadios = document.getElementsByName('serviceStatus');
+                statusRadios.forEach(radio => {
+                    radio.checked = radio.value === (service.is_active ? 'active' : 'inactive');
+                });
+                
+                showModal('serviceModal');
+            } else {
+                throw new Error('Услуга не найдена');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки услуги:', error);
+        showNotification('Ошибка загрузки услуги', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function saveService() {
+    try {
+        const id = document.getElementById('serviceId').value;
+        const category_id = document.getElementById('serviceCategorySelect').value;
+        const name = document.getElementById('serviceName').value;
+        const description = document.getElementById('serviceDescription').value;
+        const base_price = document.getElementById('serviceBasePrice').value;
+        const estimated_time = document.getElementById('serviceEstimatedTime').value;
+        const sort_order = document.getElementById('serviceSortOrder').value;
+        const is_featured = document.getElementById('serviceIsFeatured').checked;
+        const is_active = document.querySelector('input[name="serviceStatus"]:checked').value === 'active';
+        
+        if (!category_id || !name || !description) {
+            showNotification('Заполните все обязательные поля', 'error');
+            return;
+        }
+        
+        showLoading('Сохранение услуги...');
+        
+        const response = await fetch('/api/admin/services', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                id: id || null,
+                category_id,
+                name,
+                description,
+                base_price,
+                estimated_time,
+                sort_order: parseInt(sort_order),
+                is_featured,
+                is_active
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Услуга успешно сохранена', 'success');
+            closeModal('serviceModal');
+            loadServices();
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения услуги');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения услуги:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteService(serviceId) {
+    if (!confirm('Вы уверены, что хотите удалить эту услугу?')) {
+        return;
+    }
+    
+    try {
+        showLoading('Удаление услуги...');
+        
+        const response = await fetch(`/api/admin/services/${serviceId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Услуга успешно удалена', 'success');
+            loadServices();
+        } else {
+            throw new Error(data.error || 'Ошибка удаления услуги');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления услуги:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ==================== УПРАВЛЕНИЕ ЗАДАЧАМИ ====================
+async function loadTasks() {
+    try {
+        showLoading('Загрузка задач...');
+        
+        const statusFilter = document.getElementById('taskStatusFilter').value;
+        const categoryFilter = document.getElementById('taskCategoryFilter').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo = document.getElementById('dateTo').value;
+        
+        let url = '/api/admin/tasks-detailed?limit=50';
+        if (statusFilter !== 'all') url += `&status=${statusFilter}`;
+        if (categoryFilter !== 'all') url += `&category_id=${categoryFilter}`;
+        if (dateFrom) url += `&date_from=${dateFrom}`;
+        if (dateTo) url += `&date_to=${dateTo}`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderTasks(data.data.tasks);
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки задач');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки задач:', error);
+        showNotification('Ошибка загрузки задач', 'error');
+        document.getElementById('tasksTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <p>Ошибка загрузки задач</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderTasks(tasks) {
+    document.getElementById('tasksCount').textContent = `${tasks.length} задач`;
+    
+    if (tasks.length === 0) {
+        document.getElementById('tasksTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-tasks"></i>
+                <p>Задачи не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let tasksHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Клиент</th>
+                    <th>Исполнитель</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Цена</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    tasks.forEach(task => {
+        const statusText = {
+            'new': 'Новая',
+            'searching': 'Поиск',
+            'assigned': 'Назначена',
+            'in_progress': 'В работе',
+            'completed': 'Завершена',
+            'cancelled': 'Отменена'
+        }[task.status] || task.status;
+        
+        const statusClass = {
+            'new': 'status-new',
+            'searching': 'status-in_progress',
+            'assigned': 'status-assigned',
+            'in_progress': 'status-in_progress',
+            'completed': 'status-completed',
+            'cancelled': 'status-cancelled'
+        }[task.status] || '';
+        
+        tasksHtml += `
+            <tr>
+                <td>${task.id}</td>
+                <td>${task.title.substring(0, 30)}${task.title.length > 30 ? '...' : ''}</td>
+                <td>${task.client_first_name || ''} ${task.client_last_name || ''}</td>
+                <td>${task.performer_first_name || ''} ${task.performer_last_name || '' || '—'}</td>
+                <td>${task.category_name || '-'}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                <td>${task.price ? formatNumber(task.price) + ' ₽' : '—'}</td>
+                <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="viewTaskDetails(${task.id})" title="Просмотр">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-icon" onclick="deleteTask(${task.id})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tasksHtml += '</tbody></table>';
+    
+    document.getElementById('tasksTable').innerHTML = tasksHtml;
+    
+    // Мобильная версия
+    if (isMobile) {
+        renderMobileCards(tasks, 'tasksMobile', 'task');
+    }
+}
+
+async function viewTaskDetails(taskId) {
+    try {
+        showLoading('Загрузка деталей задачи...');
+        
+        const response = await fetch(`/api/tasks/${taskId}`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Показать модальное окно с деталями задачи
+            alert(`Детали задачи:\n\nНазвание: ${data.data.task.title}\nСтатус: ${data.data.task.status}\nКлиент: ${data.data.task.client_first_name} ${data.data.task.client_last_name}\nДата: ${new Date(data.data.task.created_at).toLocaleDateString('ru-RU')}`);
+        } else {
+            throw new Error('Ошибка загрузки деталей задачи');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки деталей задачи:', error);
+        showNotification('Ошибка загрузки деталей задачи', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
+        return;
+    }
+    
+    try {
+        showLoading('Удаление задачи...');
+        
+        const response = await fetch(`/api/admin/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Задача успешно удалена', 'success');
+            loadTasks();
+        } else {
+            throw new Error(data.error || 'Ошибка удаления задачи');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления задачи:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ==================== УПРАВЛЕНИЕ ПОДПИСКАМИ ====================
+async function loadSubscriptions() {
+    try {
+        showLoading('Загрузка подписок...');
+        
+        const response = await fetch('/api/admin/subscriptions', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderSubscriptions(data.data.subscriptions);
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки подписок');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки подписок:', error);
+        showNotification('Ошибка загрузки подписок', 'error');
+        document.getElementById('subscriptionsTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-crown"></i>
+                <p>Ошибка загрузки подписок</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderSubscriptions(subscriptions) {
+    document.getElementById('subscriptionsCount').textContent = `${subscriptions.length} подписок`;
+    
+    if (subscriptions.length === 0) {
+        document.getElementById('subscriptionsTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-crown"></i>
+                <p>Подписки не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let subsHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Цена/месяц</th>
+                    <th>Взнос</th>
+                    <th>Задачи/месяц</th>
+                    <th>Пользователей</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    subscriptions.forEach(sub => {
+        const features = typeof sub.features === 'string' ? JSON.parse(sub.features) : sub.features;
+        
+        subsHtml += `
+            <tr>
+                <td>${sub.id}</td>
+                <td>
+                    <div style="font-weight: 600;">${sub.display_name}</div>
+                    <div style="font-size: 0.8rem; color: var(--graphite-medium);">
+                        ${sub.is_popular ? '⭐ Популярная' : ''}
+                    </div>
+                </td>
+                <td>${formatNumber(sub.price_monthly)} ₽</td>
+                <td>${formatNumber(sub.initial_fee)} ₽</td>
+                <td>${sub.tasks_limit}</td>
+                <td>${sub.user_count || 0} (${sub.active_users || 0} активных)</td>
+                <td>
+                    <span style="background: ${sub.is_active ? 'var(--success)' : 'var(--error)'}; color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                        ${sub.is_active ? 'Активна' : 'Неактивна'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editSubscription(${sub.id})" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-icon" onclick="deleteSubscription(${sub.id})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    subsHtml += '</tbody></table>';
+    
+    document.getElementById('subscriptionsTable').innerHTML = subsHtml;
+}
+
+async function saveSubscription() {
+    try {
+        const id = document.getElementById('subscriptionId').value;
+        const name = document.getElementById('subscriptionName').value;
+        const display_name = document.getElementById('subscriptionDisplayName').value;
+        const description = document.getElementById('subscriptionDescription').value;
+        const price_monthly = document.getElementById('subscriptionPriceMonthly').value;
+        const price_yearly = document.getElementById('subscriptionPriceYearly').value;
+        const initial_fee = document.getElementById('subscriptionInitialFee').value;
+        const tasks_limit = document.getElementById('subscriptionTasksLimit').value;
+        const features = document.getElementById('subscriptionFeatures').value;
+        const color_theme = document.getElementById('subscriptionColorTheme').value;
+        const sort_order = document.getElementById('subscriptionSortOrder').value;
+        const is_popular = document.getElementById('subscriptionIsPopular').checked;
+        const is_active = document.querySelector('input[name="subscriptionStatus"]:checked').value === 'active';
+        
+        if (!name || !display_name || !description || !price_monthly || !initial_fee || !tasks_limit || !features) {
+            showNotification('Заполните все обязательные поля', 'error');
+            return;
+        }
+        
+        showLoading('Сохранение подписки...');
+        
+        const featuresArray = features.split('\n').filter(f => f.trim() !== '');
+        
+        const response = await fetch('/api/admin/subscriptions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                id: id || null,
+                name,
+                display_name,
+                description,
+                price_monthly: parseFloat(price_monthly),
+                price_yearly: price_yearly ? parseFloat(price_yearly) : parseFloat(price_monthly) * 12,
+                initial_fee: parseFloat(initial_fee),
+                tasks_limit: parseInt(tasks_limit),
+                features: JSON.stringify(featuresArray),
+                color_theme,
+                sort_order: parseInt(sort_order),
+                is_popular,
+                is_active
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Подписка успешно сохранена', 'success');
+            closeModal('subscriptionModal');
+            loadSubscriptions();
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения подписки');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения подписки:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function editSubscription(subscriptionId) {
+    try {
+        showLoading('Загрузка подписки...');
+        
+        const response = await fetch('/api/admin/subscriptions', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const subscription = data.data.subscriptions.find(s => s.id == subscriptionId);
+            if (subscription) {
+                const features = typeof subscription.features === 'string' ? 
+                    JSON.parse(subscription.features).join('\n') : 
+                    subscription.features.join('\n');
+                
+                document.getElementById('subscriptionModalTitle').textContent = 'Редактировать подписку';
+                document.getElementById('subscriptionId').value = subscription.id;
+                document.getElementById('subscriptionName').value = subscription.name;
+                document.getElementById('subscriptionDisplayName').value = subscription.display_name;
+                document.getElementById('subscriptionDescription').value = subscription.description;
+                document.getElementById('subscriptionPriceMonthly').value = subscription.price_monthly;
+                document.getElementById('subscriptionPriceYearly').value = subscription.price_yearly || subscription.price_monthly * 12;
+                document.getElementById('subscriptionInitialFee').value = subscription.initial_fee;
+                document.getElementById('subscriptionTasksLimit').value = subscription.tasks_limit;
+                document.getElementById('subscriptionFeatures').value = features;
+                document.getElementById('subscriptionColorTheme').value = subscription.color_theme || '#FF6B8B';
+                document.getElementById('subscriptionSortOrder').value = subscription.sort_order || 0;
+                document.getElementById('subscriptionIsPopular').checked = subscription.is_popular == 1;
+                
+                const statusRadios = document.getElementsByName('subscriptionStatus');
+                statusRadios.forEach(radio => {
+                    radio.checked = radio.value === (subscription.is_active ? 'active' : 'inactive');
+                });
+                
+                showModal('subscriptionModal');
+            } else {
+                throw new Error('Подписка не найдена');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки подписки:', error);
+        showNotification('Ошибка загрузки подписки', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteSubscription(subscriptionId) {
+    if (!confirm('Вы уверены, что хотите удалить эту подписку?')) {
+        return;
+    }
+    
+    try {
+        showLoading('Удаление подписки...');
+        
+        const response = await fetch(`/api/admin/subscriptions/${subscriptionId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Подписка успешно удалена', 'success');
+            loadSubscriptions();
+        } else {
+            throw new Error(data.error || 'Ошибка удаления подписки');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления подписки:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// ==================== УПРАВЛЕНИЕ ТРАНЗАКЦИЯМИ ====================
+async function loadTransactions() {
+    try {
+        showLoading('Загрузка транзакций...');
+        
+        const typeFilter = document.getElementById('transactionTypeFilter').value;
+        const statusFilter = document.getElementById('transactionStatusFilter').value;
+        const dateFrom = document.getElementById('transDateFrom').value;
+        const dateTo = document.getElementById('transDateTo').value;
+        
+        let url = '/api/admin/transactions?limit=50';
+        if (typeFilter !== 'all') url += `&type=${typeFilter}`;
+        if (statusFilter !== 'all') url += `&status=${statusFilter}`;
+        if (dateFrom) url += `&date_from=${dateFrom}`;
+        if (dateTo) url += `&date_to=${dateTo}`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderTransactions(data.data.transactions);
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки транзакций');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки транзакций:', error);
+        showNotification('Ошибка загрузки транзакций', 'error');
+        document.getElementById('transactionsTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-money-bill-wave"></i>
+                <p>Ошибка загрузки транзакций</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+function renderTransactions(transactions) {
+    document.getElementById('transactionsCount').textContent = `${transactions.length} транзакций`;
+    
+    if (transactions.length === 0) {
+        document.getElementById('transactionsTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-money-bill-wave"></i>
+                <p>Транзакции не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let transHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Тип</th>
+                    <th>Сумма</th>
+                    <th>Описание</th>
+                    <th>Статус</th>
+                    <th>Дата</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    transactions.forEach(trans => {
+        const typeText = {
+            'initial_fee': 'Вступительный взнос',
+            'subscription': 'Подписка',
+            'task_payment': 'Оплата задачи',
+            'payout': 'Выплата',
+            'refund': 'Возврат'
+        }[trans.type] || trans.type;
+        
+        const statusText = {
+            'pending': 'Ожидание',
+            'completed': 'Завершено',
+            'failed': 'Ошибка',
+            'cancelled': 'Отменено'
+        }[trans.status] || trans.status;
+        
+        const statusColor = {
+            'pending': 'var(--warning)',
+            'completed': 'var(--success)',
+            'failed': 'var(--error)',
+            'cancelled': 'var(--graphite-medium)'
+        }[trans.status] || 'var(--graphite-medium)';
+        
+        transHtml += `
+            <tr>
+                <td>${trans.id}</td>
+                <td>${trans.user_name || 'Неизвестно'}</td>
+                <td>${typeText}</td>
+                <td style="color: ${trans.amount < 0 ? 'var(--error)' : 'var(--success)'}; font-weight: 600;">
+                    ${formatNumber(trans.amount)} ₽
+                </td>
+                <td>${trans.description}</td>
+                <td>
+                    <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                        ${statusText}
+                    </span>
+                </td>
+                <td>${new Date(trans.created_at).toLocaleDateString('ru-RU')}</td>
+                <td>
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="viewTransactionDetails(${trans.id})" title="Просмотр">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    transHtml += '</tbody></table>';
+    
+    document.getElementById('transactionsTable').innerHTML = transHtml;
+}
+
+// Добав
         async function loadSettings() {
             try {
                 showLoading('Загрузка настроек...');
@@ -3415,6 +4266,16 @@
         window.updateSubscriptionVisibility = updateSubscriptionVisibility;
         window.clearImagePreview = clearImagePreview;
         window.previewImage = previewImage;
+        window.saveService = saveService;
+window.loadServices = loadServices;
+window.loadTasks = loadTasks;
+window.loadSubscriptions = loadSubscriptions;
+window.loadTransactions = loadTransactions;
+window.saveSubscription = saveSubscription;
+window.editService = editService;
+window.deleteService = deleteService;
+window.editSubscription = editSubscription;
+window.deleteSubscription = deleteSubscription;
         
     </script>
 </body>
