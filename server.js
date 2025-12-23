@@ -35,6 +35,76 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
+// Специальный middleware для обработки статических файлов с CORS
+app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Max-Age', '86400');
+    
+    // Предварительные запросы OPTIONS
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    
+    next();
+});
+
+// Middleware для статических файлов с автоматическим определением MIME-типа
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        const mimeTypes = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.css': 'text/css',
+            '.js': 'application/javascript',
+            '.json': 'application/json'
+        };
+        
+        if (mimeTypes[ext]) {
+            res.set('Content-Type', mimeTypes[ext]);
+        }
+        
+        // Кэширование изображений на год
+        if (ext.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
+            res.set('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    },
+    fallthrough: false // Отключаем fallthrough для обработки 404
+}));
+
+// Обработка 404 для статических файлов
+app.use('/uploads', (req, res, next) => {
+    const ext = path.extname(req.path).toLowerCase();
+    
+    if (ext.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
+        // Возвращаем placeholder-изображение
+        console.log(`🖼️ Placeholder для: ${req.path}`);
+        
+        // Создаем SVG placeholder
+        const svgPlaceholder = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                <rect width="200" height="150" fill="#F5F5F5"/>
+                <rect x="50" y="50" width="100" height="50" fill="#E0E0E0" rx="5"/>
+                <text x="100" y="85" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">${path.basename(req.path)}</text>
+                <text x="100" y="105" font-family="Arial" font-size="10" text-anchor="middle" fill="#AAA">Файл не найден</text>
+            </svg>
+        `;
+        
+        res.set('Content-Type', 'image/svg+xml');
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return res.send(svgPlaceholder);
+    }
+    
+    res.status(404).json({ error: 'Файл не найден' });
+});
+
 // Парсинг JSON с увеличенным лимитом
 app.use(express.json({ 
     limit: '50mb',
@@ -50,11 +120,26 @@ app.use(express.urlencoded({
 }));
 
 // Статические файлы с правильными заголовками
+// Статические файлы с правильными заголовками
 app.use(express.static('public', {
-    setHeaders: (res, path) => {
-        res.set('Cache-Control', 'public, max-age=31536000');
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+        
+        // Настройки кэширования для разных типов файлов
+        if (ext.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
+            res.set('Cache-Control', 'public, max-age=31536000'); // Год для изображений
+        } else if (ext.match(/\.(css|js)$/)) {
+            res.set('Cache-Control', 'public, max-age=86400'); // Сутки для CSS/JS
+        } else {
+            res.set('Cache-Control', 'public, max-age=3600'); // Час для остального
+        }
+        
         res.set('X-Content-Type-Options', 'nosniff');
         res.set('X-Frame-Options', 'DENY');
+        
+        // CORS заголовки для всех статических файлов
+        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Methods', 'GET');
     }
 }));
 
@@ -483,8 +568,11 @@ const initDatabase = async () => {
         await db.exec('COMMIT');
         console.log('✅ Все таблицы созданы');
 
-        // Создаем тестовые данные
-        await createInitialData();
+       // В функции initDatabase(), найдите вызов createInitialData():
+await createInitialData();
+
+// ДОБАВЬТЕ СРАЗУ ПОСЛЕ НЕГО:
+await generateDefaultImages();
         
         return db;
     } catch (error) {
@@ -495,6 +583,117 @@ const initDatabase = async () => {
         }
         console.error('❌ Ошибка инициализации базы данных:', error.message);
         throw error;
+    }
+};
+
+// ==================== УНИВЕРСАЛЬНЫЙ ОБРАБОТЧИК ИЗОБРАЖЕНИЙ ====================
+
+const createImagePlaceholder = (type = 'default', text = '') => {
+    const placeholders = {
+        'logo': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+                    <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+                          fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+                </svg>
+            `,
+            color: '#F2DDE6'
+        },
+        'category': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#FAF2F6"/>
+                    <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+                    <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                        ${text || 'Кат.'}
+                    </text>
+                    <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                        Изображение категории
+                    </text>
+                </svg>
+            `,
+            color: '#FAF2F6'
+        },
+        'user': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="40" r="25" fill="#E8CCD9"/>
+                    <circle cx="50" cy="40" r="22" fill="#F2DDE6"/>
+                    <circle cx="50" cy="90" r="35" fill="#E8CCD9"/>
+                    <circle cx="50" cy="90" r="32" fill="#F2DDE6"/>
+                    <text x="50" y="45" font-family="Arial" font-size="20" text-anchor="middle" dy=".3em" fill="#C5A880">
+                        ${text || 'U'}
+                    </text>
+                </svg>
+            `,
+            color: '#F2DDE6'
+        },
+        'default': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#F9F7F3"/>
+                    <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
+                    <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">
+                        ${text || 'Изображение'}
+                    </text>
+                </svg>
+            `,
+            color: '#F9F7F3'
+        }
+    };
+    
+    return placeholders[type] || placeholders.default;
+};
+
+// Функция для генерации дефолтных изображений при инициализации
+const generateDefaultImages = async () => {
+    try {
+        console.log('🎨 Генерация дефолтных изображений...');
+        
+        const dirs = [
+            { path: 'public/uploads/logo', type: 'logo' },
+            { path: 'public/uploads/categories', type: 'category' },
+            { path: 'public/uploads/users', type: 'user' },
+            { path: 'public/uploads/services', type: 'default' },
+            { path: 'public/uploads/tasks', type: 'default' }
+        ];
+        
+        for (const dir of dirs) {
+            if (!fsSync.existsSync(dir.path)) {
+                fsSync.mkdirSync(dir.path, { recursive: true });
+                console.log(`✅ Создана директория: ${dir.path}`);
+            }
+            
+            // Создаем дефолтные файлы
+            const placeholder = createImagePlaceholder(dir.type, dir.type.charAt(0).toUpperCase());
+            const defaultFile = path.join(dir.path, 'default.svg');
+            
+            if (!fsSync.existsSync(defaultFile)) {
+                await fs.writeFile(defaultFile, placeholder.svg);
+                console.log(`✅ Создан дефолтный файл: ${defaultFile}`);
+            }
+        }
+        
+        // Создаем дефолтный логотип
+        const logoPlaceholder = createImagePlaceholder('logo', 'W');
+        const logoPath = path.join(__dirname, 'public/uploads/logo/logo.svg');
+        
+        if (!fsSync.existsSync(logoPath)) {
+            await fs.writeFile(logoPath, logoPlaceholder.svg);
+            console.log(`✅ Создан логотип: ${logoPath}`);
+            
+            // Обновляем настройку в БД
+            await db.run(
+                `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
+                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance']
+            );
+        }
+        
+        console.log('✅ Дефолтные изображения созданы');
+    } catch (error) {
+        console.error('⚠️ Ошибка генерации дефолтных изображений:', error.message);
     }
 };
 
@@ -5918,67 +6117,106 @@ app.get('/api/admin/users/recent', authMiddleware(['admin', 'superadmin', 'manag
 
 // ==================== ДОПОЛНИТЕЛЬНЫЕ API МАРШРУТЫ ====================
 
-// Получение логотипа (добавьте этот код)
+// Получение информации о логотипе
 app.get('/api/logo', async (req, res) => {
     try {
-        console.log('📷 Запрос логотипа сайта...');
+        console.log('📷 Запрос информации о логотипе...');
         
         const logoSetting = await db.get(
             "SELECT value FROM settings WHERE key = 'site_logo'"
         );
         
-        let logoUrl = '/uploads/logo/logo.png'; // значение по умолчанию
+        let logoUrl = '/uploads/logo/logo.svg'; // значение по умолчанию
         
         if (logoSetting && logoSetting.value) {
             logoUrl = logoSetting.value;
             console.log(`✅ Найден логотип: ${logoUrl}`);
         } else {
             console.log('ℹ️ Используется логотип по умолчанию');
+            
+            // Устанавливаем дефолтный логотип в БД
+            await db.run(
+                `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
+                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance']
+            );
         }
         
         // Проверяем существование файла
         const logoPath = path.join(__dirname, 'public', logoUrl);
         const logoExists = fsSync.existsSync(logoPath);
         
-        if (!logoExists) {
-            console.log(`⚠️ Файл логотипа не найден: ${logoPath}`);
-            
-            // Создаем дефолтный логотип если нет
-            const defaultLogoPath = path.join(__dirname, 'public', 'uploads', 'logo', 'logo.png');
-            if (!fsSync.existsSync(path.dirname(defaultLogoPath))) {
-                fsSync.mkdirSync(path.dirname(defaultLogoPath), { recursive: true });
-            }
-            
-            // Создаем простой логотип если нет файла
-            if (!fsSync.existsSync(defaultLogoPath)) {
-                console.log('🎨 Создаем дефолтный логотип...');
-                // Можно создать простую картинку или использовать заглушку
-                logoUrl = '/uploads/logo/logo.png';
-            }
-        }
-        
         res.json({
             success: true,
-            message: 'Логотип получен',
+            message: 'Информация о логотипе получена',
             data: {
                 logo_url: logoUrl,
                 exists: logoExists,
-                timestamp: new Date().toISOString()
+                full_url: `${req.protocol}://${req.get('host')}${logoUrl}`,
+                timestamp: new Date().toISOString(),
+                formats_supported: ['svg', 'png', 'jpg', 'webp']
             }
         });
         
     } catch (error) {
-        console.error('❌ Ошибка получения логотипа:', error.message);
+        console.error('❌ Ошибка получения информации о логотипе:', error.message);
         
         res.json({
             success: true,
             data: {
-                logo_url: '/uploads/logo/logo.png',
+                logo_url: '/uploads/logo/logo.svg',
                 exists: false,
-                error: error.message,
-                timestamp: new Date().toISOString()
+                full_url: `${req.protocol}://${req.get('host')}/uploads/logo/logo.svg`,
+                timestamp: new Date().toISOString(),
+                error: 'Используется логотип по умолчанию'
             }
         });
+    }
+});
+
+// Получение самого логотипа (прямой доступ)
+app.get('/api/logo/file', async (req, res) => {
+    try {
+        const logoSetting = await db.get(
+            "SELECT value FROM settings WHERE key = 'site_logo'"
+        );
+        
+        let logoUrl = '/uploads/logo/logo.svg';
+        if (logoSetting && logoSetting.value) {
+            logoUrl = logoSetting.value;
+        }
+        
+        const logoPath = path.join(__dirname, 'public', logoUrl);
+        
+        if (fsSync.existsSync(logoPath)) {
+            const ext = path.extname(logoPath).toLowerCase();
+            const mimeTypes = {
+                '.svg': 'image/svg+xml',
+                '.png': 'image/png',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.webp': 'image/webp'
+            };
+            
+            res.set('Content-Type', mimeTypes[ext] || 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=31536000, immutable');
+            res.set('Access-Control-Allow-Origin', '*');
+            
+            return res.sendFile(logoPath);
+        }
+        
+        // Возвращаем дефолтный логотип
+        const defaultLogo = createImagePlaceholder('logo', 'W');
+        res.set('Content-Type', 'image/svg+xml');
+        res.set('Cache-Control', 'public, max-age=31536000, immutable');
+        res.set('Access-Control-Allow-Origin', '*');
+        res.send(defaultLogo.svg);
+        
+    } catch (error) {
+        console.error('❌ Ошибка отдачи логотипа:', error.message);
+        const defaultLogo = createImagePlaceholder('logo', 'W');
+        res.set('Content-Type', 'image/svg+xml');
+        res.send(defaultLogo.svg);
     }
 });
 
@@ -6476,6 +6714,75 @@ app.use('/api/*', (req, res) => {
         success: false,
         error: 'API маршрут не найден'
     });
+});
+
+// ==================== ПРОВЕРКА И ОТЛАДКА ИЗОБРАЖЕНИЙ ====================
+
+// Маршрут для проверки работы изображений
+app.get('/api/images/check', async (req, res) => {
+    try {
+        const imageTypes = ['logo', 'category', 'user', 'service'];
+        const results = {};
+        
+        for (const type of imageTypes) {
+            const testUrl = `/uploads/${type}s/${type}.svg`;
+            const filePath = path.join(__dirname, 'public', testUrl);
+            
+            results[type] = {
+                url: testUrl,
+                exists: fsSync.existsSync(filePath),
+                path: filePath,
+                accessible: false
+            };
+            
+            // Проверяем доступность через прямой доступ
+            try {
+                await fs.access(filePath);
+                results[type].accessible = true;
+            } catch (error) {
+                results[type].accessible = false;
+                results[type].error = error.message;
+            }
+        }
+        
+        // Проверяем настройки в БД
+        const settings = await db.all(
+            "SELECT key, value FROM settings WHERE key LIKE '%logo%' OR key LIKE '%image%'"
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                image_check: results,
+                settings: settings,
+                server_info: {
+                    host: req.get('host'),
+                    protocol: req.protocol,
+                    uploads_path: path.join(__dirname, 'public/uploads'),
+                    timestamp: new Date().toISOString()
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка проверки изображений:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка проверки изображений'
+        });
+    }
+});
+
+// Маршрут для тестового изображения
+app.get('/api/images/test/:type', (req, res) => {
+    const type = req.params.type || 'default';
+    const placeholder = createImagePlaceholder(type, type.charAt(0).toUpperCase());
+    
+    res.set('Content-Type', 'image/svg+xml');
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    res.set('Access-Control-Allow-Origin', '*');
+    
+    res.send(placeholder.svg);
 });
 
 // SPA маршрутизация
