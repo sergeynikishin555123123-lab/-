@@ -5460,8 +5460,11 @@ card.innerHTML = `
     }
     // === КОНЕЦ ШАГА 12 ===
     
-    console.log('✅ WOMAN HELP готов к работе!');
+  // === КОНЕЦ ШАГА 12 ===
+    
+console.log('✅ WOMAN HELP готов к работе!');
 },
+
 // Новая функция для обработки ошибок изображений
 setupImageErrorHandling: function() {
     // Глобальный обработчик ошибок изображений
@@ -5499,11 +5502,19 @@ setupImageErrorHandling: function() {
             }
         };
 
-        // Инициализация при загрузке страницы
-        window.addEventListener('DOMContentLoaded', () => {
-            app.init();
-        });
+       // Инициализация при загрузке страницы
+window.addEventListener('DOMContentLoaded', () => {
+    try {
+        app.init();
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+        // Показать пользователю простое сообщение об ошибке
+        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
+    }
+});
 
+// Экспорт объекта app в глобальную область видимости
+window.app = app;
         // Экспорт объекта app в глобальную область видимости
         window.app = app;
     </script>
