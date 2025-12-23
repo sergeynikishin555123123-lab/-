@@ -2833,23 +2833,21 @@
            // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
 getImageUrl: function(imageUrl, type = 'default') {
     // Если есть реальный URL, используем его
-    if (imageUrl && imageUrl.startsWith('/uploads/')) {
-        // Проверяем, есть ли у нас полный URL
-        if (imageUrl.includes('://')) {
-            return imageUrl + '?t=' + Date.now();
-        } else {
+    if (imageUrl && imageUrl.trim() !== '') {
+        // Проверяем разные форматы URL
+        if (imageUrl.startsWith('/uploads/')) {
+            // Относительный путь - добавляем базовый URL
             return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
+        } else if (imageUrl.startsWith('/')) {
+            // Любой другой относительный путь
+            return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
+        } else if (imageUrl.includes('://')) {
+            // Абсолютный URL (уже полный)
+            return imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('uploads/')) {
+            // Без начального слеша
+            return `${this.API_BASE_URL}/${imageUrl}?t=${Date.now()}`;
         }
-    }
-    
-    // Для относительных путей без /uploads/
-    if (imageUrl && imageUrl.startsWith('/')) {
-        return `${this.API_BASE_URL}${imageUrl}?t=${Date.now()}`;
-    }
-    
-    // Для абсолютных URL (уже полных)
-    if (imageUrl && imageUrl.includes('://')) {
-        return imageUrl + '?t=' + Date.now();
     }
     
     // Иначе возвращаем placeholder
@@ -2906,39 +2904,36 @@ loadLogo: async function() {
 setupDefaultImages: function() {
     console.log('🖼️ Настройка изображений...');
     
-    // Обработка всех изображений
+    // Обработчик ошибок для всех изображений
+    const handleImageError = function() {
+        console.log(`⚠️ Ошибка загрузки изображения: ${this.src}`);
+        
+        // Определяем тип изображения по контексту
+        let type = 'default';
+        if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
+            type = 'logo';
+        } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
+            type = 'category';
+        } else if (this.closest('.service-image') || this.src.includes('service')) {
+            type = 'service';
+        } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
+            type = 'user';
+        }
+        
+        // Заменяем на placeholder
+        this.src = `${app.API_BASE_URL}/api/images/test/${type}?t=${Date.now()}`;
+        this.onerror = null; // Предотвращаем зацикливание
+    };
+    
+    // Применяем обработчик ко всем изображениям
     document.querySelectorAll('img').forEach(img => {
-        // Сохраняем оригинальный src если он есть
-        const originalSrc = img.getAttribute('data-original-src') || img.src;
-        if (originalSrc && originalSrc !== '') {
-            img.setAttribute('data-original-src', originalSrc);
+        // Сохраняем оригинальный src
+        if (img.src && img.src !== '') {
+            img.setAttribute('data-original-src', img.src);
         }
         
         // Устанавливаем обработчик ошибок
-        img.onerror = function() {
-            console.warn(`Ошибка загрузки изображения: ${this.src}`);
-            
-            // Определяем тип изображения для fallback
-            let type = 'default';
-            if (this.classList.contains('logo-img') || this.id.includes('Logo')) {
-                type = 'logo';
-            } else if (this.closest('.category-image') || this.closest('.category-image-container')) {
-                type = 'category';
-            } else if (this.closest('.service-image')) {
-                type = 'service';
-            } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar')) {
-                type = 'user';
-            }
-            
-            this.src = `${app.API_BASE_URL}/api/images/test/${type}?t=${Date.now()}`;
-            this.onerror = null; // Предотвращаем зацикливание
-        };
-        
-        // Для логотипов проверяем наличие
-        if (img.classList.contains('logo-img')) {
-            // Логотип загружается отдельно через loadLogo()
-            return;
-        }
+        img.onerror = handleImageError;
     });
     
     // Загружаем логотип с сервера
@@ -3406,7 +3401,7 @@ loadLogo: async function() {
         card.className = 'category-card-square';
         card.onclick = () => this.selectCategoryForServices(category);
         
-        const imageUrl = this.getImageUrl(category.image_url, 'category');
+        const imageUrl = this.getImageUrl(category.image_url || category.icon_url, 'category');
         
         card.innerHTML = `
     <div class="category-image-container">
@@ -3687,7 +3682,7 @@ loadLogo: async function() {
         card.className = 'card category-card';
         card.onclick = () => this.selectCategory(category);
         
-        const imageUrl = this.getImageUrl(category.image_url, 'category');
+      const imageUrl = this.getImageUrl(category.image_url || category.icon_url, 'category');
         
         card.innerHTML = `
     <div class="category-image">
