@@ -937,6 +937,17 @@ const createInitialData = async () => {
                 }
             }
             console.log('✅ Назначения помощников по категориям созданы');
+
+// В функции createInitialData, добавьте после других настроек:
+const logoSetting = await db.get("SELECT 1 FROM settings WHERE key = 'site_logo'");
+if (!logoSetting) {
+    await db.run(
+        `INSERT OR IGNORE INTO settings (key, value, description, category) 
+         VALUES (?, ?, ?, ?)`,
+        ['site_logo', '/api/images/test/logo', 'Логотип сайта', 'appearance']
+    );
+    console.log('✅ Настройка логотипа создана');
+}
             
             // Создаем тестовые задачи
             const clients = await db.all("SELECT id FROM users WHERE role = 'client' AND subscription_status = 'active' LIMIT 2");
@@ -998,6 +1009,8 @@ const createInitialData = async () => {
                                 '+79991234567'
                             ]
                         );
+
+
                         
                         const taskId = (await db.get('SELECT last_insert_rowid() as id')).id;
                         
@@ -6120,6 +6133,8 @@ app.get('/api/admin/users/recent', authMiddleware(['admin', 'superadmin', 'manag
 
 // ==================== ДОПОЛНИТЕЛЬНЫЕ API МАРШРУТЫ ====================
 
+// ==================== ЛОГОТИП ====================
+
 // Получение информации о логотипе
 app.get('/api/logo', async (req, res) => {
     try {
@@ -6129,47 +6144,33 @@ app.get('/api/logo', async (req, res) => {
             "SELECT value FROM settings WHERE key = 'site_logo'"
         );
         
-        let logoUrl = '/uploads/logo/logo.svg'; // значение по умолчанию
+        let logoUrl = '/api/images/test/logo'; // значение по умолчанию
         
         if (logoSetting && logoSetting.value) {
             logoUrl = logoSetting.value;
             console.log(`✅ Найден логотип: ${logoUrl}`);
         } else {
             console.log('ℹ️ Используется логотип по умолчанию');
-            
-            // Устанавливаем дефолтный логотип в БД
-            await db.run(
-                `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
-                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
-                ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance']
-            );
         }
-        
-        // Проверяем существование файла
-        const logoPath = path.join(__dirname, 'public', logoUrl);
-        const logoExists = fsSync.existsSync(logoPath);
         
         res.json({
             success: true,
             message: 'Информация о логотипе получена',
             data: {
                 logo_url: logoUrl,
-                exists: logoExists,
                 full_url: `${req.protocol}://${req.get('host')}${logoUrl}`,
-                timestamp: new Date().toISOString(),
-                formats_supported: ['svg', 'png', 'jpg', 'webp']
+                timestamp: new Date().toISOString()
             }
         });
         
     } catch (error) {
-        console.error('❌ Ошибка получения информации о логотипе:', error.message);
+        console.error('❌ Ошибка получения логотипа:', error.message);
         
         res.json({
             success: true,
             data: {
-                logo_url: '/uploads/logo/logo.svg',
-                exists: false,
-                full_url: `${req.protocol}://${req.get('host')}/uploads/logo/logo.svg`,
+                logo_url: '/api/images/test/logo',
+                full_url: `${req.protocol}://${req.get('host')}/api/images/test/logo`,
                 timestamp: new Date().toISOString(),
                 error: 'Используется логотип по умолчанию'
             }
@@ -6177,20 +6178,21 @@ app.get('/api/logo', async (req, res) => {
     }
 });
 
-// Получение самого логотипа (прямой доступ)
+// Получение самого файла логотипа
 app.get('/api/logo/file', async (req, res) => {
     try {
         const logoSetting = await db.get(
             "SELECT value FROM settings WHERE key = 'site_logo'"
         );
         
-        let logoUrl = '/uploads/logo/logo.svg';
+        let logoUrl = '/api/images/test/logo';
         if (logoSetting && logoSetting.value) {
             logoUrl = logoSetting.value;
         }
         
         const logoPath = path.join(__dirname, 'public', logoUrl);
         
+        // Проверяем существует ли файл
         if (fsSync.existsSync(logoPath)) {
             const ext = path.extname(logoPath).toLowerCase();
             const mimeTypes = {
@@ -6208,18 +6210,29 @@ app.get('/api/logo/file', async (req, res) => {
             return res.sendFile(logoPath);
         }
         
-        // Возвращаем дефолтный логотип
-        const defaultLogo = createImagePlaceholder('logo', 'W');
+        // Если файл не найден, возвращаем placeholder
+        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+            <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+                  fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+        </svg>`;
+        
         res.set('Content-Type', 'image/svg+xml');
         res.set('Cache-Control', 'public, max-age=31536000, immutable');
         res.set('Access-Control-Allow-Origin', '*');
-        res.send(defaultLogo.svg);
+        res.send(placeholder);
         
     } catch (error) {
         console.error('❌ Ошибка отдачи логотипа:', error.message);
-        const defaultLogo = createImagePlaceholder('logo', 'W');
+        
+        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+            <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+                  fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+        </svg>`;
+        
         res.set('Content-Type', 'image/svg+xml');
-        res.send(defaultLogo.svg);
+        res.send(placeholder);
     }
 });
 
