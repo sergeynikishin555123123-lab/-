@@ -993,24 +993,28 @@
         }
         
         /* Кнопка "Гайды" */
-        .guides-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: var(--pastel-pink);
-            color: white;
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-        }
-        
-        .guides-btn:hover {
-            background: var(--pink-medium);
-            transform: translateY(-2px);
-        }
+.guides-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--gold-metallic);
+    color: var(--graphite-dark);
+    border: 2px solid var(--gold-dark);
+    border-radius: var(--radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(197, 168, 128, 0.2);
+}
+
+.guides-btn:hover {
+    background: var(--gold-dark);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
+}
         
         /* Секция гайдов */
         .guides-section {
