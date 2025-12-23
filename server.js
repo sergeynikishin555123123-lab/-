@@ -50,34 +50,54 @@ app.use('/uploads', (req, res, next) => {
     next();
 });
 
-// Middleware для статических файлов с автоматическим определением MIME-типа
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'), {
-    setHeaders: (res, filePath) => {
-        const ext = path.extname(filePath).toLowerCase();
-        const mimeTypes = {
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.gif': 'image/gif',
-            '.webp': 'image/webp',
-            '.svg': 'image/svg+xml',
-            '.ico': 'image/x-icon',
-            '.css': 'text/css',
-            '.js': 'application/javascript',
-            '.json': 'application/json'
-        };
-        
-        if (mimeTypes[ext]) {
-            res.set('Content-Type', mimeTypes[ext]);
+// Middleware для обслуживания статических файлов с обработкой ошибок
+app.use('/uploads', (req, res, next) => {
+    const filePath = path.join(__dirname, 'public', 'uploads', req.path);
+    const ext = path.extname(filePath).toLowerCase();
+    
+    // Проверяем существование файла
+    fsSync.access(filePath, fsSync.constants.F_OK, (err) => {
+        if (err) {
+            // Файл не найден - возвращаем SVG placeholder
+            console.log(`🖼️ Файл не найден: ${req.path}, создаем placeholder`);
+            
+            const svgPlaceholder = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#F9F7F3"/>
+                    <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+                    <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                        ${path.basename(req.path, ext).charAt(0).toUpperCase()}
+                    </text>
+                    <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                        ${path.basename(req.path)}
+                    </text>
+                </svg>
+            `;
+            
+            res.set('Content-Type', 'image/svg+xml');
+            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.send(svgPlaceholder);
+        } else {
+            // Файл существует - отдаем его
+            const mimeTypes = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.svg': 'image/svg+xml'
+            };
+            
+            if (mimeTypes[ext]) {
+                res.set('Content-Type', mimeTypes[ext]);
+                res.set('Cache-Control', 'public, max-age=31536000, immutable');
+            }
+            
+            // Отдаем файл
+            express.static(path.join(__dirname, 'public/uploads'))(req, res, next);
         }
-        
-        // Кэширование изображений на год
-        if (ext.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/)) {
-            res.set('Cache-Control', 'public, max-age=31536000, immutable');
-        }
-    },
-    fallthrough: false // Отключаем fallthrough для обработки 404
-}));
+    });
+});
 
 // Обработка 404 для статических файлов
 app.use('/uploads', (req, res, next) => {
@@ -6773,10 +6793,72 @@ app.get('/api/images/check', async (req, res) => {
     }
 });
 
-// Маршрут для тестового изображения
+// Маршрут для тестовых изображений
 app.get('/api/images/test/:type', (req, res) => {
     const type = req.params.type || 'default';
-    const placeholder = createImagePlaceholder(type, type.charAt(0).toUpperCase());
+    
+    const placeholders = {
+        'logo': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+                    <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+                          fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+                </svg>
+            `
+        },
+        'category': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#FAF2F6"/>
+                    <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+                    <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                        C
+                    </text>
+                    <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                        Категория
+                    </text>
+                </svg>
+            `
+        },
+        'service': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#F9F7F3"/>
+                    <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
+                    <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">
+                        Услуга
+                    </text>
+                </svg>
+            `
+        },
+        'user': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                    <circle cx="50" cy="40" r="25" fill="#E8CCD9"/>
+                    <circle cx="50" cy="40" r="22" fill="#F2DDE6"/>
+                    <circle cx="50" cy="90" r="35" fill="#E8CCD9"/>
+                    <circle cx="50" cy="90" r="32" fill="#F2DDE6"/>
+                    <text x="50" y="45" font-family="Arial" font-size="20" text-anchor="middle" dy=".3em" fill="#C5A880">
+                        U
+                    </text>
+                </svg>
+            `
+        },
+        'default': {
+            svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                    <rect width="200" height="150" fill="#F9F7F3"/>
+                    <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
+                    <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">
+                        ${type}
+                    </text>
+                </svg>
+            `
+        }
+    };
+    
+    const placeholder = placeholders[type] || placeholders['default'];
     
     res.set('Content-Type', 'image/svg+xml');
     res.set('Cache-Control', 'public, max-age=31536000, immutable');
