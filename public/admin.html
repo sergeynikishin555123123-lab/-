@@ -4444,9 +4444,10 @@
             body: JSON.stringify(settingsData)
         });
         
-        const data = await response.json();
+        // УДАЛИТЬ ЭТУ СТРОКУ - она дублируется ниже
+        // const data = await response.json();
         
-        const data = await response.json();
+        const data = await response.json(); // Оставить только эту строку
         
         if (data.success) {
             showNotification('Настройки успешно сохранены', 'success');
