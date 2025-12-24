@@ -449,6 +449,18 @@
     position: relative;
     z-index: 2;
 }
+
+.service-icon {
+    font-size: 2rem;
+    color: var(--pastel-pink);
+    margin-bottom: 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
         
 .category-image {
     width: 100%;
@@ -3596,48 +3608,49 @@ loadAllServicesPage: async function() {
             },
 
             renderTopServices: function(services) {
-                var container = document.getElementById('topServicesGrid');
-                if (!container) return;
-                
-                if (!services || services.length === 0) {
-                    container.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                var self = this;
-                services.forEach(function(service) {
-                    var card = document.createElement('div');
-                    card.className = 'card service-card';
-                    card.onclick = function() { self.selectService(service); };
-                    
-                   card.innerHTML = '<div class="service-image">' +
-    '<img src="' + self.createSvgFallback('service') + '" ' +
-         'alt="' + service.name + '"' +
-         'loading="lazy"' +
-         'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
-'</div>' +
-                        '<i class="' + (service.icon || 'fas 
-                    '</div>' +
-                    '<div class="service-header">' +
-                        '<h4>' + service.name + '</h4>' +
-                        '<span style="font-size: 0.8rem; color: var(--gold-metallic);">' +
-                            '<i class="fas fa-star"></i> Топ' +
-                        '</span>' +
-                    '</div>' +
-                    '<p class="service-description">' + service.description + '</p>' +
-                    '<div class="service-footer">' +
-                        '<span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>' +
-                        '<span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">' +
-                            'Выбрать' +
-                        '</span>' +
-                    '</div>';
-                    container.appendChild(card);
-                });
-            },
+    var container = document.getElementById('topServicesGrid');
+    if (!container) return;
+    
+    if (!services || services.length === 0) {
+        container.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+        '</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    var self = this;
+    services.forEach(function(service) {
+        var card = document.createElement('div');
+        card.className = 'card service-card';
+        card.onclick = function() { self.selectService(service); };
+        
+        card.innerHTML = '<div class="service-image">' +
+            '<img src="' + self.createSvgFallback('service') + '" ' +
+                 'alt="' + service.name + '"' +
+                 'loading="lazy"' +
+                 'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
+        '</div>' +
+        '<div class="service-icon">' +
+            '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
+        '</div>' +
+        '<div class="service-header">' +
+            '<h4>' + service.name + '</h4>' +
+            '<span style="font-size: 0.8rem; color: var(--gold-metallic);">' +
+                '<i class="fas fa-star"></i> Топ' +
+            '</span>' +
+        '</div>' +
+        '<p class="service-description">' + service.description + '</p>' +
+        '<div class="service-footer">' +
+            '<span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>' +
+            '<span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">' +
+                'Выбрать' +
+            '</span>' +
+        '</div>';
+        container.appendChild(card);
+    });
+},
 
             selectService: function(service) {
                 if (!this.currentUser) {
