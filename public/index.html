@@ -3842,7 +3842,7 @@
                 this.showCategoryDescriptionModal(category);
             },
 
-          showCategoryDescriptionModal: function(category) {
+showCategoryDescriptionModal: function(category) {
     // Создаем модальное окно с описанием категории
     var modal = document.createElement('div');
     modal.className = 'modal active';
@@ -3871,7 +3871,7 @@
                 <button class="btn btn-secondary" onclick="window.app.closeCategoryDescriptionModal()" style="flex: 1;">
                     Отмена
                 </button>
-                <button class="btn btn-primary" id="continueCategoryBtn" style="flex: 1;">
+                <button class="btn btn-primary" onclick="window.app.continueToCategoryServices(${category.id})" style="flex: 1;">
                     Продолжить
                     <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
                 </button>
@@ -3880,16 +3880,17 @@
     `;
     
     document.body.appendChild(modal);
+},
+
+// Добавьте новую функцию
+continueToCategoryServices: function(categoryId) {
+    this.closeCategoryDescriptionModal();
     
-    // Добавляем обработчик для кнопки "Продолжить"
-    setTimeout(() => {
-        const continueBtn = document.getElementById('continueCategoryBtn');
-        if (continueBtn) {
-            continueBtn.onclick = () => {
-                this.loadServicesForCategory(category);
-            };
-        }
-    }, 100);
+    // Находим категорию по ID
+    const category = this.categories.find(cat => cat.id === categoryId);
+    if (category) {
+        this.loadServicesForCategory(category);
+    }
 },
 
             closeCategoryDescriptionModal: function() {
