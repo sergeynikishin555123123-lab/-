@@ -1841,61 +1841,59 @@
             }
         }
 
-/* В блоке CSS добавьте: */
+        /* Круглые изображения для категорий и услуг */
+        .category-image-rounded {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            position: relative;
+        }
 
-/* Круглые изображения для категорий и услуг */
-.category-image-rounded {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    position: relative;
-}
+        .category-image-rounded img,
+        .service-image-rounded img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
-.category-image-rounded img,
-.service-image-rounded img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
+        /* Для квадратных карточек */
+        .category-card-square .category-image-container {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            border-radius: 0;
+        }
 
-/* Для квадратных карточек */
-.category-card-square .category-image-container {
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
-    position: relative;
-    border-radius: 0;
-}
+        .category-card-square .category-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+        }
 
-.category-card-square .category-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-/* Круглый значок на квадратных карточках */
-.category-card-square .category-icon-badge {
-    position: absolute;
-    bottom: -15px;
-    right: 15px;
-    background: var(--white);
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pastel-pink);
-    font-size: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 4px solid var(--ivory-bg);
-    z-index: 2;
-}
+        /* Круглый значок на квадратных карточках */
+        .category-card-square .category-icon-badge {
+            position: absolute;
+            bottom: -15px;
+            right: 15px;
+            background: var(--white);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pastel-pink);
+            font-size: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 4px solid var(--ivory-bg);
+            z-index: 2;
+        }
         
         /* Стили для таблицы задач (только для десктопа) */
         @media (min-width: 769px) {
@@ -2095,6 +2093,71 @@
             background: none;
             color: var(--graphite-dark);
         }
+        
+        /* Стили для чата поддержки */
+        .support-message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            animation: fadeInMessage 0.3s ease;
+        }
+
+        .support-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+            color: var(--graphite-dark);
+            border-bottom-right-radius: 4px;
+        }
+
+        .support-message.support {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid rgba(61, 61, 61, 0.1);
+            color: var(--graphite-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .support-message-time {
+            font-size: 0.7rem;
+            color: var(--graphite-light);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .support-message.support .support-message-time {
+            text-align: left;
+        }
+
+        .support-message-sender {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--graphite-medium);
+        }
+
+        /* Кнопка поддержки в верхнем меню */
+        .support-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--pastel-pink);
+            color: var(--graphite-dark);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .support-menu-btn:hover {
+            background: var(--pink-medium);
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
@@ -2139,6 +2202,9 @@
                 </a>
                 <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('all-services')">
                     <i class="fas fa-list"></i>Все услуги
+                </a>
+                <a href="#" class="nav-menu-item" onclick="window.app.showSupportChat()" id="supportMenuBtn">
+                    <i class="fas fa-headset"></i>Поддержка
                 </a>
                 <a href="#" class="nav-menu-item" onclick="window.app.showLoginModal()" id="loginMenuBtn">
                     <i class="fas fa-sign-in-alt"></i>Войти
@@ -2210,7 +2276,7 @@
                             </div>
                             
                             <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
-                                <button class="btn btn-secondary btn-sm" onclick="window.app.showHelp()" style="padding: 8px 16px; font-size: 0.85rem;">
+                                <button class="btn btn-secondary btn-sm" onclick="window.app.showSupportChat()" style="padding: 8px 16px; font-size: 0.85rem;">
                                     <i class="fas fa-headset"></i>
                                     Поддержка
                                 </button>
@@ -2654,6 +2720,29 @@
                                 <i class="fas fa-info-circle"></i> Все услуги включены в подписку, дополнительная оплата не требуется
                             </p>
                         </div>
+                        
+                        <!-- Добавьте этот блок для документов -->
+                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
+                            <div style="text-align: center;">
+                                <p style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 20px;">
+                                    <i class="fas fa-file-contract"></i> Приобретая подписку, вы соглашаетесь с документами:
+                                </p>
+                                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                                    <button class="btn btn-secondary" onclick="window.app.showDocumentModal('offer')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                        <i class="fas fa-file-alt"></i>
+                                        Оферта
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="window.app.showDocumentModal('privacy')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                        <i class="fas fa-shield-alt"></i>
+                                        Конфиденциальность
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="window.app.showDocumentModal('refund')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                        <i class="fas fa-undo-alt"></i>
+                                        Возврат средств
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2669,6 +2758,10 @@
         <a href="#" class="nav-item" onclick="window.app.navigateToPage('all-services')" data-page="all-services">
             <i class="fas fa-list"></i>
             <span>Все услуги</span>
+        </a>
+        <a href="#" class="nav-item" onclick="window.app.showSupportChat()" id="supportChatBtn">
+            <i class="fas fa-headset"></i>
+            <span>Поддержка</span>
         </a>
         <a href="#" class="nav-item" onclick="window.app.showTasksPopup()" id="quickTasksBtn">
             <i class="fas fa-tasks"></i>
@@ -2698,6 +2791,62 @@
                 <div id="popupTasksList">
                     <!-- Задачи загружаются динамически -->
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно чата с поддержкой -->
+    <div class="modal" id="supportChatModal">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                <h3 class="modal-title">
+                    <i class="fas fa-headset" style="color: var(--pastel-pink); margin-right: 10px;"></i>
+                    Чат с поддержкой
+                </h3>
+                <button class="close-popup-btn" onclick="window.app.closeSupportChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="supportChatMessages" style="flex: 1; overflow-y: auto; padding: 15px; background: var(--ivory-bg); border-radius: var(--radius); margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <!-- Сообщения будут загружаться здесь -->
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                <textarea id="supportMessageInput" placeholder="Введите ваше сообщение..." style="flex: 1; padding: 12px; border: 1.5px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius); font-family: 'Inter', sans-serif; resize: none; min-height: 60px;"></textarea>
+                <button class="btn btn-primary" onclick="window.app.sendSupportMessage()" style="align-self: flex-end; padding: 12px 20px;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(61, 61, 61, 0.1); flex-shrink: 0;">
+                <p style="color: var(--graphite-medium); font-size: 0.85rem; text-align: center;">
+                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
+                    Время ответа поддержки: в течение 15 минут в рабочее время (9:00-21:00)
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для документов -->
+    <div class="modal" id="documentModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                <h3 class="modal-title" id="documentTitle"></h3>
+                <button class="close-popup-btn" onclick="window.app.closeDocumentModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="documentContent" style="flex: 1; overflow-y: auto; padding: 20px; background: var(--ivory-bg); border-radius: var(--radius); line-height: 1.6;">
+                <!-- Содержимое документа будет загружено здесь -->
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(61, 61, 61, 0.1); text-align: center; flex-shrink: 0;">
+                <button class="btn btn-primary" onclick="window.app.closeDocumentModal()">
+                    <i class="fas fa-check"></i>
+                    Закрыть
+                </button>
             </div>
         </div>
     </div>
@@ -3315,8 +3464,7 @@
                         self.createSvgFallback('category');
                     
                     // Круглое изображение для категорий на главной
-                    // В функции renderHomeCategories() найдите блок card.innerHTML:
-card.innerHTML = '<div class="category-image" style="height: 120px; border-radius: 50%; margin-bottom: 15px; overflow: hidden;">' +
+                    card.innerHTML = '<div class="category-image" style="height: 120px; border-radius: 50%; margin-bottom: 15px; overflow: hidden;">' +
     '<img src="' + imageUrl + '" ' +
         'alt="' + category.display_name + '"' +
         'loading="lazy"' +
@@ -3493,7 +3641,7 @@ card.innerHTML = '<div class="category-image" style="height: 120px; border-radiu
                     
                     card.innerHTML = '<div class="category-image-container" style="border-radius: 50%; overflow: hidden;">' +
     '<img src="' + self.createSvgFallback('service') + '" ' +
-        'alt="' + service.name + '"' +
+        'alt="' + category.display_name + '"' +
         'loading="lazy"' +
         'style="width: 100%; height: 100%; object-fit: cover;"' +
         'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
@@ -3546,317 +3694,267 @@ card.innerHTML = '<div class="category-image" style="height: 120px; border-radiu
                 }
             },
 
-filterServices: function() {
-    var searchTerm = document.getElementById('serviceSearch').value.toLowerCase().trim();
-    var container = document.getElementById('allServicesList');
-    
-    if (!container) return;
-    
-    // Если нет поискового запроса и мы в режиме категорий
-    if (!searchTerm && !this.selectedCategory) {
-        this.renderAllCategoriesForServices();
-        return;
-    }
-    
-    // Если нет поискового запроса и выбрана категория
-    if (!searchTerm && this.selectedCategory) {
-        this.renderServicesInCategory();
-        return;
-    }
-    
-    // Если есть поисковый запрос и выбрана категория - ищем в услугах этой категории
-    if (searchTerm && this.selectedCategory && this.services) {
-        var filteredServices = this.services.filter(function(service) {
-            return service.name.toLowerCase().includes(searchTerm) ||
-                   service.description.toLowerCase().includes(searchTerm);
-        });
-        
-        if (filteredServices.length === 0) {
-            container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
-                    '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                        '<i class="fas fa-arrow-left"></i>' +
-                    '</button>' +
-                    '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
-                '</div>' +
-                '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
-                '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Назад ко всем услугам' +
-                '</button>' +
-            '</div>';
-        } else {
-            // Временно сохраняем отфильтрованные услуги
-            var tempServices = this.services;
-            this.services = filteredServices;
-            this.renderServicesInCategory();
-            // Восстанавливаем все услуги
-            this.services = tempServices;
-        }
-        return;
-    }
-    
-    // Если есть поисковый запрос и не выбрана категория - ищем по всем услугам
-    if (searchTerm && !this.selectedCategory && this.allServices) {
-        var filteredServices = this.allServices.filter(function(service) {
-            return service.name.toLowerCase().includes(searchTerm) ||
-                   service.description.toLowerCase().includes(searchTerm) ||
-                   (service.category_name && service.category_name.toLowerCase().includes(searchTerm));
-        });
-        
-        if (filteredServices.length === 0) {
-            container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
-                '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Назад ко всем услугам' +
-                '</button>' +
-            '</div>';
-        } else {
-            // Группируем услуги по категориям
-            var servicesByCategory = {};
-            filteredServices.forEach(function(service) {
-                if (!servicesByCategory[service.category_id]) {
-                    servicesByCategory[service.category_id] = {
-                        category_name: service.category_name,
-                        services: []
-                    };
-                }
-                servicesByCategory[service.category_id].services.push(service);
-            });
-            
-            // Рендерим результаты
-            container.className = 'square-grid';
-            container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
-                    '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                        '<i class="fas fa-arrow-left"></i>' +
-                    '</button>' +
-                    '<h3 style="font-size: 1.5rem; font-weight: 600;">Результаты поиска: "' + searchTerm + '"</h3>' +
-                    '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
-                        filteredServices.length + ' услуг' +
-                    '</span>' +
-                '</div>' +
-            '</div>';
-            
-            var self = this;
-            Object.keys(servicesByCategory).forEach(function(categoryId) {
-                var categoryData = servicesByCategory[categoryId];
-                
-                var categoryCard = document.createElement('div');
-                categoryCard.className = 'category-card-square';
-                categoryCard.onclick = function() { 
-                    // Находим полный объект категории
-                    var category = self.categories.find(function(cat) {
-                        return cat.id == categoryId;
-                    });
-                    if (category) {
-                        self.selectCategoryForServices(category);
-                    }
-                };
-                
-                categoryCard.innerHTML = '<div class="category-image-container">' +
-                    '<img src="' + self.createSvgFallback('category') + '" ' +
-                        'alt="' + categoryData.category_name + '"' +
-                        'loading="lazy"' +
-                        'onerror="this.src=\'/api/images/test/category\'; this.onerror=null;">' +
-                    '<div class="category-icon-badge">' +
-                        '<i class="fas fa-search"></i>' +
-                    '</div>' +
-                '</div>' +
-                '<div class="category-content">' +
-                    '<h3 class="category-title">' + categoryData.category_name + '</h3>' +
-                    '<p class="category-description">' +
-                        'Найдено услуг: ' + categoryData.services.length +
-                    '</p>' +
-                    '<div class="category-footer">' +
-                        '<span class="services-count">' +
-                            '<i class="fas fa-list"></i>' +
-                            categoryData.services.length + ' услуг' +
-                        '</span>' +
-                        '<span class="select-service-btn">' +
-                            'Просмотреть <i class="fas fa-arrow-right"></i>' +
-                        '</span>' +
-                    '</div>' +
-                '</div>';
-                
-                container.appendChild(categoryCard);
-            });
-        }
-        return;
-    }
-}
-
-            renderFilteredCategories: function(categories) {
+            filterServices: function() {
+                var searchTerm = document.getElementById('serviceSearch').value.toLowerCase().trim();
                 var container = document.getElementById('allServicesList');
+                
                 if (!container) return;
                 
-                container.className = 'square-grid';
-                container.innerHTML = '';
+                // Если нет поискового запроса и мы в режиме категорий
+                if (!searchTerm && !this.selectedCategory) {
+                    this.renderAllCategoriesForServices();
+                    return;
+                }
                 
-                var self = this;
-                categories.forEach(function(category) {
-                    var card = document.createElement('div');
-                    card.className = 'category-card-square';
-                    card.onclick = function() { 
-                        self.selectCategoryForServices(category); 
-                    };
-                    
-                    var imageUrl = category.image_url ? 
-                        self.getImageUrl(category.image_url, 'category') : 
-                        self.createSvgFallback('category');
-                    card.innerHTML = '<div class="category-image-container">' +
-                        '<img src="' + imageUrl + '" ' +
-                            'alt="' + category.display_name + '"' +
-                            'loading="lazy"' +
-                            'onerror="this.onerror=null; this.src=\'/api/images/test/category\';"' +
-                            'style="width: 100%; height: 100%; object-fit: cover;">' +
-                        '<div class="category-icon-badge">' +
-                            '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="category-content">' +
-                        '<h3 class="category-title">' + category.display_name + '</h3>' +
-                        '<p class="category-description">' + category.description + '</p>' +
-                        '<div class="category-footer">' +
-                            '<span class="services-count">' +
-                                '<i class="fas fa-list"></i>' +
-                                (category.services_count || 0) + ' услуг' +
-                            '</span>' +
-                            '<span class="select-service-btn">' +
-                                'Выбрать <i class="fas fa-arrow-right"></i>' +
-                            '</span>' +
-                        '</div>' +
-                    '</div>';
-                    
-                    container.appendChild(card);
-                });
+                // Если нет поискового запроса и выбрана категория
+                if (!searchTerm && this.selectedCategory) {
+                    this.renderServicesInCategory();
+                    return;
+                }
                 
-                // Скрываем кнопку "Назад ко всем категориям"
-                document.getElementById('backToCategoriesBtn').style.display = 'none';
-                document.getElementById('servicesPageTitle').textContent = 'Результаты поиска';
+                // Если есть поисковый запрос и выбрана категория - ищем в услугах этой категории
+                if (searchTerm && this.selectedCategory && this.services) {
+                    var filteredServices = this.services.filter(function(service) {
+                        return service.name.toLowerCase().includes(searchTerm) ||
+                               service.description.toLowerCase().includes(searchTerm);
+                    });
+                    
+                    if (filteredServices.length === 0) {
+                        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                            '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
+                                '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                                    '<i class="fas fa-arrow-left"></i>' +
+                                '</button>' +
+                                '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
+                            '</div>' +
+                            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                            '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
+                            '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
+                                '<i class="fas fa-arrow-left"></i>' +
+                                'Назад ко всем услугам' +
+                            '</button>' +
+                        '</div>';
+                    } else {
+                        // Временно сохраняем отфильтрованные услуги
+                        var tempServices = this.services;
+                        this.services = filteredServices;
+                        this.renderServicesInCategory();
+                        // Восстанавливаем все услуги
+                        this.services = tempServices;
+                    }
+                    return;
+                }
+                
+                // Если есть поисковый запрос и не выбрана категория - ищем по всем услугам
+                if (searchTerm && !this.selectedCategory && this.allServices) {
+                    var filteredServices = this.allServices.filter(function(service) {
+                        return service.name.toLowerCase().includes(searchTerm) ||
+                               service.description.toLowerCase().includes(searchTerm) ||
+                               (service.category_name && service.category_name.toLowerCase().includes(searchTerm));
+                    });
+                    
+                    if (filteredServices.length === 0) {
+                        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                            '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
+                            '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
+                                '<i class="fas fa-arrow-left"></i>' +
+                                'Назад ко всем услугам' +
+                            '</button>' +
+                        '</div>';
+                    } else {
+                        // Группируем услуги по категориям
+                        var servicesByCategory = {};
+                        filteredServices.forEach(function(service) {
+                            if (!servicesByCategory[service.category_id]) {
+                                servicesByCategory[service.category_id] = {
+                                    category_name: service.category_name,
+                                    services: []
+                                };
+                            }
+                            servicesByCategory[service.category_id].services.push(service);
+                        });
+                        
+                        // Рендерим результаты
+                        container.className = 'square-grid';
+                        container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                            '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
+                                '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                                    '<i class="fas fa-arrow-left"></i>' +
+                                '</button>' +
+                                '<h3 style="font-size: 1.5rem; font-weight: 600;">Результаты поиска: "' + searchTerm + '"</h3>' +
+                                '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
+                                    filteredServices.length + ' услуг' +
+                                '</span>' +
+                            '</div>' +
+                        '</div>';
+                        
+                        var self = this;
+                        Object.keys(servicesByCategory).forEach(function(categoryId) {
+                            var categoryData = servicesByCategory[categoryId];
+                            
+                            var categoryCard = document.createElement('div');
+                            categoryCard.className = 'category-card-square';
+                            categoryCard.onclick = function() { 
+                                // Находим полный объект категории
+                                var category = self.categories.find(function(cat) {
+                                    return cat.id == categoryId;
+                                });
+                                if (category) {
+                                    self.selectCategoryForServices(category);
+                                }
+                            };
+                            
+                            categoryCard.innerHTML = '<div class="category-image-container">' +
+                                '<img src="' + self.createSvgFallback('category') + '" ' +
+                                    'alt="' + categoryData.category_name + '"' +
+                                    'loading="lazy"' +
+                                    'onerror="this.src=\'/api/images/test/category\'; this.onerror=null;">' +
+                                '<div class="category-icon-badge">' +
+                                    '<i class="fas fa-search"></i>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="category-content">' +
+                                '<h3 class="category-title">' + categoryData.category_name + '</h3>' +
+                                '<p class="category-description">' +
+                                    'Найдено услуг: ' + categoryData.services.length +
+                                '</p>' +
+                                '<div class="category-footer">' +
+                                    '<span class="services-count">' +
+                                        '<i class="fas fa-list"></i>' +
+                                        categoryData.services.length + ' услуг' +
+                                    '</span>' +
+                                    '<span class="select-service-btn">' +
+                                        'Просмотреть <i class="fas fa-arrow-right"></i>' +
+                                    '</span>' +
+                                '</div>' +
+                            '</div>';
+                            
+                            container.appendChild(categoryCard);
+                        });
+                    }
+                    return;
+                }
             },
             
             selectCategoryForServices: async function(category) {
-    console.log('DEBUG: Выбор категории:', category);
-    
-    this.selectedCategory = category;
-    
-    // Показываем модальное окно с описанием категории
-    this.showCategoryDescriptionModal(category);
-}
+                console.log('DEBUG: Выбор категории:', category);
+                
+                this.selectedCategory = category;
+                
+                // Показываем модальное окно с описанием категории
+                this.showCategoryDescriptionModal(category);
+            },
 
-showCategoryDescriptionModal: function(category) {
-    // Создаем модальное окно с описанием категории
-    var modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.id = 'categoryDescriptionModal';
-    modal.style.display = 'flex';
-    
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <h3 class="modal-title">${category.display_name}</h3>
-            <div style="text-align: center; margin: 20px 0;">
-                <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
-                    <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
-                </div>
-                <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
-                    ${category.description}
-                </p>
-                ${category.admin_description ? `
-                    <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
-                        <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
-                            ${category.admin_description}
-                        </p>
+            showCategoryDescriptionModal: function(category) {
+                // Создаем модальное окно с описанием категории
+                var modal = document.createElement('div');
+                modal.className = 'modal active';
+                modal.id = 'categoryDescriptionModal';
+                modal.style.display = 'flex';
+                
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 500px;">
+                        <h3 class="modal-title">${category.display_name}</h3>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                                <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
+                            </div>
+                            <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
+                                ${category.description}
+                            </p>
+                            ${category.admin_description ? `
+                                <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
+                                    <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
+                                        ${category.admin_description}
+                                    </p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="window.app.closeCategoryDescriptionModal()" style="flex: 1;">
+                                Отмена
+                            </button>
+                            <button class="btn btn-primary" onclick="window.app.loadServicesForCategory(${JSON.stringify(category).replace(/"/g, '&quot;')})" style="flex: 1;">
+                                Продолжить
+                                <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                            </button>
+                        </div>
                     </div>
-                ` : ''}
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="window.app.closeCategoryDescriptionModal()" style="flex: 1;">
-                    Отмена
-                </button>
-                <button class="btn btn-primary" onclick="window.app.loadServicesForCategory(${JSON.stringify(category).replace(/"/g, '&quot;')})" style="flex: 1;">
-                    Продолжить
-                    <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-},
+                `;
+                
+                document.body.appendChild(modal);
+            },
 
-closeCategoryDescriptionModal: function() {
-    var modal = document.getElementById('categoryDescriptionModal');
-    if (modal) {
-        modal.remove();
-    }
-    // Возвращаемся к списку категорий
-    this.loadAllServicesPage();
-},
+            closeCategoryDescriptionModal: function() {
+                var modal = document.getElementById('categoryDescriptionModal');
+                if (modal) {
+                    modal.remove();
+                }
+                // Возвращаемся к списку категорий
+                this.loadAllServicesPage();
+            },
 
-loadServicesForCategory: async function(category) {
-    // Закрываем модальное окно
-    this.closeCategoryDescriptionModal();
-    
-    console.log('DEBUG: Загрузка услуг для категории:', category);
-    
-    // Если пользователь не авторизован
-    if (!this.currentUser) {
-        this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
-        this.showLoginModal();
-        return;
-    }
-    
-    // Если подписка не активна
-    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-        this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
-        this.navigateToPage('subscription');
-        return;
-    }
-    
-    this.selectedCategory = category;
-    
-    try {
-        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-        
-        if (response && response.ok) {
-            var result = await response.json();
-            console.log('DEBUG: Ответ от сервера:', result);
-            
-            if (result.success) {
-                this.services = result.data.services;
-                console.log('DEBUG: Услуги загружены:', this.services.length);
-                this.renderServicesInCategory();
-                return;
-            } else {
-                console.error('DEBUG: Ошибка в ответе:', result.error);
-                throw new Error(result.error || 'Ошибка загрузки услуг');
-            }
-        } else {
-            console.error('DEBUG: Ошибка HTTP:', response ? response.status : 'Нет ответа');
-            throw new Error('Ошибка сети при загрузке услуг');
-        }
-        
-    } catch (error) {
-        console.error('DEBUG: Исключение при загрузке услуг:', error);
-        
-        // Fallback если API не сработал
-        try {
-            this.services = this.allServices.filter(function(service) {
-                return service.category_id === category.id;
-            });
-            console.log('DEBUG: Fallback услуги:', this.services.length);
-            this.renderServicesInCategory();
-        } catch (fallbackError) {
-            console.error('DEBUG: Fallback тоже не сработал:', fallbackError);
-            this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
-            this.loadAllServicesPage();
-        }
-    }
-}
+            loadServicesForCategory: async function(category) {
+                // Закрываем модальное окно
+                this.closeCategoryDescriptionModal();
+                
+                console.log('DEBUG: Загрузка услуг для категории:', category);
+                
+                // Если пользователь не авторизован
+                if (!this.currentUser) {
+                    this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
+                    this.showLoginModal();
+                    return;
+                }
+                
+                // Если подписка не активна
+                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+                    this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
+                    this.navigateToPage('subscription');
+                    return;
+                }
+                
+                this.selectedCategory = category;
+                
+                try {
+                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
+                    
+                    if (response && response.ok) {
+                        var result = await response.json();
+                        console.log('DEBUG: Ответ от сервера:', result);
+                        
+                        if (result.success) {
+                            this.services = result.data.services;
+                            console.log('DEBUG: Услуги загружены:', this.services.length);
+                            this.renderServicesInCategory();
+                            return;
+                        } else {
+                            console.error('DEBUG: Ошибка в ответе:', result.error);
+                            throw new Error(result.error || 'Ошибка загрузки услуг');
+                        }
+                    } else {
+                        console.error('DEBUG: Ошибка HTTP:', response ? response.status : 'Нет ответа');
+                        throw new Error('Ошибка сети при загрузке услуг');
+                    }
+                    
+                } catch (error) {
+                    console.error('DEBUG: Исключение при загрузке услуг:', error);
+                    
+                    // Fallback если API не сработал
+                    try {
+                        this.services = this.allServices.filter(function(service) {
+                            return service.category_id === category.id;
+                        });
+                        console.log('DEBUG: Fallback услуги:', this.services.length);
+                        this.renderServicesInCategory();
+                    } catch (fallbackError) {
+                        console.error('DEBUG: Fallback тоже не сработал:', fallbackError);
+                        this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
+                        this.loadAllServicesPage();
+                    }
+                }
+            },
 
             renderServicesInCategory: function() {
                 var container = document.getElementById('allServicesList');
@@ -3909,10 +4007,11 @@ loadServicesForCategory: async function(category) {
                     card.className = 'category-card-square';
                     card.onclick = function() { self.selectService(service); };
                     
-                    card.innerHTML = '<div class="category-image-container">' +
+                    card.innerHTML = '<div class="category-image-container" style="border-radius: 50%; overflow: hidden;">' +
                         '<img src="' + self.createSvgFallback('service') + '" ' +
                             'alt="' + service.name + '"' +
                             'loading="lazy"' +
+                            'style="width: 100%; height: 100%; object-fit: cover;"' +
                             'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
                         '<div class="category-icon-badge">' +
                             '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
@@ -4402,6 +4501,8 @@ loadServicesForCategory: async function(category) {
                 var logoutMenuBtn = document.getElementById('logoutMenuBtn');
                 var bottomNav = document.getElementById('bottomNav');
                 var floatingBtn = document.getElementById('floatingTasksBtn');
+                var supportMenuBtn = document.getElementById('supportMenuBtn');
+                var supportChatBtn = document.getElementById('supportChatBtn');
                 
                 if (this.currentUser) {
                     var firstLetter = this.currentUser.first_name ? this.currentUser.first_name.charAt(0).toUpperCase() : 'Г';
@@ -4418,6 +4519,7 @@ loadServicesForCategory: async function(category) {
                     
                     if (loginMenuBtn) loginMenuBtn.style.display = 'none';
                     if (logoutMenuBtn) logoutMenuBtn.style.display = 'block';
+                    if (supportMenuBtn) supportMenuBtn.style.display = 'block';
                     
                     var shouldShowNav = this.currentUser && 
                                           this.currentUser.phone_verified && 
@@ -4426,6 +4528,7 @@ loadServicesForCategory: async function(category) {
                     
                     if (bottomNav) bottomNav.style.display = shouldShowNav ? 'flex' : 'none';
                     if (floatingBtn) floatingBtn.style.display = shouldShowNav ? 'flex' : 'none';
+                    if (supportChatBtn) supportChatBtn.style.display = shouldShowNav ? 'flex' : 'none';
                     
                     this.updateProfileStats();
                     this.updateProfileSubscriptionCard();
@@ -4441,8 +4544,10 @@ loadServicesForCategory: async function(category) {
                     
                     if (loginMenuBtn) loginMenuBtn.style.display = 'block';
                     if (logoutMenuBtn) logoutMenuBtn.style.display = 'none';
+                    if (supportMenuBtn) supportMenuBtn.style.display = 'none';
                     if (bottomNav) bottomNav.style.display = 'none';
                     if (floatingBtn) floatingBtn.style.display = 'none';
+                    if (supportChatBtn) supportChatBtn.style.display = 'none';
                     
                     var statTasks = document.getElementById('statTasks');
                     var statRating = document.getElementById('statRating');
@@ -4515,7 +4620,7 @@ loadServicesForCategory: async function(category) {
                             '<i class="fas fa-exchange-alt"></i>' +
                             'Сменить тариф' +
                         '</button>' +
-                        '<button class="btn btn-secondary" style="flex: 1;" onclick="window.app.showHelp()">' +
+                        '<button class="btn btn-secondary" style="flex: 1;" onclick="window.app.showSupportChat()">' +
                             '<i class="fas fa-question-circle"></i>' +
                             'Поддержка' +
                         '</button>' +
@@ -4558,8 +4663,8 @@ loadServicesForCategory: async function(category) {
                 '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'all-services\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-list" style="margin-right: 12px; color: var(--pastel-pink);"></i>Все услуги' +
                 '</a>' +
-                '<a href="#" class="nav-menu-item" onclick="window.app.showHelp()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
-                    '<i class="fas fa-question-circle" style="margin-right: 12px; color: var(--pastel-pink);"></i>Помощь и поддержка' +
+                '<a href="#" class="nav-menu-item" onclick="window.app.showSupportChat()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                    '<i class="fas fa-headset" style="margin-right: 12px; color: var(--pastel-pink);"></i>Помощь и поддержка' +
                 '</a>' +
                 '<a href="#" class="nav-menu-item" onclick="window.app.logout()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">' +
                     '<i class="fas fa-sign-out-alt" style="margin-right: 12px; color: var(--error);"></i>Выйти из системы' +
@@ -5413,11 +5518,361 @@ loadServicesForCategory: async function(category) {
                 if (menu) menu.style.display = 'none';
             },
             
-            showHelp: function() {
-                this.showNotification('Свяжитесь с поддержкой по email: support@womanhelp.ru', 'info');
-                this.closeUserMenu();
+            // ==================== ЧАТ ПОДДЕРЖКИ ====================
+            supportChat: {
+                messages: [],
+                pollInterval: null,
+                
+                init: function() {
+                    // Загружаем сообщения при инициализации
+                    if (app.currentUser) {
+                        this.loadMessages();
+                        this.startPolling();
+                    }
+                },
+                
+                show: function() {
+                    app.closeAllModals();
+                    var modal = document.getElementById('supportChatModal');
+                    if (modal) {
+                        modal.classList.add('active');
+                        this.loadMessages();
+                        // Фокус на поле ввода
+                        setTimeout(function() {
+                            var input = document.getElementById('supportMessageInput');
+                            if (input) input.focus();
+                        }, 300);
+                    }
+                },
+                
+                close: function() {
+                    var modal = document.getElementById('supportChatModal');
+                    if (modal) {
+                        modal.classList.remove('active');
+                    }
+                },
+                
+                loadMessages: async function() {
+                    try {
+                        if (!app.currentUser) return;
+                        
+                        var response = await app.fetchWithAuth(app.API_BASE_URL + '/api/support/messages');
+                        if (response && response.ok) {
+                            var result = await response.json();
+                            if (result.success) {
+                                this.messages = result.data.messages;
+                                this.renderMessages();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Ошибка загрузки сообщений поддержки:', error);
+                    }
+                },
+                
+                sendMessage: async function() {
+                    var input = document.getElementById('supportMessageInput');
+                    var message = input.value.trim();
+                    
+                    if (!message || !app.currentUser) return;
+                    
+                    try {
+                        var response = await app.fetchWithAuth(app.API_BASE_URL + '/api/support/messages', {
+                            method: 'POST',
+                            body: JSON.stringify({ message: message })
+                        });
+                        
+                        if (response && response.ok) {
+                            var result = await response.json();
+                            if (result.success) {
+                                this.messages.push(result.data.message);
+                                this.renderMessages();
+                                input.value = '';
+                                // Прокрутка вниз
+                                var container = document.getElementById('supportChatMessages');
+                                if (container) {
+                                    container.scrollTop = container.scrollHeight;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Ошибка отправки сообщения:', error);
+                        app.showNotification('Ошибка отправки сообщения', 'error');
+                    }
+                },
+                
+                renderMessages: function() {
+                    var container = document.getElementById('supportChatMessages');
+                    if (!container) return;
+                    
+                    if (this.messages.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: var(--graphite-medium);">' +
+                            '<i class="fas fa-comments" style="font-size: 2rem; opacity: 0.3; margin-bottom: 16px;"></i>' +
+                            '<p>Напишите нам, и мы ответим вам в ближайшее время</p>' +
+                        '</div>';
+                        return;
+                    }
+                    
+                    var html = '';
+                    this.messages.forEach(function(msg) {
+                        var isUser = msg.sender_type === 'user';
+                        var time = new Date(msg.created_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'});
+                        
+                        html += '<div class="support-message ' + (isUser ? 'user' : 'support') + '">';
+                        if (!isUser) {
+                            html += '<div class="support-message-sender">Поддержка</div>';
+                        }
+                        html += '<div>' + msg.message + '</div>' +
+                               '<div class="support-message-time">' + time + '</div>' +
+                            '</div>';
+                    });
+                    
+                    container.innerHTML = html;
+                    // Прокрутка вниз
+                    container.scrollTop = container.scrollHeight;
+                },
+                
+                startPolling: function() {
+                    // Очищаем предыдущий интервал
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                    }
+                    
+                    // Опрашиваем новые сообщения каждые 30 секунд
+                    this.pollInterval = setInterval(() => {
+                        if (app.currentUser) {
+                            this.loadMessages();
+                        }
+                    }, 30000);
+                },
+                
+                stopPolling: function() {
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                        this.pollInterval = null;
+                    }
+                }
             },
-            
+
+            showSupportChat: function() {
+                if (!this.currentUser) {
+                    this.showNotification('Для обращения в поддержку необходимо войти в систему', 'warning');
+                    this.showLoginModal();
+                    return;
+                }
+                this.supportChat.show();
+            },
+
+            closeSupportChat: function() {
+                this.supportChat.close();
+            },
+
+            sendSupportMessage: function() {
+                this.supportChat.sendMessage();
+            },
+
+            // ==================== ДОКУМЕНТЫ ====================
+            documents: {
+                offer: {
+                    title: 'Публичная оферта',
+                    content: `
+                        <h4>ДОГОВОР-ОФЕРТА</h4>
+                        <p><strong>г. Москва</strong></p>
+                        
+                        <p>Настоящий документ является официальным предложением (публичной офертой) Индивидуального предпринимателя Иванова И.И. (далее — «Исполнитель») заключить Договор на оказание услуг сервиса «WOMAN HELP» на изложенных ниже условиях.</p>
+                        
+                        <h5>1. ТЕРМИНЫ И ОПРЕДЕЛЕНИЯ</h5>
+                        <p><strong>Сервис</strong> — онлайн-платформа «WOMAN HELP», доступная по адресу: womanhelp.ru</p>
+                        <p><strong>Клиент</strong> — физическое лицо, заключившее Договор на условиях настоящей оферты.</p>
+                        <p><strong>Подписка</strong> — оплаченный период доступа Клиента к услугам Сервиса.</p>
+                        <p><strong>Задача</strong> — заявка Клиента на выполнение конкретной услуги.</p>
+                        
+                        <h5>2. ПРЕДМЕТ ДОГОВОРА</h5>
+                        <p>2.1. Исполнитель предоставляет Клиенту доступ к Сервису для оформления Задач в рамках выбранной Подписки.</p>
+                        <p>2.2. Стоимость услуг определяется выбранным тарифным планом и указана на сайте Сервиса.</p>
+                        
+                        <h5>3. ПОРЯДОК ОКАЗАНИЯ УСЛУГ</h5>
+                        <p>3.1. Клиент выбирает Подписку и оплачивает её стоимость.</p>
+                        <p>3.2. После оплаты Клиенту предоставляется доступ к созданию Задач в рамках выбранной Подписки.</p>
+                        <p>3.3. Исполнитель обязуется организовать выполнение Задач квалифицированными специалистами.</p>
+                        
+                        <h5>4. ОПЛАТА</h5>
+                        <p>4.1. Оплата производится единовременно за выбранный период Подписки.</p>
+                        <p>4.2. Оплата считается произведенной с момента зачисления денежных средств на расчётный счёт Исполнителя.</p>
+                        
+                        <h5>5. ОТВЕТСТВЕННОСТЬ СТОРОН</h5>
+                        <p>5.1. Исполнитель несёт ответственность за качественное выполнение Задач в рамках выбранной Подписки.</p>
+                        <p>5.2. Клиент обязуется предоставлять достоверную информацию при оформлении Задач.</p>
+                        
+                        <h5>6. КОНФИДЕНЦИАЛЬНОСТЬ</h5>
+                        <p>6.1. Стороны обязуются сохранять конфиденциальность информации, полученной в рамках исполнения Договора.</p>
+                        
+                        <h5>7. РЕКВИЗИТЫ ИСПОЛНИТЕЛЯ</h5>
+                        <p>ИП Иванов Иван Иванович</p>
+                        <p>ИНН: 123456789012</p>
+                        <p>ОГРНИП: 123456789012345</p>
+                        <p>Адрес: г. Москва, ул. Примерная, д. 1</p>
+                        <p>Телефон: +7 (999) 123-45-67</p>
+                        <p>Email: support@womanhelp.ru</p>
+                        
+                        <div style="margin-top: 30px; text-align: right;">
+                            <p>Дата публикации: 01.01.2024</p>
+                        </div>
+                    `
+                },
+                
+                privacy: {
+                    title: 'Политика конфиденциальности',
+                    content: `
+                        <h4>ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ</h4>
+                        
+                        <h5>1. ОБЩИЕ ПОЛОЖЕНИЯ</h5>
+                        <p>1.1. Настоящая Политика конфиденциальности определяет порядок обработки и защиты персональных данных пользователей сервиса «WOMAN HELP».</p>
+                        <p>1.2. Использование Сервиса означает безоговорочное согласие пользователя с настоящей Политикой.</p>
+                        
+                        <h5>2. СОБИРАЕМЫЕ ДАННЫЕ</h5>
+                        <p>2.1. При регистрации и использовании Сервиса мы собираем:</p>
+                        <ul>
+                            <li>ФИО пользователя</li>
+                            <li>Номер телефона</li>
+                            <li>Адрес электронной почты</li>
+                            <li>Адрес для оказания услуг</li>
+                            <li>Историю заказов и обращений</li>
+                        </ul>
+                        
+                        <h5>3. ЦЕЛИ СБОРА ДАННЫХ</h5>
+                        <p>3.1. Персональные данные используются для:</p>
+                        <ul>
+                            <li>Предоставления доступа к Сервису</li>
+                            <li>Обработки заказов и оказания услуг</li>
+                            <li>Связи с пользователем по вопросам услуг</li>
+                            <li>Улучшения качества Сервиса</li>
+                            <li>Отправки информационных сообщений</li>
+                        </ul>
+                        
+                        <h5>4. ЗАЩИТА ДАННЫХ</h5>
+                        <p>4.1. Мы принимаем все необходимые организационные и технические меры для защиты персональных данных.</p>
+                        <p>4.2. Доступ к персональным данным имеют только уполномоченные сотрудники.</p>
+                        
+                        <h5>5. ПЕРЕДАЧА ДАННЫХ ТРЕТЬИМ ЛИЦАМ</h5>
+                        <p>5.1. Мы не передаем персональные данные третьим лицам, за исключением:</p>
+                        <ul>
+                            <li>Исполнителей услуг (только необходимые для выполнения задачи данные)</li>
+                            <li>По требованию уполномоченных государственных органов</li>
+                            <li>При слиянии или продаже компании</li>
+                        </ul>
+                        
+                        <h5>6. ПРАВА ПОЛЬЗОВАТЕЛЯ</h5>
+                        <p>6.1. Пользователь имеет право:</p>
+                        <ul>
+                            <li>На доступ к своим персональным данным</li>
+                            <li>На исправление неточных данных</li>
+                            <li>На удаление своих данных</li>
+                            <li>На отзыв согласия на обработку данных</li>
+                        </ul>
+                        
+                        <h5>7. ХРАНЕНИЕ ДАННЫХ</h5>
+                        <p>7.1. Персональные данные хранятся в течение срока, необходимого для целей их обработки.</p>
+                        <p>7.2. После достижения целей обработки данные удаляются или обезличиваются.</p>
+                        
+                        <h5>8. КОНТАКТНАЯ ИНФОРМАЦИЯ</h5>
+                        <p>По всем вопросам, связанным с обработкой персональных данных, обращайтесь:</p>
+                        <p>Email: privacy@womanhelp.ru</p>
+                        <p>Телефон: +7 (999) 123-45-67</p>
+                        
+                        <div style="margin-top: 30px; text-align: right;">
+                            <p>Дата публикации: 01.01.2024</p>
+                            <p>Дата последнего обновления: 01.01.2024</p>
+                        </div>
+                    `
+                },
+                
+                refund: {
+                    title: 'Политика возврата средств',
+                    content: `
+                        <h4>ПОЛИТИКА ВОЗВРАТА СРЕДСТВ</h4>
+                        
+                        <h5>1. ОБЩИЕ ПОЛОЖЕНИЯ</h5>
+                        <p>1.1. Настоящая Политика определяет условия и порядок возврата денежных средств за услуги сервиса «WOMAN HELP».</p>
+                        <p>1.2. Возврат средств осуществляется в соответствии с Законом РФ «О защите прав потребителей».</p>
+                        
+                        <h5>2. ВОЗВРАТ ПРИ ОТКАЗЕ ОТ УСЛУГ</h5>
+                        <p>2.1. Клиент имеет право отказаться от Подписки в течение 14 дней с момента её активации при условии:</p>
+                        <ul>
+                            <li>Не было создано ни одной Задачи</li>
+                            <li>Не было использовано ни одной услуги</li>
+                        </ul>
+                        <p>2.2. Для отказа необходимо направить заявление на email: refund@womanhelp.ru</p>
+                        
+                        <h5>3. ВОЗВРАТ ПРИ НЕНАДЛЕЖАЩЕМ КАЧЕСТВЕ</h5>
+                        <p>3.1. В случае ненадлежащего качества оказанных услуг Клиент имеет право:</p>
+                        <ul>
+                            <li>На бесплатное устранение недостатков</li>
+                            <li>На соразмерное уменьшение стоимости</li>
+                            <li>На возврат средств за некачественно оказанную услугу</li>
+                        </ul>
+                        <p>3.2. Для инициирования возврата необходимо:</p>
+                        <ol>
+                            <li>Написать жалобу в поддержку в течение 3 дней с момента оказания услуги</li>
+                            <li>Предоставить доказательства ненадлежащего качества (фото, видео, описания)</li>
+                            <li>Дождаться проверки службой контроля качества</li>
+                        </ol>
+                        
+                        <h5>4. ПРОЦЕДУРА ВОЗВРАТА</h5>
+                        <p>4.1. Заявление на возврат рассматривается в течение 10 рабочих дней.</p>
+                        <p>4.2. При положительном решении средства возвращаются:</p>
+                        <ul>
+                            <li>На банковскую карту — в течение 10 рабочих дней</li>
+                            <li>На баланс сервиса — моментально</li>
+                        </ul>
+                        <p>4.3. Комиссия платежных систем не возвращается.</p>
+                        
+                        <h5>5. НЕВОЗВРАТНЫЕ СЛУЧАИ</h5>
+                        <p>5.1. Возврат не осуществляется в случаях:</p>
+                        <ul>
+                            <li>Если была создана хотя бы одна Задача</li>
+                            <li>Если прошло более 14 дней с момента активации Подписки</li>
+                            <li>При нарушении правил использования Сервиса</li>
+                            <li>При предоставлении заведомо ложной информации</li>
+                        </ul>
+                        
+                        <h5>6. ВСТУПИТЕЛЬНЫЙ ВЗНОС</h5>
+                        <p>6.1. Вступительный взнос не подлежит возврату после подтверждения телефона и активации аккаунта.</p>
+                        
+                        <h5>7. КОНТАКТНАЯ ИНФОРМАЦИЯ</h5>
+                        <p>По вопросам возврата средств обращайтесь:</p>
+                        <p>Email: refund@womanhelp.ru</p>
+                        <p>Телефон: +7 (999) 123-45-67</p>
+                        <p>Время работы: Пн-Пт, 10:00-19:00</p>
+                        
+                        <div style="margin-top: 30px; text-align: right;">
+                            <p>Дата публикации: 01.01.2024</p>
+                        </div>
+                    `
+                }
+            },
+
+            showDocumentModal: function(documentType) {
+                var document = this.documents[documentType];
+                if (!document) return;
+                
+                var modal = document.getElementById('documentModal');
+                var title = document.getElementById('documentTitle');
+                var content = document.getElementById('documentContent');
+                
+                if (modal && title && content) {
+                    title.textContent = document.title;
+                    content.innerHTML = document.content;
+                    modal.classList.add('active');
+                }
+            },
+
+            closeDocumentModal: function() {
+                var modal = document.getElementById('documentModal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
+            },
+
             // ==================== ПОП-АП ОКНО ЗАДАЧ ====================
             showTasksPopup: function() {
                 this.closeUserMenu();
@@ -5646,6 +6101,9 @@ loadServicesForCategory: async function(category) {
                 this.setupEventListeners();
                 this.determineInitialScreen();
                 this.updateUserInterface();
+                
+                // Инициализация чата поддержки
+                this.supportChat.init();
                 
                 var deadlineInput = document.getElementById('taskDeadline');
                 if (deadlineInput) {
