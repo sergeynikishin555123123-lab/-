@@ -1624,15 +1624,6 @@ app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGen
         });
     }
 });
-        
-    } catch (error) {
-        console.error('❌ Ошибка загрузки файла:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки файла'
-        });
-    }
-});
 
 // Общая загрузка файла
 app.post('/api/admin/upload-file', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('file'), async (req, res) => {
