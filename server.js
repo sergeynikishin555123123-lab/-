@@ -420,13 +420,14 @@ await db.exec(`
 `);
         
 // Услуги
+// Услуги - УБЕДИТЕСЬ ЧТО ЭТА ТАБЛИЦА ПРАВИЛЬНО СОЗДАЕТСЯ
 await db.exec(`
     CREATE TABLE IF NOT EXISTS services (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
-        image_url TEXT,  -- ← УБЕДИТЕСЬ, ЧТО ЭТА КОЛОНКА ЕСТЬ
+        image_url TEXT,
         base_price REAL DEFAULT 0,
         estimated_time TEXT,
         is_active INTEGER DEFAULT 1,
@@ -437,7 +438,6 @@ await db.exec(`
         FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
     )
 `);
-
         // Задачи
         await db.exec(`
             CREATE TABLE IF NOT EXISTS tasks (
@@ -932,50 +932,57 @@ if (!categoriesExist) {
 }
 
         // 5. Услуги
-        const servicesExist = await db.get("SELECT 1 FROM services LIMIT 1");
-        if (!servicesExist) {
-            const categories = await db.all("SELECT id, name FROM categories");
-            const categoryMap = {};
-            categories.forEach(cat => categoryMap[cat.name] = cat.id);
+      // В функции createInitialData(), после создания категорий добавьте:
+const servicesExist = await db.get("SELECT 1 FROM services LIMIT 1");
+if (!servicesExist) {
+    console.log('📝 Создание тестовых услуг...');
+    
+    // Получаем ID категорий
+    const categories = await db.all("SELECT id, name FROM categories");
+    const categoryMap = {};
+    categories.forEach(cat => categoryMap[cat.name] = cat.id);
 
-            const services = [
-                // Дом и быт
-                [categoryMap.home_and_household, 'Уборка квартиры', 'Генеральная или поддерживающая уборка квартиры', 0, '2-4 часа', 1, 1, 1],
-                [categoryMap.home_and_household, 'Химчистка мебели', 'Профессиональная химчистка диванов, кресел, матрасов', 0, '3-5 часов', 1, 2, 0],
-                [categoryMap.home_and_household, 'Стирка и глажка', 'Стирка, сушка и глажка белья', 0, '2-3 часа', 1, 3, 0],
-                [categoryMap.home_and_household, 'Приготовление еды', 'Приготовление блюд на день или неделю', 0, '3-4 часа', 1, 4, 1],
-                
-                // Дети и семья
-                [categoryMap.family_and_children, 'Няня на час', 'Присмотр за детьми на несколько часов', 0, '1 час', 1, 5, 1],
-                [categoryMap.family_and_children, 'Репетитор для ребенка', 'Помощь с уроками по школьным предметам', 0, '1 час', 1, 6, 0],
-                
-                // Красота и здоровье
-                [categoryMap.beauty_and_health, 'Маникюр на дому', 'Профессиональный маникюр с выездом', 0, '1.5 часа', 1, 7, 1],
-                [categoryMap.beauty_and_health, 'Стрижка и укладка', 'Парикмахерские услуги на дому', 0, '2 часа', 1, 8, 0],
-                [categoryMap.beauty_and_health, 'Массаж', 'Расслабляющий или лечебный массаж', 0, '1 час', 1, 9, 1],
-                
-                // Курсы и образование
-                [categoryMap.courses_and_education, 'Репетиторство', 'Индивидуальные занятия по предметы', 0, '1 час', 1, 10, 1],
-                
-                // Покупки и доставка
-                [categoryMap.shopping_and_delivery, 'Покупка продуктов', 'Покупка и доставка продуктов', 0, '1-2 часа', 1, 11, 1],
-                [categoryMap.shopping_and_delivery, 'Доставка документов', 'Срочная доставка документов', 0, '1 час', 1, 12, 0]
-            ];
+    // Тестовые услуги для каждой категории
+    const services = [
+        // Дом и быт
+        [categoryMap.home_and_household, 'Уборка квартиры', 'Генеральная или поддерживающая уборка квартиры любой площади', '/uploads/services/cleaning.jpg', 1500, '2-4 часа', 1, 1, 1],
+        [categoryMap.home_and_household, 'Химчистка мебели', 'Профессиональная химчистка диванов, кресел, матрасов', '/uploads/services/chemclean.jpg', 3000, '3-5 часов', 1, 2, 0],
+        [categoryMap.home_and_household, 'Приготовление еды', 'Приготовление блюд на день или неделю по вашему меню', '/uploads/services/cooking.jpg', 2000, '3-4 часа', 1, 3, 1],
+        
+        // Семья и дети
+        [categoryMap.family_and_children, 'Няня на час', 'Присмотр за детьми на несколько часов', '/uploads/services/nanny.jpg', 500, '1 час', 1, 1, 1],
+        [categoryMap.family_and_children, 'Репетитор для ребенка', 'Помощь с уроками по школьным предметам', '/uploads/services/tutor.jpg', 800, '1 час', 1, 2, 0],
+        
+        // Красота и здоровье
+        [categoryMap.beauty_and_health, 'Маникюр на дому', 'Профессиональный маникюр с выездом мастера', '/uploads/services/manicure.jpg', 1200, '1.5 часа', 1, 1, 1],
+        [categoryMap.beauty_and_health, 'Массаж', 'Расслабляющий или лечебный массаж', '/uploads/services/massage.jpg', 1500, '1 час', 1, 2, 1],
+        
+        // Образование
+        [categoryMap.courses_and_education, 'Репетиторство', 'Индивидуальные занятия по предмету', '/uploads/services/education.jpg', 1000, '1 час', 1, 1, 1],
+        
+        // Покупки и доставка
+        [categoryMap.shopping_and_delivery, 'Покупка продуктов', 'Покупка и доставка продуктов по списку', '/uploads/services/shopping.jpg', 800, '1-2 часа', 1, 1, 1],
+        
+        // События
+        [categoryMap.events_and_organization, 'Организация праздника', 'Организация и проведение мероприятий', '/uploads/services/events.jpg', 5000, '4-6 часов', 1, 1, 1]
+    ];
 
-            for (const service of services) {
-                try {
-                    await db.run(
-                        `INSERT OR IGNORE INTO services 
-                        (category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                        service
-                    );
-                } catch (error) {
-                    console.warn('Ошибка вставки услуги:', error.message);
-                }
-            }
-            console.log('✅ Услуги созданы (12 услуг)');
+    for (const service of services) {
+        try {
+            await db.run(
+                `INSERT OR IGNORE INTO services 
+                (category_id, name, description, image_url, base_price, estimated_time, 
+                 is_active, sort_order, is_featured) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                service
+            );
+        } catch (error) {
+            console.warn('Ошибка вставки услуги:', error.message);
         }
+    }
+    
+    console.log('✅ Тестовые услуги созданы (11 услуг)');
+}
 
         // 6. Тестовые пользователи
         const usersExist = await db.get("SELECT 1 FROM users LIMIT 1");
@@ -2972,6 +2979,376 @@ app.get('/api/categories', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка получения категорий'
+        });
+    }
+});
+
+// Получение всех категорий с количеством услуг
+app.get('/api/categories/with-services', async (req, res) => {
+    try {
+        const categories = await db.all(`
+            SELECT 
+                c.*,
+                COUNT(s.id) as services_count
+            FROM categories c
+            LEFT JOIN services s ON c.id = s.category_id AND s.is_active = 1
+            WHERE c.is_active = 1
+            GROUP BY c.id
+            ORDER BY c.sort_order ASC
+        `);
+        
+        // Добавляем полные URL для изображений
+        const categoriesWithFullUrls = categories.map(cat => ({
+            ...cat,
+            image_full_url: cat.image_url 
+                ? `${req.protocol}://${req.get('host')}${cat.image_url}`
+                : `${req.protocol}://${req.get('host')}/api/images/test/category`
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                categories: categoriesWithFullUrls,
+                count: categories.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения категорий с услугами:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения категорий'
+        });
+    }
+});
+
+// ==================== API ДЛЯ УСЛУГ ====================
+
+// Получение услуг по категории
+app.get('/api/categories/:categoryId/services', async (req, res) => {
+    try {
+        const categoryId = req.params.categoryId;
+        
+        console.log(`📋 Запрос услуг для категории ID: ${categoryId}`);
+        
+        if (!categoryId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID категории не указан'
+            });
+        }
+        
+        // Проверяем существование категории
+        const category = await db.get(
+            'SELECT id, display_name, description FROM categories WHERE id = ? AND is_active = 1',
+            [categoryId]
+        );
+        
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        // Получаем услуги для этой категории
+        const services = await db.all(`
+            SELECT 
+                s.id,
+                s.name,
+                s.description,
+                s.image_url,
+                s.base_price,
+                s.estimated_time,
+                s.sort_order,
+                s.is_featured
+            FROM services s
+            WHERE s.category_id = ? AND s.is_active = 1
+            ORDER BY s.sort_order ASC, s.name ASC
+        `, [categoryId]);
+        
+        console.log(`✅ Найдено услуг: ${services.length} для категории ${category.display_name}`);
+        
+        // Добавляем полные URL для изображений
+        const servicesWithFullUrls = services.map(service => ({
+            ...service,
+            image_full_url: service.image_url 
+                ? `${req.protocol}://${req.get('host')}${service.image_url}`
+                : `${req.protocol}://${req.get('host')}/api/images/test/service`
+        }));
+        
+        res.json({
+            success: true,
+            data: {
+                category: {
+                    id: category.id,
+                    name: category.display_name,
+                    description: category.description
+                },
+                services: servicesWithFullUrls,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения услуг:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг: ' + error.message
+        });
+    }
+});
+
+// Получение всех услуг (для админ панели)
+app.get('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { category_id } = req.query;
+        
+        let query = `
+            SELECT 
+                s.*,
+                c.display_name as category_name,
+                c.icon as category_icon
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (category_id && category_id !== 'all') {
+            query += ' AND s.category_id = ?';
+            params.push(category_id);
+        }
+        
+        query += ' ORDER BY s.category_id, s.sort_order ASC, s.name ASC';
+        
+        const services = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                services,
+                count: services.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения услуг (админ):', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуг'
+        });
+    }
+});
+
+// Создание/редактирование услуги (админ)
+app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { 
+            id, 
+            category_id, 
+            name, 
+            description, 
+            image_url, 
+            base_price, 
+            estimated_time,
+            is_active = 1,
+            sort_order = 0,
+            is_featured = 0 
+        } = req.body;
+        
+        console.log('📝 Сохранение услуги:', { id, name, category_id });
+        
+        if (!category_id || !name || !description) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните обязательные поля: категория, название и описание'
+            });
+        }
+        
+        // Проверяем существование категории
+        const categoryExists = await db.get(
+            'SELECT id FROM categories WHERE id = ?',
+            [category_id]
+        );
+        
+        if (!categoryExists) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        if (id) {
+            // Обновление существующей услуги
+            await db.run(
+                `UPDATE services SET 
+                    category_id = ?,
+                    name = ?,
+                    description = ?,
+                    image_url = ?,
+                    base_price = ?,
+                    estimated_time = ?,
+                    is_active = ?,
+                    sort_order = ?,
+                    is_featured = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [
+                    category_id,
+                    name,
+                    description,
+                    image_url || null,
+                    base_price || 0,
+                    estimated_time || null,
+                    is_active ? 1 : 0,
+                    sort_order,
+                    is_featured ? 1 : 0,
+                    id
+                ]
+            );
+            
+            console.log(`✅ Услуга обновлена: ${id}`);
+            
+            const updatedService = await db.get(
+                `SELECT s.*, c.display_name as category_name
+                 FROM services s
+                 LEFT JOIN categories c ON s.category_id = c.id
+                 WHERE s.id = ?`,
+                [id]
+            );
+            
+            res.json({
+                success: true,
+                message: 'Услуга успешно обновлена',
+                data: { service: updatedService }
+            });
+            
+        } else {
+            // Создание новой услуги
+            const result = await db.run(
+                `INSERT INTO services 
+                (category_id, name, description, image_url, base_price, estimated_time, 
+                 is_active, sort_order, is_featured) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    category_id,
+                    name,
+                    description,
+                    image_url || null,
+                    base_price || 0,
+                    estimated_time || null,
+                    is_active ? 1 : 1,
+                    sort_order,
+                    is_featured ? 1 : 0
+                ]
+            );
+            
+            const serviceId = result.lastID;
+            console.log(`✅ Новая услуга создана: ${serviceId} (${name})`);
+            
+            const newService = await db.get(
+                `SELECT s.*, c.display_name as category_name
+                 FROM services s
+                 LEFT JOIN categories c ON s.category_id = c.id
+                 WHERE s.id = ?`,
+                [serviceId]
+            );
+            
+            res.status(201).json({
+                success: true,
+                message: 'Услуга успешно создана',
+                data: { service: newService }
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения услуги: ' + error.message
+        });
+    }
+});
+
+// Удаление услуги (админ)
+app.delete('/api/admin/services/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const serviceId = req.params.id;
+        
+        console.log(`🗑️ Удаление услуги: ${serviceId}`);
+        
+        // Проверяем есть ли связанные задачи
+        const hasTasks = await db.get(
+            'SELECT 1 FROM tasks WHERE service_id = ? LIMIT 1',
+            [serviceId]
+        );
+        
+        if (hasTasks) {
+            // Деактивируем вместо удаления
+            await db.run(
+                'UPDATE services SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [serviceId]
+            );
+            
+            return res.json({
+                success: true,
+                message: 'Услуга деактивирована (есть связанные задачи)',
+                data: { id: serviceId, deactivated: true }
+            });
+        }
+        
+        // Полностью удаляем
+        await db.run('DELETE FROM services WHERE id = ?', [serviceId]);
+        
+        res.json({
+            success: true,
+            message: 'Услуга успешно удалена',
+            data: { id: serviceId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления услуги'
+        });
+    }
+});
+
+// Получение информации об услуге
+app.get('/api/services/:id', async (req, res) => {
+    try {
+        const serviceId = req.params.id;
+        
+        const service = await db.get(`
+            SELECT 
+                s.*,
+                c.display_name as category_name,
+                c.icon as category_icon
+            FROM services s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE s.id = ? AND s.is_active = 1
+        `, [serviceId]);
+        
+        if (!service) {
+            return res.status(404).json({
+                success: false,
+                error: 'Услуга не найдена'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: { service }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения услуги'
         });
     }
 });
