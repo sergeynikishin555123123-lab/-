@@ -17,7 +17,7 @@ const app = express();
 
 // CORS настройки
 const corsOptions = {
-    origin: process.env.NODE_ENV === 'production' 
+    origin: process.enapp.get('/api/images/test/:type?', (req, res) => {v.NODE_ENV === 'production' 
         ? ['https://yourdomain.com'] 
         : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080', 'http://localhost:5000', 'http://localhost:5500'],
     credentials: true,
@@ -7713,69 +7713,40 @@ app.get('/api/images/check', async (req, res) => {
 // ==================== ТЕСТОВЫЕ ИЗОБРАЖЕНИЯ ====================
 
 // Маршрут для тестовых изображений
-app.get('/api/images/test/:type', (req, res) => {
+// Добавьте в server.js после других маршрутов изображений:
+app.get('/api/images/test/:type?', (req, res) => {
     const type = req.params.type || 'default';
     
-    console.log(`🖼️ Запрос тестового изображения: ${type}`);
-    
-    const placeholders = {
-        'logo': {
-            svg: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
-                <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
-                      fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
-            </svg>`
-        },
-        'category': {
-            svg: `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
-                <rect width="200" height="150" fill="#FAF2F6"/>
-                <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
-                <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
-                    C
-                </text>
-                <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
-                    Категория
-                </text>
-            </svg>`
-        },
-        'service': {
-            svg: `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
-                <rect width="200" height="150" fill="#F9F7F3"/>
-                <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
-                <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">
-                    Услуга
-                </text>
-            </svg>`
-        },
-        'user': {
-            svg: `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                <circle cx="50" cy="40" r="25" fill="#E8CCD9"/>
-                <circle cx="50" cy="40" r="22" fill="#F2DDE6"/>
-                <circle cx="50" cy="90" r="35" fill="#E8CCD9"/>
-                <circle cx="50" cy="90" r="32" fill="#F2DDE6"/>
-                <text x="50" y="45" font-family="Arial" font-size="20" text-anchor="middle" dy=".3em" fill="#C5A880">
-                    U
-                </text>
-            </svg>`
-        },
-        'default': {
-            svg: `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
-                <rect width="200" height="150" fill="#F9F7F3"/>
-                <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
-                <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">
-                    ${type}
-                </text>
-            </svg>`
-        }
+    const svgMap = {
+        'logo': `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+            <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+            <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+        </svg>`,
+        'category': `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+            <rect width="200" height="150" fill="#FAF2F6"/>
+            <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+            <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">C</text>
+            <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">Категория</text>
+        </svg>`,
+        'service': `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+            <rect width="200" height="150" fill="#F9F7F3"/>
+            <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
+            <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">Услуга</text>
+        </svg>`,
+        'default': `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+            <rect width="200" height="150" fill="#F9F7F3"/>
+            <rect x="50" y="50" width="100" height="50" fill="#E8CCD9" rx="5"/>
+            <text x="100" y="78" font-family="Arial" font-size="12" text-anchor="middle" fill="#C5A880">Изображение</text>
+        </svg>`
     };
     
-    const placeholder = placeholders[type] || placeholders['default'];
+    const svg = svgMap[type] || svgMap['default'];
     
     res.set('Content-Type', 'image/svg+xml');
-    res.set('Cache-Control', 'public, max-age=3600'); // Кэшируем на 1 час
+    res.set('Cache-Control', 'public, max-age=3600');
     res.set('Access-Control-Allow-Origin', '*');
     
-    res.send(placeholder.svg);
+    res.send(svg);
 });
 
 // Общий маршрут для тестовых изображений
