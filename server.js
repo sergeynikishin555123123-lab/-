@@ -399,7 +399,6 @@ const initDatabase = async () => {
             )
         `);
 
-        // Категории
 // Категории
 await db.exec(`
     CREATE TABLE IF NOT EXISTS categories (
@@ -407,11 +406,12 @@ await db.exec(`
         name TEXT UNIQUE NOT NULL,
         display_name TEXT NOT NULL,
         description TEXT NOT NULL,
-        admin_description TEXT,  -- ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        admin_description TEXT,
         icon TEXT NOT NULL,
         image_url TEXT,
         color TEXT DEFAULT '#FF6B8B',
         sort_order INTEGER DEFAULT 0,
+        is_popular INTEGER DEFAULT 0,  -- ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
         is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
