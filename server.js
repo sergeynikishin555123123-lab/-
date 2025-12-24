@@ -1423,6 +1423,46 @@ app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), uplo
     }
 });
 
+// Админ: Получение категорий (для админ-панели)
+app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        console.log('👑 Запрос категорий админом');
+        
+        const categories = await db.all(
+            `SELECT c.*, 
+                    COUNT(s.id) as services_count,
+                    (SELECT COUNT(*) FROM tasks t WHERE t.category_id = c.id) as tasks_count
+             FROM categories c
+             LEFT JOIN services s ON c.id = s.category_id AND s.is_active = 1
+             GROUP BY c.id
+             ORDER BY c.sort_order ASC`
+        );
+        
+        // Добавляем полные URL для изображений
+        const categoriesWithFullUrls = categories.map(cat => ({
+            ...cat,
+            image_full_url: cat.image_url ? `${req.protocol}://${req.get('host')}${cat.image_url}` : `${req.protocol}://${req.get('host')}/api/images/test/category`
+        }));
+        
+        console.log(`✅ Найдено категорий: ${categories.length}`);
+        
+        res.json({
+            success: true,
+            data: {
+                categories: categoriesWithFullUrls,
+                count: categories.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения категорий:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения категорий: ' + error.message
+        });
+    }
+});
+
 // Загрузка изображения категории - исправленная версия
 app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmin']), uploadCategoryImage.single('image'), async (req, res) => {
     try {
@@ -5661,6 +5701,54 @@ app.get('/api/admin/users-detailed', authMiddleware(['admin', 'superadmin']), as
     }
 });
 
+// Админ: Получение всех пользователей (упрощенный вариант для админ-панели)
+app.get('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { role, is_active, search } = req.query;
+        
+        console.log('👑 Запрос пользователей админом:', { role, is_active, search });
+        
+        let whereClause = ' WHERE 1=1';
+        const params = [];
+        
+        if (role && role !== 'all') {
+            whereClause += ' AND role = ?';
+            params.push(role);
+        }
+        
+        if (is_active && is_active !== 'all') {
+            whereClause += ' AND is_active = ?';
+            params.push(is_active === 'active' ? 1 : 0);
+        }
+        
+        if (search && search.trim()) {
+            whereClause += ' AND (email LIKE ? OR first_name LIKE ? OR last_name LIKE ? OR phone LIKE ?)';
+            const searchTerm = `%${search.trim()}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+        
+        const query = `SELECT * FROM users ${whereClause} ORDER BY created_at DESC LIMIT 50`;
+        const users = await db.all(query, params);
+        
+        console.log(`✅ Найдено пользователей: ${users.length}`);
+        
+        res.json({
+            success: true,
+            data: {
+                users: users,
+                count: users.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения пользователей:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения пользователей: ' + error.message
+        });
+    }
+});
+
 // Полное обновление пользователя (админ)
 app.put('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
@@ -6324,6 +6412,98 @@ app.get('/api/logo/file', async (req, res) => {
             <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
             <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
                   fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+        </svg>`;
+        
+        res.set('Content-Type', 'image/svg+xml');
+        res.send(placeholder);
+    }
+});
+
+// Получение файла изображения категории
+app.get('/api/categories/:id/image', async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        
+        console.log(`🖼️ Запрос изображения категории: ${categoryId}`);
+        
+        const category = await db.get(
+            'SELECT image_url FROM categories WHERE id = ?',
+            [categoryId]
+        );
+        
+        if (!category || !category.image_url) {
+            console.log(`ℹ️ У категории ${categoryId} нет изображения, возвращаем placeholder`);
+            
+            const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+                <rect width="200" height="150" fill="#FAF2F6"/>
+                <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+                <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                    Cat
+                </text>
+                <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                    Категория #${categoryId}
+                </text>
+            </svg>`;
+            
+            res.set('Content-Type', 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=3600');
+            res.set('Access-Control-Allow-Origin', '*');
+            
+            return res.send(placeholder);
+        }
+        
+        const imagePath = path.join(__dirname, 'public', category.image_url);
+        
+        // Проверяем существует ли файл
+        if (fsSync.existsSync(imagePath)) {
+            const ext = path.extname(imagePath).toLowerCase();
+            const mimeTypes = {
+                '.svg': 'image/svg+xml',
+                '.png': 'image/png',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.webp': 'image/webp'
+            };
+            
+            res.set('Content-Type', mimeTypes[ext] || 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=31536000, immutable');
+            res.set('Access-Control-Allow-Origin', '*');
+            
+            console.log(`✅ Отдаем изображение: ${imagePath}`);
+            return res.sendFile(imagePath);
+        }
+        
+        console.log(`❌ Файл не найден: ${imagePath}`);
+        
+        // Если файл не найден, возвращаем placeholder
+        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+            <rect width="200" height="150" fill="#FAF2F6"/>
+            <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+            <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                Cat
+            </text>
+            <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                Изображение не найдено
+            </text>
+        </svg>`;
+        
+        res.set('Content-Type', 'image/svg+xml');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.set('Access-Control-Allow-Origin', '*');
+        res.send(placeholder);
+        
+    } catch (error) {
+        console.error('❌ Ошибка отдачи изображения категории:', error.message);
+        
+        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150">
+            <rect width="200" height="150" fill="#FAF2F6"/>
+            <circle cx="100" cy="60" r="30" fill="#F2DDE6"/>
+            <text x="100" y="60" font-family="Arial" font-size="14" text-anchor="middle" dy=".3em" fill="#C5A880">
+                Err
+            </text>
+            <text x="100" y="110" font-family="Arial" font-size="12" text-anchor="middle" fill="#888">
+                Ошибка загрузки
+            </text>
         </svg>`;
         
         res.set('Content-Type', 'image/svg+xml');
