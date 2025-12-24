@@ -691,60 +691,7 @@ const createImagePlaceholder = (type = 'default', text = '') => {
     return placeholders[type] || placeholders.default;
 };
 
-// Загрузка изображения услуги
-const uploadServiceImage = multer({ 
-    storage: multer.diskStorage({
-        destination: function (req, file, cb) {
-            ensureUploadDirs();
-            cb(null, 'public/uploads/services');
-        },
-        filename: function (req, file, cb) {
-            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-            const extension = path.extname(file.originalname).toLowerCase();
-            const filename = `service-${uniqueSuffix}${extension}`;
-            console.log(`📁 Сохранение изображения услуги: ${filename}`);
-            cb(null, filename);
-        }
-    }),
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: imageFilter
-});
 
-app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadServiceImage.single('image'), async (req, res) => {
-    try {
-        console.log('📤 Загрузка изображения услуги...');
-        
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл изображения не был загружен'
-            });
-        }
-        
-        const fileUrl = `/uploads/services/${req.file.filename}`;
-        console.log(`✅ Изображение услуги сохранено: ${fileUrl}`);
-        
-        res.json({
-            success: true,
-            message: 'Изображение услуги успешно загружено',
-            data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
-                url: fileUrl,
-                path: req.file.path
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка загрузки изображения услуги:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки изображения услуги'
-        });
-    }
-});
 
 // Функция для генерации дефолтных изображений при инициализации
 const generateDefaultImages = async () => {
