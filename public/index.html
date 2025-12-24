@@ -113,12 +113,12 @@
         }
         
         .logo-img {
-            height: 36px;
-            width: 36px;
-            border-radius: 8px;
+            height: 44px;
+            width: 44px;
+            border-radius: 10px;
             object-fit: cover;
-            background: var(--primary-gradient);
-            padding: 4px;
+            padding: 0;
+            background: none;
         }
         
         .logo-woman {
@@ -465,7 +465,7 @@
         .category-image {
             width: 100%;
             height: 120px;
-            border-radius: var(--radius);
+            border-radius: 50%;
             margin-bottom: 15px;
             overflow: hidden;
             position: relative;
@@ -511,6 +511,8 @@
             min-height: 220px;
             transition: all 0.3s ease;
             border: 1px solid rgba(242, 221, 230, 0.1);
+            text-align: center;
+            align-items: center;
         }
         
         .service-card:hover {
@@ -520,9 +522,9 @@
         }
         
         .service-image {
-            width: 100%;
+            width: 120px;
             height: 120px;
-            border-radius: var(--radius-sm);
+            border-radius: 50%;
             margin-bottom: 12px;
             overflow: hidden;
             position: relative;
@@ -545,6 +547,7 @@
             justify-content: space-between;
             align-items: start;
             margin-bottom: 12px;
+            width: 100%;
         }
         
         .service-header h4 {
@@ -554,6 +557,7 @@
             margin-right: 10px;
             min-height: 48px;
             color: var(--graphite-dark);
+            text-align: center;
         }
         
         .service-description {
@@ -567,6 +571,12 @@
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
+            text-align: center;
+            padding: 10px;
+            background: rgba(242, 221, 230, 0.1);
+            border-radius: 12px 12px 12px 12px;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
         }
         
         .service-footer {
@@ -574,6 +584,7 @@
             justify-content: space-between;
             align-items: center;
             margin-top: auto;
+            width: 100%;
         }
         
         .service-price {
@@ -941,36 +952,31 @@
             font-weight: 600;
             white-space: nowrap;
             margin-left: 10px;
+            background: none;
         }
         
         .task-status.new {
-            background: rgba(25, 118, 210, 0.1);
-            color: #1976D2;
+            color: var(--graphite-dark);
         }
         
         .task-status.in_progress {
-            background: rgba(255, 152, 0, 0.1);
-            color: #EF6C00;
+            color: var(--graphite-dark);
         }
         
         .task-status.completed {
-            background: rgba(76, 175, 80, 0.1);
-            color: #2E7D32;
+            color: #38B2AC;
         }
         
         .task-status.cancelled {
-            background: rgba(229, 115, 115, 0.1);
-            color: #C62828;
+            color: var(--pastel-pink);
         }
         
         .task-status.searching {
-            background: rgba(255, 193, 7, 0.1);
-            color: #FF8F00;
+            color: var(--graphite-dark);
         }
         
         .task-status.assigned {
-            background: rgba(33, 150, 243, 0.1);
-            color: #1565C0;
+            color: var(--graphite-dark);
         }
         
         /* Кнопка "Все услуги" */
@@ -2001,36 +2007,37 @@
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
+            background: none;
         }
         
         .status-new {
-            background: rgba(25, 118, 210, 0.1);
-            color: #1976D2;
+            background: none;
+            color: var(--graphite-dark);
         }
         
         .status-in_progress {
-            background: rgba(255, 152, 0, 0.1);
-            color: #EF6C00;
+            background: none;
+            color: var(--graphite-dark);
         }
         
         .status-completed {
-            background: rgba(76, 175, 80, 0.1);
-            color: #2E7D32;
+            background: none;
+            color: #38B2AC;
         }
         
         .status-cancelled {
-            background: rgba(229, 115, 115, 0.1);
-            color: #C62828;
+            background: none;
+            color: var(--pastel-pink);
         }
         
         .status-searching {
-            background: rgba(255, 193, 7, 0.1);
-            color: #FF8F00;
+            background: none;
+            color: var(--graphite-dark);
         }
         
         .status-assigned {
-            background: rgba(33, 150, 243, 0.1);
-            color: #1565C0;
+            background: none;
+            color: var(--graphite-dark);
         }
     </style>
 </head>
@@ -2049,7 +2056,7 @@
             <span class="logo-tagline">Решение есть</span>
         </a>
         
-        <div class="user-avatar" id="userAvatar" onclick="window.app.toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar" onclick="window.app.toggleUserMenu()" style="display: none;">
             <img id="userAvatarImg" 
                  alt="Аватар пользователя"
                  onerror="this.style.display='none'; this.parentElement.innerHTML=this.parentElement.textContent || 'Г';"
@@ -2070,6 +2077,9 @@
                 </a>
                 <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('guides')">
                     <i class="fas fa-book"></i>Гайды
+                </a>
+                <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('all-categories')">
+                    <i class="fas fa-folder"></i>Категории
                 </a>
                 <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('all-services')">
                     <i class="fas fa-list"></i>Все услуги
@@ -2130,15 +2140,15 @@
                             
                             <div class="stats-grid-compact">
                                 <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="usersCount">10,000+</div>
+                                    <div class="stat-number-compact" id="usersCount">1356</div>
                                     <div class="stat-title-compact">Пользователей</div>
                                 </div>
                                 <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="tasksCount">25,000+</div>
+                                    <div class="stat-number-compact" id="tasksCount">3257</div>
                                     <div class="stat-title-compact">Выполнено задач</div>
                                 </div>
                                 <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="hoursCount">50,000+</div>
+                                    <div class="stat-number-compact" id="hoursCount">10365</div>
                                     <div class="stat-title-compact">Часов экономии</div>
                                 </div>
                             </div>
@@ -2169,9 +2179,9 @@
                                 <i class="fas fa-plus-circle"></i>
                                 Создать задачу
                             </button>
-                            <button class="btn btn-secondary" onclick="window.app.navigateToPage('all-services')">
+                            <button class="btn btn-secondary" onclick="window.app.navigateToPage('all-categories')">
                                 <i class="fas fa-list"></i>
-                                Все услуги
+                                Категории
                             </button>
                             <button class="btn guides-btn" onclick="window.app.navigateToPage('guides')">
                                 <i class="fas fa-book"></i>
@@ -2265,6 +2275,29 @@
                             <i class="fas fa-arrow-left"></i>
                             Назад ко всем категориям
                         </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница всех категорий -->
+        <div id="all-categories-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Все категории</h2>
+                    </div>
+                    
+                    <div class="search-box" style="margin-bottom: 30px;">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="categorySearch" class="search-input" placeholder="Поиск категорий..." oninput="window.app.filterCategories()">
+                    </div>
+                    
+                    <div class="square-grid" id="allCategoriesList">
+                        <!-- Категории загружаются динамически -->
                     </div>
                 </section>
             </div>
@@ -2579,7 +2612,7 @@
         </a>
         <a href="#" class="nav-item" onclick="window.app.navigateToPage('all-services')" data-page="all-services">
             <i class="fas fa-list"></i>
-            <span>Услуги</span>
+            <span>Все услуги</span>
         </a>
         <a href="#" class="nav-item" onclick="window.app.showTasksPopup()" id="quickTasksBtn">
             <i class="fas fa-tasks"></i>
@@ -2619,9 +2652,9 @@
             <h3 class="modal-title">Вход в аккаунт</h3>
             <form id="loginForm">
                 <div class="form-group">
-                    <label class="form-label">Телефон или Email</label>
-                    <input type="text" id="loginPhoneInput" class="form-input" placeholder="+79991234567 или ваш@email.com" required>
-                    <small style="color: var(--graphite-light); font-size: 0.8rem;">Введите телефон или email, указанные при регистрации</small>
+                    <label class="form-label">Телефон</label>
+                    <input type="text" id="loginPhoneInput" class="form-input" placeholder="+79991234567" required>
+                    <small style="color: var(--graphite-light); font-size: 0.8rem;">Введите телефон, указанный при регистрации</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Пароль</label>
@@ -2779,9 +2812,9 @@
             chatPollingInterval: null,
             API_BASE_URL: window.location.origin,
             serviceStats: {
-                users: 10000,
-                tasks: 25000,
-                hours: 50000
+                users: 1356,
+                tasks: 3257,
+                hours: 10365
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
@@ -2967,24 +3000,9 @@
                 counters.forEach(function(id) {
                     var element = document.getElementById(id);
                     if (element) {
-                        self.animateCounter(element, self.serviceStats[id.replace('Count', '')], 1500);
+                        element.textContent = self.serviceStats[id.replace('Count', '')].toLocaleString();
                     }
                 });
-            },
-
-            animateCounter: function(element, target, duration) {
-                var start = 0;
-                var increment = target / (duration / 16);
-                var current = start;
-                
-                var timer = setInterval(function() {
-                    current += increment;
-                    if (current >= target) {
-                        current = target;
-                        clearInterval(timer);
-                    }
-                    element.textContent = Math.floor(current).toLocaleString() + '+';
-                }, 16);
             },
 
             updateServiceStats: async function() {
@@ -2993,9 +3011,9 @@
                     if (response.ok) {
                         var result = await response.json();
                         if (result.success) {
-                            this.serviceStats.users = result.data.users.total_users || 10000;
-                            this.serviceStats.tasks = result.data.tasks.total_tasks || 25000;
-                            this.serviceStats.hours = Math.floor((result.data.tasks.total_tasks || 25000) * 2);
+                            this.serviceStats.users = result.data.users.total_users || 1356;
+                            this.serviceStats.tasks = result.data.tasks.total_tasks || 3257;
+                            this.serviceStats.hours = Math.floor((result.data.tasks.total_tasks || 3257) * 3);
                         }
                     }
                 } catch (error) {
@@ -3058,6 +3076,13 @@
                 if (searchInput) {
                     searchInput.addEventListener('input', function() {
                         app.filterServices();
+                    });
+                }
+                
+                var categorySearch = document.getElementById('categorySearch');
+                if (categorySearch) {
+                    categorySearch.addEventListener('input', function() {
+                        app.filterCategories();
                     });
                 }
                 
@@ -3227,22 +3252,21 @@
                 this.categories.slice(0, 4).forEach(function(category) {
                     var card = document.createElement('div');
                     card.className = 'card category-card';
-                    card.onclick = function() { self.selectCategory(category); };
+                    card.onclick = function() { self.navigateToPage('all-categories'); };
                     
                     var imageUrl = category.image_url ? 
                         self.getImageUrl(category.image_url, 'category') : 
                         self.createSvgFallback('category');
                     
-                    card.innerHTML = '<div class="category-image">' +
+                    // Круглое изображение для категорий на главной
+                    card.innerHTML = '<div class="category-image" style="height: 120px; border-radius: 50%; margin-bottom: 15px; overflow: hidden;">' +
                         '<img src="' + imageUrl + '" ' +
                             'alt="' + category.display_name + '"' +
-                            'loading="lazy">' +
-                        '</div>' +
-                        '<div class="category-icon" style="margin-top: -30px; position: relative; z-index: 3; text-align: center;">' +
-                            '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 2rem; color: var(--pastel-pink);"></i>' +
+                            'loading="lazy"' +
+                            'style="width: 100%; height: 100%; object-fit: cover;">' +
                         '</div>' +
                         '<h3>' + category.display_name + '</h3>' +
-                        '<p>' + category.description + '</p>' +
+                        '<p style="background: rgba(242, 221, 230, 0.1); padding: 10px; border-radius: 12px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; margin-top: 10px;">' + category.description + '</p>' +
                         '<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
                             '<span>' + (category.services_count || '0') + ' услуг</span>' +
                             '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
@@ -3334,7 +3358,8 @@
                     card.innerHTML = '<div class="category-image-container">' +
                         '<img src="' + imageUrl + '" ' +
                             'alt="' + category.display_name + '"' +
-                            'loading="lazy">' +
+                            'loading="lazy"' +
+                            'style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px 16px 0 0;">' +
                         '<div class="category-icon-badge">' +
                             '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
                         '</div>' +
@@ -3362,43 +3387,132 @@
                 this.selectedCategory = null;
             },
 
-            // ДОБАВЬТЕ ЭТИ ДВЕ ФУНКЦИИ ЗДЕСЬ:
+            // Функция для загрузки страницы категорий
+            loadAllCategoriesPage: async function() {
+                try {
+                    await this.loadCategories();
+                    this.renderAllCategories();
+                    
+                    // Скрываем кнопку поиска услуг
+                    var serviceSearch = document.getElementById('serviceSearch');
+                    if (serviceSearch) serviceSearch.style.display = 'none';
+                    // Показываем поиск категорий
+                    var categorySearch = document.getElementById('categorySearch');
+                    if (categorySearch) categorySearch.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки страницы категорий:', error);
+                    this.showNotification('Ошибка загрузки категорий', 'error');
+                }
+            },
+
+            // Функция рендеринга всех категорий
+            renderAllCategories: function() {
+                var container = document.getElementById('allCategoriesList');
+                if (!container) return;
+                
+                if (!this.categories || this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                var self = this;
+                this.categories.forEach(function(category) {
+                    var card = document.createElement('div');
+                    card.className = 'category-card-square';
+                    card.onclick = function() { 
+                        self.navigateToPage('all-services');
+                        self.selectCategoryForServices(category);
+                    };
+                    
+                    var imageUrl = category.image_url ? 
+                        self.getImageUrl(category.image_url, 'category') : 
+                        self.createSvgFallback('category');
+                    
+                    card.innerHTML = '<div class="category-image-container">' +
+                        '<img src="' + imageUrl + '" ' +
+                            'alt="' + category.display_name + '"' +
+                            'loading="lazy"' +
+                            'style="width: 100%; height: 100%; object-fit: cover; border-radius: 16px 16px 0 0;">' +
+                        '<div class="category-icon-badge">' +
+                            '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="category-content">' +
+                        '<h3 class="category-title">' + category.display_name + '</h3>' +
+                        '<p class="category-description">' + category.description + '</p>' +
+                        '<div class="category-footer">' +
+                            '<span class="services-count">' +
+                                '<i class="fas fa-list"></i>' +
+                                (category.services_count || 0) + ' услуг' +
+                            '</span>' +
+                            '<span class="select-service-btn">' +
+                                'Выбрать <i class="fas fa-arrow-right"></i>' +
+                            '</span>' +
+                        '</div>' +
+                    '</div>';
+                    
+                    container.appendChild(card);
+                });
+            },
+
+            // Функция фильтрации категорий
+            filterCategories: function() {
+                var searchTerm = document.getElementById('categorySearch').value.toLowerCase();
+                var container = document.getElementById('allCategoriesList');
+                
+                if (!container || !this.categories) return;
+                
+                var filteredCategories = this.categories.filter(function(category) {
+                    return category.display_name.toLowerCase().includes(searchTerm) ||
+                           category.description.toLowerCase().includes(searchTerm);
+                });
+                
+                if (filteredCategories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории по запросу "' + searchTerm + '" не найдены</p>' +
+                    '</div>';
+                } else {
+                    // Временно сохраняем отфильтрованные категории
+                    var tempCategories = this.categories;
+                    this.categories = filteredCategories;
+                    this.renderAllCategories();
+                    // Восстанавливаем все категории
+                    this.categories = tempCategories;
+                }
+            },
+
+            // Обновленная функция поиска услуг (ищет только по услугам)
             filterServices: function() {
                 var searchTerm = document.getElementById('serviceSearch').value.toLowerCase();
                 var container = document.getElementById('allServicesList');
                 
                 if (!container || !this.services) return;
                 
-                if (this.selectedCategory) {
-                    // Фильтрация услуг в выбранной категории
-                    var filteredServices = this.services.filter(function(service) {
-                        return service.name.toLowerCase().includes(searchTerm) ||
-                               service.description.toLowerCase().includes(searchTerm);
-                    });
-                    
-                    if (filteredServices.length === 0) {
-                        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                            '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
-                        '</div>';
-                    } else {
-                        this.renderServicesInCategory(filteredServices);
-                    }
+                // Только поиск по услугам
+                var filteredServices = this.services.filter(function(service) {
+                    return service.name.toLowerCase().includes(searchTerm) ||
+                           service.description.toLowerCase().includes(searchTerm);
+                });
+                
+                if (filteredServices.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
+                    '</div>';
                 } else {
-                    // Фильтрация категорий
-                    var filteredCategories = this.categories.filter(function(category) {
-                        return category.display_name.toLowerCase().includes(searchTerm) ||
-                               category.description.toLowerCase().includes(searchTerm);
-                    });
-                    
-                    if (filteredCategories.length === 0) {
-                        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                            '<p style="color: var(--graphite-medium);">Категории по запросу "' + searchTerm + '" не найдены</p>' +
-                        '</div>';
-                    } else {
-                        this.renderFilteredCategories(filteredCategories);
-                    }
+                    // Временно сохраняем отфильтрованные услуги
+                    var tempServices = this.services;
+                    this.services = filteredServices;
+                    this.renderServicesInCategory();
+                    // Восстанавливаем все услуги
+                    this.services = tempServices;
                 }
             },
 
@@ -4037,7 +4151,10 @@
                 if (this.currentUser) {
                     var firstLetter = this.currentUser.first_name ? this.currentUser.first_name.charAt(0).toUpperCase() : 'Г';
                     
-                    if (userAvatar) userAvatar.textContent = firstLetter;
+                    if (userAvatar) {
+                        userAvatar.style.display = 'flex';
+                        userAvatar.textContent = firstLetter;
+                    }
                     if (profileAvatar) profileAvatar.textContent = firstLetter;
                     if (profileName) profileName.textContent = this.currentUser.first_name || 'Пользователь';
                     if (profileEmail) profileEmail.textContent = this.currentUser.email || '';
@@ -4060,7 +4177,7 @@
                     this.updateProfileSettings();
                     
                 } else {
-                    if (userAvatar) userAvatar.textContent = 'Г';
+                    if (userAvatar) userAvatar.style.display = 'none';
                     if (profileAvatar) profileAvatar.textContent = 'Г';
                     if (profileName) profileName.textContent = 'Гость';
                     if (profileEmail) profileEmail.textContent = 'Войдите в аккаунт';
@@ -4079,6 +4196,20 @@
                     if (statTasks) statTasks.textContent = '0';
                     if (statRating) statRating.textContent = '0';
                     if (statBalance) statBalance.textContent = '0₽';
+                    
+                    // Убираем историю задач у гостя
+                    var container = document.getElementById('profileTasksList');
+                    if (container) {
+                        container.innerHTML = '<div class="empty-state">' +
+                            '<i class="fas fa-user empty-state-icon"></i>' +
+                            '<h3 class="empty-state-title">Войдите в аккаунт</h3>' +
+                            '<p class="empty-state-description">Войдите в аккаунт, чтобы видеть свои задачи</p>' +
+                            '<button class="btn btn-primary" onclick="window.app.showLoginModal()">' +
+                                '<i class="fas fa-sign-in-alt"></i>' +
+                                'Войти в аккаунт' +
+                            '</button>' +
+                        '</div>';
+                    }
                 }
             },
 
@@ -4165,6 +4296,9 @@
                 
                 settingsHTML += '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'guides\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-book" style="margin-right: 12px; color: var(--pastel-pink);"></i>Гайды' +
+                '</a>' +
+                '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'all-categories\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                    '<i class="fas fa-folder" style="margin-right: 12px; color: var(--pastel-pink);"></i>Категории' +
                 '</a>' +
                 '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'all-services\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-list" style="margin-right: 12px; color: var(--pastel-pink);"></i>Все услуги' +
@@ -5230,6 +5364,7 @@
                     switch(pageId) {
                         case 'home': this.loadHomePage(); break;
                         case 'all-services': this.loadAllServicesPage(); break;
+                        case 'all-categories': this.loadAllCategoriesPage(); break;
                         case 'profile': this.loadUserProfile(); break;
                         case 'tasks': this.loadUserTasks('all'); break;
                         case 'subscription': this.loadSubscriptionPage(); break;
@@ -5263,6 +5398,12 @@
                     tomorrow.setDate(tomorrow.getDate() + 1);
                     deadlineInput.min = new Date().toISOString().split('T')[0];
                     deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                }
+                
+                // Инициализируем поиск
+                var categorySearch = document.getElementById('categorySearch');
+                if (categorySearch) {
+                    categorySearch.style.display = 'none'; // По умолчанию скрыт
                 }
                 
                 // Мониторинг динамически создаваемых изображений
