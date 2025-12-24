@@ -1544,6 +1544,7 @@ app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async 
 });
 
 // Загрузка изображения категории - исправленная версия
+// Загрузка изображения категории
 app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmin']), uploadCategoryImage.single('image'), async (req, res) => {
     try {
         console.log('📤 Загрузка изображения категории...');
@@ -1557,15 +1558,6 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
         
         const fileUrl = `/uploads/categories/${req.file.filename}`;
         console.log(`✅ Изображение категории сохранено: ${fileUrl}`);
-        
-        // Если передан ID категории, обновляем её в БД
-        if (req.body.category_id) {
-            await db.run(
-                'UPDATE categories SET image_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                [fileUrl, req.body.category_id]
-            );
-            console.log(`✅ Изображение привязано к категории ID: ${req.body.category_id}`);
-        }
         
         res.json({
             success: true,
