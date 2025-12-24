@@ -3902,44 +3902,30 @@ continueToCategoryServices: function(categoryId) {
                 this.loadAllServicesPage();
             },
 
-           loadServicesForCategory: async function(category) {
+loadServicesForCategory: async function(category) {
     // Закрываем модальное окно
     this.closeCategoryDescriptionModal();
     
     console.log('DEBUG: Загрузка услуг для категории:', category);
-    console.log('DEBUG: ID категории:', category.id);
-    console.log('DEBUG: Название категории:', category.display_name);
-    
-    // Если пользователь не авторизован
-    if (!this.currentUser) {
-        this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
-        this.showLoginModal();
-        return;
-    }
-    
-    // Если подписка не активна
-    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-        this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
-        this.navigateToPage('subscription');
-        return;
-    }
     
     this.selectedCategory = category;
     
     try {
-        console.log('DEBUG: Отправка запроса к API...');
         var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-        
-        console.log('DEBUG: Получен ответ:', response);
         
         if (response && response.ok) {
             var result = await response.json();
-            console.log('DEBUG: Ответ от сервера:', result);
             
             if (result.success) {
                 this.services = result.data.services;
                 console.log('DEBUG: Услуги загружены:', this.services.length);
+                
+                // Рендерим услуги
                 this.renderServicesInCategory();
+                
+                // УБЕДИТЕСЬ, что вы НЕ вызываете loadAllServicesPage() здесь
+                // НЕ ДЕЛАЙТЕ это: this.loadAllServicesPage();
+                
                 return;
             } else {
                 console.error('DEBUG: Ошибка в ответе:', result.error);
@@ -3963,6 +3949,8 @@ continueToCategoryServices: function(categoryId) {
         } catch (fallbackError) {
             console.error('DEBUG: Fallback тоже не сработал:', fallbackError);
             this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
+            
+            // ТОЛЬКО в случае ошибки возвращаемся ко всем категориям
             this.loadAllServicesPage();
         }
     }
@@ -3980,13 +3968,30 @@ renderServicesInCategory: function() {
     // Проверяем существует ли selectedCategory
     if (!this.selectedCategory) {
         console.error('DEBUG: selectedCategory не определен');
-        console.error('DEBUG: Вероятно, произошла ошибка при загрузке категории');
-        this.showNotification('Ошибка загрузки категории', 'error');
-        this.loadAllServicesPage();
-        return;
+        console.error('DEBUG: current state:', {
+            selectedCategory: this.selectedCategory,
+            services: this.services
+        });
+        
+        // Если нет категории, но есть услуги - все равно показываем
+        if (this.services && this.services.length > 0) {
+            console.log('DEBUG: Показываю услуги без категории');
+            // Используем первую услугу для определения категории
+            const firstService = this.services[0];
+            // Пытаемся найти категорию по service.category_id
+            const foundCategory = this.categories.find(cat => cat.id === firstService.category_id);
+            if (foundCategory) {
+                this.selectedCategory = foundCategory;
+            }
+        } else {
+            this.showNotification('Выберите категорию сначала', 'warning');
+            this.loadAllServicesPage();
+            return;
+        }
     }
     
     console.log('DEBUG: Рендеринг услуг для категории:', this.selectedCategory.display_name);
+    console.log('DEBUG: Количество услуг:', this.services.length);
     
     if (!this.services || this.services.length === 0) {
         console.warn('DEBUG: Нет услуг для отображения');
@@ -4011,59 +4016,71 @@ renderServicesInCategory: function() {
     if (pageTitle) {
         pageTitle.textContent = this.selectedCategory.display_name;
     }
-                
-                container.className = 'square-grid';
-                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                    '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
-                        '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                            '<i class="fas fa-arrow-left"></i>' +
-                        '</button>' +
-                        '<h3 style="font-size: 1.5rem; font-weight: 600;">' + this.selectedCategory.display_name + '</h3>' +
-                        '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
-                            this.services.length + ' услуг' +
-                        '</span>' +
-                    '</div>' +
-                    '<p style="color: var(--graphite-medium); margin-bottom: 20px; padding-left: 48px;">' +
-                        this.selectedCategory.description +
-                    '</p>' +
-                '</div>';
-                
-                var self = this;
-                this.services.forEach(function(service) {
-                    var card = document.createElement('div');
-                    card.className = 'category-card-square';
-                    card.onclick = function() { self.selectService(service); };
-                    
-                    card.innerHTML = '<div class="category-image-container" style="border-radius: 50%; overflow: hidden;">' +
-                        '<img src="' + self.createSvgFallback('service') + '" ' +
-                            'alt="' + service.name + '"' +
-                            'loading="lazy"' +
-                            'style="width: 100%; height: 100%; object-fit: cover;"' +
-                            'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
-                        '<div class="category-icon-badge">' +
-                            '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="category-content">' +
-                        '<h3 class="category-title">' + service.name + '</h3>' +
-                        '<p class="category-description">' + service.description + '</p>' +
-                        '<div class="category-footer">' +
-                            '<span class="services-count">' +
-                                '<i class="fas fa-crown" style="color: var(--gold-metallic);"></i>' +
-                                'Включено в подписку' +
-                            '</span>' +
-                            '<span class="select-service-btn">' +
-                                'Выбрать <i class="fas fa-arrow-right"></i>' +
-                            '</span>' +
-                        '</div>' +
-                    '</div>';
-                    container.appendChild(card);
-                });
-                
-                // ПОКАЗЫВАЕМ кнопку "Назад ко всем категориям"
-                document.getElementById('backToCategoriesBtn').style.display = 'block';
-                document.getElementById('servicesPageTitle').textContent = this.selectedCategory.display_name;
-            },
+    
+    container.className = 'square-grid';
+    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+        '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
+            '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                '<i class="fas fa-arrow-left"></i>' +
+            '</button>' +
+            '<h3 style="font-size: 1.5rem; font-weight: 600;">' + this.selectedCategory.display_name + '</h3>' +
+            '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
+                this.services.length + ' услуг' +
+            '</span>' +
+        '</div>' +
+        '<p style="color: var(--graphite-medium); margin-bottom: 20px; padding-left: 48px;">' +
+            this.selectedCategory.description +
+        '</p>' +
+    '</div>';
+    
+    var self = this;
+    this.services.forEach(function(service) {
+        var card = document.createElement('div');
+        card.className = 'category-card-square';
+        card.onclick = function() { 
+            console.log('Выбрана услуга:', service.name);
+            self.selectService(service); 
+        };
+        
+        card.innerHTML = '<div class="category-image-container" style="border-radius: 50%; overflow: hidden;">' +
+            '<img src="' + self.createSvgFallback('service') + '" ' +
+                'alt="' + service.name + '"' +
+                'loading="lazy"' +
+                'style="width: 100%; height: 100%; object-fit: cover;"' +
+                'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
+            '<div class="category-icon-badge">' +
+                '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
+            '</div>' +
+        '</div>' +
+        '<div class="category-content">' +
+            '<h3 class="category-title">' + service.name + '</h3>' +
+            '<p class="category-description">' + service.description + '</p>' +
+            '<div class="category-footer">' +
+                '<span class="services-count">' +
+                    '<i class="fas fa-crown" style="color: var(--gold-metallic);"></i>' +
+                    'Включено в подписку' +
+                '</span>' +
+                '<span class="select-service-btn">' +
+                    'Выбрать <i class="fas fa-arrow-right"></i>' +
+                '</span>' +
+            '</div>' +
+        '</div>';
+        container.appendChild(card);
+    });
+    
+    // ПОКАЗЫВАЕМ кнопку "Назад ко всем категориям"
+    var backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) {
+        backBtn.style.display = 'block';
+        console.log('DEBUG: Показываем кнопку "Назад"');
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = this.selectedCategory.display_name;
+    }
+    
+    console.log('DEBUG: Рендеринг завершен успешно');
+},
 
             selectCategory: function(category) {
                 if (!this.currentUser) {
