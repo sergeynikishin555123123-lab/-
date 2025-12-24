@@ -400,21 +400,23 @@ const initDatabase = async () => {
         `);
 
         // Категории
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS categories (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNIQUE NOT NULL,
-                display_name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                icon TEXT NOT NULL,
-                image_url TEXT,
-                color TEXT DEFAULT '#FF6B8B',
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+// Категории
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        display_name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        admin_description TEXT,  -- ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        icon TEXT NOT NULL,
+        image_url TEXT,
+        color TEXT DEFAULT '#FF6B8B',
+        sort_order INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`);
         
         // Услуги
         await db.exec(`
@@ -581,21 +583,35 @@ const initDatabase = async () => {
             )
         `);
 
-        // FAQ
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS faq (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                question TEXT NOT NULL,
-                answer TEXT NOT NULL,
-                category TEXT DEFAULT 'general',
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+// FAQ
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS faq (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        category TEXT DEFAULT 'general',
+        sort_order INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`);
 
-        await db.exec('COMMIT');
+// Чат поддержки (добавить этот блок)
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS support_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        message TEXT NOT NULL,
+        sender_type TEXT NOT NULL CHECK(sender_type IN ('user', 'support')),
+        is_read INTEGER DEFAULT 0,
+        read_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+`);
+
+await db.exec('COMMIT');
         console.log('✅ Все таблицы созданы');
 
        // В функции initDatabase(), найдите вызов createInitialData():
@@ -824,31 +840,93 @@ const createInitialData = async () => {
         }
 
         // 4. Категории услуг с дефолтными изображениями
-        const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
-        if (!categoriesExist) {
-            const categories = [
-                ['home_and_household', 'Дом и быт', 'Уборка, готовка, уход за домом', '🏠', '/uploads/categories/home.jpg', '#FF6B8B', 1, 1],
-                ['family_and_children', 'Семья и дети', 'Няни, репетиторы, помощь с детьми', '👨‍👩‍👧‍👦', '/uploads/categories/family.jpg', '#3498DB', 2, 1],
-                ['beauty_and_health', 'Красота и здоровье', 'Маникюр, массаж, парикмахерские услуги', '💅', '/uploads/categories/beauty.jpg', '#9B59B6', 3, 1],
-                ['courses_and_education', 'Образование', 'Репетиторство, обучение, курсы', '🎓', '/uploads/categories/education.jpg', '#2ECC71', 4, 1],
-                ['shopping_and_delivery', 'Покупки и доставка', 'Покупка и доставка товаров', '🛒', '/uploads/categories/shopping.jpg', '#E74C3C', 5, 1],
-                ['events_and_organization', 'События и организация', 'Организация мероприятий и праздников', '🎉', '/uploads/categories/events.jpg', '#F39C12', 6, 1]
-            ];
+// 4. Категории услуг с дефолтными изображениями и описаниями
+const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
+if (!categoriesExist) {
+    const categories = [
+        // [name, display_name, description, admin_description, icon, image_url, color, sort_order, is_active]
+        [
+            'home_and_household', 
+            'Дом и быт', 
+            'Уборка, готовка, уход за домом',
+            'В эту категорию входят все бытовые услуги: от генеральной уборки до мелкого ремонта. Наши помощницы имеют опыт работы с разными типами помещений и используют профессиональную технику и экологичные средства.',
+            '🏠', 
+            '/uploads/categories/home.jpg', 
+            '#FF6B8B', 
+            1, 
+            1
+        ],
+        [
+            'family_and_children', 
+            'Семья и дети', 
+            'Няни, репетиторы, помощь с детьми',
+            'Категория включает услуги по уходу за детьми, помощь с уроками, развивающие занятия. Все помощницы имеют педагогическое образование и опыт работы с детьми разных возрастов.',
+            '👨‍👩‍👧‍👦', 
+            '/uploads/categories/family.jpg', 
+            '#3498DB', 
+            2, 
+            1
+        ],
+        [
+            'beauty_and_health', 
+            'Красота и здоровье', 
+            'Маникюр, массаж, парикмахерские услуги',
+            'Профессиональные услуги красоты на дому: маникюр, педикюр, массаж, стрижки. Мастера используют стерильные инструменты и профессиональную косметику премиум-класса.',
+            '💅', 
+            '/uploads/categories/beauty.jpg', 
+            '#9B59B6', 
+            3, 
+            1
+        ],
+        [
+            'courses_and_education', 
+            'Образование', 
+            'Репетиторство, обучение, курсы',
+            'Индивидуальные занятия по школьным предметам, подготовка к экзаменам, обучение иностранным языкам и компьютерной грамотности. Преподаватели с высшим образованием и опытом работы.',
+            '🎓', 
+            '/uploads/categories/education.jpg', 
+            '#2ECC71', 
+            4, 
+            1
+        ],
+        [
+            'shopping_and_delivery', 
+            'Покупки и доставка', 
+            'Покупка и доставка товаров',
+            'Помощь с покупками: продуктовые наборы, товары из магазинов, доставка документов и посылок. Помощницы внимательно относятся к спискам покупок и соблюдают все пожелания клиентов.',
+            '🛒', 
+            '/uploads/categories/shopping.jpg', 
+            '#E74C3C', 
+            5, 
+            1
+        ],
+        [
+            'events_and_organization', 
+            'События и организация', 
+            'Организация мероприятий и праздников',
+            'Организация дней рождений, корпоративов, детских праздников. Помощь в подготовке к мероприятиям: украшение помещения, составление меню, подбор развлечений.',
+            '🎉', 
+            '/uploads/categories/events.jpg', 
+            '#F39C12', 
+            6, 
+            1
+        ]
+    ];
 
-            for (const cat of categories) {
-                try {
-                    await db.run(
-                        `INSERT OR IGNORE INTO categories 
-                        (name, display_name, description, icon, image_url, color, sort_order, is_active) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                        cat
-                    );
-                } catch (error) {
-                    console.warn('Ошибка вставки категории:', error.message);
-                }
-            }
-            console.log('✅ Категории услуг созданы');
+    for (const cat of categories) {
+        try {
+            await db.run(
+                `INSERT OR IGNORE INTO categories 
+                (name, display_name, description, admin_description, icon, image_url, color, sort_order, is_active) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                cat
+            );
+        } catch (error) {
+            console.warn('Ошибка вставки категории:', error.message);
         }
+    }
+    console.log('✅ Категории услуг созданы с расширенными описаниями');
+}
 
         // 5. Услуги
         const servicesExist = await db.get("SELECT 1 FROM services LIMIT 1");
@@ -2916,6 +2994,93 @@ app.get('/api/categories/:id/services', async (req, res) => {
     }
 });
 
+// ==================== РАСШИРЕННЫЕ ОПИСАНИЯ КАТЕГОРИЙ ====================
+
+// Получение расширенного описания категории (для админа)
+app.get('/api/categories/:id/admin-description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        
+        const category = await db.get(
+            'SELECT id, display_name, admin_description FROM categories WHERE id = ?',
+            [categoryId]
+        );
+        
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                category: {
+                    id: category.id,
+                    display_name: category.display_name,
+                    admin_description: category.admin_description || ''
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения описания категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения описания категории'
+        });
+    }
+});
+
+// Обновление расширенного описания категории
+app.put('/api/categories/:id/admin-description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const { admin_description } = req.body;
+        
+        if (!categoryId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан ID категории'
+            });
+        }
+        
+        const category = await db.get(
+            'SELECT id FROM categories WHERE id = ?',
+            [categoryId]
+        );
+        
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        await db.run(
+            'UPDATE categories SET admin_description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [admin_description || null, categoryId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Описание категории обновлено',
+            data: {
+                category_id: categoryId,
+                admin_description: admin_description || ''
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления описания категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления описания категории'
+        });
+    }
+});
+
 // ==================== FAQ ====================
 app.get('/api/faq', async (req, res) => {
     try {
@@ -4375,6 +4540,103 @@ app.post('/api/tasks/:id/reviews', authMiddleware(['client']), async (req, res) 
         res.status(500).json({
             success: false,
             error: 'Ошибка оставления отзыва'
+        });
+    }
+});
+
+// ==================== ЧАТ ПОДДЕРЖКИ ====================
+
+// Получение сообщений чата поддержки
+app.get('/api/support/messages', authMiddleware(), async (req, res) => {
+    try {
+        const messages = await db.all(
+            `SELECT sm.*, 
+                    u.first_name as user_name,
+                    u.last_name as user_last_name
+             FROM support_messages sm
+             LEFT JOIN users u ON sm.user_id = u.id
+             WHERE sm.user_id = ?
+             ORDER BY sm.created_at ASC`,
+            [req.user.id]
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                messages: messages,
+                count: messages.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения сообщений поддержки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения сообщений поддержки'
+        });
+    }
+});
+
+// Отправка сообщения в поддержку
+app.post('/api/support/messages', authMiddleware(), async (req, res) => {
+    try {
+        const { message } = req.body;
+        
+        if (!message || message.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Сообщение не может быть пустым'
+            });
+        }
+        
+        const result = await db.run(
+            `INSERT INTO support_messages (user_id, message, sender_type) 
+             VALUES (?, ?, ?)`,
+            [req.user.id, message.trim(), 'user']
+        );
+        
+        const newMessage = await db.get(
+            `SELECT sm.*, u.first_name as user_name, u.last_name as user_last_name
+             FROM support_messages sm
+             LEFT JOIN users u ON sm.user_id = u.id
+             WHERE sm.id = ?`,
+            [result.lastID]
+        );
+        
+        // Отправляем уведомление админам о новом сообщении
+        const admins = await db.all(
+            "SELECT id FROM users WHERE role IN ('admin', 'superadmin', 'manager') AND is_active = 1"
+        );
+        
+        for (const admin of admins) {
+            await db.run(
+                `INSERT INTO notifications 
+                (user_id, type, title, message, related_id, related_type) 
+                VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    admin.id,
+                    'new_support_message',
+                    'Новое обращение в поддержку',
+                    `Пользователь ${req.user.first_name} отправил новое сообщение в поддержку.`,
+                    req.user.id,
+                    'support'
+                ]
+            );
+        }
+        
+        res.status(201).json({
+            success: true,
+            message: 'Сообщение отправлено в поддержку',
+            data: { 
+                message: newMessage
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отправки сообщения в поддержку:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отправки сообщения в поддержку'
         });
     }
 });
@@ -6159,6 +6421,169 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
         res.status(500).json({
             success: false,
             error: 'Ошибка создания пользователя'
+        });
+    }
+});
+
+// ==================== УПРАВЛЕНИЕ ПОДДЕРЖКОЙ (АДМИН) ====================
+
+// Админ: получение всех обращений в поддержку
+app.get('/api/admin/support/tickets', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { status = 'all', limit = 50 } = req.query;
+        
+        let query = `
+            SELECT DISTINCT u.id as user_id,
+                   u.first_name,
+                   u.last_name,
+                   u.phone,
+                   u.email,
+                   MAX(sm.created_at) as last_message_date,
+                   COUNT(sm.id) as message_count,
+                   SUM(CASE WHEN sm.sender_type = 'user' AND sm.is_read = 0 THEN 1 ELSE 0 END) as unread_count
+            FROM users u
+            JOIN support_messages sm ON u.id = sm.user_id
+            WHERE 1=1
+        `;
+        
+        const params = [];
+        
+        if (status === 'unread') {
+            query += ' AND EXISTS (SELECT 1 FROM support_messages sm2 WHERE sm2.user_id = u.id AND sm2.sender_type = "user" AND sm2.is_read = 0)';
+        }
+        
+        query += ' GROUP BY u.id ORDER BY last_message_date DESC LIMIT ?';
+        params.push(parseInt(limit));
+        
+        const tickets = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                tickets,
+                count: tickets.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения обращений в поддержку:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения обращений в поддержку'
+        });
+    }
+});
+
+// Админ: получение сообщений конкретного пользователя
+app.get('/api/admin/support/messages/:userId', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        
+        const messages = await db.all(
+            `SELECT sm.*, 
+                    u.first_name,
+                    u.last_name,
+                    u.phone
+             FROM support_messages sm
+             LEFT JOIN users u ON sm.user_id = u.id
+             WHERE sm.user_id = ?
+             ORDER BY sm.created_at ASC`,
+            [userId]
+        );
+        
+        // Помечаем сообщения пользователя как прочитанные
+        await db.run(
+            `UPDATE support_messages 
+             SET is_read = 1, read_at = CURRENT_TIMESTAMP 
+             WHERE user_id = ? AND sender_type = 'user' AND is_read = 0`,
+            [userId]
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                messages,
+                user: {
+                    id: userId,
+                    first_name: messages[0]?.first_name || '',
+                    last_name: messages[0]?.last_name || '',
+                    phone: messages[0]?.phone || ''
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения сообщений поддержки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения сообщений поддержки'
+        });
+    }
+});
+
+// Админ: отправка ответа пользователю
+app.post('/api/admin/support/messages/:userId', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const { message } = req.body;
+        
+        if (!message || message.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Сообщение не может быть пустым'
+            });
+        }
+        
+        const user = await db.get('SELECT id, first_name, last_name FROM users WHERE id = ?', [userId]);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        const result = await db.run(
+            `INSERT INTO support_messages (user_id, message, sender_type) 
+             VALUES (?, ?, ?)`,
+            [userId, message.trim(), 'support']
+        );
+        
+        // Отправляем уведомление пользователю
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                userId,
+                'support_reply',
+                'Ответ поддержки',
+                'Вы получили ответ от службы поддержки.',
+                userId,
+                'support'
+            ]
+        );
+        
+        const newMessage = await db.get(
+            `SELECT sm.*, u.first_name, u.last_name
+             FROM support_messages sm
+             LEFT JOIN users u ON sm.user_id = u.id
+             WHERE sm.id = ?`,
+            [result.lastID]
+        );
+        
+        res.status(201).json({
+            success: true,
+            message: 'Ответ отправлен пользователю',
+            data: { 
+                message: newMessage
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отправки ответа поддержки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отправки ответа поддержки'
         });
     }
 });
