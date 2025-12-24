@@ -3842,45 +3842,55 @@
                 this.showCategoryDescriptionModal(category);
             },
 
-            showCategoryDescriptionModal: function(category) {
-                // Создаем модальное окно с описанием категории
-                var modal = document.createElement('div');
-                modal.className = 'modal active';
-                modal.id = 'categoryDescriptionModal';
-                modal.style.display = 'flex';
-                
-                modal.innerHTML = `
-                    <div class="modal-content" style="max-width: 500px;">
-                        <h3 class="modal-title">${category.display_name}</h3>
-                        <div style="text-align: center; margin: 20px 0;">
-                            <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
-                                <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
-                            </div>
-                            <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
-                                ${category.description}
-                            </p>
-                            ${category.admin_description ? `
-                                <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
-                                    <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
-                                        ${category.admin_description}
-                                    </p>
-                                </div>
-                            ` : ''}
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-top: 20px;">
-                            <button class="btn btn-secondary" onclick="window.app.closeCategoryDescriptionModal()" style="flex: 1;">
-                                Отмена
-                            </button>
-                            <button class="btn btn-primary" onclick="window.app.loadServicesForCategory(${JSON.stringify(category).replace(/"/g, '&quot;')})" style="flex: 1;">
-                                Продолжить
-                                <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                            </button>
-                        </div>
+          showCategoryDescriptionModal: function(category) {
+    // Создаем модальное окно с описанием категории
+    var modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'categoryDescriptionModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 class="modal-title">${category.display_name}</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                    <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
+                </div>
+                <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
+                    ${category.description}
+                </p>
+                ${category.admin_description ? `
+                    <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
+                        <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
+                            ${category.admin_description}
+                        </p>
                     </div>
-                `;
-                
-                document.body.appendChild(modal);
-            },
+                ` : ''}
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="window.app.closeCategoryDescriptionModal()" style="flex: 1;">
+                    Отмена
+                </button>
+                <button class="btn btn-primary" id="continueCategoryBtn" style="flex: 1;">
+                    Продолжить
+                    <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Добавляем обработчик для кнопки "Продолжить"
+    setTimeout(() => {
+        const continueBtn = document.getElementById('continueCategoryBtn');
+        if (continueBtn) {
+            continueBtn.onclick = () => {
+                this.loadServicesForCategory(category);
+            };
+        }
+    }, 100);
+},
 
             closeCategoryDescriptionModal: function() {
                 var modal = document.getElementById('categoryDescriptionModal');
@@ -3891,81 +3901,94 @@
                 this.loadAllServicesPage();
             },
 
-            loadServicesForCategory: async function(category) {
-                // Закрываем модальное окно
-                this.closeCategoryDescriptionModal();
-                
-                console.log('DEBUG: Загрузка услуг для категории:', category);
-                
-                // Если пользователь не авторизован
-                if (!this.currentUser) {
-                    this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
-                    this.showLoginModal();
-                    return;
-                }
-                
-                // Если подписка не активна
-                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-                    this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
-                    this.navigateToPage('subscription');
-                    return;
-                }
-                
-                this.selectedCategory = category;
-                
-                try {
-                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-                    
-                    if (response && response.ok) {
-                        var result = await response.json();
-                        console.log('DEBUG: Ответ от сервера:', result);
-                        
-                        if (result.success) {
-                            this.services = result.data.services;
-                            console.log('DEBUG: Услуги загружены:', this.services.length);
-                            this.renderServicesInCategory();
-                            return;
-                        } else {
-                            console.error('DEBUG: Ошибка в ответе:', result.error);
-                            throw new Error(result.error || 'Ошибка загрузки услуг');
-                        }
-                    } else {
-                        console.error('DEBUG: Ошибка HTTP:', response ? response.status : 'Нет ответа');
-                        throw new Error('Ошибка сети при загрузке услуг');
-                    }
-                    
-                } catch (error) {
-                    console.error('DEBUG: Исключение при загрузке услуг:', error);
-                    
-                    // Fallback если API не сработал
-                    try {
-                        this.services = this.allServices.filter(function(service) {
-                            return service.category_id === category.id;
-                        });
-                        console.log('DEBUG: Fallback услуги:', this.services.length);
-                        this.renderServicesInCategory();
-                    } catch (fallbackError) {
-                        console.error('DEBUG: Fallback тоже не сработал:', fallbackError);
-                        this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
-                        this.loadAllServicesPage();
-                    }
-                }
-            },
-
+           loadServicesForCategory: async function(category) {
+    // Закрываем модальное окно
+    this.closeCategoryDescriptionModal();
+    
+    console.log('DEBUG: Загрузка услуг для категории:', category);
+    console.log('DEBUG: ID категории:', category.id);
+    console.log('DEBUG: Название категории:', category.display_name);
+    
+    // Если пользователь не авторизован
+    if (!this.currentUser) {
+        this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
+        this.showLoginModal();
+        return;
+    }
+    
+    // Если подписка не активна
+    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+        this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
+        this.navigateToPage('subscription');
+        return;
+    }
+    
+    this.selectedCategory = category;
+    
+    try {
+        console.log('DEBUG: Отправка запроса к API...');
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
+        
+        console.log('DEBUG: Получен ответ:', response);
+        
+        if (response && response.ok) {
+            var result = await response.json();
+            console.log('DEBUG: Ответ от сервера:', result);
+            
+            if (result.success) {
+                this.services = result.data.services;
+                console.log('DEBUG: Услуги загружены:', this.services.length);
+                this.renderServicesInCategory();
+                return;
+            } else {
+                console.error('DEBUG: Ошибка в ответе:', result.error);
+                throw new Error(result.error || 'Ошибка загрузки услуг');
+            }
+        } else {
+            console.error('DEBUG: Ошибка HTTP:', response ? response.status : 'Нет ответа');
+            throw new Error('Ошибка сети при загрузке услуг');
+        }
+        
+    } catch (error) {
+        console.error('DEBUG: Исключение при загрузке услуг:', error);
+        
+        // Fallback если API не сработал
+        try {
+            this.services = this.allServices.filter(function(service) {
+                return service.category_id === category.id;
+            });
+            console.log('DEBUG: Fallback услуги:', this.services.length);
+            this.renderServicesInCategory();
+        } catch (fallbackError) {
+            console.error('DEBUG: Fallback тоже не сработал:', fallbackError);
+            this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
+            this.loadAllServicesPage();
+        }
+    }
+},
+            
 renderServicesInCategory: function() {
     var container = document.getElementById('allServicesList');
     var pageTitle = document.querySelector('#all-services-page .section-title');
     
-    if (!container) return;
+    if (!container) {
+        console.error('DEBUG: Контейнер allServicesList не найден');
+        return;
+    }
     
     // Проверяем существует ли selectedCategory
     if (!this.selectedCategory) {
         console.error('DEBUG: selectedCategory не определен');
+        console.error('DEBUG: Вероятно, произошла ошибка при загрузке категории');
+        this.showNotification('Ошибка загрузки категории', 'error');
         this.loadAllServicesPage();
         return;
     }
     
+    console.log('DEBUG: Рендеринг услуг для категории:', this.selectedCategory.display_name);
+    
     if (!this.services || this.services.length === 0) {
+        console.warn('DEBUG: Нет услуг для отображения');
         container.className = 'square-grid';
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
             '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
