@@ -1131,6 +1131,10 @@
                 <i class="fas fa-money-bill-wave"></i>
                 <span>Транзакции</span>
             </button>
+            <button class="admin-nav-btn" data-section="support-chats">
+                <i class="fas fa-comments"></i>
+                <span>Чат поддержки</span>
+            </button>
             <button class="admin-nav-btn" data-section="settings">
                 <i class="fas fa-cog"></i>
                 <span>Настройки</span>
@@ -1443,6 +1447,27 @@
                 </div>
             </section>
             
+            <!-- Чат поддержки -->
+            <section id="support-chats" class="admin-section">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3><i class="fas fa-comments"></i> Чаты поддержки</h3>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" id="unreadOnly">
+                            <span style="font-size: 0.85rem;">Только с непрочитанными</span>
+                        </label>
+                    </div>
+                    
+                    <div id="supportChatsList">
+                        <div class="loader"></div>
+                    </div>
+                </div>
+                
+                <div class="mobile-cards-container" id="supportChatsMobile">
+                    <!-- Мобильные карточки чатов -->
+                </div>
+            </section>
+            
             <!-- Настройки -->
             <section id="settings" class="admin-section">
                 <div class="table-container">
@@ -1523,7 +1548,7 @@
                         </button>
                     </div>
                 </div>
-                            <!-- Мобильный контейнер для настроек -->
+                <!-- Мобильный контейнер для настроек -->
                 <div class="mobile-cards-container" id="settingsMobile">
                     <!-- Мобильные карточки настроек будут генерироваться здесь -->
                 </div>
@@ -1613,7 +1638,7 @@
     
     <!-- Добавление/редактирование категории -->
     <div class="modal" id="categoryModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
                 <h3 class="modal-title" id="categoryModalTitle">Добавить категорию</h3>
                 <button class="modal-close" id="closeCategoryModal">
@@ -1627,26 +1652,59 @@
                     <div class="form-group">
                         <label for="categoryName">Техническое имя *</label>
                         <input type="text" id="categoryName" class="form-input" required 
-                               placeholder="cleaning, cooking, etc.">
+                               placeholder="home_and_household, family_and_children, etc.">
+                        <small style="color: var(--graphite-medium);">Только латинские буквы и нижние подчеркивания</small>
                     </div>
                     
                     <div class="form-group">
                         <label for="categoryDisplayName">Отображаемое имя *</label>
                         <input type="text" id="categoryDisplayName" class="form-input" required 
-                               placeholder="Уборка, Готовка и т.д.">
+                               placeholder="Дом и быт, Семья и дети и т.д.">
                     </div>
                     
                     <div class="form-group">
-                        <label for="categoryDescription">Описание *</label>
+                        <label for="categoryDescription">Краткое описание *</label>
                         <textarea id="categoryDescription" class="form-input" required 
-                                  placeholder="Краткое описание категории" rows="3"></textarea>
+                                  placeholder="Краткое описание для карточки категории" 
+                                  rows="2"
+                                  style="resize: vertical;"></textarea>
+                    </div>
+                    
+                    <!-- ДОБАВЛЕНО: Расширенное описание для всплывающего окна -->
+                    <div class="form-group">
+                        <label for="categoryAdminDescription">
+                            <span>Расширенное описание (для всплывающего окна) *</span>
+                            <span style="color: var(--info); font-size: 0.8rem; margin-left: 8px;">
+                                <i class="fas fa-info-circle"></i> Будет показано клиентам при выборе категории
+                            </span>
+                        </label>
+                        <textarea id="categoryAdminDescription" class="form-input" required 
+                                  placeholder="Подробное описание категории, которое увидит клиент во всплывающем окне. 
+Можно использовать HTML-теги для форматирования.
+Например: &lt;strong&gt;Жирный текст&lt;/strong&gt;, &lt;ul&gt;&lt;li&gt;Список&lt;/li&gt;&lt;/ul&gt;" 
+                                  rows="6"
+                                  style="resize: vertical;"></textarea>
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                            <small style="color: var(--graphite-medium);">
+                                <i class="fas fa-lightbulb"></i> Используйте подробное описание преимуществ и особенностей
+                            </small>
+                            <small style="color: var(--graphite-medium);">
+                                Длина: <span id="descriptionCounter">0</span> символов
+                            </small>
+                        </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
                             <label for="categoryIcon">Иконка (FontAwesome) *</label>
-                            <input type="text" id="categoryIcon" class="form-input" required 
-                                   placeholder="fas fa-broom">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <input type="text" id="categoryIcon" class="form-input" required 
+                                       placeholder="fas fa-broom" style="flex: 1;">
+                                <div id="iconPreview" style="font-size: 1.5rem; color: var(--gold-metallic); 
+                                     width: 40px; text-align: center;">
+                                    <i class="fas fa-question"></i>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="categoryImageUpload">Изображение категории</label>
@@ -1655,18 +1713,21 @@
                             <div id="categoryImagePreview" style="margin-top: 8px;"></div>
                             <small style="color: var(--graphite-medium);">Рекомендуемый размер: 400×200px</small>
                         </div>
+                    </div>
+                    
+                    <div class="form-row">
                         <div class="form-group">
                             <label for="categoryColor">Цвет</label>
                             <input type="color" id="categoryColor" class="form-input" value="#C5A880" 
                                    style="height: 40px; width: 100%; padding: 5px;">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
                         <div class="form-group">
                             <label for="categorySortOrder">Порядок сортировки</label>
                             <input type="number" id="categorySortOrder" class="form-input" value="0" min="0">
                         </div>
+                    </div>
+                    
+                    <div class="form-row">
                         <div class="form-group">
                             <label style="display: block; margin-bottom: 6px;">Статус</label>
                             <div style="display: flex; gap: 16px;">
@@ -1677,6 +1738,15 @@
                                 <label style="display: flex; align-items: center; gap: 6px;">
                                     <input type="radio" name="categoryStatus" value="inactive">
                                     <span>Неактивна</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 6px;">Особенности</label>
+                            <div style="display: flex; gap: 16px;">
+                                <label style="display: flex; align-items: center; gap: 6px;">
+                                    <input type="checkbox" id="categoryIsPopular">
+                                    <span>Популярная категория</span>
                                 </label>
                             </div>
                         </div>
@@ -1723,6 +1793,15 @@
                         <label for="serviceDescription">Описание *</label>
                         <textarea id="serviceDescription" class="form-input" required 
                                   placeholder="Подробное описание услуги" rows="4"></textarea>
+                    </div>
+                    
+                    <!-- ДОБАВЛЕННО: Загрузка изображения -->
+                    <div class="form-group">
+                        <label for="serviceImageUpload">Изображение услуги</label>
+                        <input type="file" id="serviceImageUpload" class="form-input" 
+                               accept="image/*" style="padding: 8px;">
+                        <div id="serviceImagePreview" style="margin-top: 8px;"></div>
+                        <small style="color: var(--graphite-medium);">Рекомендуемый размер: 400×300px</small>
                     </div>
                     
                     <div class="form-row">
@@ -1888,6 +1967,61 @@
         </div>
     </div>
     
+    <!-- Модальное окно для редактирования описания категории -->
+    <div class="modal" id="descriptionModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="descriptionModalTitle">Редактировать описание категории</h3>
+                <button class="modal-close" id="closeDescriptionModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="descriptionModalContent">
+                    <!-- Контент будет загружен динамически -->
+                    <div class="loader"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDescriptionModal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveDescriptionBtn">
+                    <i class="fas fa-save"></i>
+                    Сохранить описание
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно чата поддержки -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="chatModalTitle">Чат с пользователем</h3>
+                <button class="modal-close" id="closeChatModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <div id="chatContainer" style="height: 400px; overflow-y: auto; padding: 20px; background: var(--ivory-bg);">
+                    <div class="loader"></div>
+                </div>
+                
+                <div style="padding: 20px; border-top: 1px solid rgba(61, 61, 61, 0.08);">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="chatMessageInput" 
+                               class="form-input" 
+                               placeholder="Введите сообщение..."
+                               style="flex: 1;">
+                        <button class="btn btn-primary" id="sendChatMessageBtn">
+                            <i class="fas fa-paper-plane"></i>
+                            Отправить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Логин модалка -->
     <div class="modal active" id="loginModal">
         <div class="modal-content" style="max-width: 400px;">
@@ -1943,6 +2077,8 @@
         let currentToken = localStorage.getItem('adminToken');
         let debounceTimer;
         let isMobile = window.innerWidth <= 767;
+        let currentChatUserId = null;
+        let currentEditingCategoryId = null;
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -2035,6 +2171,7 @@
             // Загрузка изображений
             const logoUpload = document.getElementById('logoUpload');
             const categoryImageUpload = document.getElementById('categoryImageUpload');
+            const serviceImageUpload = document.getElementById('serviceImageUpload');
             
             if (logoUpload) {
                 logoUpload.addEventListener('change', function(e) {
@@ -2045,6 +2182,12 @@
             if (categoryImageUpload) {
                 categoryImageUpload.addEventListener('change', function(e) {
                     previewImage(this, 'categoryImagePreview');
+                });
+            }
+            
+            if (serviceImageUpload) {
+                serviceImageUpload.addEventListener('change', function(e) {
+                    previewImage(this, 'serviceImagePreview');
                 });
             }
             
@@ -2074,6 +2217,35 @@
             
             // Роль пользователя - показ/скрытие подписки
             document.getElementById('userRoleSelect').addEventListener('change', updateSubscriptionVisibility);
+            
+            // Чат поддержки
+            document.getElementById('unreadOnly').addEventListener('change', () => loadSupportChats());
+            document.getElementById('sendChatMessageBtn').addEventListener('click', sendSupportMessage);
+            document.getElementById('chatMessageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendSupportMessage();
+                }
+            });
+            document.getElementById('closeChatModal').addEventListener('click', () => closeModal('chatModal'));
+            
+            // Редактирование описания категории
+            document.getElementById('closeDescriptionModal').addEventListener('click', () => closeModal('descriptionModal'));
+            document.getElementById('cancelDescriptionModal').addEventListener('click', () => closeModal('descriptionModal'));
+            document.getElementById('saveDescriptionBtn').addEventListener('click', saveCategoryDescription);
+            
+            // Счетчик символов для описания
+            document.getElementById('categoryAdminDescription').addEventListener('input', function() {
+                document.getElementById('descriptionCounter').textContent = this.value.length;
+            });
+            
+            // Предпросмотр иконки
+            document.getElementById('categoryIcon').addEventListener('input', function() {
+                const preview = document.getElementById('iconPreview');
+                const iconClass = this.value.trim();
+                if (iconClass) {
+                    preview.innerHTML = `<i class="${iconClass}"></i>`;
+                }
+            });
             
             // Автоматическое определение мобильного устройства и переключение
             window.addEventListener('resize', function() {
@@ -2319,6 +2491,9 @@
                 case 'transactions':
                     loadTransactions();
                     break;
+                case 'support-chats':
+                    loadSupportChats();
+                    break;
                 case 'settings':
                     loadSettings();
                     break;
@@ -2481,52 +2656,51 @@
             }
         }
         
-       async function loadUsers() {
-    try {
-        showLoading('Загрузка пользователей...');
-        
-        const roleFilter = document.getElementById('userRoleFilter').value;
-        const statusFilter = document.getElementById('userStatusFilter').value;
-        const search = document.getElementById('userSearch').value;
-        
-        // Собираем параметры для запроса
-        const params = new URLSearchParams();
-        if (roleFilter !== 'all') params.append('role', roleFilter);
-        if (statusFilter !== 'all') params.append('is_active', statusFilter === 'active' ? 'active' : 'inactive');
-        if (search) params.append('search', search);
-        
-        const url = `/api/admin/users${params.toString() ? '?' + params.toString() : ''}`;
-        console.log('📞 Запрос пользователей:', url);
-        
-        const response = await fetch(url, {
-            headers: {
-                'Authorization': `Bearer ${currentToken}`
+        async function loadUsers() {
+            try {
+                showLoading('Загрузка пользователей...');
+                
+                const roleFilter = document.getElementById('userRoleFilter').value;
+                const statusFilter = document.getElementById('userStatusFilter').value;
+                const search = document.getElementById('userSearch').value;
+                
+                // Собираем параметры для запроса
+                const params = new URLSearchParams();
+                if (roleFilter !== 'all') params.append('role', roleFilter);
+                if (statusFilter !== 'all') params.append('is_active', statusFilter === 'active' ? 'active' : 'inactive');
+                if (search) params.append('search', search);
+                
+                const url = `/api/admin/users${params.toString() ? '?' + params.toString() : ''}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderUsers(data.data.users);
+                    if (isMobile) {
+                        renderMobileCards(data.data.users, 'usersMobile', 'user');
+                    }
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки пользователей');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+                showNotification('Ошибка загрузки пользователей: ' + error.message, 'error');
+                document.getElementById('usersTable').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                hideLoading();
             }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            renderUsers(data.data.users);
-            if (isMobile) {
-                renderMobileCards(data.data.users, 'usersMobile', 'user');
-            }
-        } else {
-            throw new Error(data.error || 'Ошибка загрузки пользователей');
         }
-    } catch (error) {
-        console.error('Ошибка загрузки пользователей:', error);
-        showNotification('Ошибка загрузки пользователей: ' + error.message, 'error');
-        document.getElementById('usersTable').innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>${error.message}</p>
-            </div>
-        `;
-    } finally {
-        hideLoading();
-    }
-}
         
         function renderUsers(users) {
             document.getElementById('usersCount').textContent = `${users.length} пользователей`;
@@ -2932,172 +3106,172 @@
             }
         }
         
-async function editUser(userId) {
-    try {
-        showLoading('Загрузка данных пользователя...');
-        
-        const response = await fetch(`/api/admin/users/${userId}`, {
-            headers: {
-                'Authorization': `Bearer ${currentToken}`
+        async function editUser(userId) {
+            try {
+                showLoading('Загрузка данных пользователя...');
+                
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                if (response.status === 403) {
+                    throw new Error('Недостаточно прав для просмотра пользователя');
+                }
+                
+                if (response.status === 404) {
+                    throw new Error('Пользователь не найден');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const user = data.data;
+                    
+                    document.getElementById('userModalTitle').textContent = 'Редактировать пользователя';
+                    document.getElementById('userId').value = user.id;
+                    document.getElementById('userEmail').value = user.email || '';
+                    document.getElementById('userFirstName').value = user.first_name || '';
+                    document.getElementById('userLastName').value = user.last_name || '';
+                    document.getElementById('userPhone').value = user.phone || '+79991112233';
+                    document.getElementById('userRoleSelect').value = user.role || 'client';
+                    
+                    // Для клиентов заполняем подписку
+                    if (user.role === 'client') {
+                        document.getElementById('userSubscription').value = user.subscription_plan || 'essential';
+                    }
+                    
+                    document.getElementById('userPhoneVerified').checked = user.phone_verified == 1;
+                    document.getElementById('userPassword').value = '';
+                    document.getElementById('userPassword').placeholder = 'Оставьте пустым чтобы не менять';
+                    document.getElementById('userPassword').required = false;
+                    
+                    updateSubscriptionVisibility();
+                    showModal('userModal');
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки пользователя');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки пользователя:', error.message);
+                showNotification('Ошибка загрузки пользователя: ' + error.message, 'error');
+            } finally {
+                hideLoading();
             }
-        });
-        
-        if (response.status === 403) {
-            throw new Error('Недостаточно прав для просмотра пользователя');
         }
-        
-        if (response.status === 404) {
-            throw new Error('Пользователь не найден');
-        }
-        
-        const data = await response.json();
-        
-        if (data.success && data.data) {
-            const user = data.data;
-            
-            document.getElementById('userModalTitle').textContent = 'Редактировать пользователя';
-            document.getElementById('userId').value = user.id;
-            document.getElementById('userEmail').value = user.email || '';
-            document.getElementById('userFirstName').value = user.first_name || '';
-            document.getElementById('userLastName').value = user.last_name || '';
-            document.getElementById('userPhone').value = user.phone || '+79991112233';
-            document.getElementById('userRoleSelect').value = user.role || 'client';
-            
-            // Для клиентов заполняем подписку
-            if (user.role === 'client') {
-                document.getElementById('userSubscription').value = user.subscription_plan || 'essential';
-            }
-            
-            document.getElementById('userPhoneVerified').checked = user.phone_verified == 1;
-            document.getElementById('userPassword').value = '';
-            document.getElementById('userPassword').placeholder = 'Оставьте пустым чтобы не менять';
-            document.getElementById('userPassword').required = false;
-            
-            updateSubscriptionVisibility();
-            showModal('userModal');
-        } else {
-            throw new Error(data.error || 'Ошибка загрузки пользователя');
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки пользователя:', error.message);
-        showNotification('Ошибка загрузки пользователя: ' + error.message, 'error');
-    } finally {
-        hideLoading();
-    }
-}
         
         async function saveUser() {
-    const id = document.getElementById('userId').value;
-    const phone = document.getElementById('userPhone').value;
-    const email = document.getElementById('userEmail').value;
-    const password = document.getElementById('userPassword').value;
-    const first_name = document.getElementById('userFirstName').value;
-    const last_name = document.getElementById('userLastName').value;
-    const role = document.getElementById('userRoleSelect').value;
-    const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
-    const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
-    
-    // Валидация полей
-    if (!phone || !first_name || !role || (role === 'client' && !email)) {
-        showNotification('Заполните обязательные поля: телефон, имя, роль' + (role === 'client' ? ', email' : ''), 'error');
-        return;
-    }
-    
-    if (!id && !password) {
-        showNotification('Для нового пользователя укажите пароль', 'error');
-        return;
-    }
-    
-    try {
-        showLoading('Сохранение пользователя...');
-        
-        // Формируем данные пользователя
-        const userData = {
-            phone: phone.replace(/\D/g, ''), // Очищаем телефон от нецифровых символов
-            email: email || (role === 'client' ? `${phone.replace(/\D/g, '')}@example.com` : null),
-            first_name,
-            last_name: last_name || '',
-            role,
-            phone_verified,
-            email_verified: email ? 1 : 0,
-            is_active: 1
-        };
-        
-        // Добавляем пароль для нового пользователя
-        if (!id && password) {
-            userData.password = password;
-        }
-        
-        // Для клиентов добавляем подписку
-        if (role === 'client') {
-            userData.subscription_plan = subscription_plan || 'essential';
-            userData.subscription_status = 'active';
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            userData.subscription_expires = expiryDate.toISOString().split('T')[0];
-            userData.initial_fee_paid = 1;
-        }
-        
-        // Для исполнителей
-        if (role === 'performer') {
-            userData.performer_status = 'pending'; // или 'active' в зависимости от вашей логики
-            userData.balance = 0;
-        }
-        
-        const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
-        const method = id ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            },
-            body: JSON.stringify(userData)
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showNotification('Пользователь успешно сохранен', 'success');
-            closeModal('userModal');
+            const id = document.getElementById('userId').value;
+            const phone = document.getElementById('userPhone').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            const first_name = document.getElementById('userFirstName').value;
+            const last_name = document.getElementById('userLastName').value;
+            const role = document.getElementById('userRoleSelect').value;
+            const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
+            const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
             
-            // Автоматически создаем тестовые данные для входа
-            if (!id) {
-                // Для новых пользователей показываем данные для входа
-                const loginInfo = `
-                    <div style="background: var(--pink-light); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                        <strong>Данные для входа:</strong><br>
-                        📱 Телефон: ${phone}<br>
-                        🔐 Пароль: ${password}<br>
-                        🚪 Ссылка: <a href="/login" target="_blank">/login</a>
-                    </div>
-                `;
+            // Валидация полей
+            if (!phone || !first_name || !role || (role === 'client' && !email)) {
+                showNotification('Заполните обязательные поля: телефон, имя, роль' + (role === 'client' ? ', email' : ''), 'error');
+                return;
+            }
+            
+            if (!id && !password) {
+                showNotification('Для нового пользователя укажите пароль', 'error');
+                return;
+            }
+            
+            try {
+                showLoading('Сохранение пользователя...');
                 
-                // Можно вывести alert или добавить информацию в notification
-                setTimeout(() => {
-                    showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
-                }, 500);
-            }
-            
-            loadUsers();
-        } else {
-            // Обрабатываем специфические ошибки
-            if (data.error && data.error.includes('уже существует')) {
-                throw new Error('Пользователь с таким телефоном уже существует');
-            } else if (data.error && data.error.includes('email')) {
-                throw new Error('Пользователь с таким email уже существует');
-            } else {
-                throw new Error(data.error || 'Ошибка сохранения пользователя');
+                // Формируем данные пользователя
+                const userData = {
+                    phone: phone.replace(/\D/g, ''), // Очищаем телефон от нецифровых символов
+                    email: email || (role === 'client' ? `${phone.replace(/\D/g, '')}@example.com` : null),
+                    first_name,
+                    last_name: last_name || '',
+                    role,
+                    phone_verified,
+                    email_verified: email ? 1 : 0,
+                    is_active: 1
+                };
+                
+                // Добавляем пароль для нового пользователя
+                if (!id && password) {
+                    userData.password = password;
+                }
+                
+                // Для клиентов добавляем подписку
+                if (role === 'client') {
+                    userData.subscription_plan = subscription_plan || 'essential';
+                    userData.subscription_status = 'active';
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + 30);
+                    userData.subscription_expires = expiryDate.toISOString().split('T')[0];
+                    userData.initial_fee_paid = 1;
+                }
+                
+                // Для исполнителей
+                if (role === 'performer') {
+                    userData.performer_status = 'pending'; // или 'active' в зависимости от вашей логики
+                    userData.balance = 0;
+                }
+                
+                const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Пользователь успешно сохранен', 'success');
+                    closeModal('userModal');
+                    
+                    // Автоматически создаем тестовые данные для входа
+                    if (!id) {
+                        // Для новых пользователей показываем данные для входа
+                        const loginInfo = `
+                            <div style="background: var(--pink-light); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                                <strong>Данные для входа:</strong><br>
+                                📱 Телефон: ${phone}<br>
+                                🔐 Пароль: ${password}<br>
+                                🚪 Ссылка: <a href="/login" target="_blank">/login</a>
+                            </div>
+                        `;
+                        
+                        // Можно вывести alert или добавить информацию в notification
+                        setTimeout(() => {
+                            showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
+                        }, 500);
+                    }
+                    
+                    loadUsers();
+                } else {
+                    // Обрабатываем специфические ошибки
+                    if (data.error && data.error.includes('уже существует')) {
+                        throw new Error('Пользователь с таким телефоном уже существует');
+                    } else if (data.error && data.error.includes('email')) {
+                        throw new Error('Пользователь с таким email уже существует');
+                    } else {
+                        throw new Error(data.error || 'Ошибка сохранения пользователя');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения пользователя:', error);
+                showNotification(error.message, 'error');
+            } finally {
+                hideLoading();
             }
         }
-    } catch (error) {
-        console.error('Ошибка сохранения пользователя:', error);
-        showNotification(error.message, 'error');
-    } finally {
-        hideLoading();
-    }
-}
         
         async function deleteUser(userId) {
             if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
@@ -3130,127 +3304,158 @@ async function editUser(userId) {
             }
         }
         
-       async function loadCategories() {
-    try {
-        showLoading('Загрузка категорий...');
-        
-        const response = await fetch('/api/admin/categories', {
-            headers: {
-                'Authorization': `Bearer ${currentToken}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            renderCategories(data.data.categories);
-            if (isMobile) {
-                renderMobileCategories(data.data.categories);
-            }
-        } else {
-            throw new Error(data.error || 'Ошибка загрузки категорий');
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки категорий:', error);
-        showNotification('Ошибка загрузки категорий', 'error');
-        document.getElementById('categoriesList').innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <p>Ошибка загрузки категорий</p>
-            </div>
-        `;
-    } finally {
-        hideLoading();
-    }
-}
-        
-       function renderCategories(categories) {
-    const statusFilter = document.getElementById('categoryStatusFilter').value;
-    
-    let filteredCategories = categories;
-    if (statusFilter !== 'all') {
-        filteredCategories = categories.filter(cat => 
-            (statusFilter === 'active' && cat.is_active) || 
-            (statusFilter === 'inactive' && !cat.is_active)
-        );
-    }
-    
-    const container = document.getElementById('categoriesList');
-    
-    if (filteredCategories.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state" style="grid-column: 1 / -1;">
-                <i class="fas fa-layer-group"></i>
-                <p>Категории не найдены</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    filteredCategories.forEach(category => {
-        const card = document.createElement('div');
-        card.className = 'stat-card';
-        card.style.borderLeftColor = category.color || '#C5A880';
-        card.innerHTML = `
-            <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-                <div style="font-size: 1.5rem; color: ${category.color || '#C5A880'}">
-                    <i class="${category.icon || 'fas fa-folder'}"></i>
-                </div>
-                <div style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                        <h4 style="color: var(--graphite-dark); margin: 0; font-size: 1rem;">${category.display_name}</h4>
-                        <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; 
-                             color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
-                            ${category.is_active ? 'Активна' : 'Неактивна'}
-                        </span>
+        async function loadCategories() {
+            try {
+                showLoading('Загрузка категорий...');
+                
+                const response = await fetch('/api/admin/categories', {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderCategories(data.data.categories);
+                    if (isMobile) {
+                        renderMobileCategories(data.data.categories);
+                    }
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки категорий');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки категорий:', error);
+                showNotification('Ошибка загрузки категорий', 'error');
+                document.getElementById('categoriesList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Ошибка загрузки категорий</p>
                     </div>
-                    <p style="color: var(--graphite-medium); font-size: 0.8rem; margin-bottom: 8px; line-height: 1.4;">${category.description}</p>
-                    
-                    ${category.image_full_url ? `
-                        <div style="margin: 12px 0; text-align: center;">
-                            <img src="${category.image_full_url}" 
-                                 style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(61, 61, 61, 0.1);"
-                                 alt="${category.display_name}"
-                                 onerror="this.onerror=null; this.src='/api/images/test/category';">
-                            <div style="font-size: 0.75rem; color: var(--graphite-medium); margin-top: 4px;">
-                                ${category.image_url ? category.image_url.split('/').pop() : 'Изображение'}
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderCategories(categories) {
+            const statusFilter = document.getElementById('categoryStatusFilter').value;
+            
+            let filteredCategories = categories;
+            if (statusFilter !== 'all') {
+                filteredCategories = categories.filter(cat => 
+                    (statusFilter === 'active' && cat.is_active) || 
+                    (statusFilter === 'inactive' && !cat.is_active)
+                );
+            }
+            
+            const container = document.getElementById('categoriesList');
+            
+            if (filteredCategories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fas fa-layer-group"></i>
+                        <p>Категории не найдены</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            filteredCategories.forEach(category => {
+                const hasDescription = category.admin_description && category.admin_description.trim().length > 0;
+                const descriptionStatus = hasDescription ? 
+                    '<span style="background: var(--success); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">Описание есть</span>' :
+                    '<span style="background: var(--error); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">Нет описания</span>';
+                
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                card.style.borderLeftColor = category.color || '#C5A880';
+                card.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
+                        <div style="font-size: 1.5rem; color: ${category.color || '#C5A880'}">
+                            <i class="${category.icon || 'fas fa-folder'}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <h4 style="color: var(--graphite-dark); margin: 0; font-size: 1rem;">${category.display_name}</h4>
+                                <div style="display: flex; gap: 6px;">
+                                    ${descriptionStatus}
+                                    <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; 
+                                         color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                                        ${category.is_active ? 'Активна' : 'Неактивна'}
+                                    </span>
+                                </div>
+                            </div>
+                            <p style="color: var(--graphite-medium); font-size: 0.8rem; margin-bottom: 8px; line-height: 1.4;">
+                                ${category.description}
+                            </p>
+                            
+                            <!-- Кнопка для быстрого просмотра/редактирования описания -->
+                            <div style="margin: 12px 0; padding: 8px; background: rgba(61, 61, 61, 0.02); border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <div style="font-size: 0.8rem; color: var(--graphite-medium); font-weight: 600;">
+                                        <i class="fas fa-info-circle"></i> Расширенное описание
+                                    </div>
+                                    <button class="btn btn-sm btn-secondary" onclick="editCategoryDescription(${category.id}, '${category.display_name}')" 
+                                            style="padding: 4px 8px; font-size: 0.7rem;">
+                                        <i class="fas fa-edit"></i> ${hasDescription ? 'Редактировать' : 'Добавить'}
+                                    </button>
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--graphite-medium); max-height: 60px; overflow: hidden; position: relative;">
+                                    ${hasDescription ? 
+                                        category.admin_description.substring(0, 150) + 
+                                        (category.admin_description.length > 150 ? '...' : '') : 
+                                        '<span style="color: var(--error);"><i class="fas fa-exclamation-triangle"></i> Описание не добавлено</span>'}
+                                    ${category.admin_description && category.admin_description.length > 150 ? 
+                                        '<div style="position: absolute; bottom: 0; left: 0; right: 0; height: 20px; background: linear-gradient(transparent, rgba(61, 61, 61, 0.02));"></div>' : ''}
+                                </div>
+                            </div>
+                            
+                            ${category.image_full_url ? `
+                                <div style="margin: 12px 0; text-align: center;">
+                                    <img src="${category.image_full_url}" 
+                                         style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(61, 61, 61, 0.1);"
+                                         alt="${category.display_name}"
+                                         onerror="this.onerror=null; this.src='/api/images/test/category';">
+                                    <div style="font-size: 0.75rem; color: var(--graphite-medium); margin-top: 4px;">
+                                        ${category.image_url ? category.image_url.split('/').pop() : 'Изображение'}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div style="display: flex; gap: 8px; font-size: 0.75rem;">
+                                <span style="color: var(--graphite-light);">${category.name}</span>
+                                <span style="color: var(--graphite-medium);">Услуг: ${category.services_count || 0}</span>
+                                <span style="color: var(--graphite-medium);">Задач: ${category.tasks_count || 0}</span>
                             </div>
                         </div>
-                    ` : ''}
-                    
-                    <div style="display: flex; gap: 8px; font-size: 0.75rem;">
-                        <span style="color: var(--graphite-light);">${category.name}</span>
-                        <span style="color: var(--graphite-medium);">Услуг: ${category.services_count || 0}</span>
-                        <span style="color: var(--graphite-medium);">Задач: ${category.tasks_count || 0}</span>
                     </div>
-                </div>
-            </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.75rem; color: var(--graphite-light);">
+                            Порядок: ${category.sort_order || 0}
+                        </div>
+                        
+                        <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-sm btn-secondary btn-icon" onclick="editCategory(${category.id})" title="Редактировать">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-error btn-icon" onclick="deleteCategory(${category.id})" title="Удалить">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
             
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-size: 0.75rem; color: var(--graphite-light);">
-                    Порядок: ${category.sort_order || 0}
-                </div>
-                
-                <div style="display: flex; gap: 6px;">
-                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editCategory(${category.id})" title="Редактировать">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-error btn-icon" onclick="deleteCategory(${category.id})" title="Удалить">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-    
-    // Мобильная версия
-    if (isMobile) {
-        renderMobileCategories(filteredCategories);
-    }
-}
+            // Мобильная версия
+            if (isMobile) {
+                renderMobileCategories(filteredCategories);
+            }
+        }
         
         function renderMobileCategories(categories) {
             const container = document.getElementById('categoriesMobile');
@@ -3374,7 +3579,11 @@ async function editUser(userId) {
             document.getElementById('categoryColor').value = '#C5A880';
             document.getElementById('categoryIcon').value = 'fas fa-folder';
             document.getElementById('categorySortOrder').value = '0';
+            document.getElementById('categoryAdminDescription').value = '';
+            document.getElementById('descriptionCounter').textContent = '0';
             document.querySelector('input[name="categoryStatus"][value="active"]').checked = true;
+            document.getElementById('categoryIsPopular').checked = false;
+            document.getElementById('iconPreview').innerHTML = '<i class="fas fa-question"></i>';
             document.getElementById('categoryImagePreview').innerHTML = '';
             showModal('categoryModal');
         }
@@ -3399,7 +3608,10 @@ async function editUser(userId) {
                         document.getElementById('categoryName').value = category.name;
                         document.getElementById('categoryDisplayName').value = category.display_name;
                         document.getElementById('categoryDescription').value = category.description;
+                        document.getElementById('categoryAdminDescription').value = category.admin_description || '';
+                        document.getElementById('descriptionCounter').textContent = category.admin_description ? category.admin_description.length : 0;
                         document.getElementById('categoryIcon').value = category.icon;
+                        document.getElementById('iconPreview').innerHTML = `<i class="${category.icon || 'fas fa-folder'}"></i>`;
                         document.getElementById('categoryColor').value = category.color || '#C5A880';
                         document.getElementById('categorySortOrder').value = category.sort_order || 0;
                         
@@ -3419,6 +3631,8 @@ async function editUser(userId) {
                         statusRadios.forEach(radio => {
                             radio.checked = radio.value === (category.is_active ? 'active' : 'inactive');
                         });
+                        
+                        document.getElementById('categoryIsPopular').checked = category.is_popular == 1;
                         
                         showModal('categoryModal');
                     } else {
@@ -3440,16 +3654,23 @@ async function editUser(userId) {
             const name = document.getElementById('categoryName').value;
             const display_name = document.getElementById('categoryDisplayName').value;
             const description = document.getElementById('categoryDescription').value;
+            const admin_description = document.getElementById('categoryAdminDescription').value;
             const icon = document.getElementById('categoryIcon').value;
             const color = document.getElementById('categoryColor').value;
             const sort_order = document.getElementById('categorySortOrder').value;
             const is_active = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
+            const is_popular = document.getElementById('categoryIsPopular').checked;
             
             const imageInput = document.getElementById('categoryImageUpload');
-            let imageUrl = null;
+            let image_url = null;
             
-            if (!name || !display_name || !description || !icon) {
+            if (!name || !display_name || !description || !admin_description || !icon) {
                 showNotification('Заполните все обязательные поля', 'error');
+                return;
+            }
+            
+            if (admin_description.length < 50) {
+                showNotification('Расширенное описание должно содержать не менее 50 символов', 'error');
                 return;
             }
             
@@ -3457,7 +3678,10 @@ async function editUser(userId) {
                 showLoading('Сохранение категории...');
                 
                 if (imageInput && imageInput.files[0]) {
-                    imageUrl = await uploadImage(imageInput.files[0], 'category');
+                    const uploadResult = await uploadCategoryImage(imageInput.files[0]);
+                    if (uploadResult) {
+                        image_url = uploadResult.url;
+                    }
                 }
                 
                 const response = await fetch('/api/admin/categories', {
@@ -3471,11 +3695,13 @@ async function editUser(userId) {
                         name,
                         display_name,
                         description,
+                        admin_description,
                         icon,
                         color,
                         sort_order: parseInt(sort_order),
                         is_active,
-                        image_url: imageUrl
+                        is_popular,
+                        image_url: image_url
                     })
                 });
                 
@@ -3524,6 +3750,178 @@ async function editUser(userId) {
                 showNotification(error.message, 'error');
             } finally {
                 hideLoading();
+            }
+        }
+        
+        // Функция для редактирования описания категории
+        async function editCategoryDescription(categoryId, categoryName) {
+            try {
+                showLoading('Загрузка описания...');
+                currentEditingCategoryId = categoryId;
+                
+                const response = await fetch(`/api/admin/categories/${categoryId}/description`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const category = data.data.category;
+                    
+                    document.getElementById('descriptionModalTitle').textContent = `Описание категории: ${categoryName}`;
+                    
+                    const descriptionHtml = `
+                        <div style="margin-bottom: 20px;">
+                            <div style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">
+                                <i class="fas fa-info-circle"></i> Это описание увидят клиенты во всплывающем окне при выборе категории
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="editAdminDescription">Расширенное описание *</label>
+                            <textarea id="editAdminDescription" class="form-input" required 
+                                      placeholder="Добавьте подробное описание категории с преимуществами и особенностями..." 
+                                      rows="10"
+                                      style="resize: vertical; font-family: 'Inter', sans-serif;">${category.admin_description || ''}</textarea>
+                            <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                                <small style="color: var(--graphite-medium);">
+                                    <i class="fas fa-lightbulb"></i> Советы:
+                                    <ul style="margin: 4px 0 0 16px; padding: 0;">
+                                        <li>Опишите основные услуги в категории</li>
+                                        <li>Укажите преимущества для клиента</li>
+                                        <li>Добавьте информацию о квалификации исполнителей</li>
+                                        <li>Можно использовать простые HTML-теги</li>
+                                    </ul>
+                                </small>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">
+                                        Символов: <span id="editDescriptionCounter">${category.admin_description ? category.admin_description.length : 0}</span>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--graphite-light);">
+                                        Рекомендуется: 300-1000 символов
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Предпросмотр -->
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
+                            <h4 style="color: var(--gold-metallic); margin-bottom: 12px; font-size: 1rem;">
+                                <i class="fas fa-eye"></i> Предпросмотр (как увидит клиент):
+                            </h4>
+                            <div id="descriptionPreview" style="padding: 16px; background: white; border-radius: 8px; 
+                                 border: 1px solid rgba(61, 61, 61, 0.1); max-height: 200px; overflow-y: auto;">
+                                ${category.admin_description ? 
+                                    `<div style="font-size: 0.9rem; line-height: 1.6; color: var(--graphite-dark);">
+                                        ${category.admin_description.replace(/\n/g, '<br>')}
+                                    </div>` : 
+                                    '<div style="text-align: center; padding: 20px; color: var(--graphite-light); font-style: italic;">Описание еще не добавлено</div>'}
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('descriptionModalContent').innerHTML = descriptionHtml;
+                    
+                    // Добавляем обработчик для обновления предпросмотра и счетчика
+                    const textarea = document.getElementById('editAdminDescription');
+                    const counter = document.getElementById('editDescriptionCounter');
+                    const preview = document.getElementById('descriptionPreview');
+                    
+                    textarea.addEventListener('input', function() {
+                        counter.textContent = this.value.length;
+                        
+                        // Обновляем предпросмотр
+                        if (this.value.trim()) {
+                            preview.innerHTML = `
+                                <div style="font-size: 0.9rem; line-height: 1.6; color: var(--graphite-dark);">
+                                    ${this.value.replace(/\n/g, '<br>')}
+                                </div>
+                            `;
+                        } else {
+                            preview.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--graphite-light); font-style: italic;">Описание еще не добавлено</div>';
+                        }
+                    });
+                    
+                    showModal('descriptionModal');
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки описания');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки описания категории:', error);
+                showNotification('Ошибка загрузки описания', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Функция для сохранения описания категории
+        async function saveCategoryDescription() {
+            try {
+                const description = document.getElementById('editAdminDescription').value.trim();
+                
+                if (!description) {
+                    showNotification('Введите описание категории', 'error');
+                    return;
+                }
+                
+                showLoading('Сохранение описания...');
+                
+                const response = await fetch(`/api/admin/categories/${currentEditingCategoryId}/description`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        admin_description: description
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Описание категории успешно сохранено', 'success');
+                    closeModal('descriptionModal');
+                    loadCategories(); // Перезагружаем список категорий
+                } else {
+                    throw new Error(data.error || 'Ошибка сохранения описания');
+                }
+            } catch (error) {
+                console.error('Ошибка сохранения описания:', error);
+                showNotification(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Добавьте функцию для загрузки изображения категории
+        async function uploadCategoryImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'category');
+            
+            try {
+                const response = await fetch('/api/admin/upload-category-image', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return data.data;
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки изображения категории:', error);
+                showNotification('Ошибка загрузки изображения', 'error');
+                return null;
             }
         }
         
@@ -3601,7 +3999,7 @@ async function editUser(userId) {
                 <table>
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th style="width: 80px;">Изображение</th>
                             <th>Название</th>
                             <th>Категория</th>
                             <th>Описание</th>
@@ -3614,9 +4012,14 @@ async function editUser(userId) {
             `;
             
             services.forEach(service => {
+                const imageHtml = service.image_url ? 
+                    `<img src="${service.image_url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" 
+                          onerror="this.onerror=null; this.src='/api/images/test/service';">` : 
+                    '<div style="width: 60px; height: 60px; background: var(--pastel-pink); border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-star" style="color: var(--gold-metallic);"></i></div>';
+                
                 servicesHtml += `
                     <tr>
-                        <td>${service.id}</td>
+                        <td>${imageHtml}</td>
                         <td>
                             <div style="font-weight: 600;">${service.name}</div>
                             <div style="font-size: 0.8rem; color: var(--graphite-medium);">
@@ -3664,6 +4067,7 @@ async function editUser(userId) {
             document.getElementById('serviceSortOrder').value = '0';
             document.getElementById('serviceIsFeatured').checked = false;
             document.querySelector('input[name="serviceStatus"][value="active"]').checked = true;
+            document.getElementById('serviceImagePreview').innerHTML = '';
             
             // Загружаем категории
             loadCategoriesForServiceSelect();
@@ -3721,6 +4125,19 @@ async function editUser(userId) {
                         document.getElementById('serviceSortOrder').value = service.sort_order || 0;
                         document.getElementById('serviceIsFeatured').checked = service.is_featured == 1;
                         
+                        // Отображение изображения если есть
+                        if (service.image_url) {
+                            document.getElementById('serviceImagePreview').innerHTML = `
+                                <div style="position: relative; display: inline-block;">
+                                    <img src="${service.image_url}" style="max-width: 200px; max-height: 150px; border-radius: 8px;">
+                                    <button type="button" onclick="clearImagePreview('serviceImagePreview', 'serviceImageUpload')" 
+                                            style="position: absolute; top: 5px; right: 5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                                        ×
+                                    </button>
+                                </div>
+                            `;
+                        }
+                        
                         // Загружаем категории
                         await loadCategoriesForServiceSelect();
                         document.getElementById('serviceCategorySelect').value = service.category_id;
@@ -3762,6 +4179,17 @@ async function editUser(userId) {
                 
                 showLoading('Сохранение услуги...');
                 
+                // Загрузка изображения если есть
+                const imageInput = document.getElementById('serviceImageUpload');
+                let image_url = null;
+                
+                if (imageInput && imageInput.files[0]) {
+                    const uploadResult = await uploadServiceImage(imageInput.files[0]);
+                    if (uploadResult) {
+                        image_url = uploadResult.url;
+                    }
+                }
+                
                 const response = await fetch('/api/admin/services', {
                     method: 'POST',
                     headers: {
@@ -3777,7 +4205,8 @@ async function editUser(userId) {
                         estimated_time,
                         sort_order: parseInt(sort_order),
                         is_featured,
-                        is_active
+                        is_active,
+                        image_url: image_url  // Добавляем изображение
                     })
                 });
                 
@@ -3795,6 +4224,34 @@ async function editUser(userId) {
                 showNotification(error.message, 'error');
             } finally {
                 hideLoading();
+            }
+        }
+        
+        async function uploadServiceImage(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', 'service');
+            
+            try {
+                const response = await fetch('/api/admin/upload-service-image', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return data.data;
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки изображения услуги:', error);
+                showNotification('Ошибка загрузки изображения', 'error');
+                return null;
             }
         }
         
@@ -4407,6 +4864,307 @@ async function editUser(userId) {
             document.getElementById('transactionsTable').innerHTML = transHtml;
         }
         
+        // Функции для чата поддержки
+        async function loadSupportChats() {
+            try {
+                showLoading('Загрузка чатов...');
+                
+                const unreadOnly = document.getElementById('unreadOnly').checked;
+                const url = `/api/admin/support/chats${unreadOnly ? '?unread_only=true' : ''}`;
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderSupportChats(data.data.chats);
+                    if (isMobile) {
+                        renderMobileSupportChats(data.data.chats);
+                    }
+                } else {
+                    throw new Error(data.error || 'Ошибка загрузки чатов');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки чатов поддержки:', error);
+                showNotification('Ошибка загрузки чатов', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function renderSupportChats(chats) {
+            const container = document.getElementById('supportChatsList');
+            
+            if (!chats || chats.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <p>Чатов нет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let chatsHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Последнее сообщение</th>
+                            <th>Сообщений</th>
+                            <th>Непрочитанных</th>
+                            <th>Дата</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            chats.forEach(chat => {
+                const roleText = {
+                    'client': '👩 Клиент',
+                    'performer': '👩‍🏫 Исполнитель',
+                    'admin': '👑 Админ',
+                    'manager': '👨‍💼 Менеджер'
+                }[chat.role] || chat.role;
+                
+                const lastMessageDate = chat.last_message_date ? 
+                    new Date(chat.last_message_date).toLocaleString('ru-RU') : 
+                    'Нет сообщений';
+                
+                const lastMessage = chat.last_message ? 
+                    (chat.last_message.length > 50 ? chat.last_message.substring(0, 50) + '...' : chat.last_message) : 
+                    '';
+                
+                chatsHtml += `
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; 
+                                     background: linear-gradient(135deg, var(--lavender-light), var(--pastel-pink)); 
+                                     display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-user" style="color: var(--graphite-dark);"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600;">${chat.first_name} ${chat.last_name}</div>
+                                    <div style="font-size: 0.8rem; color: var(--graphite-medium);">
+                                        ${roleText} • ${chat.phone || 'Телефон не указан'}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${lastMessage}</td>
+                        <td>${chat.message_count || 0}</td>
+                        <td>
+                            <span style="background: ${chat.unread_count > 0 ? 'var(--error)' : 'var(--success)'}; 
+                                 color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                                ${chat.unread_count > 0 ? '🔔 ' + chat.unread_count : '0'}
+                            </span>
+                        </td>
+                        <td>${lastMessageDate}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="openChat(${chat.user_id}, '${chat.first_name} ${chat.last_name}')">
+                                <i class="fas fa-comment"></i>
+                                Открыть чат
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            chatsHtml += '</tbody></table>';
+            container.innerHTML = chatsHtml;
+        }
+        
+        function renderMobileSupportChats(chats) {
+            const container = document.getElementById('supportChatsMobile');
+            if (!container || !chats || chats.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-comments"></i>
+                        <p>Чатов нет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let cardsHtml = '';
+            
+            chats.forEach(chat => {
+                const roleText = {
+                    'client': '👩 Клиент',
+                    'performer': '👩‍🏫 Исполнитель',
+                    'admin': '👑 Админ',
+                    'manager': '👨‍💼 Менеджер'
+                }[chat.role] || chat.role;
+                
+                const lastMessage = chat.last_message ? 
+                    (chat.last_message.length > 50 ? chat.last_message.substring(0, 50) + '...' : chat.last_message) : 
+                    '';
+                
+                cardsHtml += `
+                    <div class="mobile-card">
+                        <div class="mobile-card-header">
+                            <div class="mobile-card-title">
+                                ${chat.first_name} ${chat.last_name}
+                            </div>
+                            <span style="background: ${chat.unread_count > 0 ? 'var(--error)' : 'var(--success)'}; 
+                                 color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                                ${chat.unread_count > 0 ? '🔔 ' + chat.unread_count : '0'}
+                            </span>
+                        </div>
+                        
+                        <div class="mobile-card-info">
+                            <div class="mobile-card-info-item">
+                                <span class="mobile-card-label">Роль</span>
+                                <span class="mobile-card-value">${roleText}</span>
+                            </div>
+                            <div class="mobile-card-info-item">
+                                <span class="mobile-card-label">Сообщений</span>
+                                <span class="mobile-card-value">${chat.message_count || 0}</span>
+                            </div>
+                        </div>
+                        
+                        <p class="mobile-card-description">
+                            <strong>Последнее:</strong> ${lastMessage || 'Нет сообщений'}
+                        </p>
+                        
+                        <div class="mobile-card-actions">
+                            <button class="btn btn-sm btn-primary mobile-card-btn" onclick="openChat(${chat.user_id}, '${chat.first_name} ${chat.last_name}')">
+                                <i class="fas fa-comment"></i> Открыть чат
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = cardsHtml;
+        }
+        
+        async function openChat(userId, userName) {
+            try {
+                document.getElementById('chatModalTitle').textContent = `Чат с ${userName}`;
+                document.getElementById('chatModal').classList.add('active');
+                
+                await loadChatMessages(userId);
+                currentChatUserId = userId;
+            } catch (error) {
+                console.error('Ошибка открытия чата:', error);
+                showNotification('Ошибка открытия чата', 'error');
+            }
+        }
+        
+        async function loadChatMessages(userId) {
+            try {
+                const response = await fetch(`/api/admin/support/messages/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderChatMessages(data.data.messages);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки сообщений:', error);
+                document.getElementById('chatContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Ошибка загрузки сообщений</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderChatMessages(messages) {
+            const container = document.getElementById('chatContainer');
+            
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-comment-slash"></i>
+                        <p>Сообщений нет</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let messagesHtml = '';
+            
+            messages.forEach(message => {
+                const isSupport = message.sender_type === 'support';
+                const time = new Date(message.created_at).toLocaleTimeString('ru-RU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                messagesHtml += `
+                    <div style="display: flex; ${isSupport ? 'justify-content: flex-end;' : 'justify-content: flex-start;'} margin-bottom: 12px;">
+                        <div style="max-width: 70%;">
+                            <div style="background: ${isSupport ? 'var(--gold-metallic)' : 'white'}; 
+                                 color: ${isSupport ? 'white' : 'var(--graphite-dark)'};
+                                 padding: 10px 14px;
+                                 border-radius: ${isSupport ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};
+                                 box-shadow: var(--shadow-sm);
+                                 line-height: 1.4;">
+                                ${message.message}
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--graphite-medium); margin-top: 4px; 
+                                 text-align: ${isSupport ? 'right' : 'left'};">
+                                ${time} • ${isSupport ? 'Поддержка' : 'Пользователь'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = messagesHtml;
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        async function sendSupportMessage() {
+            const messageInput = document.getElementById('chatMessageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message || !currentChatUserId) {
+                showNotification('Введите сообщение', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/support/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify({
+                        user_id: currentChatUserId,
+                        message: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageInput.value = '';
+                    await loadChatMessages(currentChatUserId);
+                    showNotification('Сообщение отправлено', 'success');
+                } else {
+                    throw new Error(data.error || 'Ошибка отправки');
+                }
+            } catch (error) {
+                console.error('Ошибка отправки сообщения:', error);
+                showNotification('Ошибка отправки сообщения', 'error');
+            }
+        }
+        
         async function loadSettings() {
             try {
                 showLoading('Загрузка настроек...');
@@ -4423,25 +5181,25 @@ async function editUser(userId) {
                     const settings = data.data.settings;
                     
                     // Логотип - показываем в preview
-const logoPreview = document.getElementById('logoPreview');
-const currentLogoUrl = settings.site_logo || '/static/images/logo.png'; // Измените путь на актуальный
-
-logoPreview.innerHTML = `
-    <div style="margin-top: 10px;">
-        <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Текущий логотип:</p>
-        <div style="position: relative; display: inline-block;">
-            <img src="${currentLogoUrl}" 
-                 style="max-width: 200px; max-height: 60px; border: 2px solid var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;"
-                 onerror="this.onerror=null; this.src='/static/images/default-logo.png';">
-            <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
-                Текущий
-            </div>
-        </div>
-        <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
-            Путь: ${settings.site_logo || 'Не установлен'}
-        </p>
-    </div>
-`;
+                    const logoPreview = document.getElementById('logoPreview');
+                    const currentLogoUrl = settings.site_logo || '/static/images/logo.png';
+                    
+                    logoPreview.innerHTML = `
+                        <div style="margin-top: 10px;">
+                            <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Текущий логотип:</p>
+                            <div style="position: relative; display: inline-block;">
+                                <img src="${currentLogoUrl}" 
+                                     style="max-width: 200px; max-height: 60px; border: 2px solid var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;"
+                                     onerror="this.onerror=null; this.src='/static/images/default-logo.png';">
+                                <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                                    Текущий
+                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
+                                Путь: ${settings.site_logo || 'Не установлен'}
+                            </p>
+                        </div>
+                    `;
                     
                     // Основные настройки
                     document.getElementById('settingAppName').value = settings.site_name || 'Женский Консьерж';
@@ -4468,103 +5226,175 @@ logoPreview.innerHTML = `
             }
         }
         
-       async function saveSettings() {
-    try {
-        const appName = document.getElementById('settingAppName').value;
-        const phone = document.getElementById('settingPhone').value;
-        const email = document.getElementById('settingEmail').value;
-        const commission = document.getElementById('settingCommission').value;
-        const topServicesTitle = document.getElementById('settingTopServicesTitle').value;
-        const taskHelpTitle = document.getElementById('settingTaskHelpTitle').value;
-        
-        const emailNotifications = document.getElementById('settingEmailNotifications').checked;
-        const smsNotifications = document.getElementById('settingSmsNotifications').checked;
-        const telegramNotifications = document.getElementById('settingTelegramNotifications').checked;
-        
-        showLoading('Сохранение настроек...');
-        
-        const settingsData = {
-            site_name: appName,
-            support_phone: phone,
-            support_email: email,
-            system_fee: commission,
-            top_services_title: topServicesTitle,
-            task_help_title: taskHelpTitle,
-            email_notifications: emailNotifications.toString(),
-            sms_notifications: smsNotifications.toString(),
-            telegram_notifications: telegramNotifications.toString()
-        };
-        
-        const response = await fetch('/api/admin/settings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            },
-            body: JSON.stringify(settingsData)
-        });
-        
-        // УДАЛИТЬ ЭТУ СТРОКУ - она дублируется ниже
-        // const data = await response.json();
-        
-        const data = await response.json(); // Оставить только эту строку
-        
-        if (data.success) {
-            showNotification('Настройки успешно сохранены', 'success');
-            
-            // Если загружен новый логотип
-            const logoInput = document.getElementById('logoUpload');
-            if (logoInput && logoInput.files[0]) {
-                showLoading('Загрузка логотипа...');
+        async function saveSettings() {
+            try {
+                const appName = document.getElementById('settingAppName').value;
+                const phone = document.getElementById('settingPhone').value;
+                const email = document.getElementById('settingEmail').value;
+                const commission = document.getElementById('settingCommission').value;
+                const topServicesTitle = document.getElementById('settingTopServicesTitle').value;
+                const taskHelpTitle = document.getElementById('settingTaskHelpTitle').value;
                 
-                try {
-                    const formData = new FormData();
-                    formData.append('image', logoInput.files[0]);
-                    formData.append('type', 'logo');
+                const emailNotifications = document.getElementById('settingEmailNotifications').checked;
+                const smsNotifications = document.getElementById('settingSmsNotifications').checked;
+                const telegramNotifications = document.getElementById('settingTelegramNotifications').checked;
+                
+                showLoading('Сохранение настроек...');
+                
+                const settingsData = {
+                    site_name: appName,
+                    support_phone: phone,
+                    support_email: email,
+                    system_fee: commission,
+                    top_services_title: topServicesTitle,
+                    task_help_title: taskHelpTitle,
+                    email_notifications: emailNotifications.toString(),
+                    sms_notifications: smsNotifications.toString(),
+                    telegram_notifications: telegramNotifications.toString()
+                };
+                
+                const response = await fetch('/api/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(settingsData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Настройки успешно сохранены', 'success');
                     
-                    const uploadResponse = await fetch('/api/admin/upload', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${currentToken}`
-                        },
-                        body: formData
-                    });
-                    
-                    const uploadData = await uploadResponse.json();
-                    
-                    if (uploadData.success) {
-                        showNotification('Логотип успешно загружен и обновлен', 'success');
-                        // Обновляем логотип на всех страницах
-                        setTimeout(refreshLogo, 1000);
+                    // Если загружен новый логотип
+                    const logoInput = document.getElementById('logoUpload');
+                    if (logoInput && logoInput.files[0]) {
+                        showLoading('Загрузка логотипа...');
+                        
+                        try {
+                            const formData = new FormData();
+                            formData.append('image', logoInput.files[0]);
+                            formData.append('type', 'logo');
+                            
+                            const uploadResponse = await fetch('/api/admin/upload', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${currentToken}`
+                                },
+                                body: formData
+                            });
+                            
+                            const uploadData = await uploadResponse.json();
+                            
+                            if (uploadData.success) {
+                                showNotification('Логотип успешно загружен и обновлен', 'success');
+                                // Обновляем логотип на всех страницах
+                                setTimeout(refreshLogo, 1000);
+                            } else {
+                                throw new Error(uploadData.error || 'Ошибка загрузки логотипа');
+                            }
+                        } catch (uploadError) {
+                            console.error('Ошибка загрузки логотипа:', uploadError.message);
+                            showNotification('Настройки сохранены, но ошибка логотипа: ' + uploadError.message, 'error');
+                        } finally {
+                            hideLoading();
+                        }
                     } else {
-                        throw new Error(uploadData.error || 'Ошибка загрузки логотипа');
+                        hideLoading();
                     }
-                } catch (uploadError) {
-                    console.error('Ошибка загрузки логотипа:', uploadError.message);
-                    showNotification('Настройки сохранены, но ошибка логотипа: ' + uploadError.message, 'error');
-                } finally {
-                    hideLoading();
+                } else {
+                    throw new Error(data.error || 'Ошибка сохранения настроек');
                 }
-            } else {
+            } catch (error) {
+                console.error('Ошибка сохранения настроек:', error.message);
+                showNotification(error.message, 'error');
+            } finally {
                 hideLoading();
             }
-        } else {
-            throw new Error(data.error || 'Ошибка сохранения настроек');
         }
-    } catch (error) {
-        console.error('Ошибка сохранения настроек:', error.message);
-        showNotification(error.message, 'error');
-    } finally {
-        hideLoading();
-    }
-}
         
         // Экспорт транзакций
         async function exportTransactions() {
             showNotification('Функция экспорта будет реализована в следующем обновлении', 'info');
         }
         
-        // Глобальные функции для вызова из HTML
+        // Функция обновления логотипа
+        async function refreshLogo() {
+            try {
+                console.log('🔄 Обновление логотипа...');
+                
+                const response = await fetch('/api/settings/logo', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.success && data.data && data.data.full_url) {
+                        // Обновляем favicon
+                        const favicon = document.querySelector('link[rel*="icon"]');
+                        if (favicon) {
+                            const timestamp = new Date().getTime();
+                            favicon.href = data.data.full_url + '?t=' + timestamp;
+                        }
+                        
+                        // Обновляем все изображения логотипа на странице
+                        const logoImages = document.querySelectorAll('img[src*="logo"]');
+                        logoImages.forEach(img => {
+                            const timestamp = new Date().getTime();
+                            img.src = data.data.full_url + '?t=' + timestamp;
+                        });
+                        
+                        console.log('✅ Логотип обновлен:', data.data.full_url);
+                        showNotification('Логотип обновлен на всех страницах', 'success');
+                    }
+                } else {
+                    console.warn('⚠️ Endpoint для логотипа не найден, пропускаем обновление');
+                    showNotification('Функция обновления логотипа временно недоступна', 'info');
+                }
+            } catch (error) {
+                console.warn('⚠️ Ошибка обновления логотипа:', error.message);
+            }
+        }
+        
+        // Функция предпросмотра логотипа перед загрузкой
+        function previewLogo(input) {
+            const preview = document.getElementById('logoPreview');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <div style="margin-top: 10px;">
+                            <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Предпросмотр нового логотипа:</p>
+                            <div style="position: relative; display: inline-block;">
+                                <img src="${e.target.result}" 
+                                     style="max-width: 200px; max-height: 60px; border: 2px dashed var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;">
+                                <div style="position: absolute; top: 5px; right: 5px; background: var(--success); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                                    Новый
+                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
+                                Размер: ${(input.files[0].size / 1024).toFixed(2)} KB
+                            </p>
+                        </div>
+                    `;
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        window.viewTransactionDetails = function(id) {
+            showNotification('Просмотр деталей транзакции будет реализован в следующем обновлении', 'info');
+        };
+        
+        // Глобальные функции
         window.adminLogin = adminLogin;
         window.logout = logout;
         window.showSection = showSection;
@@ -4582,12 +5412,10 @@ logoPreview.innerHTML = `
         window.updateSubscriptionVisibility = updateSubscriptionVisibility;
         window.clearImagePreview = clearImagePreview;
         window.previewImage = previewImage;
-        window.saveService = saveService;
         window.loadServices = loadServices;
         window.loadTasks = loadTasks;
         window.loadSubscriptions = loadSubscriptions;
         window.loadTransactions = loadTransactions;
-        window.saveSubscription = saveSubscription;
         window.editService = editService;
         window.deleteService = deleteService;
         window.editSubscription = editSubscription;
@@ -4595,87 +5423,11 @@ logoPreview.innerHTML = `
         window.viewTaskDetails = viewTaskDetails;
         window.deleteTask = deleteTask;
         window.refreshLogo = refreshLogo;
-window.previewLogo = previewLogo;
-        window.viewTransactionDetails = function(id) {
-            
-            showNotification('Просмотр деталей транзакции будет реализован в следующем обновлении', 'info');
-        };
-
-// Функция обновления логотипа
-async function refreshLogo() {
-    try {
-        console.log('🔄 Обновление логотипа...');
-        
-        // Проверяем, есть ли endpoint для получения логотипа
-        const response = await fetch('/api/settings/logo', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${currentToken}`
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            if (data.success && data.data && data.data.full_url) {
-                // Обновляем favicon
-                const favicon = document.querySelector('link[rel*="icon"]');
-                if (favicon) {
-                    const timestamp = new Date().getTime();
-                    favicon.href = data.data.full_url + '?t=' + timestamp;
-                }
-                
-                // Обновляем все изображения логотипа на странице
-                const logoImages = document.querySelectorAll('img[src*="logo"]');
-                logoImages.forEach(img => {
-                    const timestamp = new Date().getTime();
-                    img.src = data.data.full_url + '?t=' + timestamp;
-                });
-                
-                console.log('✅ Логотип обновлен:', data.data.full_url);
-                showNotification('Логотип обновлен на всех страницах', 'success');
-            }
-        } else {
-            console.warn('⚠️ Endpoint для логотипа не найден, пропускаем обновление');
-            showNotification('Функция обновления логотипа временно недоступна', 'info');
-        }
-    } catch (error) {
-        console.warn('⚠️ Ошибка обновления логотипа:', error.message);
-        // Не показываем ошибку пользователю, чтобы не пугать
-    }
-}
-
-// Функция предпросмотра логотипа перед загрузкой
-function previewLogo(input) {
-    const preview = document.getElementById('logoPreview');
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <div style="margin-top: 10px;">
-                    <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Предпросмотр нового логотипа:</p>
-                    <div style="position: relative; display: inline-block;">
-                        <img src="${e.target.result}" 
-                             style="max-width: 200px; max-height: 60px; border: 2px dashed var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;">
-                        <div style="position: absolute; top: 5px; right: 5px; background: var(--success); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
-                            Новый
-                        </div>
-                    </div>
-                    <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
-                        Размер: ${(input.files[0].size / 1024).toFixed(2)} KB
-                    </p>
-                </div>
-            `;
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-// Добавляем функции в глобальную область видимос
-        
+        window.previewLogo = previewLogo;
+        window.editCategoryDescription = editCategoryDescription;
+        window.saveCategoryDescription = saveCategoryDescription;
+        window.openChat = openChat;
+        window.sendSupportMessage = sendSupportMessage;
     </script>
 </body>
 </html>
