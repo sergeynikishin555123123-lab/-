@@ -438,31 +438,38 @@
             transform: scaleX(1);
         }
         
-        .category-icon {
-            font-size: 2.5rem;
-            color: var(--pastel-pink);
-            margin-bottom: 15px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.category-icon {
+    font-size: 2rem;
+    color: var(--pastel-pink);
+    margin-bottom: 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+}
         
-        .category-image {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: var(--radius);
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--pastel-pink);
-            font-size: 2.5rem;
-            position: relative;
-            overflow: hidden;
-        }
+.category-image {
+    width: 100%;
+    height: 120px;
+    border-radius: var(--radius);
+    margin-bottom: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.category-card:hover .category-image img {
+    transform: scale(1.05);
+}
         
         .category-card h3 {
             font-size: 1.1rem;
@@ -500,19 +507,26 @@
             border-color: var(--pastel-pink);
         }
         
-        .service-image {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: var(--radius-sm);
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--pastel-pink);
-            font-size: 2.5rem;
-        }
+.service-image {
+    width: 100%;
+    height: 120px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.service-card:hover .service-image img {
+    transform: scale(1.05);
+}
         
         .service-header {
             display: flex;
@@ -945,29 +959,6 @@
         .task-status.assigned {
             background: rgba(33, 150, 243, 0.1);
             color: #1565C0;
-        }
-
-        .category-image, .service-image, .category-image-container {
-            position: relative;
-        }
-
-        .category-image i, .service-image i, .category-image-container i {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 1;
-        }
-
-        .category-image::before, .service-image::before, .category-image-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--pink-light), var(--pastel-pink));
-            z-index: 0;
         }
         
         /* Кнопка "Все услуги" */
@@ -1656,12 +1647,24 @@
             box-shadow: var(--shadow);
         }
         
-        .category-image-container {
-            width: 100%;
-            height: 160px;
-            overflow: hidden;
-            position: relative;
-        }
+.category-image-container {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.category-card-square:hover .category-image-container img {
+    transform: scale(1.05);
+}
         
         .category-image-container img {
             width: 100%;
@@ -1674,21 +1677,22 @@
             transform: scale(1.05);
         }
         
-        .category-icon-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(255, 255, 255, 0.95);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--pastel-pink);
-            font-size: 1.2rem;
-            box-shadow: var(--shadow-sm);
-        }
+.category-icon-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pastel-pink);
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+}
         
         .category-content {
             padding: 20px;
@@ -3205,48 +3209,20 @@
                 return this.categories;
             },
 
-            renderHomeCategories: function() {
-                var container = document.getElementById('categoriesGrid');
-                if (!container) return;
-                
-                if (!this.categories || this.categories.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-                        '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                
-                var self = this;
-                this.categories.forEach(function(category) {
-                    var card = document.createElement('div');
-                    card.className = 'card category-card';
-                    card.onclick = function() { 
-                        self.selectCategory(category); 
-                    };
-                    
-                    // Используем SVG fallback вместо API запроса
-                    var imageUrl = self.createSvgFallback('category');
-                    
-                    card.innerHTML = '<div class="category-image">' +
-                        '<img src="' + imageUrl + '" ' +
-                             'alt="' + category.display_name + '"' +
-                             'loading="lazy"' +
-                             'style="width: 100%; height: 100%; object-fit: cover;">' +
-                        '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 1.5rem; color: var(--pastel-pink); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;"></i>' +
-                    '</div>' +
-                    '<h3>' + category.display_name + '</h3>' +
-                    '<p>' + category.description + '</p>' +
-                    '<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
-                        '<span>' + (category.services_count || '0') + ' услуг</span>' +
-                        '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
-                    '</div>';
-                    
-                    container.appendChild(card);
-                });
-            },
+           card.innerHTML = '<div class="category-image">' +
+    '<img src="' + imageUrl + '" ' +
+         'alt="' + category.display_name + '"' +
+         'loading="lazy">' +
+'</div>' +
+'<div class="category-icon" style="margin-top: -30px; position: relative; z-index: 3; text-align: center;">' +
+    '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 2rem; color: var(--pastel-pink);"></i>' +
+'</div>' +
+'<h3>' + category.display_name + '</h3>' +
+'<p>' + category.description + '</p>' +
+'<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
+    '<span>' + (category.services_count || '0') + ' услуг</span>' +
+    '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
+'</div>';
             
             loadAllServices: async function() {
                 try {
@@ -3326,11 +3302,10 @@ loadAllServicesPage: async function() {
     self.getImageUrl(category.image_url, 'category') : 
     self.createSvgFallback('category');
         
-        card.innerHTML = '<div class="category-image-container">' +
-            '<img src="' + imageUrl + '" ' +
-                 'alt="' + category.display_name + '"' +
-                 'loading="lazy"' +
-                 'style="width: 100%; height: 100%; object-fit: cover;">' +
+       card.innerHTML = '<div class="category-image-container">' +
+    '<img src="' + imageUrl + '" ' +
+         'alt="' + category.display_name + '"' +
+         'loading="lazy">' +
             '<div class="category-icon-badge">' +
                 '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
             '</div>' +
@@ -3536,12 +3511,11 @@ loadAllServicesPage: async function() {
         card.className = 'category-card-square';
         card.onclick = function() { self.selectService(service); };
         
-        card.innerHTML = '<div class="category-image-container">' +
-            '<img src="' + self.createSvgFallback('service') + '" ' +
-                 'alt="' + service.name + '"' +
-                 'loading="lazy"' +
-                 'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;"' +
-                 'style="width: 100%; height: 100%; object-fit: cover;">' +
+       card.innerHTML = '<div class="category-image-container">' +
+    '<img src="' + self.createSvgFallback('service') + '" ' +
+         'alt="' + service.name + '"' +
+         'loading="lazy"' +
+         'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
             '<div class="category-icon-badge">' +
                 '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
             '</div>' +
@@ -3640,13 +3614,13 @@ loadAllServicesPage: async function() {
                     card.className = 'card service-card';
                     card.onclick = function() { self.selectService(service); };
                     
-                    card.innerHTML = '<div class="service-image">' +
-                        '<img src="' + self.createSvgFallback('service') + '" ' +
-                             'alt="' + service.name + '"' +
-                             'loading="lazy"' +
-                             'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;"' +
-                             'style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-sm);">' +
-                        '<i class="' + (service.icon || 'fas fa-star') + '" style="font-size: 1.5rem; color: var(--pastel-pink); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;"></i>' +
+                   card.innerHTML = '<div class="service-image">' +
+    '<img src="' + self.createSvgFallback('service') + '" ' +
+         'alt="' + service.name + '"' +
+         'loading="lazy"' +
+         'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
+'</div>' +
+                        '<i class="' + (service.icon || 'fas 
                     '</div>' +
                     '<div class="service-header">' +
                         '<h4>' + service.name + '</h4>' +
