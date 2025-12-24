@@ -3650,77 +3650,79 @@
         }
         
         async function saveCategory() {
-            const id = document.getElementById('categoryId').value;
-            const name = document.getElementById('categoryName').value;
-            const display_name = document.getElementById('categoryDisplayName').value;
-            const description = document.getElementById('categoryDescription').value;
-            const admin_description = document.getElementById('categoryAdminDescription').value;
-            const icon = document.getElementById('categoryIcon').value;
-            const color = document.getElementById('categoryColor').value;
-            const sort_order = document.getElementById('categorySortOrder').value;
-            const is_active = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
-            const is_popular = document.getElementById('categoryIsPopular').checked;
-            
-            const imageInput = document.getElementById('categoryImageUpload');
-            let image_url = null;
-            
-            if (!name || !display_name || !description || !admin_description || !icon) {
-                showNotification('Заполните все обязательные поля', 'error');
-                return;
-            }
-            
-            if (admin_description.length < 50) {
-                showNotification('Расширенное описание должно содержать не менее 50 символов', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Сохранение категории...');
-                
-                if (imageInput && imageInput.files[0]) {
-                    const uploadResult = await uploadCategoryImage(imageInput.files[0]);
-                    if (uploadResult) {
-                        image_url = uploadResult.url;
-                    }
-                }
-                
-                const response = await fetch('/api/admin/categories', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        id: id || null,
-                        name,
-                        display_name,
-                        description,
-                        admin_description,
-                        icon,
-                        color,
-                        sort_order: parseInt(sort_order),
-                        is_active,
-                        is_popular,
-                        image_url: image_url
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Категория успешно сохранена', 'success');
-                    closeModal('categoryModal');
-                    loadCategories();
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения категории');
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения категории:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
+    const id = document.getElementById('categoryId').value;
+    const name = document.getElementById('categoryName').value;
+    const display_name = document.getElementById('categoryDisplayName').value;
+    const description = document.getElementById('categoryDescription').value;
+    const admin_description = document.getElementById('categoryAdminDescription').value;
+    const icon = document.getElementById('categoryIcon').value;
+    const color = document.getElementById('categoryColor').value;
+    const sort_order = document.getElementById('categorySortOrder').value;
+    const is_active = document.querySelector('input[name="categoryStatus"]:checked').value === 'active';
+    const is_popular = document.getElementById('categoryIsPopular').checked;
+    
+    const imageInput = document.getElementById('categoryImageUpload');
+    let image_url = null;
+    
+    if (!name || !display_name || !description || !admin_description || !icon) {
+        showNotification('Заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    if (admin_description.length < 50) {
+        showNotification('Расширенное описание должно содержать не менее 50 символов', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Сохранение категории...');
+        
+        if (imageInput && imageInput.files[0]) {
+            const uploadResult = await uploadCategoryImage(imageInput.files[0]);
+            if (uploadResult) {
+                image_url = uploadResult.url;
             }
         }
+        
+        const categoryData = {
+            id: id || null,
+            name,
+            display_name,
+            description,
+            admin_description,
+            icon,
+            color,
+            sort_order: parseInt(sort_order),
+            is_active,
+            is_popular,
+            image_url: image_url
+        };
+        
+        const response = await fetch('/api/admin/categories', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(categoryData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Категория успешно сохранена', 'success');
+            closeModal('categoryModal');
+            loadCategories();
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения категории');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения категории:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         async function deleteCategory(categoryId) {
             if (!confirm('Вы уверены, что хотите удалить эту категорию?')) {
@@ -3896,34 +3898,33 @@
             }
         }
         
-        // Добавьте функцию для загрузки изображения категории
-        async function uploadCategoryImage(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('type', 'category');
-            
-            try {
-                const response = await fetch('/api/admin/upload-category-image', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: formData
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    return data.data;
-                } else {
-                    throw new Error(data.error || 'Ошибка загрузки');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки изображения категории:', error);
-                showNotification('Ошибка загрузки изображения', 'error');
-                return null;
-            }
+       async function uploadCategoryImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('category_id', document.getElementById('categoryId').value || '');
+    
+    try {
+        const response = await fetch('/api/admin/upload-category-image', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.data;
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки');
         }
+    } catch (error) {
+        console.error('Ошибка загрузки изображения категории:', error);
+        showNotification('Ошибка загрузки изображения', 'error');
+        return null;
+    }
+}
         
         // Управление услугами
         async function loadServices() {
