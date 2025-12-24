@@ -177,6 +177,39 @@ const ensureUploadDirs = () => {
     });
 };
 
+// Создаем дефолтный логотип при старте
+const createDefaultLogo = () => {
+    const logoDir = path.join(__dirname, 'public/uploads/logo');
+    const logoPath = path.join(logoDir, 'logo.svg');
+    
+    if (!fsSync.existsSync(logoPath)) {
+        const defaultLogoSvg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
+    <style>
+        .logo-text {
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            fill: #C5A880;
+        }
+        .logo-bg {
+            fill: #F2DDE6;
+        }
+    </style>
+    <rect width="200" height="60" class="logo-bg" rx="10"/>
+    <text x="100" y="35" class="logo-text" font-size="24" text-anchor="middle" dy=".3em">
+        Женский Консьерж
+    </text>
+</svg>`;
+        
+        if (!fsSync.existsSync(logoDir)) {
+            fsSync.mkdirSync(logoDir, { recursive: true });
+        }
+        
+        fsSync.writeFileSync(logoPath, defaultLogoSvg);
+        console.log(`✅ Создан дефолтный логотип: ${logoPath}`);
+    }
+};
+
 // Настраиваем хранилище для разных типов загрузок
 const categoryStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -1474,10 +1507,11 @@ app.post('/api/admin/upload-user-avatar', authMiddleware(['admin', 'superadmin']
     }
 });
 
-// Простая загрузка файла (для использования из admin.html)
 app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
     try {
         console.log('📤 Загрузка файла через универсальный endpoint...');
+        console.log('📁 Файл:', req.file);
+        console.log('📝 Тип:', req.body.type);
         
         if (!req.file) {
             return res.status(400).json({
@@ -1486,29 +1520,76 @@ app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGen
             });
         }
         
-        // Определяем URL файла
         let fileUrl = `/uploads/${req.file.filename}`;
+        let saveToDB = false;
         
-        // Если загружается логотип - сохраняем в настройки
-        if (req.body.type === 'logo') {
-            fileUrl = `/uploads/logo/${req.file.filename}`;
+        // Определяем тип загрузки
+        if (req.body.type === 'logo' || req.file.originalname.includes('logo')) {
+            console.log('🎨 Загрузка логотипа...');
             
-            // Обновляем настройку в базе данных
+            // Создаем папку для логотипов
+            const logoDir = path.join(__dirname, 'public/uploads/logo');
+            if (!fsSync.existsSync(logoDir)) {
+                fsSync.mkdirSync(logoDir, { recursive: true });
+                console.log('✅ Создана директория для логотипа');
+            }
+            
+            // Получаем расширение файла
+            const extension = path.extname(req.file.filename).toLowerCase();
+            
+            // Используем фиксированное имя для логотипа
+            const newFilename = `logo${extension}`;
+            const logoPath = path.join(logoDir, newFilename);
+            
+            // Копируем файл
+            await fs.copyFile(req.file.path, logoPath);
+            
+            // Удаляем временный файл
+            await fs.unlink(req.file.path);
+            
+            fileUrl = `/uploads/logo/${newFilename}`;
+            saveToDB = true;
+            
+            console.log(`✅ Логотип сохранен: ${fileUrl}`);
+        }
+        else if (req.body.type === 'category') {
+            console.log('📁 Загрузка изображения категории...');
+            
+            const categoryDir = path.join(__dirname, 'public/uploads/categories');
+            if (!fsSync.existsSync(categoryDir)) {
+                fsSync.mkdirSync(categoryDir, { recursive: true });
+            }
+            
+            const categoryPath = path.join(categoryDir, req.file.filename);
+            await fs.copyFile(req.file.path, categoryPath);
+            
+            fileUrl = `/uploads/categories/${req.file.filename}`;
+            console.log(`✅ Изображение категории сохранено: ${fileUrl}`);
+        }
+        else {
+            // Общая загрузка
+            console.log(`✅ Файл сохранен: ${fileUrl}`);
+        }
+        
+        // Если это логотип, обновляем настройку в БД
+        if (saveToDB) {
             await db.run(
                 `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
                  VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
                 ['site_logo', fileUrl, 'Логотип сайта', 'appearance']
             );
             
-            console.log(`✅ Логотип сохранен в настройках: ${fileUrl}`);
-        }
-        // Если загружается изображение категории
-        else if (req.body.type === 'category') {
-            fileUrl = `/uploads/categories/${req.file.filename}`;
-            console.log(`✅ Изображение категории сохранено: ${fileUrl}`);
+            console.log(`✅ Настройка логотипа обновлена в БД: ${fileUrl}`);
         }
         
-        console.log(`✅ Файл сохранен: ${fileUrl}`);
+        // Если не логотип, удаляем временный файл
+        if (!saveToDB && req.file.path) {
+            try {
+                await fs.unlink(req.file.path);
+            } catch (error) {
+                console.warn('Не удалось удалить временный файл:', error.message);
+            }
+        }
         
         res.json({
             success: true,
@@ -1519,9 +1600,30 @@ app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGen
                 size: req.file.size,
                 mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path
+                savedToDB: saveToDB,
+                type: req.body.type || 'general'
             }
         });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки файла:', error.message);
+        console.error('❌ Stack:', error.stack);
+        
+        // Пытаемся удалить временный файл в случае ошибки
+        if (req.file && req.file.path) {
+            try {
+                await fs.unlink(req.file.path);
+            } catch (deleteError) {
+                console.warn('Не удалось удалить временный файл:', deleteError.message);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка загрузки файла: ' + error.message
+        });
+    }
+});
         
     } catch (error) {
         console.error('❌ Ошибка загрузки файла:', error.message);
@@ -6915,6 +7017,9 @@ const startServer = async () => {
         console.log(`📱 Демо-режим SMS: ${DEMO_MODE ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}`);
         console.log(`💾 База данных: ${process.env.NODE_ENV === 'production' ? '/tmp/concierge_prod.db' : './concierge.db'}`);
         console.log('='.repeat(80));
+        
+        ensureUploadDirs();
+        createDefaultLogo();
         
         await initDatabase();
         console.log('✅ База данных готова');
