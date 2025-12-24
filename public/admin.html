@@ -2481,8 +2481,7 @@
             }
         }
         
-        // Управление пользователями
-        async function loadUsers() {
+       async function loadUsers() {
     try {
         showLoading('Загрузка пользователей...');
         
@@ -2490,10 +2489,14 @@
         const statusFilter = document.getElementById('userStatusFilter').value;
         const search = document.getElementById('userSearch').value;
         
-        let url = '/api/admin/users?limit=50'; // Изменил endpoint на более стандартный
-        if (roleFilter !== 'all') url += `&role=${roleFilter}`;
-        if (statusFilter !== 'all') url += `&is_active=${statusFilter === 'active' ? 1 : 0}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
+        // Собираем параметры для запроса
+        const params = new URLSearchParams();
+        if (roleFilter !== 'all') params.append('role', roleFilter);
+        if (statusFilter !== 'all') params.append('is_active', statusFilter === 'active' ? 'active' : 'inactive');
+        if (search) params.append('search', search);
+        
+        const url = `/api/admin/users${params.toString() ? '?' + params.toString() : ''}`;
+        console.log('📞 Запрос пользователей:', url);
         
         const response = await fetch(url, {
             headers: {
@@ -2501,16 +2504,12 @@
             }
         });
         
-        if (response.status === 403) {
-            throw new Error('Недостаточно прав для просмотра пользователей');
-        }
-        
         const data = await response.json();
         
         if (data.success) {
-            renderUsers(data.data.users || data.data); // Поддержка разных форматов ответа
+            renderUsers(data.data.users);
             if (isMobile) {
-                renderMobileCards(data.data.users || data.data, 'usersMobile', 'user');
+                renderMobileCards(data.data.users, 'usersMobile', 'user');
             }
         } else {
             throw new Error(data.error || 'Ошибка загрузки пользователей');
@@ -3131,109 +3130,127 @@ async function editUser(userId) {
             }
         }
         
-        // Управление категориями
-        async function loadCategories() {
-            try {
-                showLoading('Загрузка категорий...');
-                
-                const response = await fetch('/api/admin/categories', {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderCategories(data.data.categories);
-                } else {
-                    throw new Error(data.error || 'Ошибка загрузки категорий');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки категорий:', error);
-                showNotification('Ошибка загрузки категорий', 'error');
-                document.getElementById('categoriesList').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Ошибка загрузки категорий</p>
-                    </div>
-                `;
-            } finally {
-                hideLoading();
-            }
-        }
+       async function loadCategories() {
+    try {
+        showLoading('Загрузка категорий...');
         
-        function renderCategories(categories) {
-            const statusFilter = document.getElementById('categoryStatusFilter').value;
-            
-            let filteredCategories = categories;
-            if (statusFilter !== 'all') {
-                filteredCategories = categories.filter(cat => 
-                    (statusFilter === 'active' && cat.is_active) || 
-                    (statusFilter === 'inactive' && !cat.is_active)
-                );
+        const response = await fetch('/api/admin/categories', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
             }
-            
-            const container = document.getElementById('categoriesList');
-            
-            if (filteredCategories.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1 / -1;">
-                        <i class="fas fa-layer-group"></i>
-                        <p>Категории не найдены</p>
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderCategories(data.data.categories);
+            if (isMobile) {
+                renderMobileCategories(data.data.categories);
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки категорий');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки категорий:', error);
+        showNotification('Ошибка загрузки категорий', 'error');
+        document.getElementById('categoriesList').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Ошибка загрузки категорий</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+        
+       function renderCategories(categories) {
+    const statusFilter = document.getElementById('categoryStatusFilter').value;
+    
+    let filteredCategories = categories;
+    if (statusFilter !== 'all') {
+        filteredCategories = categories.filter(cat => 
+            (statusFilter === 'active' && cat.is_active) || 
+            (statusFilter === 'inactive' && !cat.is_active)
+        );
+    }
+    
+    const container = document.getElementById('categoriesList');
+    
+    if (filteredCategories.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fas fa-layer-group"></i>
+                <p>Категории не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    filteredCategories.forEach(category => {
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.style.borderLeftColor = category.color || '#C5A880';
+        card.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
+                <div style="font-size: 1.5rem; color: ${category.color || '#C5A880'}">
+                    <i class="${category.icon || 'fas fa-folder'}"></i>
+                </div>
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <h4 style="color: var(--graphite-dark); margin: 0; font-size: 1rem;">${category.display_name}</h4>
+                        <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; 
+                             color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                            ${category.is_active ? 'Активна' : 'Неактивна'}
+                        </span>
                     </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            
-            filteredCategories.forEach(category => {
-                const card = document.createElement('div');
-                card.className = 'stat-card';
-                card.style.borderLeftColor = category.color || '#C5A880';
-                card.innerHTML = `
-                    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px;">
-                        <div style="font-size: 1.5rem; color: ${category.color || '#C5A880'}">
-                            <i class="${category.icon || 'fas fa-folder'}"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <h4 style="color: var(--graphite-dark); margin-bottom: 4px; font-size: 1rem;">${category.display_name}</h4>
-                            <p style="color: var(--graphite-medium); font-size: 0.8rem; margin-bottom: 8px; line-height: 1.4;">${category.description}</p>
-                            <div style="display: flex; gap: 8px; font-size: 0.75rem;">
-                                <span style="color: var(--graphite-light);">${category.name}</span>
-                                <span style="background: ${category.is_active ? 'var(--success)' : 'var(--error)'}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
-                                    ${category.is_active ? 'Активна' : 'Неактивна'}
-                                </span>
-                                <span style="color: var(--graphite-medium);">Услуг: ${category.services_count || 0}</span>
-                                <span style="color: var(--graphite-medium);">Задач: ${category.tasks_count || 0}</span>
+                    <p style="color: var(--graphite-medium); font-size: 0.8rem; margin-bottom: 8px; line-height: 1.4;">${category.description}</p>
+                    
+                    ${category.image_full_url ? `
+                        <div style="margin: 12px 0; text-align: center;">
+                            <img src="${category.image_full_url}" 
+                                 style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 1px solid rgba(61, 61, 61, 0.1);"
+                                 alt="${category.display_name}"
+                                 onerror="this.onerror=null; this.src='/api/images/test/category';">
+                            <div style="font-size: 0.75rem; color: var(--graphite-medium); margin-top: 4px;">
+                                ${category.image_url ? category.image_url.split('/').pop() : 'Изображение'}
                             </div>
                         </div>
-                    </div>
+                    ` : ''}
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-size: 0.75rem; color: var(--graphite-light);">
-                            Порядок: ${category.sort_order || 0}
-                        </div>
-                        
-                        <div style="display: flex; gap: 6px;">
-                            <button class="btn btn-sm btn-secondary btn-icon" onclick="editCategory(${category.id})" title="Редактировать">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-error btn-icon" onclick="deleteCategory(${category.id})" title="Удалить">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+                    <div style="display: flex; gap: 8px; font-size: 0.75rem;">
+                        <span style="color: var(--graphite-light);">${category.name}</span>
+                        <span style="color: var(--graphite-medium);">Услуг: ${category.services_count || 0}</span>
+                        <span style="color: var(--graphite-medium);">Задач: ${category.tasks_count || 0}</span>
                     </div>
-                `;
-                container.appendChild(card);
-            });
+                </div>
+            </div>
             
-            // Мобильная версия
-            if (isMobile) {
-                renderMobileCategories(filteredCategories);
-            }
-        }
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.75rem; color: var(--graphite-light);">
+                    Порядок: ${category.sort_order || 0}
+                </div>
+                
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editCategory(${category.id})" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-icon" onclick="deleteCategory(${category.id})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    // Мобильная версия
+    if (isMobile) {
+        renderMobileCategories(filteredCategories);
+    }
+}
         
         function renderMobileCategories(categories) {
             const container = document.getElementById('categoriesMobile');
