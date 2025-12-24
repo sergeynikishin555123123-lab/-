@@ -419,22 +419,23 @@ await db.exec(`
 `);
         
         // Услуги
-        await db.exec(`
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                category_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL,
-                base_price REAL DEFAULT 0,
-                estimated_time TEXT,
-                is_active INTEGER DEFAULT 1,
-                sort_order INTEGER DEFAULT 0,
-                is_featured INTEGER DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-            )
-        `);
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS services (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        image_url TEXT,  -- ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        base_price REAL DEFAULT 0,
+        estimated_time TEXT,
+        is_active INTEGER DEFAULT 1,
+        sort_order INTEGER DEFAULT 0,
+        is_featured INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    )
+`);
 
         // Задачи
         await db.exec(`
@@ -690,6 +691,61 @@ const createImagePlaceholder = (type = 'default', text = '') => {
     return placeholders[type] || placeholders.default;
 };
 
+// Загрузка изображения услуги
+const uploadServiceImage = multer({ 
+    storage: multer.diskStorage({
+        destination: function (req, file, cb) {
+            ensureUploadDirs();
+            cb(null, 'public/uploads/services');
+        },
+        filename: function (req, file, cb) {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const extension = path.extname(file.originalname).toLowerCase();
+            const filename = `service-${uniqueSuffix}${extension}`;
+            console.log(`📁 Сохранение изображения услуги: ${filename}`);
+            cb(null, filename);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: imageFilter
+});
+
+app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadServiceImage.single('image'), async (req, res) => {
+    try {
+        console.log('📤 Загрузка изображения услуги...');
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл изображения не был загружен'
+            });
+        }
+        
+        const fileUrl = `/uploads/services/${req.file.filename}`;
+        console.log(`✅ Изображение услуги сохранено: ${fileUrl}`);
+        
+        res.json({
+            success: true,
+            message: 'Изображение услуги успешно загружено',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+                url: fileUrl,
+                path: req.file.path
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки изображения услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка загрузки изображения услуги'
+        });
+    }
+});
+
 // Функция для генерации дефолтных изображений при инициализации
 const generateDefaultImages = async () => {
     try {
@@ -839,8 +895,7 @@ const createInitialData = async () => {
             console.log('✅ Тарифы подписок созданы');
         }
 
-        // 4. Категории услуг с дефолтными изображениями
-// 4. Категории услуг с дефолтными изображениями и описаниями
+// 4. Категории услуг с дефолтными изображениями
 const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
 if (!categoriesExist) {
     const categories = [
@@ -849,7 +904,7 @@ if (!categoriesExist) {
             'home_and_household', 
             'Дом и быт', 
             'Уборка, готовка, уход за домом',
-            'В эту категорию входят все бытовые услуги: от генеральной уборки до мелкого ремонта. Наши помощницы имеют опыт работы с разными типами помещений и используют профессиональную технику и экологичные средства.',
+            `В эту категорию входят все бытовые услуги: от генеральной уборки до мелкого ремонта. Наши помощницы имеют опыт работы с разными типами помещений и используют профессиональную технику и экологичные средства.`,
             '🏠', 
             '/uploads/categories/home.jpg', 
             '#FF6B8B', 
@@ -860,7 +915,7 @@ if (!categoriesExist) {
             'family_and_children', 
             'Семья и дети', 
             'Няни, репетиторы, помощь с детьми',
-            'Категория включает услуги по уходу за детьми, помощь с уроками, развивающие занятия. Все помощницы имеют педагогическое образование и опыт работы с детьми разных возрастов.',
+            `Категория включает услуги по уходу за детьми, помощь с уроками, развивающие занятия. Все помощницы имеют педагогическое образование и опыт работы с детьми разных возрастов.`,
             '👨‍👩‍👧‍👦', 
             '/uploads/categories/family.jpg', 
             '#3498DB', 
@@ -871,7 +926,7 @@ if (!categoriesExist) {
             'beauty_and_health', 
             'Красота и здоровье', 
             'Маникюр, массаж, парикмахерские услуги',
-            'Профессиональные услуги красоты на дому: маникюр, педикюр, массаж, стрижки. Мастера используют стерильные инструменты и профессиональную косметику премиум-класса.',
+            `Профессиональные услуги красоты на дому: маникюр, педикюр, массаж, стрижки. Мастера используют стерильные инструменты и профессиональную косметику премиум-класса.`,
             '💅', 
             '/uploads/categories/beauty.jpg', 
             '#9B59B6', 
@@ -882,7 +937,7 @@ if (!categoriesExist) {
             'courses_and_education', 
             'Образование', 
             'Репетиторство, обучение, курсы',
-            'Индивидуальные занятия по школьным предметам, подготовка к экзаменам, обучение иностранным языкам и компьютерной грамотности. Преподаватели с высшим образованием и опытом работы.',
+            `Индивидуальные занятия по школьным предметам, подготовка к экзаменам, обучение иностранным языкам и компьютерной грамотности. Преподаватели с высшим образованием и опытом работы.`,
             '🎓', 
             '/uploads/categories/education.jpg', 
             '#2ECC71', 
@@ -893,7 +948,7 @@ if (!categoriesExist) {
             'shopping_and_delivery', 
             'Покупки и доставка', 
             'Покупка и доставка товаров',
-            'Помощь с покупками: продуктовые наборы, товары из магазинов, доставка документов и посылок. Помощницы внимательно относятся к спискам покупок и соблюдают все пожелания клиентов.',
+            `Помощь с покупками: продуктовые наборы, товары из магазинов, доставка документов и посылок. Помощницы внимательно относятся к спискам покупок и соблюдают все пожелания клиентов.`,
             '🛒', 
             '/uploads/categories/shopping.jpg', 
             '#E74C3C', 
@@ -904,7 +959,7 @@ if (!categoriesExist) {
             'events_and_organization', 
             'События и организация', 
             'Организация мероприятий и праздников',
-            'Организация дней рождений, корпоративов, детских праздников. Помощь в подготовке к мероприятиям: украшение помещения, составление меню, подбор развлечений.',
+            `Организация дней рождений, корпоративов, детских праздников. Помощь в подготовке к мероприятиям: украшение помещения, составление меню, подбор развлечений.`,
             '🎉', 
             '/uploads/categories/events.jpg', 
             '#F39C12', 
@@ -1501,7 +1556,7 @@ app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), uplo
     }
 });
 
-// Админ: Получение категорий (для админ-панели)
+// Админ: Получение категорий
 app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
         console.log('👑 Запрос категорий админом');
@@ -2996,8 +3051,45 @@ app.get('/api/categories/:id/services', async (req, res) => {
 
 // ==================== РАСШИРЕННЫЕ ОПИСАНИЯ КАТЕГОРИЙ ====================
 
+// Получение расширенного описания категории (для клиентов)
+app.get('/api/categories/:id/description', async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        
+        const category = await db.get(
+            'SELECT id, display_name, admin_description FROM categories WHERE id = ? AND is_active = 1',
+            [categoryId]
+        );
+        
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                category: {
+                    id: category.id,
+                    display_name: category.display_name,
+                    admin_description: category.admin_description || 'Описание готовится...'
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения описания категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения описания категории'
+        });
+    }
+});
+
 // Получение расширенного описания категории (для админа)
-app.get('/api/categories/:id/admin-description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+app.get('/api/admin/categories/:id/description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
         const categoryId = req.params.id;
         
@@ -3034,7 +3126,7 @@ app.get('/api/categories/:id/admin-description', authMiddleware(['admin', 'super
 });
 
 // Обновление расширенного описания категории
-app.put('/api/categories/:id/admin-description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+app.put('/api/admin/categories/:id/description', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
         const categoryId = req.params.id;
         const { admin_description } = req.body;
@@ -4641,6 +4733,126 @@ app.post('/api/support/messages', authMiddleware(), async (req, res) => {
     }
 });
 
+// ==================== АДМИН ЧАТ ПОДДЕРЖКИ ====================
+
+// Получение всех чатов поддержки
+app.get('/api/admin/support/chats', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { unread_only } = req.query;
+        
+        let query = `
+            SELECT DISTINCT 
+                u.id as user_id,
+                u.first_name,
+                u.last_name,
+                u.phone,
+                u.email,
+                u.avatar_url,
+                u.role,
+                MAX(sm.created_at) as last_message_date,
+                COUNT(sm.id) as message_count,
+                SUM(CASE WHEN sm.sender_type = 'user' AND sm.is_read = 0 THEN 1 ELSE 0 END) as unread_count,
+                (SELECT message FROM support_messages sm2 
+                 WHERE sm2.user_id = u.id 
+                 ORDER BY sm2.created_at DESC LIMIT 1) as last_message
+            FROM users u
+            LEFT JOIN support_messages sm ON u.id = sm.user_id
+            WHERE u.id IN (
+                SELECT DISTINCT user_id FROM support_messages
+            )
+        `;
+        
+        const params = [];
+        
+        if (unread_only === 'true') {
+            query += ' AND EXISTS (SELECT 1 FROM support_messages sm3 WHERE sm3.user_id = u.id AND sm3.sender_type = "user" AND sm3.is_read = 0)';
+        }
+        
+        query += ' GROUP BY u.id ORDER BY last_message_date DESC';
+        
+        const chats = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: { chats }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения чатов поддержки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения чатов поддержки'
+        });
+    }
+});
+
+// Отправка сообщения от поддержки
+app.post('/api/admin/support/messages/send', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { user_id, message } = req.body;
+        
+        if (!user_id || !message || message.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Укажите пользователя и сообщение'
+            });
+        }
+        
+        const user = await db.get('SELECT id, first_name, last_name FROM users WHERE id = ?', [user_id]);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+        
+        const result = await db.run(
+            `INSERT INTO support_messages (user_id, message, sender_type) 
+             VALUES (?, ?, ?)`,
+            [user_id, message.trim(), 'support']
+        );
+        
+        // Отправляем уведомление пользователю
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                user_id,
+                'support_message',
+                'Ответ от поддержки',
+                'Вы получили сообщение от службы поддержки.',
+                user_id,
+                'support'
+            ]
+        );
+        
+        const newMessage = await db.get(
+            `SELECT sm.*, 
+                    u.first_name,
+                    u.last_name,
+                    u.avatar_url
+             FROM support_messages sm
+             LEFT JOIN users u ON sm.user_id = u.id
+             WHERE sm.id = ?`,
+            [result.lastID]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Сообщение отправлено',
+            data: { message: newMessage }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка отправки сообщения поддержки:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка отправки сообщения'
+        });
+    }
+});
+
 // ==================== API ИСПОЛНИТЕЛЕЙ ====================
 
 // Получение статистики исполнителя
@@ -5208,9 +5420,9 @@ app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async 
 // Создание/обновление категории
 app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const { id, name, display_name, description, icon, color, sort_order, is_active, image_url } = req.body;
+        const { id, name, display_name, description, admin_description, icon, color, sort_order, is_active, image_url, is_popular } = req.body;
         
-        if (!name || !display_name || !description) {
+        if (!name || !display_name || !description || !admin_description) {
             return res.status(400).json({
                 success: false,
                 error: 'Заполните все обязательные поля'
@@ -5224,15 +5436,17 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
                     name = ?,
                     display_name = ?,
                     description = ?,
+                    admin_description = ?,
                     icon = ?,
                     image_url = ?,
                     color = ?,
                     sort_order = ?,
                     is_active = ?,
+                    is_popular = ?,
                     updated_at = CURRENT_TIMESTAMP
                  WHERE id = ?`,
-                [name, display_name, description, icon || 'fas fa-folder', image_url || null,
-                 color || '#C5A880', sort_order || 0, is_active ? 1 : 0, id]
+                [name, display_name, description, admin_description, icon || 'fas fa-folder', image_url || null,
+                 color || '#C5A880', sort_order || 0, is_active ? 1 : 0, is_popular ? 1 : 0, id]
             );
             
             const category = await db.get('SELECT * FROM categories WHERE id = ?', [id]);
@@ -5246,10 +5460,10 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
             // Создание новой категории
             const result = await db.run(
                 `INSERT INTO categories 
-                (name, display_name, description, icon, image_url, color, sort_order, is_active) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [name, display_name, description, icon || 'fas fa-folder', image_url || null,
-                 color || '#C5A880', sort_order || 0, is_active ? 1 : 1]
+                (name, display_name, description, admin_description, icon, image_url, color, sort_order, is_active, is_popular) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [name, display_name, description, admin_description, icon || 'fas fa-folder', image_url || null,
+                 color || '#C5A880', sort_order || 0, is_active ? 1 : 1, is_popular ? 1 : 0]
             );
             
             const categoryId = result.lastID;
@@ -5270,7 +5484,6 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
         });
     }
 });
-
 // Удаление категории
 app.delete('/api/admin/categories/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
@@ -5367,7 +5580,7 @@ app.get('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (r
 // Создание/обновление услуги
 app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const { id, category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured } = req.body;
+        const { id, category_id, name, description, image_url, base_price, estimated_time, is_active, sort_order, is_featured } = req.body;
         
         if (!category_id || !name || !description) {
             return res.status(400).json({
@@ -5390,6 +5603,7 @@ app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (
                     category_id = ?,
                     name = ?,
                     description = ?,
+                    image_url = ?,
                     base_price = ?,
                     estimated_time = ?,
                     is_active = ?,
@@ -5397,7 +5611,7 @@ app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (
                     is_featured = ?,
                     updated_at = CURRENT_TIMESTAMP
                  WHERE id = ?`,
-                [category_id, name, description, base_price || 0, estimated_time || null,
+                [category_id, name, description, image_url || null, base_price || 0, estimated_time || null,
                  is_active ? 1 : 0, sort_order || 0, is_featured ? 1 : 0, id]
             );
             
@@ -5417,9 +5631,9 @@ app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (
         } else {
             const result = await db.run(
                 `INSERT INTO services 
-                (category_id, name, description, base_price, estimated_time, is_active, sort_order, is_featured) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [category_id, name, description, base_price || 0, estimated_time || null,
+                (category_id, name, description, image_url, base_price, estimated_time, is_active, sort_order, is_featured) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [category_id, name, description, image_url || null, base_price || 0, estimated_time || null,
                  is_active ? 1 : 1, sort_order || 0, is_featured ? 1 : 0]
             );
             
@@ -5447,7 +5661,6 @@ app.post('/api/admin/services', authMiddleware(['admin', 'superadmin']), async (
         });
     }
 });
-
 // Удаление услуги
 app.delete('/api/admin/services/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
