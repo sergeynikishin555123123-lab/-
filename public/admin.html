@@ -4358,30 +4358,26 @@
                 if (data.success) {
                     const settings = data.data.settings;
                     
-                    // Логотип
                     // Логотип - показываем в preview
-                    const logoPreview = document.getElementById('logoPreview');
-                    const currentLogoUrl = settings.site_logo || '/api/images/test/logo';
-                    
-                    logoPreview.innerHTML = `
-                        <div style="margin-top: 10px;">
-                            <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Текущий логотип:</p>
-                            <div style="position: relative; display: inline-block;">
-                                <img src="${currentLogoUrl}" 
-                                     style="max-width: 200px; max-height: 60px; border: 2px solid var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;"
-                                     onerror="this.src='/api/images/test/logo'">
-                                <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
-                                    Текущий
-                                </div>
-                            </div>
-                            <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
-                                Путь: ${settings.site_logo || 'Не установлен'}
-                            </p>
-                            <button class="btn btn-sm btn-secondary" onclick="refreshLogo()" style="margin-top: 8px; font-size: 0.8rem;">
-                                <i class="fas fa-sync-alt"></i> Обновить на всех страницах
-                            </button>
-                        </div>
-                    `;
+const logoPreview = document.getElementById('logoPreview');
+const currentLogoUrl = settings.site_logo || '/static/images/logo.png'; // Измените путь на актуальный
+
+logoPreview.innerHTML = `
+    <div style="margin-top: 10px;">
+        <p style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">Текущий логотип:</p>
+        <div style="position: relative; display: inline-block;">
+            <img src="${currentLogoUrl}" 
+                 style="max-width: 200px; max-height: 60px; border: 2px solid var(--gold-metallic); border-radius: 4px; padding: 5px; background: white;"
+                 onerror="this.onerror=null; this.src='/static/images/default-logo.png';">
+            <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                Текущий
+            </div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--graphite-light); margin-top: 4px;">
+            Путь: ${settings.site_logo || 'Не установлен'}
+        </p>
+    </div>
+`;
                     
                     // Основные настройки
                     document.getElementById('settingAppName').value = settings.site_name || 'Женский Консьерж';
@@ -4545,29 +4541,43 @@ window.previewLogo = previewLogo;
 async function refreshLogo() {
     try {
         console.log('🔄 Обновление логотипа...');
-        const response = await fetch('/api/logo');
-        const data = await response.json();
         
-        if (data.success) {
-            // Обновляем favicon
-            const favicon = document.querySelector('link[rel*="icon"]');
-            if (favicon) {
-                const timestamp = new Date().getTime();
-                favicon.href = data.data.full_url + '?t=' + timestamp;
+        // Проверяем, есть ли endpoint для получения логотипа
+        const response = await fetch('/api/settings/logo', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
             }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
             
-            // Обновляем все изображения логотипа на странице
-            const logoImages = document.querySelectorAll('img[src*="logo"], img[alt*="logo"]');
-            logoImages.forEach(img => {
-                const timestamp = new Date().getTime();
-                img.src = data.data.full_url + '?t=' + timestamp;
-            });
-            
-            console.log('✅ Логотип обновлен:', data.data.full_url);
-            showNotification('Логотип обновлен на всех страницах', 'success');
+            if (data.success && data.data && data.data.full_url) {
+                // Обновляем favicon
+                const favicon = document.querySelector('link[rel*="icon"]');
+                if (favicon) {
+                    const timestamp = new Date().getTime();
+                    favicon.href = data.data.full_url + '?t=' + timestamp;
+                }
+                
+                // Обновляем все изображения логотипа на странице
+                const logoImages = document.querySelectorAll('img[src*="logo"]');
+                logoImages.forEach(img => {
+                    const timestamp = new Date().getTime();
+                    img.src = data.data.full_url + '?t=' + timestamp;
+                });
+                
+                console.log('✅ Логотип обновлен:', data.data.full_url);
+                showNotification('Логотип обновлен на всех страницах', 'success');
+            }
+        } else {
+            console.warn('⚠️ Endpoint для логотипа не найден, пропускаем обновление');
+            showNotification('Функция обновления логотипа временно недоступна', 'info');
         }
     } catch (error) {
-        console.error('Ошибка обновления логотипа:', error.message);
+        console.warn('⚠️ Ошибка обновления логотипа:', error.message);
+        // Не показываем ошибку пользователю, чтобы не пугать
     }
 }
 
