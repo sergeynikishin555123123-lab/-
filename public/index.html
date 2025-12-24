@@ -200,7 +200,7 @@
             background: rgba(249, 247, 243, 0.98);
             border-top: 1px solid var(--pastel-pink);
             display: flex;
-            justify-content: space-around;
+             justify-content: space-between;
             align-items: center;
             padding: 0 10px;
             z-index: 1000;
@@ -217,7 +217,7 @@
             padding: 8px 12px;
             border-radius: var(--radius);
             transition: var(--transition-fast);
-            min-width: 70px;
+            min-width: 60px;
             cursor: pointer;
         }
         
@@ -2759,10 +2759,6 @@
             <i class="fas fa-list"></i>
             <span>Все услуги</span>
         </a>
-        <a href="#" class="nav-item" onclick="window.app.showSupportChat()" id="supportChatBtn">
-            <i class="fas fa-headset"></i>
-            <span>Поддержка</span>
-        </a>
         <a href="#" class="nav-item" onclick="window.app.showTasksPopup()" id="quickTasksBtn">
             <i class="fas fa-tasks"></i>
             <span>Задачи</span>
@@ -3956,34 +3952,41 @@
                 }
             },
 
-            renderServicesInCategory: function() {
-                var container = document.getElementById('allServicesList');
-                var pageTitle = document.querySelector('#all-services-page .section-title');
-                
-                if (!container) return;
-                
-                if (!this.services || this.services.length === 0) {
-                    container.className = 'square-grid';
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
-                            '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                                '<i class="fas fa-arrow-left"></i>' +
-                            '</button>' +
-                            '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
-                        '</div>' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-                        '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
-                            '<i class="fas fa-arrow-left"></i>' +
-                            'Назад ко всем услугам' +
-                        '</button>' +
-                    '</div>';
-                    return;
-                }
-                
-                if (pageTitle) {
-                    pageTitle.textContent = this.selectedCategory.display_name;
-                }
+renderServicesInCategory: function() {
+    var container = document.getElementById('allServicesList');
+    var pageTitle = document.querySelector('#all-services-page .section-title');
+    
+    if (!container) return;
+    
+    // Проверяем существует ли selectedCategory
+    if (!this.selectedCategory) {
+        console.error('DEBUG: selectedCategory не определен');
+        this.loadAllServicesPage();
+        return;
+    }
+    
+    if (!this.services || this.services.length === 0) {
+        container.className = 'square-grid';
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
+                '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                '</button>' +
+                '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
+            '</div>' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
+            '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
+                '<i class="fas fa-arrow-left"></i>' +
+                'Назад ко всем услугам' +
+            '</button>' +
+        '</div>';
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = this.selectedCategory.display_name;
+    }
                 
                 container.className = 'square-grid';
                 container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
@@ -5856,8 +5859,8 @@
                 if (!document) return;
                 
                 var modal = document.getElementById('documentModal');
-                var title = document.getElementById('documentTitle');
-                var content = document.getElementById('documentContent');
+var title = document.getElementById('documentTitle');
+var content = document.getElementById('documentContent');
                 
                 if (modal && title && content) {
                     title.textContent = document.title;
