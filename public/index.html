@@ -438,50 +438,50 @@
             transform: scaleX(1);
         }
         
-.category-icon {
-    font-size: 2rem;
-    color: var(--pastel-pink);
-    margin-bottom: 10px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-}
+        .category-icon {
+            font-size: 2rem;
+            color: var(--pastel-pink);
+            margin-bottom: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
 
-.service-icon {
-    font-size: 2rem;
-    color: var(--pastel-pink);
-    margin-bottom: 10px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
-}
+        .service-icon {
+            font-size: 2rem;
+            color: var(--pastel-pink);
+            margin-bottom: 10px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
         
-.category-image {
-    width: 100%;
-    height: 120px;
-    border-radius: var(--radius);
-    margin-bottom: 15px;
-    overflow: hidden;
-    position: relative;
-}
+        .category-image {
+            width: 100%;
+            height: 120px;
+            border-radius: var(--radius);
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
 
-.category-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    display: block;
-}
+        .category-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+        }
 
-.category-card:hover .category-image img {
-    transform: scale(1.05);
-}
+        .category-card:hover .category-image img {
+            transform: scale(1.05);
+        }
         
         .category-card h3 {
             font-size: 1.1rem;
@@ -519,26 +519,26 @@
             border-color: var(--pastel-pink);
         }
         
-.service-image {
-    width: 100%;
-    height: 120px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 12px;
-    overflow: hidden;
-    position: relative;
-}
+        .service-image {
+            width: 100%;
+            height: 120px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 12px;
+            overflow: hidden;
+            position: relative;
+        }
 
-.service-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    display: block;
-}
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+        }
 
-.service-card:hover .service-image img {
-    transform: scale(1.05);
-}
+        .service-card:hover .service-image img {
+            transform: scale(1.05);
+        }
         
         .service-header {
             display: flex;
@@ -1659,52 +1659,41 @@
             box-shadow: var(--shadow);
         }
         
-.category-image-container {
-    width: 100%;
-    height: 160px;
-    overflow: hidden;
-    position: relative;
-}
+        .category-image-container {
+            width: 100%;
+            height: 160px;
+            overflow: hidden;
+            position: relative;
+        }
 
-.category-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-.category-card-square:hover .category-image-container img {
-    transform: scale(1.05);
-}
-        
         .category-image-container img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.3s ease;
+            display: block;
         }
-        
+
         .category-card-square:hover .category-image-container img {
             transform: scale(1.05);
         }
         
-.category-icon-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(255, 255, 255, 0.95);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pastel-pink);
-    font-size: 1.2rem;
-    box-shadow: var(--shadow-sm);
-    z-index: 2;
-}
+        .category-icon-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pastel-pink);
+            font-size: 1.2rem;
+            box-shadow: var(--shadow-sm);
+            z-index: 2;
+        }
         
         .category-content {
             padding: 20px;
@@ -2048,7 +2037,7 @@
 <body>
     <!-- Верхняя навигация -->
     <nav class="top-nav">
-        <a href="#" class="logo" onclick="app.navigateToPage('home')">
+        <a href="#" class="logo" onclick="window.app.navigateToPage('home')">
             <img src="/api/logo/file" 
                  alt="WOMAN HELP" 
                  class="logo-img" 
@@ -2060,7 +2049,7 @@
             <span class="logo-tagline">Решение есть</span>
         </a>
         
-        <div class="user-avatar" id="userAvatar" onclick="app.toggleUserMenu()">
+        <div class="user-avatar" id="userAvatar" onclick="window.app.toggleUserMenu()">
             <img id="userAvatarImg" 
                  alt="Аватар пользователя"
                  onerror="this.style.display='none'; this.parentElement.innerHTML=this.parentElement.textContent || 'Г';"
@@ -2073,22 +2062,22 @@
                 <div style="font-size: 0.9rem; color: var(--graphite-medium);" id="menuUserEmail"></div>
             </div>
             <div style="padding: 5px 0;">
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('profile')">
+                <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('profile')">
                     <i class="fas fa-user"></i>Профиль
                 </a>
-                <a href="#" class="nav-menu-item" onclick="app.showTasksPopup()">
+                <a href="#" class="nav-menu-item" onclick="window.app.showTasksPopup()">
                     <i class="fas fa-tasks"></i>Мои задачи
                 </a>
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('guides')">
+                <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('guides')">
                     <i class="fas fa-book"></i>Гайды
                 </a>
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('all-services')">
+                <a href="#" class="nav-menu-item" onclick="window.app.navigateToPage('all-services')">
                     <i class="fas fa-list"></i>Все услуги
                 </a>
-                <a href="#" class="nav-menu-item" onclick="app.showLoginModal()" id="loginMenuBtn">
+                <a href="#" class="nav-menu-item" onclick="window.app.showLoginModal()" id="loginMenuBtn">
                     <i class="fas fa-sign-in-alt"></i>Войти
                 </a>
-                <a href="#" class="nav-menu-item" onclick="app.logout()" id="logoutMenuBtn" style="display: none;">
+                <a href="#" class="nav-menu-item" onclick="window.app.logout()" id="logoutMenuBtn" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i>Выйти
                 </a>
             </div>
@@ -2120,11 +2109,11 @@
                         </p>
                         
                         <div class="auth-actions">
-                            <button class="btn btn-primary" onclick="app.showLoginModal()" style="padding: 12px 20px; font-size: 0.9rem;">
+                            <button class="btn btn-primary" onclick="window.app.showLoginModal()" style="padding: 12px 20px; font-size: 0.9rem;">
                                 <i class="fas fa-sign-in-alt"></i>
                                 Войти в систему
                             </button>
-                            <button class="btn btn-secondary" onclick="app.showRegisterModal()" style="padding: 12px 20px; font-size: 0.9rem;">
+                            <button class="btn btn-secondary" onclick="window.app.showRegisterModal()" style="padding: 12px 20px; font-size: 0.9rem;">
                                 <i class="fas fa-user-plus"></i>
                                 Зарегистрироваться
                             </button>
@@ -2155,7 +2144,7 @@
                             </div>
                             
                             <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
-                                <button class="btn btn-secondary btn-sm" onclick="app.showHelp()" style="padding: 8px 16px; font-size: 0.85rem;">
+                                <button class="btn btn-secondary btn-sm" onclick="window.app.showHelp()" style="padding: 8px 16px; font-size: 0.85rem;">
                                     <i class="fas fa-headset"></i>
                                     Поддержка
                                 </button>
@@ -2176,15 +2165,15 @@
                         <div class="tagline">Решение есть</div>
                         <p>Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.</p>
                         <div class="hero-actions">
-                            <button class="btn btn-primary" onclick="app.checkSubscription()">
+                            <button class="btn btn-primary" onclick="window.app.checkSubscription()">
                                 <i class="fas fa-plus-circle"></i>
                                 Создать задачу
                             </button>
-                            <button class="btn btn-secondary" onclick="app.navigateToPage('all-services')">
+                            <button class="btn btn-secondary" onclick="window.app.navigateToPage('all-services')">
                                 <i class="fas fa-list"></i>
                                 Все услуги
                             </button>
-                            <button class="btn guides-btn" onclick="app.navigateToPage('guides')">
+                            <button class="btn guides-btn" onclick="window.app.navigateToPage('guides')">
                                 <i class="fas fa-book"></i>
                                 Гайды
                             </button>
@@ -2209,7 +2198,7 @@
                 <section class="section">
                     <div class="d-flex justify-between align-center mb-20">
                         <h2 class="section-title">Топ услуг</h2>
-                        <button class="view-all-btn" onclick="app.navigateToPage('all-services')">
+                        <button class="view-all-btn" onclick="window.app.navigateToPage('all-services')">
                             <i class="fas fa-arrow-right"></i>
                             Все услуги
                         </button>
@@ -2248,7 +2237,7 @@
             <div class="container">
                 <section class="section">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('home')" style="padding: 8px 16px;">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h2 class="section-title" id="servicesPageTitle">Все услуги</h2>
@@ -2257,10 +2246,10 @@
                     <div class="all-services-header">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="serviceSearch" class="search-input" placeholder="Поиск услуг..." oninput="app.filterServices()">
+                            <input type="text" id="serviceSearch" class="search-input" placeholder="Поиск услуг..." oninput="window.app.filterServices()">
                         </div>
                         <div>
-                            <button class="guides-btn" onclick="app.navigateToPage('guides')">
+                            <button class="guides-btn" onclick="window.app.navigateToPage('guides')">
                                 <i class="fas fa-book"></i>
                                 Гайды
                             </button>
@@ -2272,7 +2261,7 @@
                     </div>
                     
                     <div style="text-align: center; margin-top: 30px; display: none;" id="backToCategoriesBtn">
-                        <button class="btn btn-secondary" onclick="app.loadAllServicesPage()">
+                        <button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()">
                             <i class="fas fa-arrow-left"></i>
                             Назад ко всем категориям
                         </button>
@@ -2286,7 +2275,7 @@
             <div class="container">
                 <section class="section">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('home')" style="padding: 8px 16px;">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h2 class="section-title">Гайды и инструкции</h2>
@@ -2300,7 +2289,7 @@
                     </div>
                     
                     <div class="guides-grid" id="guidesList">
-                        <div class="guide-card" onclick="app.showGuide('getting-started')">
+                        <div class="guide-card" onclick="window.app.showGuide('getting-started')">
                             <i class="fas fa-play-circle guide-icon"></i>
                             <h3>Начало работы</h3>
                             <p>Пошаговое руководство по созданию первой задачи и работе с исполнителями</p>
@@ -2309,7 +2298,7 @@
                             </div>
                         </div>
                         
-                        <div class="guide-card" onclick="app.showGuide('tips')">
+                        <div class="guide-card" onclick="window.app.showGuide('tips')">
                             <i class="fas fa-lightbulb guide-icon"></i>
                             <h3>Советы по задачам</h3>
                             <p>Как правильно описать задачу, чтобы получить лучший результат</p>
@@ -2318,7 +2307,7 @@
                             </div>
                         </div>
                         
-                        <div class="guide-card" onclick="app.showGuide('safety')">
+                        <div class="guide-card" onclick="window.app.showGuide('safety')">
                             <i class="fas fa-shield-alt guide-icon"></i>
                             <h3>Безопасность</h3>
                             <p>Правила безопасности при работе с исполнителями и передаче доступа</p>
@@ -2336,7 +2325,7 @@
             <div class="container">
                 <section class="section">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="app.cancelTask()" style="padding: 8px 16px;">
+                        <button class="btn btn-secondary" onclick="window.app.cancelTask()" style="padding: 8px 16px;">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h2 class="section-title">Создание задачи</h2>
@@ -2389,7 +2378,7 @@
                             </div>
                             
                             <div style="display: flex; gap: 12px; margin-top: 30px;">
-                                <button type="button" class="btn btn-secondary" onclick="app.cancelTask()" style="flex: 1;">
+                                <button type="button" class="btn btn-secondary" onclick="window.app.cancelTask()" style="flex: 1;">
                                     Отмена
                                 </button>
                                 <button type="submit" class="btn btn-primary" style="flex: 1;">
@@ -2407,7 +2396,7 @@
             <div class="container">
                 <section class="section">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('home')" style="padding: 8px 16px;">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h2 class="section-title">Мои задачи</h2>
@@ -2415,10 +2404,10 @@
                     
                     <!-- Табы -->
                     <div class="tabs" id="tasksTabs">
-                        <div class="tab active" onclick="app.filterTasks('all')">Все</div>
-                        <div class="tab" onclick="app.filterTasks('new')">Новые</div>
-                        <div class="tab" onclick="app.filterTasks('in_progress')">В работе</div>
-                        <div class="tab" onclick="app.filterTasks('completed')">Завершенные</div>
+                        <div class="tab active" onclick="window.app.filterTasks('all')">Все</div>
+                        <div class="tab" onclick="window.app.filterTasks('new')">Новые</div>
+                        <div class="tab" onclick="window.app.filterTasks('in_progress')">В работе</div>
+                        <div class="tab" onclick="window.app.filterTasks('completed')">Завершенные</div>
                     </div>
                     
                     <!-- Контейнер для карточек задач (для мобильных) -->
@@ -2439,7 +2428,7 @@
             <div class="container">
                 <section class="section">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('tasks')" style="padding: 8px 16px;">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('tasks')" style="padding: 8px 16px;">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h2 class="section-title">Детали задачи</h2>
@@ -2467,7 +2456,7 @@
                         
                         <div class="chat-input-area">
                             <textarea id="inlineChatMessage" placeholder="Введите сообщение..."></textarea>
-                            <button onclick="app.sendInlineChatMessage()">
+                            <button onclick="window.app.sendInlineChatMessage()">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -2518,7 +2507,7 @@
                             <i class="fas fa-crown empty-state-icon"></i>
                             <h3 class="empty-state-title">Подписка не активна</h3>
                             <p class="empty-state-description">Активируйте подписку для доступа ко всем возможностям</p>
-                            <button class="btn btn-primary" onclick="app.navigateToPage('subscription')">
+                            <button class="btn btn-primary" onclick="window.app.navigateToPage('subscription')">
                                 <i class="fas fa-crown"></i>
                                 Активировать подписку
                             </button>
@@ -2530,7 +2519,7 @@
                 <section class="section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 class="section-title">Последние задачи</h2>
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('tasks')">
+                        <button class="btn btn-secondary" onclick="window.app.navigateToPage('tasks')">
                             <i class="fas fa-list"></i>
                             Все задачи
                         </button>
@@ -2584,26 +2573,26 @@
     
     <!-- Нижняя навигация -->
     <nav class="bottom-nav" id="bottomNav" style="display: none;">
-        <a href="#" class="nav-item active" onclick="app.navigateToPage('home')" data-page="home">
+        <a href="#" class="nav-item active" onclick="window.app.navigateToPage('home')" data-page="home">
             <i class="fas fa-home"></i>
             <span>Главная</span>
         </a>
-        <a href="#" class="nav-item" onclick="app.navigateToPage('all-services')" data-page="all-services">
+        <a href="#" class="nav-item" onclick="window.app.navigateToPage('all-services')" data-page="all-services">
             <i class="fas fa-list"></i>
             <span>Услуги</span>
         </a>
-        <a href="#" class="nav-item" onclick="app.showTasksPopup()" id="quickTasksBtn">
+        <a href="#" class="nav-item" onclick="window.app.showTasksPopup()" id="quickTasksBtn">
             <i class="fas fa-tasks"></i>
             <span>Задачи</span>
         </a>
-        <a href="#" class="nav-item" onclick="app.navigateToPage('profile')" data-page="profile">
+        <a href="#" class="nav-item" onclick="window.app.navigateToPage('profile')" data-page="profile">
             <i class="fas fa-user"></i>
             <span>Профиль</span>
         </a>
     </nav>
     
     <!-- Кнопка быстрого просмотра задач -->
-    <a href="#" class="quick-tasks-btn" onclick="app.showTasksPopup()" id="floatingTasksBtn" style="display: none;">
+    <a href="#" class="quick-tasks-btn" onclick="window.app.showTasksPopup()" id="floatingTasksBtn" style="display: none;">
         <i class="fas fa-tasks"></i>
     </a>
     
@@ -2612,7 +2601,7 @@
         <div class="tasks-popup-content">
             <div class="tasks-popup-header">
                 <h3>Мои задачи</h3>
-                <button class="close-popup-btn" onclick="app.closeTasksPopup()">
+                <button class="close-popup-btn" onclick="window.app.closeTasksPopup()">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -2644,11 +2633,11 @@
             </form>
             <div style="text-align: center; margin-top: 20px;">
                 <p style="color: var(--graphite-medium); font-size: 0.9rem;">Нет аккаунта? 
-                    <a href="#" onclick="app.showRegisterModal()" style="color: var(--pastel-pink); text-decoration: none; font-weight: 600;">Зарегистрироваться</a>
+                    <a href="#" onclick="window.app.showRegisterModal()" style="color: var(--pastel-pink); text-decoration: none; font-weight: 600;">Зарегистрироваться</a>
                 </p>
                 <p style="color: var(--graphite-medium); font-size: 0.9rem; margin-top: 10px;">
                     Забыли пароль? 
-                    <a href="#" onclick="app.showForgotPasswordModal()" style="color: var(--pastel-pink); text-decoration: none; font-weight: 600;">Восстановить</a>
+                    <a href="#" onclick="window.app.showForgotPasswordModal()" style="color: var(--pastel-pink); text-decoration: none; font-weight: 600;">Восстановить</a>
                 </p>
             </div>
         </div>
@@ -2696,7 +2685,7 @@
                     <label class="form-label">Email или телефон</label>
                     <input type="text" id="forgotPasswordInput" class="form-input" placeholder="ваш@email.com или +7(999)123-45-67" required>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="app.sendPasswordResetCode()" style="width: 100%; margin-top: 10px;">
+                <button type="button" class="btn btn-primary" onclick="window.app.sendPasswordResetCode()" style="width: 100%; margin-top: 10px;">
                     Отправить код восстановления
                 </button>
             </div>
@@ -2722,7 +2711,7 @@
                     <label class="form-label">Подтвердите новый пароль</label>
                     <input type="password" id="confirmPasswordInput" class="form-input" placeholder="Повторите пароль" required>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="app.resetPassword()" style="width: 100%; margin-top: 10px;">
+                <button type="button" class="btn btn-primary" onclick="window.app.resetPassword()" style="width: 100%; margin-top: 10px;">
                     Установить новый пароль
                 </button>
             </div>
@@ -2744,10 +2733,10 @@
                     <label class="form-label">Код из SMS</label>
                     <input type="text" id="verifyPhoneCode" class="form-input" placeholder="Введите 6-значный код" maxlength="6">
                 </div>
-                <button type="button" class="btn btn-primary" onclick="app.verifyPhoneCode()" style="width: 100%; margin-top: 10px;">
+                <button type="button" class="btn btn-primary" onclick="window.app.verifyPhoneCode()" style="width: 100%; margin-top: 10px;">
                     Подтвердить
                 </button>
-                <button type="button" class="btn btn-secondary" onclick="app.sendVerificationCode()" style="width: 100%; margin-top: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="window.app.sendVerificationCode()" style="width: 100%; margin-top: 10px;">
                     <i class="fas fa-redo"></i> Отправить код еще раз
                 </button>
             </div>
@@ -2765,7 +2754,7 @@
                     <label class="form-label">Номер телефона</label>
                     <input type="tel" id="sendCodePhone" class="form-input" placeholder="+7 (999) 123-45-67">
                 </div>
-                <button type="button" class="btn btn-primary" onclick="app.sendVerificationCode(true)" style="width: 100%; margin-top: 10px;">
+                <button type="button" class="btn btn-primary" onclick="window.app.sendVerificationCode(true)" style="width: 100%; margin-top: 10px;">
                     Отправить код
                 </button>
             </div>
@@ -2796,7 +2785,7 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-                       getImageUrl: function(imageUrl, type) {
+            getImageUrl: function(imageUrl, type) {
                 // Если передан null, undefined или пустая строка, возвращаем fallback
                 if (!imageUrl || imageUrl.trim() === '') {
                     // Используем SVG fallback вместо API запроса
@@ -2882,7 +2871,7 @@
                 return false;
             },
 
-                        setupDefaultImages: function() {
+            setupDefaultImages: function() {
                 console.log('🖼️ Настройка изображений...');
                 
                 // Обработчик ошибок для всех изображений
@@ -3221,20 +3210,47 @@
                 return this.categories;
             },
 
-           card.innerHTML = '<div class="category-image">' +
-    '<img src="' + imageUrl + '" ' +
-         'alt="' + category.display_name + '"' +
-         'loading="lazy">' +
-'</div>' +
-'<div class="category-icon" style="margin-top: -30px; position: relative; z-index: 3; text-align: center;">' +
-    '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 2rem; color: var(--pastel-pink);"></i>' +
-'</div>' +
-'<h3>' + category.display_name + '</h3>' +
-'<p>' + category.description + '</p>' +
-'<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
-    '<span>' + (category.services_count || '0') + ' услуг</span>' +
-    '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
-'</div>';
+            renderHomeCategories: function() {
+                var container = document.getElementById('categoriesGrid');
+                if (!container || !this.categories) return;
+                
+                if (this.categories.length === 0) {
+                    container.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                var self = this;
+                this.categories.slice(0, 4).forEach(function(category) {
+                    var card = document.createElement('div');
+                    card.className = 'card category-card';
+                    card.onclick = function() { self.selectCategory(category); };
+                    
+                    var imageUrl = category.image_url ? 
+                        self.getImageUrl(category.image_url, 'category') : 
+                        self.createSvgFallback('category');
+                    
+                    card.innerHTML = '<div class="category-image">' +
+                        '<img src="' + imageUrl + '" ' +
+                            'alt="' + category.display_name + '"' +
+                            'loading="lazy">' +
+                        '</div>' +
+                        '<div class="category-icon" style="margin-top: -30px; position: relative; z-index: 3; text-align: center;">' +
+                            '<i class="' + (category.icon || 'fas fa-star') + '" style="font-size: 2rem; color: var(--pastel-pink);"></i>' +
+                        '</div>' +
+                        '<h3>' + category.display_name + '</h3>' +
+                        '<p>' + category.description + '</p>' +
+                        '<div style="margin-top: 15px; color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between;">' +
+                            '<span>' + (category.services_count || '0') + ' услуг</span>' +
+                            '<span>Выбрать <i class="fas fa-arrow-right"></i></span>' +
+                        '</div>';
+                    
+                    container.appendChild(card);
+                });
+            },
             
             loadAllServices: async function() {
                 try {
@@ -3260,91 +3276,91 @@
             },
 
             // Добавьте в консоль отладку
-loadAllServicesPage: async function() {
-    console.log('DEBUG: loadAllServicesPage вызвана');
-    console.log('DEBUG: selectedCategory до сброса:', this.selectedCategory);
-    
-    try {
-        await this.loadAllServices();
-        this.selectedCategory = null;
-        console.log('DEBUG: selectedCategory после сброса:', this.selectedCategory);
-        console.log('DEBUG: Количество категорий:', this.categories.length);
-        
-        this.renderAllCategoriesForServices();
-        
-        // Проверяем, что кнопка скрыта
-        var backBtn = document.getElementById('backToCategoriesBtn');
-        console.log('DEBUG: Кнопка "Назад" существует:', !!backBtn);
-        if (backBtn) {
-            console.log('DEBUG: Стиль кнопки "Назад":', backBtn.style.display);
-        }
-        
-    } catch (error) {
-        console.error('Ошибка загрузки страницы услуг:', error);
-        this.showNotification('Ошибка загрузки услуг', 'error');
-    }
-},
+            loadAllServicesPage: async function() {
+                console.log('DEBUG: loadAllServicesPage вызвана');
+                console.log('DEBUG: selectedCategory до сброса:', this.selectedCategory);
+                
+                try {
+                    await this.loadAllServices();
+                    this.selectedCategory = null;
+                    console.log('DEBUG: selectedCategory после сброса:', this.selectedCategory);
+                    console.log('DEBUG: Количество категорий:', this.categories.length);
+                    
+                    this.renderAllCategoriesForServices();
+                    
+                    // Проверяем, что кнопка скрыта
+                    var backBtn = document.getElementById('backToCategoriesBtn');
+                    console.log('DEBUG: Кнопка "Назад" существует:', !!backBtn);
+                    if (backBtn) {
+                        console.log('DEBUG: Стиль кнопки "Назад":', backBtn.style.display);
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки страницы услуг:', error);
+                    this.showNotification('Ошибка загрузки услуг', 'error');
+                }
+            },
+
             // ==================== РЕНДЕРИНГ ====================
             renderAllCategoriesForServices: function() {
-    var container = document.getElementById('allServicesList');
-    if (!container) return;
-    
-    // Сбрасываем состояние
-    container.className = 'square-grid';
-    
-    if (!this.categories || this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-            '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    
-    var self = this;
-    this.categories.forEach(function(category) {
-        var card = document.createElement('div');
-        card.className = 'category-card-square';
-        card.onclick = function() { 
-            self.selectCategoryForServices(category); 
-        };
-        
-       var imageUrl = category.image_url ? 
-    self.getImageUrl(category.image_url, 'category') : 
-    self.createSvgFallback('category');
-        
-       card.innerHTML = '<div class="category-image-container">' +
-    '<img src="' + imageUrl + '" ' +
-         'alt="' + category.display_name + '"' +
-         'loading="lazy">' +
-            '<div class="category-icon-badge">' +
-                '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
-            '</div>' +
-        '</div>' +
-        '<div class="category-content">' +
-            '<h3 class="category-title">' + category.display_name + '</h3>' +
-            '<p class="category-description">' + category.description + '</p>' +
-            '<div class="category-footer">' +
-                '<span class="services-count">' +
-                    '<i class="fas fa-list"></i>' +
-                    (category.services_count || 0) + ' услуг' +
-                '</span>' +
-                '<span class="select-service-btn">' +
-                    'Выбрать <i class="fas fa-arrow-right"></i>' +
-                '</span>' +
-            '</div>' +
-        '</div>';
-        
-        container.appendChild(card);
-    });
-    
-    // Скрываем кнопку "Назад ко всем категориям"
-    document.getElementById('backToCategoriesBtn').style.display = 'none';
-    document.getElementById('servicesPageTitle').textContent = 'Все услуги';
-    this.selectedCategory = null;
-},
-
+                var container = document.getElementById('allServicesList');
+                if (!container) return;
+                
+                // Сбрасываем состояние
+                container.className = 'square-grid';
+                
+                if (!this.categories || this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                        '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                var self = this;
+                this.categories.forEach(function(category) {
+                    var card = document.createElement('div');
+                    card.className = 'category-card-square';
+                    card.onclick = function() { 
+                        self.selectCategoryForServices(category); 
+                    };
+                    
+                    var imageUrl = category.image_url ? 
+                        self.getImageUrl(category.image_url, 'category') : 
+                        self.createSvgFallback('category');
+                    
+                    card.innerHTML = '<div class="category-image-container">' +
+                        '<img src="' + imageUrl + '" ' +
+                            'alt="' + category.display_name + '"' +
+                            'loading="lazy">' +
+                        '<div class="category-icon-badge">' +
+                            '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="category-content">' +
+                        '<h3 class="category-title">' + category.display_name + '</h3>' +
+                        '<p class="category-description">' + category.description + '</p>' +
+                        '<div class="category-footer">' +
+                            '<span class="services-count">' +
+                                '<i class="fas fa-list"></i>' +
+                                (category.services_count || 0) + ' услуг' +
+                            '</span>' +
+                            '<span class="select-service-btn">' +
+                                'Выбрать <i class="fas fa-arrow-right"></i>' +
+                            '</span>' +
+                        '</div>' +
+                    '</div>';
+                    
+                    container.appendChild(card);
+                });
+                
+                // Скрываем кнопку "Назад ко всем категориям"
+                document.getElementById('backToCategoriesBtn').style.display = 'none';
+                document.getElementById('servicesPageTitle').textContent = 'Все услуги';
+                this.selectedCategory = null;
+            },
 
             // ДОБАВЬТЕ ЭТИ ДВЕ ФУНКЦИИ ЗДЕСЬ:
             filterServices: function() {
@@ -3402,14 +3418,14 @@ loadAllServicesPage: async function() {
                     };
                     
                     var imageUrl = category.image_url ? 
-    self.getImageUrl(category.image_url, 'category') : 
-    self.createSvgFallback('category');
+                        self.getImageUrl(category.image_url, 'category') : 
+                        self.createSvgFallback('category');
                     card.innerHTML = '<div class="category-image-container">' +
                         '<img src="' + imageUrl + '" ' +
-                             'alt="' + category.display_name + '"' +
-                             'loading="lazy"' +
-                             'onerror="this.onerror=null; this.src=\'/api/images/test/category\';"' +
-                             'style="width: 100%; height: 100%; object-fit: cover;">' +
+                            'alt="' + category.display_name + '"' +
+                            'loading="lazy"' +
+                            'onerror="this.onerror=null; this.src=\'/api/images/test/category\';"' +
+                            'style="width: 100%; height: 100%; object-fit: cover;">' +
                         '<div class="category-icon-badge">' +
                             '<i class="' + (category.icon || 'fas fa-star') + '"></i>' +
                         '</div>' +
@@ -3436,122 +3452,123 @@ loadAllServicesPage: async function() {
                 document.getElementById('servicesPageTitle').textContent = 'Результаты поиска';
             },
             
-           selectCategoryForServices: async function(category) {
-    if (!this.currentUser) {
-        this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
-        this.showLoginModal();
-        return;
-    }
-    
-    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-        this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
-        this.navigateToPage('subscription');
-        return;
-    }
-    
-    this.selectedCategory = category;
-    
-    try {
-        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-        if (response.ok) {
-            var result = await response.json();
-            if (result.success) {
-                this.services = result.data.services;
-                this.renderServicesInCategory();
-                return;
-            }
-        }
-        
-        // Fallback если API не сработал
-        this.services = this.allServices.filter(function(service) {
-            return service.category_id === category.id;
-        });
-        this.renderServicesInCategory();
-    } catch (error) {
-        console.error('Ошибка загрузки услуг:', error);
-        this.showNotification('Ошибка загрузки услуг', 'error');
-    }
-},
-          renderServicesInCategory: function() {
-    var container = document.getElementById('allServicesList');
-    var pageTitle = document.querySelector('#all-services-page .section-title');
-    
-    if (!container) return;
-    
-    if (!this.services || this.services.length === 0) {
-        container.className = 'square-grid';
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
-                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                '</button>' +
-                '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
-            '</div>' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-            '<button class="btn btn-primary" onclick="app.loadAllServicesPage()" style="margin-top: 20px;">' +
-                '<i class="fas fa-arrow-left"></i>' +
-                'Назад ко всем услугам' +
-            '</button>' +
-        '</div>';
-        return;
-    }
-    
-    if (pageTitle) {
-        pageTitle.textContent = this.selectedCategory.display_name;
-    }
-    
-    container.className = 'square-grid';
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
-            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()" style="padding: 8px 16px;">' +
-                '<i class="fas fa-arrow-left"></i>' +
-            '</button>' +
-            '<h3 style="font-size: 1.5rem; font-weight: 600;">' + this.selectedCategory.display_name + '</h3>' +
-            '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
-                this.services.length + ' услуг' +
-            '</span>' +
-        '</div>' +
-        '<p style="color: var(--graphite-medium); margin-bottom: 20px; padding-left: 48px;">' +
-            this.selectedCategory.description +
-        '</p>' +
-    '</div>';
-    
-    var self = this;
-    this.services.forEach(function(service) {
-        var card = document.createElement('div');
-        card.className = 'category-card-square';
-        card.onclick = function() { self.selectService(service); };
-        
-       card.innerHTML = '<div class="category-image-container">' +
-    '<img src="' + self.createSvgFallback('service') + '" ' +
-         'alt="' + service.name + '"' +
-         'loading="lazy"' +
-         'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
-            '<div class="category-icon-badge">' +
-                '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
-            '</div>' +
-        '</div>' +
-        '<div class="category-content">' +
-            '<h3 class="category-title">' + service.name + '</h3>' +
-            '<p class="category-description">' + service.description + '</p>' +
-            '<div class="category-footer">' +
-                '<span class="services-count">' +
-                    '<i class="fas fa-crown" style="color: var(--gold-metallic);"></i>' +
-                    'Включено в подписку' +
-                '</span>' +
-                '<span class="select-service-btn">' +
-                    'Выбрать <i class="fas fa-arrow-right"></i>' +
-                '</span>' +
-            '</div>' +
-        '</div>';
-        container.appendChild(card);
-    });
-    
-    // ПОКАЗЫВАЕМ кнопку "Назад ко всем категориям"
-    document.getElementById('backToCategoriesBtn').style.display = 'block';
-    document.getElementById('servicesPageTitle').textContent = this.selectedCategory.display_name;
-},
+            selectCategoryForServices: async function(category) {
+                if (!this.currentUser) {
+                    this.showNotification('Для просмотра услуг необходимо войти в систему', 'warning');
+                    this.showLoginModal();
+                    return;
+                }
+                
+                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+                    this.showNotification('Для просмотра услуг необходима активная подписка', 'warning');
+                    this.navigateToPage('subscription');
+                    return;
+                }
+                
+                this.selectedCategory = category;
+                
+                try {
+                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
+                    if (response.ok) {
+                        var result = await response.json();
+                        if (result.success) {
+                            this.services = result.data.services;
+                            this.renderServicesInCategory();
+                            return;
+                        }
+                    }
+                    
+                    // Fallback если API не сработал
+                    this.services = this.allServices.filter(function(service) {
+                        return service.category_id === category.id;
+                    });
+                    this.renderServicesInCategory();
+                } catch (error) {
+                    console.error('Ошибка загрузки услуг:', error);
+                    this.showNotification('Ошибка загрузки услуг', 'error');
+                }
+            },
+
+            renderServicesInCategory: function() {
+                var container = document.getElementById('allServicesList');
+                var pageTitle = document.querySelector('#all-services-page .section-title');
+                
+                if (!container) return;
+                
+                if (!this.services || this.services.length === 0) {
+                    container.className = 'square-grid';
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; justify-content: center;">' +
+                            '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                                '<i class="fas fa-arrow-left"></i>' +
+                            '</button>' +
+                            '<h3 style="font-size: 1.2rem;">' + this.selectedCategory.display_name + '</h3>' +
+                        '</div>' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
+                        '<button class="btn btn-primary" onclick="window.app.loadAllServicesPage()" style="margin-top: 20px;">' +
+                            '<i class="fas fa-arrow-left"></i>' +
+                            'Назад ко всем услугам' +
+                        '</button>' +
+                    '</div>';
+                    return;
+                }
+                
+                if (pageTitle) {
+                    pageTitle.textContent = this.selectedCategory.display_name;
+                }
+                
+                container.className = 'square-grid';
+                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                    '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">' +
+                        '<button class="btn btn-secondary" onclick="window.app.loadAllServicesPage()" style="padding: 8px 16px;">' +
+                            '<i class="fas fa-arrow-left"></i>' +
+                        '</button>' +
+                        '<h3 style="font-size: 1.5rem; font-weight: 600;">' + this.selectedCategory.display_name + '</h3>' +
+                        '<span style="margin-left: auto; color: var(--graphite-medium); font-size: 0.9rem;">' +
+                            this.services.length + ' услуг' +
+                        '</span>' +
+                    '</div>' +
+                    '<p style="color: var(--graphite-medium); margin-bottom: 20px; padding-left: 48px;">' +
+                        this.selectedCategory.description +
+                    '</p>' +
+                '</div>';
+                
+                var self = this;
+                this.services.forEach(function(service) {
+                    var card = document.createElement('div');
+                    card.className = 'category-card-square';
+                    card.onclick = function() { self.selectService(service); };
+                    
+                    card.innerHTML = '<div class="category-image-container">' +
+                        '<img src="' + self.createSvgFallback('service') + '" ' +
+                            'alt="' + service.name + '"' +
+                            'loading="lazy"' +
+                            'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
+                        '<div class="category-icon-badge">' +
+                            '<i class="' + (service.icon || self.selectedCategory.icon || 'fas fa-star') + '"></i>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="category-content">' +
+                        '<h3 class="category-title">' + service.name + '</h3>' +
+                        '<p class="category-description">' + service.description + '</p>' +
+                        '<div class="category-footer">' +
+                            '<span class="services-count">' +
+                                '<i class="fas fa-crown" style="color: var(--gold-metallic);"></i>' +
+                                'Включено в подписку' +
+                            '</span>' +
+                            '<span class="select-service-btn">' +
+                                'Выбрать <i class="fas fa-arrow-right"></i>' +
+                            '</span>' +
+                        '</div>' +
+                    '</div>';
+                    container.appendChild(card);
+                });
+                
+                // ПОКАЗЫВАЕМ кнопку "Назад ко всем категориям"
+                document.getElementById('backToCategoriesBtn').style.display = 'block';
+                document.getElementById('servicesPageTitle').textContent = this.selectedCategory.display_name;
+            },
 
             selectCategory: function(category) {
                 if (!this.currentUser) {
@@ -3571,7 +3588,7 @@ loadAllServicesPage: async function() {
                 this.selectCategoryForServices(category);
             },
 
-                        loadHomePage: async function() {
+            loadHomePage: async function() {
                 try {
                     console.log('Загрузка главной страницы...');
                     await this.loadCategories();
@@ -3608,49 +3625,49 @@ loadAllServicesPage: async function() {
             },
 
             renderTopServices: function(services) {
-    var container = document.getElementById('topServicesGrid');
-    if (!container) return;
-    
-    if (!services || services.length === 0) {
-        container.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    var self = this;
-    services.forEach(function(service) {
-        var card = document.createElement('div');
-        card.className = 'card service-card';
-        card.onclick = function() { self.selectService(service); };
-        
-        card.innerHTML = '<div class="service-image">' +
-            '<img src="' + self.createSvgFallback('service') + '" ' +
-                 'alt="' + service.name + '"' +
-                 'loading="lazy"' +
-                 'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
-        '</div>' +
-        '<div class="service-icon">' +
-            '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
-        '</div>' +
-        '<div class="service-header">' +
-            '<h4>' + service.name + '</h4>' +
-            '<span style="font-size: 0.8rem; color: var(--gold-metallic);">' +
-                '<i class="fas fa-star"></i> Топ' +
-            '</span>' +
-        '</div>' +
-        '<p class="service-description">' + service.description + '</p>' +
-        '<div class="service-footer">' +
-            '<span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>' +
-            '<span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">' +
-                'Выбрать' +
-            '</span>' +
-        '</div>';
-        container.appendChild(card);
-    });
-},
+                var container = document.getElementById('topServicesGrid');
+                if (!container) return;
+                
+                if (!services || services.length === 0) {
+                    container.innerHTML = '<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                var self = this;
+                services.forEach(function(service) {
+                    var card = document.createElement('div');
+                    card.className = 'card service-card';
+                    card.onclick = function() { self.selectService(service); };
+                    
+                    card.innerHTML = '<div class="service-image">' +
+                        '<img src="' + self.createSvgFallback('service') + '" ' +
+                            'alt="' + service.name + '"' +
+                            'loading="lazy"' +
+                            'onerror="this.src=\'/api/images/test/service\'; this.onerror=null;">' +
+                    '</div>' +
+                    '<div class="service-icon">' +
+                        '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
+                    '</div>' +
+                    '<div class="service-header">' +
+                        '<h4>' + service.name + '</h4>' +
+                        '<span style="font-size: 0.8rem; color: var(--gold-metallic);">' +
+                            '<i class="fas fa-star"></i> Топ' +
+                        '</span>' +
+                    '</div>' +
+                    '<p class="service-description">' + service.description + '</p>' +
+                    '<div class="service-footer">' +
+                        '<span class="service-price"><i class="fas fa-crown"></i> Включено в подписку</span>' +
+                        '<span style="color: var(--pastel-pink); font-weight: 600; font-size: 0.9rem;">' +
+                            'Выбрать' +
+                        '</span>' +
+                    '</div>';
+                    container.appendChild(card);
+                });
+            },
 
             selectService: function(service) {
                 if (!this.currentUser) {
@@ -3932,7 +3949,7 @@ loadAllServicesPage: async function() {
                                 return '<li><i class="fas fa-check"></i> ' + feature + '</li>';
                             }).join('') +
                         '</ul>' +
-                        '<button class="btn ' + (sub.is_popular ? 'btn-primary' : 'btn-secondary') + '" style="width: 100%; margin-top: 20px;" onclick="app.selectSubscription(\'' + sub.name + '\')">' +
+                        '<button class="btn ' + (sub.is_popular ? 'btn-primary' : 'btn-secondary') + '" style="width: 100%; margin-top: 20px;" onclick="window.app.selectSubscription(\'' + sub.name + '\')">' +
                             (self.currentUser && self.currentUser.subscription_plan === sub.name ? 'Текущий тариф' : 'Выбрать тариф') +
                         '</button>';
                     
@@ -4108,11 +4125,11 @@ loadAllServicesPage: async function() {
                         '</div>' +
                     '</div>' : '') +
                     '<div style="display: flex; gap: 10px;">' +
-                        '<button class="btn btn-secondary" style="flex: 1;" onclick="app.navigateToPage(\'subscription\')">' +
+                        '<button class="btn btn-secondary" style="flex: 1;" onclick="window.app.navigateToPage(\'subscription\')">' +
                             '<i class="fas fa-exchange-alt"></i>' +
                             'Сменить тариф' +
                         '</button>' +
-                        '<button class="btn btn-secondary" style="flex: 1;" onclick="app.showHelp()">' +
+                        '<button class="btn btn-secondary" style="flex: 1;" onclick="window.app.showHelp()">' +
                             '<i class="fas fa-question-circle"></i>' +
                             'Поддержка' +
                         '</button>' +
@@ -4122,7 +4139,7 @@ loadAllServicesPage: async function() {
                         '<i class="fas fa-crown empty-state-icon"></i>' +
                         '<h3 class="empty-state-title">Подписка не активна</h3>' +
                         '<p class="empty-state-description">Активируйте подписку для доступа ко всем возможностям</p>' +
-                        '<button class="btn btn-primary" onclick="app.navigateToPage(\'subscription\')">' +
+                        '<button class="btn btn-primary" onclick="window.app.navigateToPage(\'subscription\')">' +
                             '<i class="fas fa-crown"></i>' +
                             'Активировать подписку' +
                         '</button>' +
@@ -4136,26 +4153,26 @@ loadAllServicesPage: async function() {
                 var settingsContainer = document.getElementById('profileSettingsList');
                 if (!settingsContainer) return;
                 
-                var settingsHTML = '<a href="#" class="nav-menu-item" onclick="app.navigateToPage(\'subscription\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                var settingsHTML = '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'subscription\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-crown" style="margin-right: 12px; color: var(--pastel-pink);"></i>Управление подпиской' +
                 '</a>';
                 
                 if (!this.currentUser.phone_verified) {
-                    settingsHTML += '<a href="#" class="nav-menu-item" onclick="app.openSendCodeModal()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                    settingsHTML += '<a href="#" class="nav-menu-item" onclick="window.app.openSendCodeModal()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                         '<i class="fas fa-mobile-alt" style="margin-right: 12px; color: var(--pastel-pink);"></i>Подтвердить телефон' +
                     '</a>';
                 }
                 
-                settingsHTML += '<a href="#" class="nav-menu-item" onclick="app.navigateToPage(\'guides\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                settingsHTML += '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'guides\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-book" style="margin-right: 12px; color: var(--pastel-pink);"></i>Гайды' +
                 '</a>' +
-                '<a href="#" class="nav-menu-item" onclick="app.navigateToPage(\'all-services\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                '<a href="#" class="nav-menu-item" onclick="window.app.navigateToPage(\'all-services\')" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-list" style="margin-right: 12px; color: var(--pastel-pink);"></i>Все услуги' +
                 '</a>' +
-                '<a href="#" class="nav-menu-item" onclick="app.showHelp()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
+                '<a href="#" class="nav-menu-item" onclick="window.app.showHelp()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast); margin-bottom: 8px;">' +
                     '<i class="fas fa-question-circle" style="margin-right: 12px; color: var(--pastel-pink);"></i>Помощь и поддержка' +
                 '</a>' +
-                '<a href="#" class="nav-menu-item" onclick="app.logout()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">' +
+                '<a href="#" class="nav-menu-item" onclick="window.app.logout()" style="display: block; padding: 12px; text-decoration: none; color: var(--graphite-dark); border-radius: var(--radius-sm); transition: var(--transition-fast);">' +
                     '<i class="fas fa-sign-out-alt" style="margin-right: 12px; color: var(--error);"></i>Выйти из системы' +
                 '</a>';
                 
@@ -4170,7 +4187,7 @@ loadAllServicesPage: async function() {
                             '<i class="fas fa-user empty-state-icon"></i>' +
                             '<h3 class="empty-state-title">Войдите в аккаунт</h3>' +
                             '<p class="empty-state-description">Войдите в аккаунт, чтобы видеть свои задачи</p>' +
-                            '<button class="btn btn-primary" onclick="app.showLoginModal()">' +
+                            '<button class="btn btn-primary" onclick="window.app.showLoginModal()">' +
                                 '<i class="fas fa-sign-in-alt"></i>' +
                                 'Войти в аккаунт' +
                             '</button>' +
@@ -4318,7 +4335,7 @@ loadAllServicesPage: async function() {
                         '<i class="fas fa-tasks empty-state-icon"></i>' +
                         '<h3 class="empty-state-title">Задач пока нет</h3>' +
                         '<p class="empty-state-description">Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц</p>' +
-                        '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
+                        '<button class="btn btn-primary" onclick="window.app.checkSubscription()">' +
                             '<i class="fas fa-plus"></i>' +
                             'Создать задачу' +
                         '</button>' +
@@ -4356,7 +4373,7 @@ loadAllServicesPage: async function() {
                         '<div class="task-card-value">' + new Date(task.created_at).toLocaleDateString('ru-RU') + '</div>' +
                     '</div>' +
                     '<div class="task-card-actions">' +
-                        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(' + task.id + ')">' +
+                        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.app.showTaskDetailsCompact(' + task.id + ')">' +
                             '<i class="fas fa-eye"></i> Подробнее' +
                         '</button>' +
                     '</div>';
@@ -4394,7 +4411,7 @@ loadAllServicesPage: async function() {
                             '<td><span class="task-status ' + task.status + '">' + app.getStatusText(task.status) + '</span></td>' +
                             '<td>' + new Date(task.created_at).toLocaleDateString('ru-RU') + '</td>' +
                             '<td>' +
-                                '<button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(' + task.id + ')">' +
+                                '<button class="btn btn-secondary btn-sm" onclick="window.app.showTaskDetailsCompact(' + task.id + ')">' +
                                     '<i class="fas fa-eye"></i>' +
                                 '</button>' +
                             '</td>' +
@@ -4502,7 +4519,7 @@ loadAllServicesPage: async function() {
                 '</div>' : '') +
                 
                 '<div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">' +
-                    '<button class="btn btn-primary" onclick="app.toggleTaskChat(' + task.id + ')" id="toggleChatBtn" style="flex: 1;">' +
+                    '<button class="btn btn-primary" onclick="window.app.toggleTaskChat(' + task.id + ')" id="toggleChatBtn" style="flex: 1;">' +
                         '<i class="fas fa-comments"></i>' +
                         (messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат') +
                     '</button>' +
@@ -5055,7 +5072,7 @@ loadAllServicesPage: async function() {
                     container.innerHTML = '<div style="text-align: center; padding: 40px;">' +
                         '<i class="fas fa-tasks" style="font-size: 2rem; color: var(--graphite-light); margin-bottom: 16px;"></i>' +
                         '<p style="color: var(--graphite-medium); margin-bottom: 20px;">Задач пока нет</p>' +
-                        '<button class="btn btn-primary" onclick="app.closeTasksPopup(); app.checkSubscription();">' +
+                        '<button class="btn btn-primary" onclick="window.app.closeTasksPopup(); window.app.checkSubscription();">' +
                             '<i class="fas fa-plus"></i>' +
                             'Создать задачу' +
                         '</button>' +
@@ -5102,7 +5119,7 @@ loadAllServicesPage: async function() {
                                 '<li>Нажмите "Создать задачу"</li>' +
                             '</ol>' +
                             '<div class="mt-20">' +
-                                '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-services\')">' +
+                                '<button class="btn btn-primary" onclick="window.app.navigateToPage(\'all-services\')">' +
                                     '<i class="fas fa-play-circle"></i>' +
                                     'Начать сейчас' +
                                 '</button>' +
@@ -5136,12 +5153,12 @@ loadAllServicesPage: async function() {
                     modal.innerHTML = '<div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">' +
                         '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">' +
                             '<h3 class="modal-title">' + guide.title + '</h3>' +
-                            '<button class="close-popup-btn" onclick="app.closeGuideModal()">' +
+                            '<button class="close-popup-btn" onclick="window.app.closeGuideModal()">' +
                                 '<i class="fas fa-times"></i>' +
                             '</button>' +
                         '</div>' +
                         '<div style="margin-bottom: 20px;">' + guide.content + '</div>' +
-                        '<button class="btn btn-primary" onclick="app.closeGuideModal()" style="width: 100%;">' +
+                        '<button class="btn btn-primary" onclick="window.app.closeGuideModal()" style="width: 100%;">' +
                             '<i class="fas fa-check"></i>' +
                             'Закрыть' +
                         '</button>' +
@@ -5327,19 +5344,19 @@ loadAllServicesPage: async function() {
             }
         };
 
+        // Экспорт объекта app в глобальную область видимости
+        window.app = app;
+
         // Инициализация при загрузке страницы
         window.addEventListener('DOMContentLoaded', function() {
             try {
-                app.init();
+                window.app.init();
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
                 // Показать пользователю простое сообщение об ошибке
                 document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
             }
         });
-
-        // Экспорт объекта app в глобальную область видимости
-        window.app = app;
     </script>
 </body>
 </html>
