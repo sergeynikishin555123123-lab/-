@@ -2483,47 +2483,51 @@
         
         // Управление пользователями
         async function loadUsers() {
-            try {
-                showLoading('Загрузка пользователей...');
-                
-                const roleFilter = document.getElementById('userRoleFilter').value;
-                const statusFilter = document.getElementById('userStatusFilter').value;
-                const search = document.getElementById('userSearch').value;
-                
-                let url = '/api/admin/users-detailed?limit=50';
-                if (roleFilter !== 'all') url += `&role=${roleFilter}`;
-                if (statusFilter !== 'all') url += `&is_active=${statusFilter === 'active' ? 1 : 0}`;
-                if (search) url += `&search=${encodeURIComponent(search)}`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${currentToken}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    renderUsers(data.data.users);
-                    if (isMobile) {
-                        renderMobileCards(data.data.users, 'usersMobile', 'user');
-                    }
-                } else {
-                    throw new Error(data.error || 'Ошибка загрузки пользователей');
-                }
-            } catch (error) {
-                console.error('Ошибка загрузки пользователей:', error);
-                showNotification('Ошибка загрузки пользователей', 'error');
-                document.getElementById('usersTable').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Ошибка загрузки пользователей</p>
-                    </div>
-                `;
-            } finally {
-                hideLoading();
+    try {
+        showLoading('Загрузка пользователей...');
+        
+        const roleFilter = document.getElementById('userRoleFilter').value;
+        const statusFilter = document.getElementById('userStatusFilter').value;
+        const search = document.getElementById('userSearch').value;
+        
+        let url = '/api/admin/users?limit=50'; // Изменил endpoint на более стандартный
+        if (roleFilter !== 'all') url += `&role=${roleFilter}`;
+        if (statusFilter !== 'all') url += `&is_active=${statusFilter === 'active' ? 1 : 0}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
             }
+        });
+        
+        if (response.status === 403) {
+            throw new Error('Недостаточно прав для просмотра пользователей');
         }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderUsers(data.data.users || data.data); // Поддержка разных форматов ответа
+            if (isMobile) {
+                renderMobileCards(data.data.users || data.data, 'usersMobile', 'user');
+            }
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки пользователей');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки пользователей:', error);
+        showNotification('Ошибка загрузки пользователей: ' + error.message, 'error');
+        document.getElementById('usersTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${error.message}</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
         
         function renderUsers(users) {
             document.getElementById('usersCount').textContent = `${users.length} пользователей`;
@@ -2929,41 +2933,49 @@
             }
         }
         
-       async function editUser(userId) {
+async function editUser(userId) {
     try {
         showLoading('Загрузка данных пользователя...');
         
-        // ИСПРАВЛЕННЫЙ URL - используем параметр id напрямую
-        const response = await fetch(`/api/admin/users-detailed?id=${userId}`, {
+        const response = await fetch(`/api/admin/users/${userId}`, {
             headers: {
                 'Authorization': `Bearer ${currentToken}`
             }
         });
         
+        if (response.status === 403) {
+            throw new Error('Недостаточно прав для просмотра пользователя');
+        }
+        
+        if (response.status === 404) {
+            throw new Error('Пользователь не найден');
+        }
+        
         const data = await response.json();
         
-        if (data.success && data.data.users && data.data.users.length > 0) {
-            const user = data.data.users.find(u => u.id == userId);
+        if (data.success && data.data) {
+            const user = data.data;
             
-            if (user) {
-                document.getElementById('userModalTitle').textContent = 'Редактировать пользователя';
-                document.getElementById('userId').value = user.id;
-                document.getElementById('userEmail').value = user.email || '';
-                document.getElementById('userFirstName').value = user.first_name || '';
-                document.getElementById('userLastName').value = user.last_name || '';
-                document.getElementById('userPhone').value = user.phone || '+79991112233';
-                document.getElementById('userRoleSelect').value = user.role;
+            document.getElementById('userModalTitle').textContent = 'Редактировать пользователя';
+            document.getElementById('userId').value = user.id;
+            document.getElementById('userEmail').value = user.email || '';
+            document.getElementById('userFirstName').value = user.first_name || '';
+            document.getElementById('userLastName').value = user.last_name || '';
+            document.getElementById('userPhone').value = user.phone || '+79991112233';
+            document.getElementById('userRoleSelect').value = user.role || 'client';
+            
+            // Для клиентов заполняем подписку
+            if (user.role === 'client') {
                 document.getElementById('userSubscription').value = user.subscription_plan || 'essential';
-                document.getElementById('userPhoneVerified').checked = user.phone_verified == 1;
-                document.getElementById('userPassword').value = '';
-                document.getElementById('userPassword').placeholder = 'Оставьте пустым чтобы не менять';
-                document.getElementById('userPassword').required = false;
-                
-                updateSubscriptionVisibility();
-                showModal('userModal');
-            } else {
-                throw new Error('Пользователь не найден в результатах поиска');
             }
+            
+            document.getElementById('userPhoneVerified').checked = user.phone_verified == 1;
+            document.getElementById('userPassword').value = '';
+            document.getElementById('userPassword').placeholder = 'Оставьте пустым чтобы не менять';
+            document.getElementById('userPassword').required = false;
+            
+            updateSubscriptionVisibility();
+            showModal('userModal');
         } else {
             throw new Error(data.error || 'Ошибка загрузки пользователя');
         }
@@ -2976,82 +2988,117 @@
 }
         
         async function saveUser() {
-            const id = document.getElementById('userId').value;
-            const phone = document.getElementById('userPhone').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const first_name = document.getElementById('userFirstName').value;
-            const last_name = document.getElementById('userLastName').value;
-            const role = document.getElementById('userRoleSelect').value;
-            const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
-            const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
+    const id = document.getElementById('userId').value;
+    const phone = document.getElementById('userPhone').value;
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const first_name = document.getElementById('userFirstName').value;
+    const last_name = document.getElementById('userLastName').value;
+    const role = document.getElementById('userRoleSelect').value;
+    const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
+    const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
+    
+    // Валидация полей
+    if (!phone || !first_name || !role || (role === 'client' && !email)) {
+        showNotification('Заполните обязательные поля: телефон, имя, роль' + (role === 'client' ? ', email' : ''), 'error');
+        return;
+    }
+    
+    if (!id && !password) {
+        showNotification('Для нового пользователя укажите пароль', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Сохранение пользователя...');
+        
+        // Формируем данные пользователя
+        const userData = {
+            phone: phone.replace(/\D/g, ''), // Очищаем телефон от нецифровых символов
+            email: email || (role === 'client' ? `${phone.replace(/\D/g, '')}@example.com` : null),
+            first_name,
+            last_name: last_name || '',
+            role,
+            phone_verified,
+            email_verified: email ? 1 : 0,
+            is_active: 1
+        };
+        
+        // Добавляем пароль для нового пользователя
+        if (!id && password) {
+            userData.password = password;
+        }
+        
+        // Для клиентов добавляем подписку
+        if (role === 'client') {
+            userData.subscription_plan = subscription_plan || 'essential';
+            userData.subscription_status = 'active';
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            userData.subscription_expires = expiryDate.toISOString().split('T')[0];
+            userData.initial_fee_paid = 1;
+        }
+        
+        // Для исполнителей
+        if (role === 'performer') {
+            userData.performer_status = 'pending'; // или 'active' в зависимости от вашей логики
+            userData.balance = 0;
+        }
+        
+        const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Пользователь успешно сохранен', 'success');
+            closeModal('userModal');
             
-            // ИЗМЕНЕНИЕ: телефон обязателен, email опционален
-            if (!phone || !first_name || !role) {
-                showNotification('Заполните обязательные поля (телефон, имя, роль)', 'error');
-                return;
+            // Автоматически создаем тестовые данные для входа
+            if (!id) {
+                // Для новых пользователей показываем данные для входа
+                const loginInfo = `
+                    <div style="background: var(--pink-light); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        <strong>Данные для входа:</strong><br>
+                        📱 Телефон: ${phone}<br>
+                        🔐 Пароль: ${password}<br>
+                        🚪 Ссылка: <a href="/login" target="_blank">/login</a>
+                    </div>
+                `;
+                
+                // Можно вывести alert или добавить информацию в notification
+                setTimeout(() => {
+                    showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
+                }, 500);
             }
             
-            if (!id && !password) {
-                showNotification('Для нового пользователя укажите пароль', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Сохранение пользователя...');
-                
-                const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
-                const method = id ? 'PUT' : 'POST';
-                
-                const userData = {
-                    phone, // Основное поле
-                    email: email || null, // Опциональное
-                    first_name,
-                    last_name: last_name || '',
-                    role,
-                    subscription_plan: role === 'client' ? subscription_plan : 'premium',
-                    subscription_status: 'active',
-                    phone_verified,
-                    email_verified: email ? 1 : 0,
-                    is_active: 1
-                };
-                
-                if (role === 'client') {
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + 30);
-                    userData.subscription_expires = expiryDate.toISOString().split('T')[0];
-                    userData.initial_fee_paid = 1;
-                }
-                
-                if (password) {
-                    userData.password = password;
-                }
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification('Пользователь успешно сохранен', 'success');
-                    closeModal('userModal');
-                    loadUsers();
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения пользователя');
-                }
-            } catch (error) {
-                console.error('Ошибка сохранения пользователя:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
+            loadUsers();
+        } else {
+            // Обрабатываем специфические ошибки
+            if (data.error && data.error.includes('уже существует')) {
+                throw new Error('Пользователь с таким телефоном уже существует');
+            } else if (data.error && data.error.includes('email')) {
+                throw new Error('Пользователь с таким email уже существует');
+            } else {
+                throw new Error(data.error || 'Ошибка сохранения пользователя');
             }
         }
+    } catch (error) {
+        console.error('Ошибка сохранения пользователя:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         async function deleteUser(userId) {
             if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
