@@ -5425,9 +5425,28 @@ app.post('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async
         
     } catch (error) {
         console.error('❌ Ошибка сохранения категории:', error.message);
+        console.error('❌ Полный stack:', error.stack);
+        console.error('❌ Данные запроса:', req.body);
+        
+        // Если ошибка связана с уникальным ограничением
+        if (error.message.includes('UNIQUE constraint failed') || error.message.includes('SQLITE_CONSTRAINT')) {
+            return res.status(409).json({
+                success: false,
+                error: 'Категория с таким техническим именем уже существует'
+            });
+        }
+        
+        // Если ошибка связана с неправильным количеством параметров
+        if (error.message.includes('SQLITE_RANGE') || error.message.includes('parameter')) {
+            return res.status(400).json({
+                success: false,
+                error: 'Ошибка в параметрах запроса. Проверьте обязательные поля.'
+            });
+        }
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка сохранения категории'
+            error: 'Ошибка сохранения категории: ' + error.message
         });
     }
 });
