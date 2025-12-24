@@ -159,12 +159,13 @@ const DEMO_MODE = true;
 // ==================== УЛУЧШЕННАЯ НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
 
 // Функция для создания директорий, если их нет
+// Функция для создания директорий, если их нет
 const ensureUploadDirs = () => {
     const dirs = [
         'public/uploads',
         'public/uploads/categories',
         'public/uploads/users',
-        'public/uploads/services',
+        'public/uploads/services',  // ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
         'public/uploads/tasks',
         'public/uploads/logo'
     ];
@@ -418,14 +419,14 @@ await db.exec(`
     )
 `);
         
-        // Услуги
+// Услуги
 await db.exec(`
     CREATE TABLE IF NOT EXISTS services (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         category_id INTEGER NOT NULL,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
-        image_url TEXT,  -- ← ДОБАВИТЬ ЭТУ СТРОЧКУ
+        image_url TEXT,  -- ← УБЕДИТЕСЬ, ЧТО ЭТА КОЛОНКА ЕСТЬ
         base_price REAL DEFAULT 0,
         estimated_time TEXT,
         is_active INTEGER DEFAULT 1,
@@ -1578,6 +1579,43 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
         res.status(500).json({
             success: false,
             error: 'Ошибка загрузки изображения категории'
+        });
+    }
+});
+
+// Загрузка изображения услуги
+app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
+    try {
+        console.log('📤 Загрузка изображения услуги...');
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл изображения не был загружен'
+            });
+        }
+        
+        const fileUrl = `/uploads/services/${req.file.filename}`;
+        console.log(`✅ Изображение услуги сохранено: ${fileUrl}`);
+        
+        res.json({
+            success: true,
+            message: 'Изображение услуги успешно загружено',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                mimetype: req.file.mimetype,
+                url: fileUrl,
+                path: req.file.path
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки изображения услуги:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка загрузки изображения услуги'
         });
     }
 });
