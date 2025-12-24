@@ -17,7 +17,7 @@ const app = express();
 
 // CORS настройки
 const corsOptions = {
-    origin: process.enapp.get('/api/images/test/:type?', (req, res) => {v.NODE_ENV === 'production' 
+    origin: process.env.NODE_ENV === 'production' 
         ? ['https://yourdomain.com'] 
         : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8080', 'http://localhost:5000', 'http://localhost:5500'],
     credentials: true,
