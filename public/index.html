@@ -3622,11 +3622,14 @@ renderAllServices: function() {
             self.getImageUrl(service.image_url, 'service') : 
             '/api/images/test/service'; // Тестовое изображение
         
+        // Исправляем кавычки - используем одинарные везде
+        var fallbackSvg = self.createSvgFallback('service');
+        
         card.innerHTML = '<div class="service-image-container" style="background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));">' +
             '<img src="' + imageUrl + '" ' +
                 'alt="' + service.name + '"' +
                 'loading="lazy"' +
-                'onerror="this.onerror=null; this.src=\'' + self.createSvgFallback(\'service\') + '\';"' +
+                'onerror="this.onerror=null; this.src=\'' + fallbackSvg + '\';"' +
                 'style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">' +
             '<div class="category-icon-badge">' +
                 '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
@@ -4113,34 +4116,33 @@ continueToCategoryServices: function(categoryId) {
                 });
             },
 
-            selectService: function(service) {
-                if (!this.currentUser) {
-                    this.showNotification('Для выбора услуги необходимо войти в систему', 'warning');
-                    this.showLoginModal();
-                    return;
-                }
-                
-                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-                    this.showNotification('Для выбора услуги необходима активная подписка', 'warning');
-                    this.navigateToPage('subscription');
-                    return;
-                }
-                
-                // Проверяем лимит задач
-                var tasksUsed = this.currentUser.tasks_used || 0;
-                var tasksLimit = this.currentUser.tasks_limit || 0;
-                var availableTasks = tasksLimit - tasksUsed;
-                
-                if (availableTasks <= 0) {
-                    this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'warning');
-                    return;
-                }
-                
-                this.selectedService = service;
-                this.navigateToPage('create-task');
-                this.updateTaskForm();
-            },
-
+           selectService: function(service) {
+    if (!this.currentUser) {
+        this.showNotification('Для выбора услуги необходимо войти в систему', 'warning');
+        this.showLoginModal();
+        return;
+    }
+    
+    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+        this.showNotification('Для выбора услуги необходима активная подписка', 'warning');
+        this.navigateToPage('subscription');
+        return;
+    }
+    
+    // Проверяем лимит задач
+    var tasksUsed = this.currentUser.tasks_used || 0;
+    var tasksLimit = this.currentUser.tasks_limit || 0;
+    var availableTasks = tasksLimit - tasksUsed;
+    
+    if (availableTasks <= 0) {
+        this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'warning');
+        return;
+    }
+    
+    this.selectedService = service;
+    this.navigateToPage('create-task');
+    this.updateTaskForm();
+},
             // ==================== СТАТИСТИКА ====================
             updateHomeStats: function() {
                 if (!this.currentUser) return;
@@ -6097,16 +6099,16 @@ continueToCategoryServices: function(categoryId) {
             }
         };
 
-       window.addEventListener('DOMContentLoaded', function() {
-        try {
-            // Сделаем app глобальной для временного доступа
-            window.app = app;
-            app.init();
-        } catch (error) {
-            console.error('Ошибка инициализации:', error);
-            document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
-        }
-    });
+const app = { /* весь ваш код */ };
+
+window.addEventListener('DOMContentLoaded', function() {
+    try {
+        app.init();
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+        document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
+    }
+});
 
     // Также экспортируем app для доступа из консоли разработчика
     if (typeof module !== 'undefined' && module.exports) {
