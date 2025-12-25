@@ -4555,130 +4555,83 @@ renderAllServices: function() {
     this.showCategoryDescriptionModal(category);
             },
 
-           loadServicesForCategory: async function(category) {
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ loadServicesForCategory
+loadServicesForCategory: async function(category) {
     this.closeCategoryDescriptionModal(); // Закрываем модальное окно
     this.selectedCategory = category;
     
     try {
-                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-                    
-                    if (response && response.ok) {
-                        var result = await response.json();
-                        
-                        if (result.success) {
-                            this.services = result.data.services;
-                            this.renderServicesInCategory();
-                            this.navigateToPage('all-services'); // Переходим на страницу услуг
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Ошибка загрузки услуг:', error);
-                    
-                    try {
-                        this.services = this.allServices.filter(function(service) {
-                            return service.category_id === category.id;
-                        });
-                        this.renderServicesInCategory();
-                        this.navigateToPage('all-services'); // Переходим на страницу услуг
-                    } catch (fallbackError) {
-                        console.error('Fallback ошибка:', fallbackError);
-                        this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
-                        this.loadAllServicesPage();
-                    }
-                }
-            },
-
-showCategoryDescriptionModal: function(category) {
-    var modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.id = 'categoryDescriptionModal';
-    modal.style.display = 'flex';
-    
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 500px;">
-            <h3 class="modal-title">${category.display_name}</h3>
-            <div style="text-align: center; margin: 20px 0;">
-                <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
-                    <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
-                </div>
-                <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
-                    ${category.description}
-                </p>
-                ${category.admin_description ? `
-                    <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
-                        <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
-                            ${category.admin_description}
-                        </p>
-                    </div>
-                ` : ''}
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-secondary" onclick="app.closeCategoryDescriptionModal()" style="flex: 1;">
-                    Отмена
-                </button>
-                <button class="btn btn-primary" onclick="app.continueToCategoryServices(${category.id})" style="flex: 1;">
-                    Продолжить
-                    <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-},
-
-continueToCategoryServices: function(categoryId) {
-    const category = this.categories.find(cat => cat.id === categoryId);
-    if (category) {
-        this.loadServicesForCategory(category);
-    }
-},
-
-closeCategoryDescriptionModal: function() {
-    var modal = document.getElementById('categoryDescriptionModal');
-    if (modal) {
-        modal.remove();
-    }
-},
-
-continueToCategoryServices: function(categoryId) {
-    this.closeCategoryDescriptionModal();
-    
-    const category = this.categories.find(cat => cat.id === categoryId);
-    if (category) {
-        this.loadServicesForCategory(category);
-    }
-},
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
+        
+        if (response && response.ok) {
+            var result = await response.json();
             
-           renderAllServices: function() {
+            if (result.success) {
+                this.services = result.data.services;
+                // Вместо renderServicesInCategory просто отображаем услуги
+                this.renderServicesForCategory(category);
+                return;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки услуг:', error);
+        
+        // Загружаем все услуги и фильтруем по категории
+        try {
+            await this.loadAllServices();
+            this.services = this.allServices.filter(function(service) {
+                return service.category_id === category.id;
+            });
+            this.renderServicesForCategory(category);
+        } catch (fallbackError) {
+            console.error('Fallback ошибка:', fallbackError);
+            this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
+            this.loadAllServicesPage();
+        }
+    }
+},
+
+// ДОБАВЬТЕ ЭТУ НОВУЮ ФУНКЦИЮ ПОСЛЕ loadServicesForCategory
+renderServicesForCategory: function(category) {
     var container = document.getElementById('allServicesList');
     var pageTitle = document.getElementById('servicesPageTitle');
+    var backBtn = document.getElementById('backToCategoriesBtn');
     
     if (!container) return;
     
     // Используем сетку как на главной
     container.className = 'grid-2-main';
     
-    if (!this.allServices || this.allServices.length === 0) {
+    if (!this.services || this.services.length === 0) {
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
             '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-            '</div>';
+            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
+            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()" style="margin-top: 15px;">' +
+                '<i class="fas fa-arrow-left"></i>' +
+                'Вернуться ко всем услугам' +
+            '</button>' +
+        '</div>';
+        
+        if (pageTitle) {
+            pageTitle.textContent = category.display_name + ' (нет услуг)';
+        }
+        if (backBtn) backBtn.style.display = 'block';
         return;
     }
     
     if (pageTitle) {
-        pageTitle.textContent = 'Все услуги';
+        pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
     }
     
+    if (backBtn) backBtn.style.display = 'block';
+    
     container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все услуги сервиса</h3>' +
+        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">' + category.display_name + '</h3>' +
         '<p style="color: var(--graphite-medium);">Выберите услугу для создания задачи</p>' +
     '</div>';
     
     var self = this;
-    this.allServices.forEach(function(service) {
+    this.services.forEach(function(service) {
         var card = document.createElement('div');
         card.className = 'category-card-main-style';
         card.onclick = function() { 
@@ -4709,7 +4662,7 @@ continueToCategoryServices: function(categoryId) {
         '<div class="category-card-footer">' +
             '<span style="display: flex; align-items: center; gap: 4px;">' +
                 '<i class="fas fa-folder" style="color: var(--graphite-light);"></i>' +
-                (service.category_name || 'Без категории') +
+                category.display_name +
             '</span>' +
             '<span style="display: flex; align-items: center; gap: 4px;">' +
                 'Выбрать <i class="fas fa-arrow-right"></i>' +
@@ -4717,6 +4670,18 @@ continueToCategoryServices: function(categoryId) {
         '</div>';
         container.appendChild(card);
     });
+    
+    // Добавляем кнопку возврата
+    var backButton = document.createElement('div');
+    backButton.style.gridColumn = '1 / -1';
+    backButton.style.textAlign = 'center';
+    backButton.style.marginTop = '20px';
+    backButton.innerHTML = '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+        '<i class="fas fa-arrow-left"></i>' +
+        'Вернуться ко всем услугам' +
+    '</button>';
+    container.appendChild(backButton);
+},
     
     var backBtn = document.getElementById('backToCategoriesBtn');
     if (backBtn) backBtn.style.display = 'none';
