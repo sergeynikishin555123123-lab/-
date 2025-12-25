@@ -1322,64 +1322,76 @@
         }
         
         /* Адаптивность */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 12px;
-            }
-            
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .hero .tagline {
-                font-size: 1.4rem;
-            }
-            
-            .section-title {
-                font-size: 1.5rem;
-            }
-            
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .profile-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .btn {
-                padding: 10px 20px !important;
-                font-size: 0.9rem !important;
-            }
-            
-            .modal-content {
-                padding: 20px !important;
-                margin: 10px !important;
-            }
-            
-            .hero-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .hero-actions .btn {
-                width: 100%;
-                max-width: 300px;
-            }
-            
-            .logo-tagline {
-                display: none;
-            }
-            
-            .category-image,
-            .service-image {
-                height: 100px;
-            }
-        }
+@media (max-width: 360px) {
+    .grid-2-main {
+        gap: 8px;
+        padding: 8px;
+    }
+    
+    .category-card-main-style {
+        padding: 12px;
+    }
+    
+    .category-image-main {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 13px;
+        min-height: 32px;
+    }
+    
+    .category-description-main {
+        font-size: 11px;
+        padding: 6px;
+    }
+}
+
+/* Для планшетов */
+@media (min-width: 481px) and (max-width: 768px) {
+    .grid-2-main {
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .category-image-main {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 15px;
+    }
+    
+    .category-description-main {
+        font-size: 13px;
+    }
+}
+
+/* Для десктопов */
+@media (min-width: 769px) {
+    .grid-2-main {
+        grid-template-columns: repeat(3, 1fr); /* 3 колонки на десктопе */
+        gap: 20px;
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .category-image-main {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 16px;
+    }
+    
+    .category-description-main {
+        font-size: 14px;
+    }
+}
         
         @media (max-width: 480px) {
             .container {
