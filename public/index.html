@@ -1690,23 +1690,22 @@
         }
         
         /* Убираем стикеры из карточек */
-        .category-icon-badge {
-    display: block; /* Или flex, но не none! */
+.category-icon-badge {
+    display: flex !important; /* Важно! */
     position: absolute;
-    bottom: -15px;
-    right: 15px;
-    background: var(--white);
-    width: 60px;
-    height: 60px;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    display: flex;
     align-items: center;
     justify-content: center;
     color: var(--pastel-pink);
-    font-size: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 4px solid var(--ivory-bg);
+    font-size: 1.2rem;
+    box-shadow: var(--shadow-sm);
     z-index: 2;
+    border: 2px solid var(--ivory-bg);
 }
         
         .services-count {
@@ -2152,22 +2151,25 @@
             box-shadow: var(--shadow);
         }
 
-        .service-image-container {
+.service-image-container {
     width: 140px;
     height: 140px;
     border-radius: 50%;
     margin: 20px auto 15px;
     overflow: hidden;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pink-light);
 }
 
-        .service-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            display: block;
-        }
+.service-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
         .service-card-square:hover .service-image-container img {
             transform: scale(1.05);
@@ -3582,70 +3584,72 @@
             },
 
             // ИСПРАВЛЕНИЕ: Рендерим все услуги
-            renderAllServices: function() {
-                var container = document.getElementById('allServicesList');
-                var pageTitle = document.getElementById('servicesPageTitle');
-                
-                if (!container) return;
-                
-                container.className = 'square-grid';
-                
-                if (!this.allServices || this.allServices.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-                        '</div>';
-                    return;
-                }
-                
-                if (pageTitle) {
-                    pageTitle.textContent = 'Все услуги';
-                }
-                
-                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                    '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все услуги сервиса</h3>' +
-                    '<p style="color: var(--graphite-medium);">Выберите услугу для создания задачи</p>' +
-                '</div>';
-                
-                var self = this;
-                this.allServices.forEach(function(service) {
-                    var card = document.createElement('div');
-                    card.className = 'service-card-square';
-                 card.onclick = function() { 
-    self.selectService(service); 
-};
-                    
-                    var imageUrl = service.image_url ? 
-                        self.getImageUrl(service.image_url, 'service') : 
-                        self.createSvgFallback('service');
-                    
-card.innerHTML = '<div class="service-image-container">' +
-    '<img src="' + imageUrl + '" ' +
-        'alt="' + service.name + '"' +
-        'loading="lazy"' +
-        'style="width: 100%; height: 100%; object-fit: cover;">' +
-    '<div class="category-icon-badge">' +
-        '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
-    '</div>' +
-'</div>' +
-                    '<div class="category-content">' +
-                        '<h3 class="category-title">' + service.name + '</h3>' +
-                        '<p class="category-description">' + service.description + '</p>' +
-                        '<div class="category-footer">' +
-                            '<span class="services-count">' +
-                                '<i class="fas fa-folder" style="color: var(--graphite-light); margin-right: 4px;"></i>' +
-                                (service.category_name || 'Без категории') +
-                            '</span>' +
-                            '<span class="select-service-btn">' +
-                                'Выбрать <i class="fas fa-arrow-right"></i>' +
-                            '</span>' +
-                        '</div>' +
-                    '</div>';
-                    container.appendChild(card);
-                });
-                
-                document.getElementById('backToCategoriesBtn').style.display = 'none';
-            },
+renderAllServices: function() {
+    var container = document.getElementById('allServicesList');
+    var pageTitle = document.getElementById('servicesPageTitle');
+    
+    if (!container) return;
+    
+    container.className = 'square-grid';
+    
+    if (!this.allServices || this.allServices.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+            '</div>';
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = 'Все услуги';
+    }
+    
+    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все услуги сервиса</h3>' +
+        '<p style="color: var(--graphite-medium);">Выберите услугу для создания задачи</p>' +
+    '</div>';
+    
+    var self = this;
+    this.allServices.forEach(function(service) {
+        var card = document.createElement('div');
+        card.className = 'service-card-square';
+        card.onclick = function() { 
+            self.selectService(service); // ← Исправлено: service вместо category
+        };
+        
+        // Используем тот же метод, что и для категорий
+        var imageUrl = service.image_url ? 
+            self.getImageUrl(service.image_url, 'service') : 
+            '/api/images/test/service'; // Тестовое изображение
+        
+        card.innerHTML = '<div class="service-image-container" style="background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));">' +
+            '<img src="' + imageUrl + '" ' +
+                'alt="' + service.name + '"' +
+                'loading="lazy"' +
+                'onerror="this.onerror=null; this.src=\'' + self.createSvgFallback(\'service\') + '\';"' +
+                'style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">' +
+            '<div class="category-icon-badge">' +
+                '<i class="' + (service.icon || 'fas fa-star') + '"></i>' +
+            '</div>' +
+        '</div>' +
+        '<div class="category-content">' +
+            '<h3 class="category-title">' + service.name + '</h3>' +
+            '<p class="category-description">' + service.description + '</p>' +
+            '<div class="category-footer">' +
+                '<span class="services-count">' +
+                    '<i class="fas fa-folder" style="color: var(--graphite-light); margin-right: 4px;"></i>' +
+                    (service.category_name || 'Без категории') +
+                '</span>' +
+                '<span class="select-service-btn">' +
+                    'Выбрать <i class="fas fa-arrow-right"></i>' +
+                '</span>' +
+            '</div>' +
+        '</div>';
+        container.appendChild(card);
+    });
+    
+    document.getElementById('backToCategoriesBtn').style.display = 'none';
+},
 
             loadAllCategoriesPage: async function() {
                 try {
