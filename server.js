@@ -212,16 +212,15 @@ const createDefaultLogo = () => {
 };
 
 // Настраиваем хранилище для разных типов загрузок
-const categoryStorage = multer.diskStorage({
+const serviceStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         ensureUploadDirs();
-        cb(null, 'public/uploads/categories');
+        cb(null, 'public/uploads/services'); // ← ИЗМЕНИТЕ ЭТО
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const extension = path.extname(file.originalname).toLowerCase();
-        const filename = `category-${uniqueSuffix}${extension}`;
-        console.log(`📁 Сохранение изображения категории: ${filename}`);
+        const filename = `service-${uniqueSuffix}${extension}`;
         cb(null, filename);
     }
 });
@@ -298,8 +297,8 @@ const uploadLogo = multer({
     fileFilter: imageFilter
 });
 
-const uploadGeneral = multer({ 
-    storage: generalStorage,
+const uploadServiceImage = multer({ 
+    storage: serviceStorage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: imageFilter
 });
@@ -1591,7 +1590,7 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
 });
 
 // Загрузка изображения услуги
-app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
+app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadServiceImage.single('image'), async (req, res) => {
     try {
         console.log('📤 Загрузка изображения услуги...');
         
@@ -1602,7 +1601,7 @@ app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin
             });
         }
         
-        const fileUrl = `/uploads/services/${req.file.filename}`;
+        const fileUrl = `/uploads/services/${req.file.filename}`; // ← ОБНОВИТЕ ПУТЬ
         console.log(`✅ Изображение услуги сохранено: ${fileUrl}`);
         
         res.json({
