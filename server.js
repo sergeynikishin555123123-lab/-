@@ -7552,6 +7552,7 @@ app.get('/api/services/top', async (req, res) => {
 });
 
 // Получение всех услуг
+// В маршруте GET /api/services добавьте полный URL:
 app.get('/api/services', async (req, res) => {
     try {
         const services = await db.all(`
@@ -7562,10 +7563,18 @@ app.get('/api/services', async (req, res) => {
             ORDER BY c.sort_order ASC, s.sort_order ASC, s.name ASC
         `);
         
+        // Добавьте полный URL для изображений услуг
+        const servicesWithFullUrls = services.map(service => ({
+            ...service,
+            image_full_url: service.image_url 
+                ? `${req.protocol}://${req.get('host')}${service.image_url}`
+                : `${req.protocol}://${req.get('host')}/api/images/test/service`
+        }));
+        
         res.json({
             success: true,
             data: {
-                services,
+                services: servicesWithFullUrls,
                 count: services.length
             }
         });
