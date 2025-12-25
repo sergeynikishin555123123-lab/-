@@ -3804,8 +3804,9 @@
     
     <script>
         const app = {
-            currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
-            currentToken: localStorage.getItem('token') || null,
+            currentCategoryId: null, // Добавьте эту строку
+currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+currentToken: localStorage.getItem('token') || null,
             categories: [],
             services: [],
             allServices: [],
@@ -4285,22 +4286,34 @@ createSvgFallback: function(type) {
             },
 
             // ИСПРАВЛЕНИЕ: Загружаем все услуги, а не категории
-            loadAllServicesPage: async function() {
-                try {
-                    await this.loadAllServices();
-                    this.selectedCategory = null;
-                    this.renderAllServices();
-                    
-                    var backBtn = document.getElementById('backToCategoriesBtn');
-                    if (backBtn) {
-                        backBtn.style.display = 'none';
-                    }
-                    
-                } catch (error) {
-                    console.error('Ошибка загрузки страницы услуг:', error);
-                    this.showNotification('Ошибка загрузки услуг', 'error');
-                }
-            },
+loadAllServicesPage: async function() {
+    try {
+        // Сбрасываем текущую категорию
+        this.currentCategoryId = null;
+        this.selectedCategory = null;
+        this.services = null;
+        
+        await this.loadAllServices();
+        this.renderAllServices();
+        
+        // Обновляем заголовок
+        var pageTitle = document.getElementById('servicesPageTitle');
+        if (pageTitle) pageTitle.textContent = 'Все услуги';
+        
+        var backBtn = document.getElementById('backToCategoriesBtn');
+        if (backBtn) {
+            backBtn.style.display = 'none';
+        }
+        
+        // Показываем поиск
+        var searchBox = document.querySelector('.search-box');
+        if (searchBox) searchBox.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Ошибка загрузки страницы услуг:', error);
+        this.showNotification('Ошибка загрузки услуг', 'error');
+    }
+},
 
             // ИСПРАВЛЕНИЕ: Рендерим все услуги
 renderAllServices: function() {
@@ -4469,73 +4482,126 @@ renderAllServices: function() {
                 }
             },
 
-            filterServices: function() {
-                var searchTerm = document.getElementById('serviceSearch').value.toLowerCase().trim();
-                var container = document.getElementById('allServicesList');
-                
-                if (!container) return;
-                
-                if (!searchTerm && !this.selectedCategory) {
-                    this.renderAllServices();
-                    return;
-                }
-                
-                if (searchTerm && this.allServices) {
-                    var filteredServices = this.allServices.filter(function(service) {
-                        return service.name.toLowerCase().includes(searchTerm) ||
-                               service.description.toLowerCase().includes(searchTerm) ||
-                               (service.category_name && service.category_name.toLowerCase().includes(searchTerm));
-                    });
-                    
-                    if (filteredServices.length === 0) {
-                        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                            '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
-                        '</div>';
-                    } else {
-                        container.className = 'square-grid';
-                        container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                            '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Результаты поиска</h3>' +
-                            '<p style="color: var(--graphite-medium);">Найдено услуг: ' + filteredServices.length + '</p>' +
-                        '</div>';
-                        
-                        var self = this;
-                        filteredServices.forEach(function(service) {
-                            var card = document.createElement('div');
-                            card.className = 'service-card-square';
-                            card.onclick = function() { 
-                                self.selectService(service); 
-                            };
-                            
-                            var imageUrl = service.image_url ? 
-                                self.getImageUrl(service.image_url, 'service') : 
-                                self.createSvgFallback('service');
-                            
-                            card.innerHTML = '<div class="service-image-container">' +
-                                '<img src="' + imageUrl + '" ' +
-                                    'alt="' + service.name + '"' +
-                                    'loading="lazy"' +
-                                    'style="width: 100%; height: 100%; object-fit: cover;">' +
-                            '</div>' +
-                            '<div class="category-content">' +
-                                '<h3 class="category-title">' + service.name + '</h3>' +
-                                '<p class="category-description">' + service.description + '</p>' +
-                                '<div class="category-footer">' +
-                                    '<span class="services-count">' +
-                                        '<i class="fas fa-folder" style="color: var(--graphite-light); margin-right: 4px;"></i>' +
-                                        (service.category_name || 'Без категории') +
-                                    '</span>' +
-                                    '<span class="select-service-btn">' +
-                                        'Выбрать <i class="fas fa-arrow-right"></i>' +
-                                    '</span>' +
-                                '</div>' +
-                            '</div>';
-                            container.appendChild(card);
-                        });
-                    }
-                    return;
-                }
-            },
+ filterServices: function() {
+    var searchTerm = document.getElementById('serviceSearch').value.toLowerCase().trim();
+    var container = document.getElementById('allServicesList');
+    
+    if (!container) return;
+    
+    // Если есть текущая категория, фильтруем только ее услуги
+    if (this.currentCategoryId && this.services) {
+        var filteredServices = this.services.filter(function(service) {
+            return service.name.toLowerCase().includes(searchTerm) ||
+                   service.description.toLowerCase().includes(searchTerm);
+        });
+        
+        this.renderFilteredServices(filteredServices, searchTerm, true);
+        return;
+    }
+    
+    // Иначе фильтруем все услуги
+    if (!searchTerm) {
+        this.renderAllServices();
+        return;
+    }
+    
+    if (searchTerm && this.allServices) {
+        var filteredServices = this.allServices.filter(function(service) {
+            return service.name.toLowerCase().includes(searchTerm) ||
+                   service.description.toLowerCase().includes(searchTerm) ||
+                   (service.category_name && service.category_name.toLowerCase().includes(searchTerm));
+        });
+        
+        this.renderFilteredServices(filteredServices, searchTerm, false);
+    }
+},
+
+// Добавьте эту новую функцию для рендеринга отфильтрованных услуг
+renderFilteredServices: function(services, searchTerm, isCategoryView) {
+    var container = document.getElementById('allServicesList');
+    var pageTitle = document.getElementById('servicesPageTitle');
+    
+    if (!container) return;
+    
+    container.className = 'grid-2-main';
+    
+    if (services.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-search" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги по запросу "' + searchTerm + '" не найдены</p>' +
+            '<div style="margin-top: 20px;">' +
+                '<button class="btn btn-secondary" onclick="' + 
+                    (isCategoryView ? 'app.renderServicesForCategory(app.selectedCategory)' : 'app.loadAllServicesPage()') + 
+                    '">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                    (isCategoryView ? 'Вернуться к категории' : 'Вернуться ко всем услугам') +
+                '</button>' +
+            '</div>' +
+        '</div>';
+        
+        if (pageTitle) {
+            pageTitle.textContent = 'Поиск: "' + searchTerm + '" (не найдено)';
+        }
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = 'Поиск: "' + searchTerm + '" (' + services.length + ' услуг)';
+    }
+    
+    var self = this;
+    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">Результаты поиска</h3>' +
+        '<p style="color: var(--graphite-medium);">Найдено: ' + services.length + ' услуг' + 
+        (isCategoryView && self.selectedCategory ? ' в категории "' + self.selectedCategory.display_name + '"' : '') + '</p>' +
+        '<div style="margin-top: 10px;">' +
+            '<button class="btn btn-secondary btn-sm" onclick="' + 
+                (isCategoryView ? 'app.renderServicesForCategory(app.selectedCategory)' : 'app.loadAllServicesPage()') + 
+                '">' +
+                '<i class="fas fa-arrow-left"></i>' +
+                (isCategoryView ? 'Вернуться к категории' : 'Вернуться ко всем услугам') +
+            '</button>' +
+        '</div>' +
+    '</div>';
+    
+    services.forEach(function(service) {
+        var card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = function() { 
+            self.selectService(service);
+        };
+        
+        var imageUrl = service.image_url ? 
+            self.getImageUrl(service.image_url, 'service') : 
+            self.createSvgFallback('service');
+        
+        var iconClass = service.icon || 'fas fa-star';
+        var svgFallback = self.createSvgFallback('service');
+        
+        card.innerHTML = '<div class="category-image-main">' +
+            '<img src="' + imageUrl + '" ' +
+                'alt="' + service.name + '"' +
+                'loading="lazy"' +
+                'onerror="this.onerror=null; this.src=\'' + svgFallback + '\'; this.style.objectFit=\'cover\';"' +
+                'style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">' +
+            '<div class="category-icon-badge-main">' +
+                '<i class="' + iconClass + '"></i>' +
+            '</div>' +
+        '</div>' +
+        '<h3>' + service.name + '</h3>' +
+        '<div class="category-description-main">' + service.description + '</div>' +
+        '<div class="category-card-footer">' +
+            '<span style="display: flex; align-items: center; gap: 4px;">' +
+                '<i class="fas fa-folder" style="color: var(--graphite-light);"></i>' +
+                (service.category_name || 'Без категории') +
+            '</span>' +
+            '<span style="display: flex; align-items: center; gap: 4px;">' +
+                'Выбрать <i class="fas fa-arrow-right"></i>' +
+            '</span>' +
+        '</div>';
+        container.appendChild(card);
+    });
+},
             
             // ИСПРАВЛЕНИЕ: Убираем модальное окно при клике на категорию
 // ИСПРАВЛЕНИЕ: Добавляем функцию showCategoryDescriptionModal
@@ -4589,7 +4655,7 @@ showCategoryDescriptionModal: function(category) {
                     <button class="btn btn-secondary" onclick="window.App.closeCategoryDescriptionModal()" style="flex: 1;">
                         Отмена
                     </button>
-                    <button class="btn btn-primary" onclick="window.App.continueToCategoryServices(${category.id})" style="flex: 1;">
+                    <button class="btn btn-primary" onclick="window.App.continueToCategoryServices(${category.id}, '${category.display_name}')" style="flex: 1;">
                         Продолжить
                         <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
                     </button>
@@ -4618,17 +4684,20 @@ closeCategoryDescriptionModal: function() {
     }
 },
 
-// ОБНОВИТЕ ФУНКЦИЮ continueToCategoryServices
-// ОБНОВЛЕННАЯ ФУНКЦИЯ continueToCategoryServices
-continueToCategoryServices: function(categoryId) {
+continueToCategoryServices: function(categoryId, categoryName) {
     this.closeCategoryDescriptionModal();
     
     const category = this.categories.find(cat => cat.id === categoryId);
     if (category) {
         this.loadServicesForCategory(category);
     } else {
-        this.showNotification('Категория не найдена', 'error');
-        this.loadAllServicesPage();
+        // Если категория не найдена в списке, создаем временный объект
+        const tempCategory = {
+            id: categoryId,
+            display_name: categoryName || 'Категория',
+            description: ''
+        };
+        this.loadServicesForCategory(tempCategory);
     }
 },
 
@@ -4861,22 +4930,33 @@ card.innerHTML = '<div class="category-image-main">' +
 loadServicesForCategory: async function(category) {
     if (!category) return;
     
+    // Сохраняем ID текущей категории
+    this.currentCategoryId = category.id;
+    this.selectedCategory = category;
+    
     try {
+        this.showLoading('Загрузка услуг...');
+        
         var response = await fetch(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
         if (response.ok) {
             var result = await response.json();
             if (result.success) {
                 this.services = result.data.services;
+                // Переходим на страницу услуг и рендерим ТОЛЬКО услуги этой категории
                 this.renderServicesForCategory(category);
                 this.navigateToPage('all-services');
                 return;
             }
         }
+        throw new Error('Не удалось загрузить услуги');
     } catch (error) {
         console.error('Ошибка загрузки услуг категории:', error);
         this.services = [];
         this.renderServicesForCategory(category);
         this.navigateToPage('all-services');
+        this.showNotification('Не удалось загрузить услуги категории', 'warning');
+    } finally {
+        this.hideLoading();
     }
 },
 
@@ -4885,8 +4965,13 @@ renderServicesForCategory: function(category) {
     var container = document.getElementById('allServicesList');
     var pageTitle = document.getElementById('servicesPageTitle');
     var backBtn = document.getElementById('backToCategoriesBtn');
+    var searchBox = document.querySelector('.search-box');
     
     if (!container) return;
+    
+    // Показываем поиск и скрываем кнопку "назад к категориям"
+    if (searchBox) searchBox.style.display = 'block';
+    if (backBtn) backBtn.style.display = 'block';
     
     // Используем сетку как на главной
     container.className = 'grid-2-main';
@@ -4895,16 +4980,21 @@ renderServicesForCategory: function(category) {
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
             '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
             '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()" style="margin-top: 15px;">' +
-                '<i class="fas fa-arrow-left"></i>' +
-                'Вернуться ко всем услугам' +
-            '</button>' +
+            '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
+                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                    '<i class="fas fa-list"></i>' +
+                    'Все услуги' +
+                '</button>' +
+                '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                    'Назад к категориям' +
+                '</button>' +
+            '</div>' +
         '</div>';
         
         if (pageTitle) {
             pageTitle.textContent = category.display_name + ' (нет услуг)';
         }
-        if (backBtn) backBtn.style.display = 'block';
         return;
     }
     
@@ -4912,11 +5002,24 @@ renderServicesForCategory: function(category) {
         pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
     }
     
-    if (backBtn) backBtn.style.display = 'block';
-    
     container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">' + category.display_name + '</h3>' +
-        '<p style="color: var(--graphite-medium);">Выберите услугу для создания задачи</p>' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
+            '<div>' +
+                '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
+                '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
+            '</div>' +
+            '<div style="display: flex; gap: 10px;">' +
+                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                    '<i class="fas fa-list"></i>' +
+                    'Все услуги' +
+                '</button>' +
+                '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                    'Категории' +
+                '</button>' +
+            '</div>' +
+        '</div>' +
+        '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
     '</div>';
     
     var self = this;
@@ -4957,17 +5060,6 @@ renderServicesForCategory: function(category) {
         '</div>';
         container.appendChild(card);
     });
-    
-    // Добавляем кнопку возврата
-    var backButtonContainer = document.createElement('div');
-    backButtonContainer.style.gridColumn = '1 / -1';
-    backButtonContainer.style.textAlign = 'center';
-    backButtonContainer.style.marginTop = '20px';
-    backButtonContainer.innerHTML = '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-        '<i class="fas fa-arrow-left"></i>' +
-        'Вернуться ко всем услугам' +
-    '</button>';
-    container.appendChild(backButtonContainer);
 },
         
             // ==================== СТАТИСТИКА ====================
@@ -6804,37 +6896,54 @@ renderServicesForCategory: function(category) {
             },
 
             // ==================== НАВИГАЦИЯ ====================
-            navigateToPage: function(pageId) {
-                document.querySelectorAll('.page').forEach(function(page) {
-                    page.classList.remove('active');
-                });
-                
-                var targetPage = document.getElementById(pageId + '-page');
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                    
-                    document.querySelectorAll('.nav-item').forEach(function(item) {
-                        item.classList.remove('active');
-                        if (item.getAttribute('data-page') === pageId) {
-                            item.classList.add('active');
-                        }
-                    });
-                    
-                    switch(pageId) {
-                        case 'home': this.loadHomePage(); break;
-                        case 'all-services': this.loadAllServicesPage(); break;
-                        case 'all-categories': this.loadAllCategoriesPage(); break;
-                        case 'profile': this.loadUserProfile(); break;
-                        case 'tasks': this.loadUserTasks('all'); break;
-                        case 'subscription': this.loadSubscriptionPage(); break;
-                    }
-                    
-                    var userMenu = document.getElementById('userMenu');
-                    if (userMenu && userMenu.style.display === 'block') {
-                        userMenu.style.display = 'none';
-                    }
+   navigateToPage: function(pageId) {
+    document.querySelectorAll('.page').forEach(function(page) {
+        page.classList.remove('active');
+    });
+    
+    var targetPage = document.getElementById(pageId + '-page');
+    if (targetPage) {
+        targetPage.classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(function(item) {
+            item.classList.remove('active');
+            if (item.getAttribute('data-page') === pageId) {
+                item.classList.add('active');
+            }
+        });
+        
+        switch(pageId) {
+            case 'home': 
+                this.loadHomePage(); 
+                break;
+            case 'all-services': 
+                // Если есть текущая категория, показываем ее услуги
+                if (this.currentCategoryId && this.selectedCategory && this.services) {
+                    this.renderServicesForCategory(this.selectedCategory);
+                } else {
+                    this.loadAllServicesPage(); 
                 }
-            },
+                break;
+            case 'all-categories': 
+                this.loadAllCategoriesPage(); 
+                break;
+            case 'profile': 
+                this.loadUserProfile(); 
+                break;
+            case 'tasks': 
+                this.loadUserTasks('all'); 
+                break;
+            case 'subscription': 
+                this.loadSubscriptionPage(); 
+                break;
+        }
+        
+        var userMenu = document.getElementById('userMenu');
+        if (userMenu && userMenu.style.display === 'block') {
+            userMenu.style.display = 'none';
+        }
+    }
+},
 
             // ==================== ИНИЦИАЛИЗАЦИЯ ====================
             init: async function() {
