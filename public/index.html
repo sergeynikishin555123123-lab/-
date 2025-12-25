@@ -3364,12 +3364,16 @@
                     </div>
                     
                     <!-- Табы -->
-                    <div class="tabs" id="tasksTabs">
-                        <div class="tab active" onclick="app.filterTasks('all')">Все</div>
-                        <div class="tab" onclick="app.filterTasks('new')">Новые</div>
-                        <div class="tab" onclick="app.filterTasks('in_progress')">В работе</div>
-                        <div class="tab" onclick="app.filterTasks('completed')">Завершенные</div>
-                    </div>
+<div class="tabs" id="tasksTabs">
+    <div class="tab active" onclick="app.filterTasks('all')">Все</div>
+    <div class="tab" onclick="app.filterTasks('new')">Новые</div>
+    <!-- Можно добавить отдельный таб для поиска, если нужно -->
+    <div class="tab" onclick="app.filterTasks('searching')">В поиске</div> -->
+    <div class="tab" onclick="app.filterTasks('in_progress')">В работе</div>
+    <div class="tab" onclick="app.filterTasks('completed')">Завершенные</div>
+    <!-- Можно добавить таб для отмененных -->
+     <div class="tab" onclick="app.filterTasks('cancelled')">Отмененные</div> -->
+</div>
                     
                     <!-- Контейнер для карточек задач (для мобильных) -->
                     <div class="task-cards-container" id="userTasksCards">
@@ -5718,46 +5722,106 @@ renderServicesForCategory: function(category) {
             },
 
             // ==================== ЗАДАЧИ ====================
-            loadUserTasks: async function(filter) {
-                try {
-                    this.currentTaskFilter = filter;
-                    
-                    document.querySelectorAll('.tab').forEach(function(tab) {
-                        tab.classList.remove('active');
-                    });
-                    var activeTab = document.querySelector('.tab[onclick*="' + filter + '"]');
-                    if (activeTab) activeTab.classList.add('active');
-                    
-                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks?status=' + filter);
-                    if (response.ok) {
-                        var result = await response.json();
-                        if (result.success) {
-                            this.userTasks = result.data.tasks;
-                            this.renderUserTasks();
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Ошибка загрузки задач:', error);
-                }
-                
-                this.userTasks = [
-                    {
-                        id: 1,
-                        task_number: "TASK-001",
-                        title: "Уборка 2-комнатной квартиры",
-                        category_name: "Дом и быт",
-                        status: "completed",
-                        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                        price: null
-                    }
-                ].filter(function(task) {
-                    return filter === 'all' || task.status === filter;
-                });
-                
+loadUserTasks: async function(filter) {
+    try {
+        this.currentTaskFilter = filter;
+        
+        document.querySelectorAll('.tab').forEach(function(tab) {
+            tab.classList.remove('active');
+        });
+        var activeTab = document.querySelector('.tab[onclick*="' + filter + '"]');
+        if (activeTab) activeTab.classList.add('active');
+        
+        // Загружаем все задачи пользователя
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/user');
+        if (response.ok) {
+            var result = await response.json();
+            if (result.success) {
+                // Фильтруем задачи на клиенте
+                this.userTasks = this.filterTasksByStatus(result.data.tasks, filter);
                 this.renderUserTasks();
-            },
+                return;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки задач:', error);
+    }
+    
+    // Мок данные для демонстрации
+    this.userTasks = [
+        {
+            id: 1,
+            task_number: "TASK-001",
+            title: "Уборка 2-комнатной квартиры",
+            category_name: "Дом и быт",
+            status: "new",
+            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            price: null
+        },
+        {
+            id: 2,
+            task_number: "TASK-002",
+            title: "Помощь с детьми",
+            category_name: "Семья и дети",
+            status: "searching",
+            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            price: null
+        },
+        {
+            id: 3,
+            task_number: "TASK-003",
+            title: "Ремонт крана на кухне",
+            category_name: "Ремонт",
+            status: "in_progress",
+            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            price: null
+        },
+        {
+            id: 4,
+            task_number: "TASK-004",
+            title: "Забрать посылку с почты",
+            category_name: "Поручения",
+            status: "completed",
+            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            price: null
+        }
+    ].filter(task => this.filterTasksByStatus([task], filter).length > 0);
+    
+    this.renderUserTasks();
+},
 
+// Новая функция для фильтрации задач по статусу
+filterTasksByStatus: function(tasks, filter) {
+    if (!tasks || tasks.length === 0) return [];
+    
+    switch(filter) {
+        case 'all':
+            return tasks;
+            
+        case 'new':
+            // Только задачи со статусом "new"
+            return tasks.filter(task => task.status === 'new');
+            
+        case 'searching':
+            // Только задачи со статусом "searching"
+            return tasks.filter(task => task.status === 'searching');
+            
+        case 'in_progress':
+            return tasks.filter(task => 
+                task.status === 'in_progress' || 
+                task.status === 'assigned'
+            );
+            
+        case 'completed':
+            return tasks.filter(task => task.status === 'completed');
+            
+        case 'cancelled':
+            return tasks.filter(task => task.status === 'cancelled');
+            
+        default:
+            return tasks;
+    }
+},
             renderUserTasks: function() {
                 this.renderUserTasksCards();
                 this.renderUserTasksTable();
@@ -5767,22 +5831,38 @@ renderServicesForCategory: function(category) {
                 this.loadUserTasks(filterType);
             },
             
-            renderUserTasksCards: function() {
-                var container = document.getElementById('userTasksCards');
-                if (!container) return;
-                
-                if (!this.userTasks || this.userTasks.length === 0) {
-                    container.innerHTML = '<div class="empty-state">' +
-                        '<i class="fas fa-tasks empty-state-icon"></i>' +
-                        '<h3 class="empty-state-title">Задач пока нет</h3>' +
-                        '<p class="empty-state-description">Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц</p>' +
-                        '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
-                            '<i class="fas fa-plus"></i>' +
-                            'Создать задачу' +
-                        '</button>' +
-                    '</div>';
-                    return;
-                }
+renderUserTasksCards: function() {
+    var container = document.getElementById('userTasksCards');
+    if (!container) return;
+    
+    if (!this.userTasks || this.userTasks.length === 0) {
+        var statusText = '';
+        switch(this.currentTaskFilter) {
+            case 'new':
+                statusText = 'Нет новых задач или задач в поиске исполнителя';
+                break;
+            case 'in_progress':
+                statusText = 'Нет задач в работе';
+                break;
+            case 'completed':
+                statusText = 'Нет завершенных задач';
+                break;
+            default:
+                statusText = 'Задач пока нет';
+        }
+        
+        container.innerHTML = '<div class="empty-state">' +
+            '<i class="fas fa-tasks empty-state-icon"></i>' +
+            '<h3 class="empty-state-title">' + statusText + '</h3>' +
+            '<p class="empty-state-description">Создайте новую задачу, чтобы получить помощь</p>' +
+            '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
+                '<i class="fas fa-plus"></i>' +
+                'Создать задачу' +
+            '</button>' +
+        '</div>';
+        return;
+    }
+
                 
                 container.innerHTML = '';
                 var self = this;
@@ -6078,29 +6158,29 @@ renderServicesForCategory: function(category) {
                 }).join('');
             },
             
-            getStatusText: function(status) {
-                var statusMap = {
-                    'new': 'Новая',
-                    'searching': 'Поиск исполнителя',
-                    'assigned': 'Назначена',
-                    'in_progress': 'В работе',
-                    'completed': 'Выполнена',
-                    'cancelled': 'Отменена'
-                };
-                return statusMap[status] || status;
-            },
+getStatusText: function(status) {
+    var statusMap = {
+        'new': 'Новая',
+        'searching': 'В поиске',
+        'assigned': 'Назначена',
+        'in_progress': 'В работе',
+        'completed': 'Выполнена',
+        'cancelled': 'Отменена'
+    };
+    return statusMap[status] || status;
+},
             
-            getStatusInfo: function(status) {
-                var statuses = {
-                    'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1976D2' },
-                    'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#FF9800' },
-                    'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#2196F3' },
-                    'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#673AB7' },
-                    'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
-                    'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
-                };
-                return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
-            },
+          getStatusInfo: function(status) {
+    var statuses = {
+        'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1976D2' },
+        'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#FF9800' },
+        'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#2196F3' },
+        'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#673AB7' },
+        'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
+        'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
+    };
+    return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
+},
             
             // ==================== АВТОРИЗАЦИЯ ====================
             login: async function() {
