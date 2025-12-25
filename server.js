@@ -3838,7 +3838,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 
 // ==================== ЗАДАЧИ ====================
 
-// Создание задачи
+// В server.js, найдите функцию создания задачи и обновите ее:
 app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
         const { 
@@ -3853,11 +3853,11 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             additional_requirements
         } = req.body;
         
-        console.log('Создание новой задачи:', { 
+        console.log('🔄 Создание новой задачи:', { 
             title, 
             category_id, 
             client_id: req.user.id,
-            status: 'searching' 
+            status: 'new' 
         });
         
         if (!title || !description || !category_id || !deadline || !address || !contact_info) {
@@ -3933,7 +3933,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         
         const finalPrice = 0;
         const taskNumber = generateTaskNumber();
-        const taskStatus = 'searching';
+        const taskStatus = 'new'; // Меняем на 'new' вместо 'searching'
         
         const result = await db.run(
             `INSERT INTO tasks 
@@ -3969,59 +3969,10 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         await db.run(
             `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
              VALUES (?, ?, ?, ?)`,
-            [taskId, taskStatus, req.user.id, 'Задача создана и опубликована для исполнителей']
+            [taskId, taskStatus, req.user.id, 'Задача создана']
         );
         
-        await db.run(
-            `INSERT INTO notifications 
-            (user_id, type, title, message, related_id, related_type) 
-            VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-                req.user.id,
-                'task_created',
-                'Задача создана',
-                `Задача "${title}" успешно создана. Ожидайте назначения исполнителя.`,
-                taskId,
-                'task'
-            ]
-        );
-        
-        const performers = await db.all(
-            `SELECT DISTINCT u.id, u.first_name, u.last_name, u.phone, u.avatar_url, u.user_rating
-             FROM users u
-             JOIN performer_categories pc ON u.id = pc.performer_id
-             WHERE u.role = 'performer' 
-               AND u.is_active = 1
-               AND u.phone_verified = 1
-               AND pc.category_id = ?
-               AND pc.is_active = 1
-             ORDER BY u.user_rating DESC`,
-            [category_id]
-        );
-        
-        console.log(`✅ Найдено исполнителей: ${performers.length}`);
-        
-        for (const performer of performers) {
-            try {
-                await db.run(
-                    `INSERT INTO notifications 
-                    (user_id, type, title, message, related_id, related_type) 
-                    VALUES (?, ?, ?, ?, ?, ?)`,
-                    [
-                        performer.id,
-                        'new_task_available',
-                        'Новая задача доступна',
-                        `Доступна новая задача в категории "${category.display_name}". 
-                         Название: "${title}"`,
-                        taskId,
-                        'task'
-                    ]
-                );
-            } catch (error) {
-                console.warn(`Ошибка отправки уведомления исполнителю ${performer.id}:`, error.message);
-            }
-        }
-        
+        // Получаем созданную задачу с информацией о категории
         const task = await db.get(
             `SELECT t.*, c.display_name as category_name
              FROM tasks t 
@@ -4030,26 +3981,28 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             [taskId]
         );
         
+        // Получаем обновленную информацию о пользователе
         const updatedUser = await db.get(
             `SELECT tasks_limit, tasks_used FROM users WHERE id = ?`,
             [req.user.id]
         );
         
+        console.log(`✅ Задача создана успешно: ID ${taskId}, номер: ${taskNumber}`);
+        
         res.status(201).json({
             success: true,
-            message: 'Задача успешно создана и опубликована для исполнителей!',
+            message: 'Задача успешно создана!',
             data: { 
-                task,
+                task: task, // Возвращаем задачу полностью
                 user: updatedUser,
                 tasks_used: updatedUser?.tasks_used || 0,
-                tasks_remaining: (updatedUser?.tasks_limit || 0) - (updatedUser?.tasks_used || 0),
-                available_performers: performers.length,
-                demo_mode: DEMO_MODE
+                tasks_remaining: (updatedUser?.tasks_limit || 0) - (updatedUser?.tasks_used || 0)
             }
         });
         
     } catch (error) {
         console.error('🔥 Ошибка создания задачи:', error.message);
+        console.error('🔥 Stack trace:', error.stack);
         
         res.status(500).json({
             success: false,
@@ -7786,7 +7739,45 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
 
 // ==================== ЗАДАЧИ ====================
 
-// ... (после других маршрутов задач)
+// Добавьте этот маршрут в server.js
+app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
+    try {
+        console.log(`📋 Получение задач для пользователя: ${req.user.id}`);
+        
+        const tasks = await db.all(`
+            SELECT 
+                t.*,
+                c.display_name as category_name,
+                c.icon as category_icon,
+                s.name as service_name,
+                COUNT(tm.id) as messages_count
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN services s ON t.service_id = s.id
+            LEFT JOIN task_messages tm ON t.id = tm.task_id
+            WHERE t.client_id = ?
+            GROUP BY t.id
+            ORDER BY t.created_at DESC
+        `, [req.user.id]);
+        
+        console.log(`✅ Найдено задач: ${tasks.length} для пользователя ${req.user.id}`);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks: tasks,
+                count: tasks.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения задач пользователя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач'
+        });
+    }
+});
 
 // Получение недавних задач пользователя (добавьте этот код)
 app.get('/api/tasks/recent', authMiddleware(), async (req, res) => {
