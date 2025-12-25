@@ -3426,15 +3426,14 @@
                     </div>
                     
                     <!-- Табы -->
+<!-- Табы -->
 <div class="tabs" id="tasksTabs">
     <div class="tab active" onclick="app.filterTasks('all')">Все</div>
     <div class="tab" onclick="app.filterTasks('new')">Новые</div>
-    <!-- Можно добавить отдельный таб для поиска, если нужно -->
-    <div class="tab" onclick="app.filterTasks('searching')">В поиске</div> -->
+    <div class="tab" onclick="app.filterTasks('searching')">В поиске</div>
     <div class="tab" onclick="app.filterTasks('in_progress')">В работе</div>
     <div class="tab" onclick="app.filterTasks('completed')">Завершенные</div>
-    <!-- Можно добавить таб для отмененных -->
-     <div class="tab" onclick="app.filterTasks('cancelled')">Отмененные</div> -->
+    <div class="tab" onclick="app.filterTasks('cancelled')">Отмененные</div>
 </div>
                     
                     <!-- Контейнер для карточек задач (для мобильных) -->
@@ -5870,6 +5869,42 @@ loadUserTasks: async function(filter) {
     this.renderUserTasks();
 },
 
+// ==================== ФИЛЬТРАЦИЯ ЗАДАЧ ====================
+filterTasks: function(filterType) {
+    // Устанавливаем текущий фильтр
+    this.currentTaskFilter = filterType;
+    
+    // Обновляем активные табы
+    document.querySelectorAll('.tab').forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    
+    // Активируем текущий таб
+    var activeTab = Array.from(document.querySelectorAll('.tab')).find(tab => {
+        return tab.textContent.includes(getFilterDisplayName(filterType));
+    });
+    
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // Загружаем задачи с новым фильтром
+    this.loadUserTasks(filterType);
+},
+
+// Вспомогательная функция для получения отображаемого имени фильтра
+getFilterDisplayName: function(filterType) {
+    const filterMap = {
+        'all': 'Все',
+        'new': 'Новые',
+        'searching': 'В поиске',
+        'in_progress': 'В работе',
+        'completed': 'Завершенные',
+        'cancelled': 'Отмененные'
+    };
+    return filterMap[filterType] || filterType;
+},
+            
 // Новая функция для фильтрации задач по статусу
 filterTasksByStatus: function(tasks, filter) {
     if (!tasks || tasks.length === 0) return [];
@@ -5907,17 +5942,14 @@ renderUserTasks: function() {
     var container = document.getElementById('userTasksCards');
     if (!container) return;
     
-    // Добавьте кнопку обновления
-    var refreshButton = '<div style="text-align: right; margin-bottom: 15px;">' +
+    container.innerHTML = '<div style="text-align: right; margin-bottom: 15px;">' +
         '<button class="btn btn-secondary btn-sm" onclick="app.loadUserTasks(app.currentTaskFilter)">' +
             '<i class="fas fa-sync-alt"></i> Обновить' +
         '</button>' +
     '</div>';
     
-    container.innerHTML = refreshButton;
-    
     if (this.userTasks.length === 0) {
-        container.innerHTML = '<div class="empty-state">' +
+        container.innerHTML += '<div class="empty-state">' +
             '<i class="fas fa-tasks empty-state-icon"></i>' +
             '<h3 class="empty-state-title">Задач пока нет</h3>' +
             '<p class="empty-state-description">Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц</p>' +
@@ -6023,33 +6055,7 @@ renderUserTasks: function() {
                 container.appendChild(table);
             },
             
-showTaskDetailsCompact: async function(taskId) {
-    try {
-        this.showLoading('Загрузка задачи...');
-        
-        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/' + taskId);
-        if (response.ok) {
-            var result = await response.json();
-            if (result.success) {
-                var task = result.data.task;
-                this.renderTaskDetailsCompact(task, []);
-                this.navigateToPage('task-details');
-                
-                // Загружаем сообщения чата если есть
-                if (taskId) {
-                    setTimeout(() => {
-                        this.loadTaskMessages(taskId);
-                    }, 500);
-                }
-                return;
-            }
-        }
-        throw new Error('Не удалось загрузить задачу');
-    } catch (error) {
-        console.error('Ошибка загрузки задачи:', error);
-        
-        // Показываем заглушку с информацией об ошибке
-        this.renderTaskDetailsCompact({
+this.renderTaskDetailsCompact({
             id: taskId,
             task_number: 'TASK-XXXX',
             title: 'Ошибка загрузки задачи',
@@ -6213,6 +6219,26 @@ showTaskDetailsCompact: async function(taskId) {
                     this.showNotification('Ошибка отправки сообщения', 'error');
                 }
             },
+
+// ==================== ЗАГРУЗКА СООБЩЕНИЙ ЧАТА ====================
+loadTaskMessages: async function(taskId) {
+    try {
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/' + taskId + '/messages');
+        if (response.ok) {
+            var result = await response.json();
+            if (result.success) {
+                this.chatMessages = result.data.messages || [];
+                this.renderInlineChatMessages();
+                return;
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки сообщений:', error);
+    }
+    
+    this.chatMessages = [];
+    this.renderInlineChatMessages();
+},
             
             renderInlineChatMessages: function() {
                 var container = document.getElementById('inlineChatMessages');
@@ -7092,19 +7118,26 @@ getStatusText: function(status) {
 },
 
             // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-            init: async function() {
-                this.animateCounters();
-                await this.loadLogo();
-                await this.loadCategories();
-                await this.loadAllServices();
-                await this.loadSubscriptions();
-                this.setupDefaultImages();
-                
-                this.setupEventListeners();
-                this.determineInitialScreen();
-                this.updateUserInterface();
-                
-                this.supportChat.init();
+init: async function() {
+    this.animateCounters();
+    await this.loadLogo();
+    await this.loadCategories();
+    await this.loadAllServices();
+    await this.loadSubscriptions();
+    this.setupDefaultImages();
+    
+    this.setupEventListeners();
+    this.determineInitialScreen();
+    this.updateUserInterface();
+    
+    this.supportChat.init();
+    
+    // Загружаем задачи если пользователь авторизован
+    if (this.currentUser) {
+        setTimeout(() => {
+            this.loadUserTasks('all');
+        }, 500);
+    }
                 
                 var deadlineInput = document.getElementById('taskDeadline');
                 if (deadlineInput) {
