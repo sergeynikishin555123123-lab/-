@@ -1821,6 +1821,152 @@
             background: rgba(33, 150, 243, 0.1);
             color: #2196F3;
         }
+
+/* ==================== ПОЛНЫЙ CSS ==================== */
+
+/* Основные стили (уже есть) */
+/* ... */
+
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ, КОТОРЫЕ НУЖНО ВОССТАНОВИТЬ: */
+
+/* 1. Стили для иконок времени в услугах */
+.time-icon {
+    width: 14px;
+    height: 14px;
+    fill: #888;
+}
+
+/* 2. Стили для квадратных карточек услуг */
+.service-card-square {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    border: 1px solid rgba(61, 61, 61, 0.08);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    overflow: hidden;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.service-card-square:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
+
+.service-image-container {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    margin: 20px auto 15px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pink-light);
+}
+
+.service-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* 3. Стили для сервисной статистики на главной */
+.service-stats {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 40px 30px;
+    margin: 40px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.stat-card {
+    padding: 20px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, rgba(242, 221, 230, 0.05), rgba(232, 204, 217, 0.05));
+    border: 1px solid rgba(242, 221, 230, 0.1);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--pastel-pink);
+    margin-bottom: 10px;
+}
+
+.stat-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    margin-bottom: 8px;
+}
+
+.stat-description {
+    color: var(--graphite-medium);
+    font-size: 0.9rem;
+}
+
+/* 4. Стили для промо-баннера */
+.promo-banner {
+    background: linear-gradient(135deg, var(--gold-metallic), var(--pastel-pink));
+    color: white;
+    padding: 30px;
+    border-radius: var(--radius-lg);
+    margin: 30px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 5. Стили для утилитных классов */
+.text-center { text-align: center; }
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }
+.w-100 { width: 100%; }
+.d-flex { display: flex; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
+.gap-10 { gap: 10px; }
+.gap-20 { gap: 20px; }
+
+/* 6. Стили для плавных переходов */
+* {
+    transition: var(--transition-fast);
+}
+
+/* 7. Стили для улучшенного скроллбара */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--ivory-bg);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--pastel-pink);
+    border-radius: 5px;
+    border: 2px solid var(--ivory-bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--pink-medium);
+}
         
         /* Стили для чата поддержки */
         .support-message {
@@ -1964,6 +2110,11 @@
     </style>
 </head>
 <body>
+        <!-- Прогресс-бар загрузки -->
+    <div id="loading-bar" style="position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: var(--pastel-pink); z-index: 9999; transform: translateX(-100%);"></div>
+    
+    <!-- Оверлей для мобильного меню -->
+    <div id="mobile-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
     <!-- Верхняя навигация -->
     <nav class="top-nav">
         <a href="#" class="logo" onclick="app.navigateToPage('home')">
@@ -2160,6 +2311,183 @@
                             <div class="stat-item">
                                 <div class="stat-value" id="statCompletedHome">0</div>
                                 <div class="stat-label">Выполнено</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Страница поиска исполнителей -->
+        <div id="search-performers-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Поиск исполнителей</h2>
+                    </div>
+                    
+                    <div class="card">
+                        <div style="text-align: center; padding: 30px;">
+                            <i class="fas fa-search" style="font-size: 3rem; color: var(--pastel-pink); margin-bottom: 20px;"></i>
+                            <h3 style="margin-bottom: 15px;">Найдите проверенного исполнителя</h3>
+                            <p style="color: var(--graphite-medium); margin-bottom: 25px;">
+                                Выберите категорию для поиска профессиональных исполнительниц с отзывами и рейтингом
+                            </p>
+                            
+                            <div class="grid grid-2" id="performerCategories">
+                                <!-- Категории для поиска исполнителей -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница рейтинга исполнителей -->
+        <div id="performers-rating-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Рейтинг исполнителей</h2>
+                    </div>
+                    
+                    <div class="card">
+                        <div id="performersRatingList">
+                            <!-- Рейтинг исполнителей загружается динамически -->
+                            <div class="loader" style="text-align: center; padding: 40px;">
+                                <div class="spinner"></div>
+                                <p>Загрузка рейтинга...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница отзывов -->
+        <div id="reviews-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Отзывы клиентов</h2>
+                    </div>
+                    
+                    <div class="hero" style="margin-bottom: 40px;">
+                        <div class="hero-content">
+                            <h1>Что говорят наши клиенты</h1>
+                            <p>Реальные отзывы от женщин, которые уже воспользовались нашим сервисом</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-3" id="reviewsList">
+                        <!-- Отзывы загружаются динамически -->
+                        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <div class="spinner"></div>
+                            <p>Загрузка отзывов...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница FAQ -->
+        <div id="faq-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="app.navigateToPage('home')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Частые вопросы</h2>
+                    </div>
+                    
+                    <div class="hero" style="margin-bottom: 40px;">
+                        <div class="hero-content">
+                            <h1>Часто задаваемые вопросы</h1>
+                            <p>Ответы на самые популярные вопросы о нашем сервисе</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div id="faqList">
+                            <!-- FAQ загружается динамически -->
+                            <div class="faq-item" style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(61,61,61,0.1);">
+                                <div class="faq-question" style="font-weight: 600; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Как создать первую задачу?</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
+                                <div class="faq-answer" style="color: var(--graphite-medium); display: none;">
+                                    <p>Для создания задачи необходимо войти в систему, выбрать подписку, перейти в раздел "Услуги", выбрать категорию и конкретную услугу, заполнить форму и нажать "Создать задачу".</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Еще 9 подобных блоков FAQ -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Страница настроек -->
+        <div id="settings-page" class="page">
+            <div class="container">
+                <section class="section">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-secondary" onclick="app.navigateToPage('profile')" style="padding: 8px 16px;">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h2 class="section-title">Настройки</h2>
+                    </div>
+                    
+                    <div class="card">
+                        <div style="padding: 20px;">
+                            <h3 style="margin-bottom: 20px; color: var(--graphite-dark);">Настройки аккаунта</h3>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Уведомления</label>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="notifyEmail" checked>
+                                        <span>Email уведомления</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="notifySMS" checked>
+                                        <span>SMS уведомления</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="notifyPush" checked>
+                                        <span>Push-уведомления</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Конфиденциальность</label>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="privacyProfile" checked>
+                                        <span>Показывать профиль в поиске</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="privacyTasks">
+                                        <span>Скрыть выполненные задачи</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 30px;">
+                                <button class="btn btn-primary" onclick="app.saveSettings()" style="width: 100%;">
+                                    <i class="fas fa-save"></i> Сохранить настройки
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -5915,6 +6243,8 @@
                 }
             },
 
+
+            
             // ==================== ИНИЦИАЛИЗАЦИЯ ====================
             init: async function() {
                 this.animateCounters();
