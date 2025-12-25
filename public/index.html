@@ -2684,55 +2684,240 @@
     }
 }
 
+/* ИСПРАВЛЕНИЕ: Для страницы "Все услуги" на телефонах - 2 колонки */
+#allServicesList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+/* Карточка услуги в сетке 2 колонки для "Все услуги" */
+#allServicesList .category-card-main-style {
+    width: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 320px;
+    padding: 15px;
+}
+
+/* Изображение в карточке для "Все услуги" */
+#allServicesList .category-image-main {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 12px;
+}
+
+/* Заголовок для "Все услуги" */
+#allServicesList .category-card-main-style h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.3;
+}
+
+/* Описание для "Все услуги" */
+#allServicesList .category-description-main {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    padding: 8px;
+}
+
+/* Футер для "Все услуги" */
+#allServicesList .category-card-footer {
+    font-size: 0.8rem;
+    margin-top: 10px;
+}
+
+/* Адаптивность для "Все услуги" */
 @media (max-width: 480px) {
-    .category-image-main {
-        width: 80px;
-        height: 80px;
+    #allServicesList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        padding: 0 5px;
     }
     
-    .category-card-main-style {
-        padding: 15px;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .grid-2-main,
-    .grid-3-main {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .services-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    #allServicesList .category-card-main-style {
         padding: 12px;
+        min-height: 280px;
     }
     
-    .service-image-container {
-        height: 120px;
-    }
-    
-    .service-image-circle {
+    #allServicesList .category-image-main {
         width: 80px;
         height: 80px;
     }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .services-grid {
-        grid-template-columns: repeat(2, 1fr);
+    
+    #allServicesList .category-card-main-style h3 {
+        font-size: 0.9rem;
+        min-height: 32px;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    #allServicesList .category-description-main {
+        font-size: 0.75rem;
+        padding: 6px;
+        -webkit-line-clamp: 3;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
 }
 
-@media (min-width: 1025px) {
-    .services-grid {
+/* Для очень маленьких экранов (менее 360px) */
+@media (max-width: 360px) {
+    #allServicesList {
         grid-template-columns: repeat(2, 1fr);
-        max-width: 600px;
+        gap: 8px;
+        padding: 0 4px;
+    }
+    
+    #allServicesList .category-card-main-style {
+        padding: 10px;
+        min-height: 260px;
+    }
+    
+    #allServicesList .category-image-main {
+        width: 70px;
+        height: 70px;
+    }
+    
+    #allServicesList .category-card-main-style h3 {
+        font-size: 0.85rem;
+        min-height: 30px;
+    }
+}
+
+/* Для планшетов */
+@media (min-width: 481px) and (max-width: 768px) {
+    #allServicesList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        padding: 0 10px;
+    }
+    
+    #allServicesList .category-card-main-style {
+        min-height: 340px;
+    }
+    
+    #allServicesList .category-image-main {
+        width: 100px;
+        height: 100px;
+    }
+    
+    #allServicesList .category-card-main-style h3 {
+        font-size: 1rem;
+    }
+    
+    #allServicesList .category-description-main {
+        font-size: 0.85rem;
+    }
+}
+
+/* Для десктопов */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #allServicesList {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        padding: 0 15px;
+    }
+    
+    #allServicesList .category-card-main-style {
+        min-height: 360px;
+    }
+    
+    #allServicesList .category-image-main {
+        width: 110px;
+        height: 110px;
+    }
+    
+    #allServicesList .category-card-main-style h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Для больших десктопов */
+@media (min-width: 1025px) {
+    #allServicesList {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 25px;
+        max-width: 1200px;
         margin: 0 auto;
     }
+    
+    #allServicesList .category-card-main-style {
+        min-height: 380px;
+    }
+    
+    #allServicesList .category-image-main {
+        width: 120px;
+        height: 120px;
+    }
 }
+
+/* Для других страниц (категории, главная) оставляем адаптивную сетку */
+.grid-2-main:not(#allServicesList),
+.grid-3-main:not(#allServicesList) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .grid-2-main:not(#allServicesList),
+    .grid-3-main:not(#allServicesList) {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid-2-main:not(#allServicesList),
+    .grid-3-main:not(#allServicesList) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 12px;
+            }
+            
+            .service-image-container {
+                height: 120px;
+            }
+            
+            .service-image-circle {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
         
         /* Уменьшаем отступы в карточке профиля для мобильных */
         @media (max-width: 768px) {
