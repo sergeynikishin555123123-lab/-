@@ -3985,7 +3985,7 @@ renderAllServices: function() {
     
     if (!container) return;
     
-    // Используем сетку как на главной
+    // Используем сетку 2 колонки как на главной
     container.className = 'grid-2-main';
     
     if (!this.allServices || this.allServices.length === 0) {
@@ -4000,10 +4000,7 @@ renderAllServices: function() {
         pageTitle.textContent = 'Все услуги';
     }
     
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все услуги сервиса</h3>' +
-        '<p style="color: var(--graphite-medium);">Выберите услугу для создания задачи</p>' +
-    '</div>';
+    container.innerHTML = '';
     
     var self = this;
     this.allServices.forEach(function(service) {
@@ -4013,12 +4010,10 @@ renderAllServices: function() {
             self.selectService(service);
         };
         
-        // Используем изображение услуги или fallback
-var imageUrl = service.image_url ? 
-    self.API_BASE_URL + service.image_url + '?t=' + Date.now() : 
-    self.createSvgFallback('service');
+        var imageUrl = service.image_url ? 
+            self.getImageUrl(service.image_url, 'service') : 
+            self.createSvgFallback('service');
         
-        // Добавляем иконку как на главной
         var iconClass = service.icon || 'fas fa-star';
         var svgFallback = self.createSvgFallback('service');
         
@@ -4046,7 +4041,8 @@ var imageUrl = service.image_url ?
         container.appendChild(card);
     });
     
-    document.getElementById('backToCategoriesBtn').style.display = 'none';
+    var backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) backBtn.style.display = 'none';
 },
 
             loadAllCategoriesPage: async function() {
