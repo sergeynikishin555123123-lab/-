@@ -3596,9 +3596,9 @@
                 this.allServices.forEach(function(service) {
                     var card = document.createElement('div');
                     card.className = 'service-card-square';
-                    card.onclick = function() { 
-                        self.selectService(service); 
-                    };
+                  card.onclick = function() { 
+    self.selectCategoryForServices(category);
+};
                     
                     var imageUrl = service.image_url ? 
                         self.getImageUrl(service.image_url, 'service') : 
@@ -3801,14 +3801,15 @@
                     return;
                 }
                 
-                this.selectedCategory = category;
-                this.loadServicesForCategory(category);
+                    this.selectedCategory = category;
+    this.showCategoryDescriptionModal(category);
             },
 
-            loadServicesForCategory: async function(category) {
-                this.selectedCategory = category;
-                
-                try {
+           loadServicesForCategory: async function(category) {
+    this.closeCategoryDescriptionModal(); // Закрываем модальное окно
+    this.selectedCategory = category;
+    
+    try {
                     var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
                     
                     if (response && response.ok) {
@@ -3837,6 +3838,68 @@
                     }
                 }
             },
+
+showCategoryDescriptionModal: function(category) {
+    var modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'categoryDescriptionModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <h3 class="modal-title">${category.display_name}</h3>
+            <div style="text-align: center; margin: 20px 0;">
+                <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                    <i class="${category.icon}" style="font-size: 2rem; color: white;"></i>
+                </div>
+                <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
+                    ${category.description}
+                </p>
+                ${category.admin_description ? `
+                    <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
+                        <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
+                            ${category.admin_description}
+                        </p>
+                    </div>
+                ` : ''}
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="app.closeCategoryDescriptionModal()" style="flex: 1;">
+                    Отмена
+                </button>
+                <button class="btn btn-primary" onclick="app.continueToCategoryServices(${category.id})" style="flex: 1;">
+                    Продолжить
+                    <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+},
+
+continueToCategoryServices: function(categoryId) {
+    const category = this.categories.find(cat => cat.id === categoryId);
+    if (category) {
+        this.loadServicesForCategory(category);
+    }
+},
+
+closeCategoryDescriptionModal: function() {
+    var modal = document.getElementById('categoryDescriptionModal');
+    if (modal) {
+        modal.remove();
+    }
+},
+
+continueToCategoryServices: function(categoryId) {
+    this.closeCategoryDescriptionModal();
+    
+    const category = this.categories.find(cat => cat.id === categoryId);
+    if (category) {
+        this.loadServicesForCategory(category);
+    }
+},
             
             renderServicesInCategory: function() {
                 var container = document.getElementById('allServicesList');
