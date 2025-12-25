@@ -7740,10 +7740,12 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
 // ==================== ЗАДАЧИ ====================
 
 // Добавьте этот маршрут в server.js
+// Получение задач пользователя
 app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
     try {
         console.log(`📋 Получение задач для пользователя: ${req.user.id}`);
         
+        // Получаем задачи клиента
         const tasks = await db.all(`
             SELECT 
                 t.*,
@@ -7762,10 +7764,21 @@ app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
         
         console.log(`✅ Найдено задач: ${tasks.length} для пользователя ${req.user.id}`);
         
+        // Добавляем форматированные данные для отображения
+        const formattedTasks = tasks.map(task => ({
+            ...task,
+            status_text: task.status === 'new' ? 'Новая' : 
+                        task.status === 'searching' ? 'Поиск исполнителя' :
+                        task.status === 'assigned' ? 'Назначена' :
+                        task.status === 'in_progress' ? 'В работе' :
+                        task.status === 'completed' ? 'Выполнена' :
+                        task.status === 'cancelled' ? 'Отменена' : task.status
+        }));
+        
         res.json({
             success: true,
             data: {
-                tasks: tasks,
+                tasks: formattedTasks,
                 count: tasks.length
             }
         });
@@ -7774,7 +7787,7 @@ app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
         console.error('❌ Ошибка получения задач пользователя:', error.message);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения задач'
+            error: 'Ошибка получения задач: ' + error.message
         });
     }
 });
