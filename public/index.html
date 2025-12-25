@@ -4538,56 +4538,86 @@ renderAllServices: function() {
             },
             
             // ИСПРАВЛЕНИЕ: Убираем модальное окно при клике на категорию
-            selectCategoryForServices: async function(category) {
-                if (!this.currentUser) {
-                    this.showNotification('Для выбора категории необходимо войти в систему', 'warning');
-                    this.showLoginModal();
-                    return;
-                }
-                
-                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-                    this.showNotification('Для выбора категории необходима активная подписка', 'warning');
-                    this.navigateToPage('subscription');
-                    return;
-                }
-                
-                    this.selectedCategory = category;
-    this.showCategoryDescriptionModal(category);
-            },
-
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ loadServicesForCategory
-loadServicesForCategory: async function(category) {
-    this.closeCategoryDescriptionModal(); // Закрываем модальное окно
-    this.selectedCategory = category;
+// ИСПРАВЛЕНИЕ: Добавляем функцию showCategoryDescriptionModal
+selectCategoryForServices: async function(category) {
+    if (!this.currentUser) {
+        this.showNotification('Для выбора категории необходимо войти в систему', 'warning');
+        this.showLoginModal();
+        return;
+    }
     
-    try {
-        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/categories/' + category.id + '/services');
-        
-        if (response && response.ok) {
-            var result = await response.json();
-            
-            if (result.success) {
-                this.services = result.data.services;
-                // Вместо renderServicesInCategory просто отображаем услуги
-                this.renderServicesForCategory(category);
-                return;
-            }
-        }
-    } catch (error) {
-        console.error('Ошибка загрузки услуг:', error);
-        
-        // Загружаем все услуги и фильтруем по категории
-        try {
-            await this.loadAllServices();
-            this.services = this.allServices.filter(function(service) {
-                return service.category_id === category.id;
-            });
-            this.renderServicesForCategory(category);
-        } catch (fallbackError) {
-            console.error('Fallback ошибка:', fallbackError);
-            this.showNotification('Ошибка загрузки услуг. Попробуйте позже.', 'error');
-            this.loadAllServicesPage();
-        }
+    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+        this.showNotification('Для выбора категории необходима активная подписка', 'warning');
+        this.navigateToPage('subscription');
+        return;
+    }
+    
+    this.selectedCategory = category;
+    this.showCategoryDescriptionModal(category);
+},
+
+// ДОБАВЬТЕ ЭТУ НОВУЮ ФУНКЦИЮ ПОСЛЕ selectCategoryForServices
+showCategoryDescriptionModal: function(category) {
+    // Создаем модальное окно
+    var modalHtml = `
+        <div class="modal active" id="categoryDescriptionModal">
+            <div class="modal-content" style="max-width: 500px;">
+                <h3 class="modal-title">${category.display_name}</h3>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="width: 80px; height: 80px; background: var(--pastel-pink); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px;">
+                        <i class="${category.icon || 'fas fa-folder'}" style="font-size: 2rem; color: white;"></i>
+                    </div>
+                    <p style="color: var(--graphite-medium); line-height: 1.5; margin-bottom: 25px;">
+                        ${category.description}
+                    </p>
+                    ${category.admin_description ? `
+                        <div style="background: var(--pink-light); padding: 15px; border-radius: var(--radius); margin: 15px 0; border-left: 3px solid var(--pastel-pink);">
+                            <p style="color: var(--graphite-dark); font-style: italic; margin: 0;">
+                                ${category.admin_description}
+                            </p>
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-secondary" onclick="window.App.closeCategoryDescriptionModal()" style="flex: 1;">
+                        Отмена
+                    </button>
+                    <button class="btn btn-primary" onclick="window.App.continueToCategoryServices(${category.id})" style="flex: 1;">
+                        Продолжить
+                        <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Создаем элемент модального окна
+    var modalDiv = document.createElement('div');
+    modalDiv.innerHTML = modalHtml;
+    document.body.appendChild(modalDiv);
+    
+    // Показываем модальное окно
+    var modal = document.getElementById('categoryDescriptionModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+},
+
+// ДОБАВЬТЕ ЭТУ ФУНКЦИЮ ДЛЯ ЗАКРЫТИЯ МОДАЛЬНОГО ОКНА
+closeCategoryDescriptionModal: function() {
+    var modal = document.getElementById('categoryDescriptionModal');
+    if (modal) {
+        modal.remove();
+    }
+},
+
+// ОБНОВИТЕ ФУНКЦИЮ continueToCategoryServices
+continueToCategoryServices: function(categoryId) {
+    this.closeCategoryDescriptionModal();
+    
+    const category = this.categories.find(cat => cat.id === categoryId);
+    if (category) {
+        this.loadServicesForCategory(category);
     }
 },
 
