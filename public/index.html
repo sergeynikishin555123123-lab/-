@@ -2100,6 +2100,68 @@
                 display: none;
             }
         }
+
+/* Добавьте в CSS секцию */
+.task-cards-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.task-card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid rgba(61, 61, 61, 0.08);
+    padding: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+}
+
+.task-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.task-card-label {
+    font-size: 0.85rem;
+    color: var(--graphite-medium);
+    min-width: 100px;
+}
+
+.task-card-value {
+    font-size: 0.9rem;
+    color: var(--graphite-dark);
+    text-align: right;
+    flex: 1;
+}
+
+.task-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    gap: 10px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
         
         @media (max-width: 768px) {
             .task-table-container {
@@ -5142,121 +5204,139 @@ renderServicesForCategory: function(category) {
                 this.navigateToPage('home');
             },
 
-            createTask: async function() {
-                if (!this.currentUser) {
-                    this.showNotification('Для создания задачи необходимо войти в систему', 'error');
-                    return;
-                }
-                
-                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-                    this.showNotification('Для создания задачи необходима активная подписка', 'error');
-                    this.navigateToPage('subscription');
-                    return;
-                }
-                
-                // Проверяем лимит задач
-                var tasksUsed = this.currentUser.tasks_used || 0;
-                var tasksLimit = this.currentUser.tasks_limit || 0;
-                var availableTasks = tasksLimit - tasksUsed;
-                
-                if (availableTasks <= 0) {
-                    this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'error');
-                    return;
-                }
-                
-                var taskTitle = document.getElementById('taskTitle')?.value;
-                var taskDescription = document.getElementById('taskDescription')?.value;
-                var taskAddress = document.getElementById('taskAddress')?.value;
-                var taskDeadline = document.getElementById('taskDeadline')?.value;
-                var taskContact = document.getElementById('taskContact')?.value;
-                var additionalRequirements = document.getElementById('additionalRequirements')?.value;
-                
-                if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
-                    this.showNotification('Заполните все обязательные поля', 'error');
-                    return;
-                }
-                
-                var autoCategoryId = this.selectedCategory?.id;
-                if (!autoCategoryId) {
-                    var textForAnalysis = (taskTitle + ' ' + taskDescription).toLowerCase();
-                    var categoryKeywords = {
-                        'уборк': 1, 'чистк': 1, 'мыть': 1, 'стирк': 1, 'глажк': 1,
-                        'нян': 2, 'ребен': 2, 'дет': 2, 'присмотр': 2,
-                        'маникюр': 3, 'педикюр': 3, 'стрижк': 3, 'массаж': 3,
-                        'репетитор': 4, 'учеб': 4, 'занят': 4, 'обучен': 4
-                    };
-                    
-                    for (var keyword in categoryKeywords) {
-                        if (textForAnalysis.includes(keyword)) {
-                            autoCategoryId = categoryKeywords[keyword];
-                            break;
-                        }
-                    }
-                    
-                    if (!autoCategoryId && this.categories.length > 0) {
-                        autoCategoryId = this.categories[0].id;
-                    }
-                }
-                
-                if (!autoCategoryId) {
-                    this.showNotification('Не удалось определить категорию. Выберите категорию вручную.', 'error');
-                    return;
-                }
-                
-                var deadlineDate = new Date(taskDeadline);
-                if (deadlineDate < new Date()) {
-                    this.showNotification('Дата дедлайна не может быть в прошлом', 'error');
-                    return;
-                }
-                
-                try {
-                    this.showLoading('Создание задачи...');
-                    
-                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            title: taskTitle,
-                            description: taskDescription,
-                            category_id: autoCategoryId,
-                            service_id: this.selectedService?.id || null,
-                            priority: 'medium',
-                            deadline: taskDeadline,
-                            address: taskAddress,
-                            contact_info: taskContact,
-                            additional_requirements: additionalRequirements || ''
-                        })
-                    });
-                    
-                    if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
-                    
-                    var result = await response.json();
-                    if (!result.success) throw new Error(result.error || 'Ошибка создания задачи');
-                    
-                    this.showNotification('Задача успешно создана! Мы ищем подходящую исполнительницу.', 'success');
-                    
-                    if (this.currentUser.tasks_used) {
-                        this.currentUser.tasks_used = parseInt(this.currentUser.tasks_used) + 1;
-                    } else {
-                        this.currentUser.tasks_used = 1;
-                    }
-                    
-                    localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-                    
-                    this.updateUserInterface();
-                    this.updateHomeStats();
-                    this.cancelTask();
-                    
-                    setTimeout(function() {
-                        app.showNotification('Задача опубликована. Исполнители увидят её в списке доступных задач.', 'info');
-                    }, 3000);
-                    
-                } catch (error) {
-                    console.error('Ошибка создания задачи:', error);
-                    this.showNotification(error.message || 'Ошибка создания задачи', 'error');
-                } finally {
-                    this.hideLoading();
-                }
-            },
+           createTask: async function() {
+    if (!this.currentUser) {
+        this.showNotification('Для создания задачи необходимо войти в систему', 'error');
+        return;
+    }
+    
+    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+        this.showNotification('Для создания задачи необходима активная подписка', 'error');
+        this.navigateToPage('subscription');
+        return;
+    }
+    
+    // Проверяем лимит задач
+    var tasksUsed = this.currentUser.tasks_used || 0;
+    var tasksLimit = this.currentUser.tasks_limit || 0;
+    var availableTasks = tasksLimit - tasksUsed;
+    
+    if (availableTasks <= 0) {
+        this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'error');
+        return;
+    }
+    
+    var taskTitle = document.getElementById('taskTitle')?.value;
+    var taskDescription = document.getElementById('taskDescription')?.value;
+    var taskAddress = document.getElementById('taskAddress')?.value;
+    var taskDeadline = document.getElementById('taskDeadline')?.value;
+    var taskContact = document.getElementById('taskContact')?.value;
+    var additionalRequirements = document.getElementById('additionalRequirements')?.value;
+    
+    if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
+        this.showNotification('Заполните все обязательные поля', 'error');
+        return;
+    }
+    
+    var autoCategoryId = this.selectedCategory?.id;
+    if (!autoCategoryId) {
+        var textForAnalysis = (taskTitle + ' ' + taskDescription).toLowerCase();
+        var categoryKeywords = {
+            'уборк': 1, 'чистк': 1, 'мыть': 1, 'стирк': 1, 'глажк': 1,
+            'нян': 2, 'ребен': 2, 'дет': 2, 'присмотр': 2,
+            'маникюр': 3, 'педикюр': 3, 'стрижк': 3, 'массаж': 3,
+            'репетитор': 4, 'учеб': 4, 'занят': 4, 'обучен': 4
+        };
+        
+        for (var keyword in categoryKeywords) {
+            if (textForAnalysis.includes(keyword)) {
+                autoCategoryId = categoryKeywords[keyword];
+                break;
+            }
+        }
+        
+        if (!autoCategoryId && this.categories.length > 0) {
+            autoCategoryId = this.categories[0].id;
+        }
+    }
+    
+    if (!autoCategoryId) {
+        this.showNotification('Не удалось определить категорию. Выберите категорию вручную.', 'error');
+        return;
+    }
+    
+    var deadlineDate = new Date(taskDeadline);
+    if (deadlineDate < new Date()) {
+        this.showNotification('Дата дедлайна не может быть в прошлом', 'error');
+        return;
+    }
+    
+    try {
+        this.showLoading('Создание задачи...');
+        
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks', {
+            method: 'POST',
+            body: JSON.stringify({
+                title: taskTitle,
+                description: taskDescription,
+                category_id: autoCategoryId,
+                service_id: this.selectedService?.id || null,
+                priority: 'medium',
+                deadline: taskDeadline,
+                address: taskAddress,
+                contact_info: taskContact,
+                additional_requirements: additionalRequirements || ''
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('HTTP error! status: ' + response.status);
+        }
+        
+        var result = await response.json();
+        console.log('✅ Результат создания задачи:', result);
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Ошибка создания задачи');
+        }
+        
+        this.showNotification('Задача успешно создана!', 'success');
+        
+        // Обновляем данные пользователя
+        if (result.data.user) {
+            this.currentUser.tasks_used = result.data.user.tasks_used;
+        } else if (result.data.tasks_used !== undefined) {
+            this.currentUser.tasks_used = result.data.tasks_used;
+        }
+        
+        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+        
+        // Обновляем UI
+        this.updateUserInterface();
+        this.updateHomeStats();
+        
+        // Сбрасываем форму
+        this.cancelTask();
+        
+        // Показываем задачу
+        if (result.data.task) {
+            setTimeout(() => {
+                this.showTaskDetailsCompact(result.data.task.id);
+            }, 1000);
+        }
+        
+        // Обновляем список задач
+        setTimeout(() => {
+            this.loadUserTasks('all');
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Ошибка создания задачи:', error);
+        this.showNotification(error.message || 'Ошибка создания задачи', 'error');
+    } finally {
+        this.hideLoading();
+    }
+},
 
             // ==================== ПОДПИСКИ ====================
             loadSubscriptions: async function() {
@@ -5822,39 +5902,25 @@ filterTasksByStatus: function(tasks, filter) {
             return tasks;
     }
 },
-            renderUserTasks: function() {
-                this.renderUserTasksCards();
-                this.renderUserTasksTable();
-            },
-
-            filterTasks: function(filterType) {
-                this.loadUserTasks(filterType);
-            },
-            
-renderUserTasksCards: function() {
+// В функции renderUserTasks добавьте:
+renderUserTasks: function() {
     var container = document.getElementById('userTasksCards');
     if (!container) return;
     
-    if (!this.userTasks || this.userTasks.length === 0) {
-        var statusText = '';
-        switch(this.currentTaskFilter) {
-            case 'new':
-                statusText = 'Нет новых задач или задач в поиске исполнителя';
-                break;
-            case 'in_progress':
-                statusText = 'Нет задач в работе';
-                break;
-            case 'completed':
-                statusText = 'Нет завершенных задач';
-                break;
-            default:
-                statusText = 'Задач пока нет';
-        }
-        
+    // Добавьте кнопку обновления
+    var refreshButton = '<div style="text-align: right; margin-bottom: 15px;">' +
+        '<button class="btn btn-secondary btn-sm" onclick="app.loadUserTasks(app.currentTaskFilter)">' +
+            '<i class="fas fa-sync-alt"></i> Обновить' +
+        '</button>' +
+    '</div>';
+    
+    container.innerHTML = refreshButton;
+    
+    if (this.userTasks.length === 0) {
         container.innerHTML = '<div class="empty-state">' +
             '<i class="fas fa-tasks empty-state-icon"></i>' +
-            '<h3 class="empty-state-title">' + statusText + '</h3>' +
-            '<p class="empty-state-description">Создайте новую задачу, чтобы получить помощь</p>' +
+            '<h3 class="empty-state-title">Задач пока нет</h3>' +
+            '<p class="empty-state-description">Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц</p>' +
             '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
                 '<i class="fas fa-plus"></i>' +
                 'Создать задачу' +
@@ -5862,45 +5928,58 @@ renderUserTasksCards: function() {
         '</div>';
         return;
     }
-
-                
-                container.innerHTML = '';
-                var self = this;
-                this.userTasks.forEach(function(task) {
-                    var taskCard = document.createElement('div');
-                    taskCard.className = 'task-card';
-                    taskCard.onclick = function() { self.showTaskDetailsCompact(task.id); };
-                    
-                    taskCard.innerHTML = '<div class="task-card-row">' +
-                        '<div class="task-card-label">Номер:</div>' +
-                        '<div class="task-card-value">' + task.task_number + '</div>' +
-                    '</div>' +
-                    '<div class="task-card-row">' +
-                        '<div class="task-card-label">Задача:</div>' +
-                        '<div class="task-card-value">' + task.title + '</div>' +
-                    '</div>' +
-                    '<div class="task-card-row">' +
-                        '<div class="task-card-label">Категория:</div>' +
-                        '<div class="task-card-value">' + (task.category_name || '') + '</div>' +
-                    '</div>' +
-                    '<div class="task-card-row">' +
-                        '<div class="task-card-label">Статус:</div>' +
-                        '<div class="task-card-value">' +
-                            '<span class="status-badge status-' + task.status + '">' + self.getStatusText(task.status) + '</span>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="task-card-row">' +
-                        '<div class="task-card-label">Создана:</div>' +
-                        '<div class="task-card-value">' + new Date(task.created_at).toLocaleDateString('ru-RU') + '</div>' +
-                    '</div>' +
-                    '<div class="task-card-actions">' +
-                        '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(' + task.id + ')">' +
-                            '<i class="fas fa-eye"></i> Подробнее' +
-                        '</button>' +
-                    '</div>';
-                    container.appendChild(taskCard);
-                });
-            },
+    
+    container.innerHTML = '';
+    var self = this;
+    
+    this.userTasks.forEach(function(task) {
+        var taskCard = document.createElement('div');
+        taskCard.className = 'task-card';
+        taskCard.onclick = function() { 
+            self.showTaskDetailsCompact(task.id);
+        };
+        
+        var statusInfo = self.getStatusInfo(task.status);
+        
+        taskCard.innerHTML = '<div class="task-card-content">' +
+            '<div class="task-card-row">' +
+                '<div class="task-card-label">Номер:</div>' +
+                '<div class="task-card-value">' + (task.task_number || 'N/A') + '</div>' +
+            '</div>' +
+            '<div class="task-card-row">' +
+                '<div class="task-card-label">Задача:</div>' +
+                '<div class="task-card-value"><strong>' + (task.title || 'Без названия') + '</strong></div>' +
+            '</div>' +
+            '<div class="task-card-row">' +
+                '<div class="task-card-label">Категория:</div>' +
+                '<div class="task-card-value">' + (task.category_name || 'Без категории') + '</div>' +
+            '</div>' +
+            '<div class="task-card-row">' +
+                '<div class="task-card-label">Статус:</div>' +
+                '<div class="task-card-value">' +
+                    '<span class="status-badge" style="background: ' + (statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)') + '; color: ' + (statusInfo.color || 'var(--graphite-dark)') + '; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">' +
+                        '<i class="' + statusInfo.icon + '"></i>' +
+                        statusInfo.name +
+                    '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="task-card-row">' +
+                '<div class="task-card-label">Создана:</div>' +
+                '<div class="task-card-value">' + new Date(task.created_at).toLocaleDateString('ru-RU') + '</div>' +
+            '</div>' +
+            '<div class="task-card-actions">' +
+                '<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(' + task.id + ')">' +
+                    '<i class="fas fa-eye"></i> Подробнее' +
+                '</button>' +
+            '</div>' +
+        '</div>';
+        
+        container.appendChild(taskCard);
+    });
+    
+    // Также рендерим таблицу для десктопа
+    this.renderUserTasksTable();
+},
             
             renderUserTasksTable: function() {
                 var container = document.getElementById('userTasksTable');
@@ -5944,44 +6023,48 @@ renderUserTasksCards: function() {
                 container.appendChild(table);
             },
             
-            showTaskDetailsCompact: async function(taskId) {
-                try {
-                    this.showLoading('Загрузка задачи...');
-                    
-                    var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/' + taskId);
-                    if (response.ok) {
-                        var result = await response.json();
-                        if (result.success) {
-                            var task = result.data.task;
-                            this.renderTaskDetailsCompact(task, []);
-                            this.navigateToPage('task-details');
-                            return;
-                        }
-                    }
-                } catch (error) {
-                    console.error('Ошибка загрузки задачи:', error);
-                } finally {
-                    this.hideLoading();
-                }
-                
-                var mockTask = {
-                    id: taskId,
-                    task_number: 'TASK-00' + taskId,
-                    title: "Уборка 2-комнатной квартиры",
-                    description: "Полная уборка 2-комнатной квартиры площадью 60 кв.м.",
-                    status: "in_progress",
-                    category_name: "Дом и быт",
-                    address: "ул. Примерная, д. 10, кв. 25",
-                    deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                    priority: "medium",
-                    price: null,
-                    additional_requirements: "Использовать гипоаллергенные средства для уборки."
-                };
-                
-                this.renderTaskDetailsCompact(mockTask, []);
+showTaskDetailsCompact: async function(taskId) {
+    try {
+        this.showLoading('Загрузка задачи...');
+        
+        var response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/' + taskId);
+        if (response.ok) {
+            var result = await response.json();
+            if (result.success) {
+                var task = result.data.task;
+                this.renderTaskDetailsCompact(task, []);
                 this.navigateToPage('task-details');
-            },
+                
+                // Загружаем сообщения чата если есть
+                if (taskId) {
+                    setTimeout(() => {
+                        this.loadTaskMessages(taskId);
+                    }, 500);
+                }
+                return;
+            }
+        }
+        throw new Error('Не удалось загрузить задачу');
+    } catch (error) {
+        console.error('Ошибка загрузки задачи:', error);
+        
+        // Показываем заглушку с информацией об ошибке
+        this.renderTaskDetailsCompact({
+            id: taskId,
+            task_number: 'TASK-XXXX',
+            title: 'Ошибка загрузки задачи',
+            description: 'Не удалось загрузить информацию о задаче',
+            status: 'error',
+            created_at: new Date().toISOString(),
+            category_name: 'Ошибка'
+        }, []);
+        
+        this.navigateToPage('task-details');
+        this.showNotification('Ошибка загрузки задачи', 'error');
+    } finally {
+        this.hideLoading();
+    }
+},
             
             // ИСПРАВЛЕНИЕ: Добавляем кнопку отмены задачи
             renderTaskDetailsCompact: function(task, messages) {
