@@ -3596,8 +3596,8 @@
                 this.allServices.forEach(function(service) {
                     var card = document.createElement('div');
                     card.className = 'service-card-square';
-                  card.onclick = function() { 
-    self.selectCategoryForServices(category);
+                 card.onclick = function() { 
+    self.selectService(service); 
 };
                     
                     var imageUrl = service.image_url ? 
