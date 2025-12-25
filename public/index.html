@@ -6097,14 +6097,24 @@ continueToCategoryServices: function(categoryId) {
             }
         };
 
-        window.addEventListener('DOMContentLoaded', function() {
-            try {
-                app.init();
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
-            }
-        });
-    </script>
+       window.addEventListener('DOMContentLoaded', function() {
+        try {
+            // Сделаем app глобальной для временного доступа
+            window.app = app;
+            app.init();
+        } catch (error) {
+            console.error('Ошибка инициализации:', error);
+            document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
+        }
+    });
+
+    // Также экспортируем app для доступа из консоли разработчика
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = app;
+    }
+
+    // Убедитесь, что app доступна глобально
+    window.App = app;
+</script>
 </body>
 </html>
