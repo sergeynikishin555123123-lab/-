@@ -158,14 +158,12 @@ const DEMO_MODE = true;
 
 // ==================== УЛУЧШЕННАЯ НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
 
-// Функция для создания директорий, если их нет
-// Функция для создания директорий, если их нет
 const ensureUploadDirs = () => {
     const dirs = [
         'public/uploads',
         'public/uploads/categories',
         'public/uploads/users',
-        'public/uploads/services',  // ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
+        'public/uploads/services',
         'public/uploads/tasks',
         'public/uploads/logo'
     ];
@@ -212,10 +210,23 @@ const createDefaultLogo = () => {
 };
 
 // Настраиваем хранилище для разных типов загрузок
+const categoryStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        ensureUploadDirs();
+        cb(null, 'public/uploads/categories');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname).toLowerCase();
+        const filename = `category-${uniqueSuffix}${extension}`;
+        cb(null, filename);
+    }
+});
+
 const serviceStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         ensureUploadDirs();
-        cb(null, 'public/uploads/services'); // ← ИЗМЕНИТЕ ЭТО
+        cb(null, 'public/uploads/services');
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -303,6 +314,11 @@ const uploadServiceImage = multer({
     fileFilter: imageFilter
 });
 
+const uploadGeneral = multer({ 
+    storage: generalStorage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: imageFilter
+});
 // Инициализируем директории при старте
 ensureUploadDirs();
 
