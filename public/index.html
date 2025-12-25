@@ -3477,23 +3477,6 @@
                     </div>
                 </section>
                 
-                <!-- Мои задачи -->
-                <section class="section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 class="section-title">Мои задачи</h2>
-                        <button class="btn btn-secondary" onclick="app.navigateToPage('tasks')">
-                            <i class="fas fa-list"></i>
-                            Все задачи
-                        </button>
-                    </div>
-                    <div class="task-list" id="profileTasksList">
-                        <div class="empty-state">
-                            <i class="fas fa-tasks empty-state-icon"></i>
-                            <h3 class="empty-state-title">Задач пока нет</h3>
-                            <p class="empty-state-description">Создайте свою первую задачу</p>
-                        </div>
-                    </div>
-                </section>
                 
                 <!-- Настройки профиля -->
                 <section class="section">
@@ -5638,13 +5621,13 @@ renderServicesForCategory: function(category) {
                     return;
                 }
                 
-                try {
-                    this.updateUserInterface();
-                    await this.loadProfileTasks();
-                } catch (error) {
-                    console.error('Ошибка загрузки профиля:', error);
-                }
-            },
+             try {
+        this.updateUserInterface();
+        // Убрали вызов loadProfileTasks
+    } catch (error) {
+        console.error('Ошибка загрузки профиля:', error);
+    }
+},
 
             // ИСПРАВЛЕНИЕ: Загружаем ВСЕ задачи пользователя для профиля
             loadProfileTasks: async function() {
