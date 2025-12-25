@@ -4606,7 +4606,7 @@ renderServicesForCategory: function(category) {
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
             '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
             '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()" style="margin-top: 15px;">' +
+            '<button class="btn btn-secondary" onclick="window.App.loadAllServicesPage()" style="margin-top: 15px;">' +
                 '<i class="fas fa-arrow-left"></i>' +
                 'Вернуться ко всем услугам' +
             '</button>' +
@@ -4672,19 +4672,15 @@ renderServicesForCategory: function(category) {
     });
     
     // Добавляем кнопку возврата
-    var backButton = document.createElement('div');
-    backButton.style.gridColumn = '1 / -1';
-    backButton.style.textAlign = 'center';
-    backButton.style.marginTop = '20px';
-    backButton.innerHTML = '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+    var backButtonContainer = document.createElement('div');
+    backButtonContainer.style.gridColumn = '1 / -1';
+    backButtonContainer.style.textAlign = 'center';
+    backButtonContainer.style.marginTop = '20px';
+    backButtonContainer.innerHTML = '<button class="btn btn-secondary" onclick="window.App.loadAllServicesPage()">' +
         '<i class="fas fa-arrow-left"></i>' +
         'Вернуться ко всем услугам' +
     '</button>';
-    container.appendChild(backButton);
-},
-    
-    var backBtn = document.getElementById('backToCategoriesBtn');
-    if (backBtn) backBtn.style.display = 'none';
+    container.appendChild(backButtonContainer);
 },
 
             selectCategory: function(category) {
