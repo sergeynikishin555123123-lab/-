@@ -520,6 +520,33 @@
             margin-bottom: 16px;
             flex-grow: 1;
         }
+
+/* Стили для круглых изображений категорий */
+.category-card-main-style .category-image-main {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+}
+
+.category-card-main-style .category-image-main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.category-card-main-style:hover .category-image-main img {
+    transform: scale(1.05);
+}
         
         /* Услуги */
         .service-card {
@@ -2307,26 +2334,22 @@
         }
         
         /* Адаптивность для круглых изображений */
-        @media (max-width: 768px) {
-            .category-image-main {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .category-card-main-style h3 {
-                font-size: 1rem;
-                min-height: 36px;
-            }
-            
-            .category-description-main {
-                font-size: 0.8rem;
-            }
-            
-            .grid-2-main:not(#allServicesList),
-            .grid-3-main:not(#allServicesList) {
-                grid-template-columns: 1fr;
-            }
-        }
+/* Адаптивность для круглых изображений */
+@media (max-width: 768px) {
+    .category-image-main {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 1rem;
+        min-height: 36px;
+    }
+    
+    .category-description-main {
+        font-size: 0.8rem;
+    }
+}
 
         @media (min-width: 769px) and (max-width: 1024px) {
             .grid.grid-3 {
@@ -3652,45 +3675,45 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-            getImageUrl: function(imageUrl, type) {
-                if (!imageUrl || imageUrl.trim() === '') {
-                    return this.createSvgFallback(type);
-                }
-                
-                if (imageUrl.includes('/api/images/test/')) {
-                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                }
-                
-                if (type === 'service') {
-                    if (imageUrl.startsWith('/uploads/services/')) {
-                        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                    } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
-                        const filename = imageUrl.split('/').pop();
-                        return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
-                    } else if (!imageUrl.startsWith('/')) {
-                        return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
-                    }
-                }
-                
-                if (type === 'category') {
-                    if (imageUrl.startsWith('/uploads/categories/')) {
-                        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                    } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
-                        const filename = imageUrl.split('/').pop();
-                        return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
-                    }
-                }
-                
-                if (imageUrl.startsWith('/')) {
-                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                }
-                
-                if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                    return imageUrl + '?t=' + Date.now();
-                }
-                
-                return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
-            },
+           getImageUrl: function(imageUrl, type) {
+    if (!imageUrl || imageUrl.trim() === '') {
+        return this.createSvgFallback(type);
+    }
+    
+    if (imageUrl.includes('/api/images/test/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (type === 'service') {
+        if (imageUrl.startsWith('/uploads/services/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
+        } else if (!imageUrl.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
+        }
+    }
+    
+    if (type === 'category') {
+        if (imageUrl.startsWith('/uploads/categories/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
+        }
+    }
+    
+    if (imageUrl.startsWith('/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl + '?t=' + Date.now();
+    }
+    
+    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+},
 
             createSvgFallback: function(type) {
                 const colors = {
@@ -4082,49 +4105,49 @@
                 return this.categories;
             },
 
-            renderHomeCategories: function() {
-                const container = document.getElementById('categoriesGrid');
-                if (!container || !this.categories) return;
-                
-                if (this.categories.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                this.categories.slice(0, 4).forEach((category) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { this.selectCategoryForServices(category); };
-                    
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.createSvgFallback('category');
-                    
-                    const svgFallback = this.createSvgFallback('category');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${category.display_name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        </div>
-                        <h3>${category.display_name}</h3>
-                        <div class="category-description-main">${category.description}</div>
-                        <div class="category-card-footer">
-                            <span>${category.services_count || '0'} услуг</span>
-                            <span>Выбрать <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            },
+           renderHomeCategories: function() {
+    const container = document.getElementById('categoriesGrid');
+    if (!container || !this.categories) return;
+    
+    if (this.categories.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+        '</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    this.categories.slice(0, 4).forEach((category) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { this.selectCategoryForServices(category); };
+        
+        const imageUrl = category.image_url ? 
+            this.getImageUrl(category.image_url, 'category') : 
+            this.createSvgFallback('category');
+        
+        const svgFallback = this.createSvgFallback('category');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${category.display_name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            </div>
+            <h3>${category.display_name}</h3>
+            <div class="category-description-main">${category.description}</div>
+            <div class="category-card-footer">
+                <span>${category.services_count || '0'} услуг</span>
+                <span>Выбрать <i class="fas fa-arrow-right"></i></span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+},
             
             loadAllServices: async function() {
                 try {
