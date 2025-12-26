@@ -2634,23 +2634,6 @@
     width: 100%;
 }
 
-.category-icon-badge-main {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: rgba(255, 255, 255, 0.95);
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--pastel-pink);
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    z-index: 2;
-    border: 2px solid var(--ivory-bg);
-}
 
 .category-card-footer {
     margin-top: 15px;
@@ -4390,53 +4373,50 @@
                 return this.categories;
             },
 
-            renderHomeCategories: function() {
-                const container = document.getElementById('categoriesGrid');
-                if (!container || !this.categories) return;
-                
-                if (this.categories.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                this.categories.slice(0, 4).forEach((category) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { this.selectCategoryForServices(category); };
-                    
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.createSvgFallback('category');
-                    
-                    const iconClass = category.icon || 'fas fa-folder';
-                    const svgFallback = this.createSvgFallback('category');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${category.display_name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
-                        </div>
-                        <h3>${category.display_name}</h3>
-                        <div class="category-description-main">${category.description}</div>
-                        <div class="category-card-footer">
-                            <span>${category.services_count || '0'} услуг</span>
-                            <span>Выбрать <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            },
+renderHomeCategories: function() {
+    const container = document.getElementById('categoriesGrid');
+    if (!container || !this.categories) return;
+    
+    if (this.categories.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+        '</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    this.categories.slice(0, 4).forEach((category) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { this.selectCategoryForServices(category); };
+        
+        const imageUrl = category.image_url ? 
+            this.getImageUrl(category.image_url, 'category') : 
+            this.createSvgFallback('category');
+        
+        const svgFallback = this.createSvgFallback('category');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${category.display_name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <!-- УБРАН category-icon-badge-main -->
+            </div>
+            <h3>${category.display_name}</h3>
+            <div class="category-description-main">${category.description}</div>
+            <div class="category-card-footer">
+                <span>${category.services_count || '0'} услуг</span>
+                <span>Выбрать <i class="fas fa-arrow-right"></i></span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+},
             
             loadAllServices: async function() {
                 try {
@@ -4480,68 +4460,65 @@
             },
 
             renderAllServices: function() {
-                const container = document.getElementById('allServicesList');
-                const pageTitle = document.getElementById('servicesPageTitle');
-                
-                if (!container) return;
-                
-                if (!this.allServices || this.allServices.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-                        '</div>';
-                    return;
-                }
-                
-                if (pageTitle) {
-                    pageTitle.textContent = 'Все услуги';
-                }
-                
-                container.innerHTML = '';
-                
-                this.allServices.forEach((service) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { 
-                        this.selectService(service);
-                    };
-                    
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                        this.createSvgFallback('service');
-                    
-                    const iconClass = service.icon || 'fas fa-star';
-                    const svgFallback = this.createSvgFallback('service');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${service.name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
-                        </div>
-                        <h3>${service.name}</h3>
-                        <div class="category-description-main">${service.description}</div>
-                        <div class="category-card-footer">
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                                ${service.category_name || 'Без категории'}
-                            </span>
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                Выбрать <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-                
-                const backBtn = document.getElementById('backToCategoriesBtn');
-                if (backBtn) backBtn.style.display = 'none';
-            },
+    const container = document.getElementById('allServicesList');
+    const pageTitle = document.getElementById('servicesPageTitle');
+    
+    if (!container) return;
+    
+    if (!this.allServices || this.allServices.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+            '</div>';
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = 'Все услуги';
+    }
+    
+    container.innerHTML = '';
+    
+    this.allServices.forEach((service) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { 
+            this.selectService(service);
+        };
+        
+        const imageUrl = service.image_url ? 
+            this.getImageUrl(service.image_url, 'service') : 
+            this.createSvgFallback('service');
+        
+        const svgFallback = this.createSvgFallback('service');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${service.name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <!-- УБРАН category-icon-badge-main -->
+            </div>
+            <h3>${service.name}</h3>
+            <div class="category-description-main">${service.description}</div>
+            <div class="category-card-footer">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
+                    ${service.category_name || 'Без категории'}
+                </span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    Выбрать <i class="fas fa-arrow-right"></i>
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    const backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) backBtn.style.display = 'none';
+},
 
             loadAllCategoriesPage: async function() {
                 try {
@@ -4560,63 +4537,60 @@
             },
 
             renderAllCategories: function() {
-                const container = document.getElementById('allCategoriesList');
-                if (!container) return;
-                
-                if (!this.categories || this.categories.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                    '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
-                    '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
-                '</div>';
-                
-                this.categories.forEach((category) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { 
-                        this.selectCategoryForServices(category);
-                    };
-                    
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.createSvgFallback('category');
-                    
-                    const iconClass = category.icon || 'fas fa-folder';
-                    const svgFallback = this.createSvgFallback('category');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${category.display_name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
-                        </div>
-                        <h3>${category.display_name}</h3>
-                        <div class="category-description-main">${category.description}</div>
-                        <div class="category-card-footer">
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-list"></i>
-                                ${category.services_count || 0} услуг
-                            </span>
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                Выбрать <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    `;
-                    
-                    container.appendChild(card);
-                });
-            },
+    const container = document.getElementById('allCategoriesList');
+    if (!container) return;
+    
+    if (!this.categories || this.categories.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+        '</div>';
+        return;
+    }
+    
+    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
+        '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
+    '</div>';
+    
+    this.categories.forEach((category) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { 
+            this.selectCategoryForServices(category);
+        };
+        
+        const imageUrl = category.image_url ? 
+            this.getImageUrl(category.image_url, 'category') : 
+            this.createSvgFallback('category');
+        
+        const svgFallback = this.createSvgFallback('category');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${category.display_name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <!-- УБРАН category-icon-badge-main -->
+            </div>
+            <h3>${category.display_name}</h3>
+            <div class="category-description-main">${category.description}</div>
+            <div class="category-card-footer">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-list"></i>
+                    ${category.services_count || 0} услуг
+                </span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    Выбрать <i class="fas fa-arrow-right"></i>
+                </span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+},
 
             filterCategories: function() {
                 const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
@@ -4739,9 +4713,7 @@
                                  loading="lazy"
                                  onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
+                        
                         </div>
                         <h3>${service.name}</h3>
                         <div class="category-description-main">${service.description}</div>
@@ -4878,103 +4850,100 @@
                 }
             },
 
-            renderServicesForCategory: function(category) {
-                const container = document.getElementById('allServicesList');
-                const pageTitle = document.getElementById('servicesPageTitle');
-                const backBtn = document.getElementById('backToCategoriesBtn');
-                const searchBox = document.querySelector('.search-box');
-                
-                if (!container) return;
-                
-                if (searchBox) searchBox.style.display = 'block';
-                if (backBtn) backBtn.style.display = 'block';
-                
-                if (!this.services || this.services.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-                        '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
-                            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                                '<i class="fas fa-list"></i>' +
-                                'Все услуги' +
-                            '</button>' +
-                            '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
-                                '<i class="fas fa-arrow-left"></i>' +
-                                'Назад к категориям' +
-                            '</button>' +
-                        '</div>' +
-                    '</div>';
-                    
-                    if (pageTitle) {
-                        pageTitle.textContent = category.display_name + ' (нет услуг)';
-                    }
-                    return;
-                }
-                
-                if (pageTitle) {
-                    pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
-                }
-                
-                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-                    '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
-                        '<div>' +
-                            '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
-                            '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
-                        '</div>' +
-                        '<div style="display: flex; gap: 10px;">' +
-                            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                                '<i class="fas fa-list"></i>' +
-                                'Все услуги' +
-                            '</button>' +
-                            '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
-                                '<i class="fas fa-arrow-left"></i>' +
-                                'Категории' +
-                            '</button>' +
-                        '</div>' +
-                    '</div>' +
-                    '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
-                '</div>';
-                
-                this.services.forEach((service) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { 
-                        this.selectService(service);
-                    };
-                    
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                        this.createSvgFallback('service');
-                    
-                    const iconClass = service.icon || 'fas fa-star';
-                    const svgFallback = this.createSvgFallback('service');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${service.name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
-                        </div>
-                        <h3>${service.name}</h3>
-                        <div class="category-description-main">${service.description}</div>
-                        <div class="category-card-footer">
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                                ${category.display_name}
-                            </span>
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                Выбрать <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            },
+renderServicesForCategory: function(category) {
+    const container = document.getElementById('allServicesList');
+    const pageTitle = document.getElementById('servicesPageTitle');
+    const backBtn = document.getElementById('backToCategoriesBtn');
+    const searchBox = document.querySelector('.search-box');
+    
+    if (!container) return;
+    
+    if (searchBox) searchBox.style.display = 'block';
+    if (backBtn) backBtn.style.display = 'block';
+    
+    if (!this.services || this.services.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
+            '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
+                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                    '<i class="fas fa-list"></i>' +
+                    'Все услуги' +
+                '</button>' +
+                '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                    'Назад к категориям' +
+                '</button>' +
+            '</div>' +
+        '</div>';
+        
+        if (pageTitle) {
+            pageTitle.textContent = category.display_name + ' (нет услуг)';
+        }
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
+    }
+    
+    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
+            '<div>' +
+                '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
+                '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
+            '</div>' +
+            '<div style="display: flex; gap: 10px;">' +
+                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                    '<i class="fas fa-list"></i>' +
+                    'Все услуги' +
+                '</button>' +
+                '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
+                    '<i class="fas fa-arrow-left"></i>' +
+                    'Категории' +
+                '</button>' +
+            '</div>' +
+        '</div>' +
+        '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
+    '</div>';
+    
+    this.services.forEach((service) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { 
+            this.selectService(service);
+        };
+        
+        const imageUrl = service.image_url ? 
+            this.getImageUrl(service.image_url, 'service') : 
+            this.createSvgFallback('service');
+        
+        const svgFallback = this.createSvgFallback('service');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${service.name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+                <!-- УБРАН category-icon-badge-main -->
+            </div>
+            <h3>${service.name}</h3>
+            <div class="category-description-main">${service.description}</div>
+            <div class="category-card-footer">
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
+                    ${category.display_name}
+                </span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    Выбрать <i class="fas fa-arrow-right"></i>
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+},
 
             selectCategory: function(category) {
                 if (!this.currentUser) {
@@ -5027,57 +4996,54 @@
                 this.renderTopServices(topServicesData);
             },
 
-            renderTopServices: function(services) {
-                const container = document.getElementById('topServicesGrid');
-                if (!container) return;
-                
-                if (!services || services.length === 0) {
-                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                services.forEach((service) => {
-                    const card = document.createElement('div');
-                    card.className = 'category-card-main-style';
-                    card.onclick = () => { this.selectService(service); };
-                    
-                    const imageUrl = service.image_url ? 
-                        this.API_BASE_URL + service.image_url + '?t=' + Date.now() : 
-                        this.createSvgFallback('service');
-                    
-                    const iconClass = service.icon || 'fas fa-star';
-                    const svgFallback = this.createSvgFallback('service');
-                    
-                    card.innerHTML = `
-                        <div class="category-image-main">
-                            <img src="${imageUrl}" 
-                                 alt="${service.name}"
-                                 loading="lazy"
-                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
-                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <div class="category-icon-badge-main">
-                                <i class="${iconClass}"></i>
-                            </div>
-                        </div>
-                        <h3>${service.name}</h3>
-                        <div class="category-description-main">${service.description}</div>
-                        <div class="category-card-footer">
-                            <span style="color: var(--gold-metallic); display: flex; align-items: center; gap: 4px;">
-                                <i class="fas fa-star"></i>
-                                Топ услуга
-                            </span>
-                            <span style="display: flex; align-items: center; gap: 4px;">
-                                Выбрать
-                            </span>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            },
+           renderTopServices: function(services) {
+    const container = document.getElementById('topServicesGrid');
+    if (!container) return;
+    
+    if (!services || services.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+        '</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    services.forEach((service) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { this.selectService(service); };
+        
+        const imageUrl = service.image_url ? 
+            this.API_BASE_URL + service.image_url + '?t=' + Date.now() : 
+            this.createSvgFallback('service');
+        
+        const svgFallback = this.createSvgFallback('service');
+        
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${service.name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                <!-- УБРАН category-icon-badge-main -->
+            </div>
+            <h3>${service.name}</h3>
+            <div class="category-description-main">${service.description}</div>
+            <div class="category-card-footer">
+                <span style="color: var(--gold-metallic); display: flex; align-items: center; gap: 4px;">
+                    <i class="fas fa-star"></i>
+                    Топ услуга
+                </span>
+                <span style="display: flex; align-items: center; gap: 4px;">
+                    Выбрать
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+},
 
             selectService: function(service) {
                 if (!this.currentUser) {
