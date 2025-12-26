@@ -2607,41 +2607,39 @@
         }
         
         // Принять задачу
-       async function acceptTask(taskId) {
-    try {
-        console.log(`📋 Принимаем задачу ID: ${taskId}`);
-        
-        const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/accept`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentToken}`
-            }
-        });
-        
-        const data = await response.json();
-        console.log('Ответ сервера:', data);
-        
-        if (data.success) {
-            showNotification('🎉 Задача успешно принята!', 'success');
-            
-            // ПЕРЕЗАГРУЗИТЬ все данные
-            await loadAvailableTasks();  // Обновить доступные задачи
-            await loadMyTasks();         // Обновить мои задачи
-            await loadDashboard();       // Обновить дашборд
-            
-        } else {
-            showNotification(data.error || 'Ошибка принятия задачи', 'error');
-        }
-    } catch (error) {
-        console.error('Ошибка принятия задачи:', error);
-        showNotification('Ошибка принятия задачи', 'error');
-
+               // Принять задачу
+        async function acceptTask(taskId) {
+            try {
+                console.log(`📋 Принимаем задачу ID: ${taskId}`);
+                
+                const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/accept`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('Ответ сервера:', data);
+                
+                if (data.success) {
+                    showNotification('🎉 Задача успешно принята!', 'success');
+                    
+                    // ПЕРЕЗАГРУЗИТЬ все данные
+                    await loadAvailableTasks();  // Обновить доступные задачи
+                    await loadMyTasks();         // Обновить мои задачи
+                    await loadDashboard();       // Обновить дашборд
+                    
+                } else {
+                    showNotification(data.error || 'Ошибка принятия задачи', 'error');
+                }
+            } catch (error) {
+                console.error('Ошибка принятия задачи:', error);
+                showNotification('Ошибка принятия задачи', 'error');
                 
                 // Перезагружаем список задач
                 loadAvailableTasks();
-            } finally {
-                hideLoading();
             }
         }
         
