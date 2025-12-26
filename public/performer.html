@@ -2222,9 +2222,8 @@
                     // Фильтруем задачи: показываем только те, где мы исполнитель
                     // ИЛИ статус не 'searching' (новые задачи)
                     myTasks = data.data.tasks.filter(task => 
-                        task.performer_id === currentPerformer.id || 
-                        !['searching', 'new'].includes(task.status)
-                    );
+    task.performer_id === currentPerformer.id
+);
                     
                     // Заполняем таблицу (для десктопа)
                     container.innerHTML = myTasks.map(task => {
