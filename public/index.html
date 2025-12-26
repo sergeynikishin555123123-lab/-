@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -2070,110 +2071,36 @@
                 margin-top: 20px;
             }
             
-.task-history-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: white;
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-}
-
-.task-history-table th {
-    background: var(--pink-light);
-    color: var(--graphite-dark);
-    font-weight: 600;
-    text-align: left;
-    padding: 15px;
-    font-size: 0.9rem;
-    border-bottom: 1px solid rgba(61, 61, 61, 0.1);
-}
-
-.task-history-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid rgba(61, 61, 61, 0.05);
-    color: var(--graphite-medium);
-}
-
-.task-history-table tr:last-child td {
-    border-bottom: none;
-}
-
-.task-history-table tr:hover {
-    background: rgba(242, 221, 230, 0.05);
-}
-
-.task-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid rgba(61, 61, 61, 0.05);
-    transition: var(--transition);
-    cursor: pointer;
-}
-
-.task-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-    border-color: var(--pastel-pink);
-}
-
-.task-card-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.task-card-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.task-card-label {
-    color: var(--graphite-medium);
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.task-card-value {
-    color: var(--graphite-dark);
-    font-weight: 500;
-}
-
-.task-card-actions {
-    margin-top: 15px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.btn-sm {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-}
-
-@media (max-width: 768px) {
-    .task-history-table {
-        display: none;
-    }
-    
-    .task-cards-container {
-        display: block;
-    }
-}
-
-@media (min-width: 769px) {
-    .task-cards-container {
-        display: none;
-    }
-    
-    .task-table-container {
-        display: block;
-    }
-}
+            .task-history-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                display: table;
+            }
+            
+            .task-history-table th {
+                background: rgba(61, 61, 61, 0.05);
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                color: var(--graphite-dark);
+                border-bottom: 2px solid rgba(61, 61, 61, 0.1);
+            }
+            
+            .task-history-table td {
+                padding: 12px;
+                border-bottom: 1px solid rgba(61, 61, 61, 0.08);
+                vertical-align: top;
+            }
+            
+            .task-history-table tr:hover {
+                background: rgba(61, 61, 61, 0.02);
+            }
+            
+            .task-cards-container {
+                display: none;
+            }
+        }
         
         @media (max-width: 768px) {
             .task-table-container {
