@@ -3434,7 +3434,6 @@ getImageUrl: function(imageUrl, type) {
     
     return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
 },
-
 createSvgFallback: function(type) {
     const colors = {
         'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
@@ -3454,7 +3453,6 @@ createSvgFallback: function(type) {
     
     return 'data:image/svg+xml;base64,' + btoa(svg);
 },
-
 loadLogo: async function() {
     try {
         const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
@@ -3526,7 +3524,6 @@ setupDefaultImages: function() {
     
     this.loadLogo();
 },
-
             // ==================== ПОИСК УСЛУГ С АВТОКОМПЛИТОМ ====================
             filterServices: function() {
                 const searchInput = document.getElementById('serviceSearch');
@@ -3957,7 +3954,7 @@ setupDefaultImages: function() {
                 return this.categories;
             },
 
-        renderHomeCategories: function() {
+       renderHomeCategories: function() {
     const container = document.getElementById('categoriesGrid');
     if (!container || !this.categories) return;
     
@@ -3975,20 +3972,10 @@ setupDefaultImages: function() {
         card.className = 'category-card-main-style';
         card.onclick = () => { this.selectCategoryForServices(category); };
         
-        // Получаем URL изображения для категории
-        let imageUrl;
-        if (category.image_url) {
-            imageUrl = this.getImageUrl(category.image_url, 'category');
-            console.log(`Категория "${category.display_name}" image_url:`, category.image_url);
-            console.log(`Сгенерированный URL:`, imageUrl);
-        } else if (category.icon) {
-            // Если есть иконка, показываем её вместо изображения
-            imageUrl = this.createSvgFallback('category');
-        } else {
-           imageUrl = category.image_url ? 
-    this.getImageUrl(category.image_url, 'category') : 
-    this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
-        }
+        // ИСПРАВЛЕННЫЙ КОД:
+        const imageUrl = category.image_url ? 
+            this.getImageUrl(category.image_url, 'category') : 
+            this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
         
         const svgFallback = this.createSvgFallback('category');
         
@@ -3997,9 +3984,8 @@ setupDefaultImages: function() {
                 <img src="${imageUrl}" 
                      alt="${category.display_name}"
                      loading="lazy"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
-                     onload="console.log('Изображение загружено:', this.src)"
-                     onerror="console.error('Ошибка загрузки:', this.src); this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';">
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
             </div>
             <h3>${category.display_name}</h3>
             <div class="category-description-main">${category.description}</div>
@@ -6390,31 +6376,7 @@ setupDefaultImages: function() {
                 if (modal) modal.remove();
             },
 
-            // ==================== ИНИЦИАЛИЗАЦИЯ ПОИСКА ====================
-            initSearchFunctionality: function() {
-                // Скрываем автокомплит при клике вне его
-                document.addEventListener('click', (event) => {
-                    const autocomplete = document.getElementById('searchAutocomplete');
-                    const searchInput = document.getElementById('serviceSearch');
-                    
-                    if (autocomplete && searchInput) {
-                        if (!autocomplete.contains(event.target) && !searchInput.contains(event.target)) {
-                            autocomplete.style.display = 'none';
-                        }
-                    }
-                });
-                
-                // Обработка клавиш в поиске
-                const searchInput = document.getElementById('serviceSearch');
-                if (searchInput) {
-                    searchInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Escape') {
-                            const autocomplete = document.getElementById('searchAutocomplete');
-                            if (autocomplete) autocomplete.style.display = 'none';
-                        }
-                    });
-                }
-            },
+            
 
             // ==================== ОБНОВЛЕНИЕ ПРОФИЛЯ В ШАПКЕ ====================
             updateProfileInHeader: function() {
@@ -6470,51 +6432,7 @@ setupDefaultImages: function() {
                 }
             },
 
-            // ==================== ПРЕДВАРИТЕЛЬНАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ ====================
-            preloadImages: function() {
-                // Предзагрузка логотипа
-                const logoUrl = this.getImageUrl('', 'logo');
-                const logoImg = new Image();
-                logoImg.src = logoUrl;
-                
-                // Предзагрузка основных изображений
-                const preloadUrls = [
-                    '/api/images/test/category',
-                    '/api/images/test/service',
-                    '/api/images/test/user'
-                ];
-                
-                preloadUrls.forEach(url => {
-                    const img = new Image();
-                    img.src = this.API_BASE_URL + url;
-                });
-            },
-
-            // ==================== ОПТИМИЗАЦИЯ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ ====================
-            setupLazyLoading: function() {
-                if ('IntersectionObserver' in window) {
-                    const imageObserver = new IntersectionObserver((entries, observer) => {
-                        entries.forEach(entry => {
-                            if (entry.isIntersecting) {
-                                const img = entry.target;
-                                if (img.dataset.src) {
-                                    img.src = img.dataset.src;
-                                    img.removeAttribute('data-src');
-                                }
-                                observer.unobserve(img);
-                            }
-                        });
-                    }, {
-                        rootMargin: '50px 0px',
-                        threshold: 0.01
-                    });
-                    
-                    // Наблюдаем за всеми изображениями с data-src
-                    document.querySelectorAll('img[data-src]').forEach(img => {
-                        imageObserver.observe(img);
-                    });
-                }
-            },
+           
 
             // ==================== МОДАЛЬНЫЕ ОКНА ====================
             showLoginModal: function() {
