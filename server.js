@@ -5289,7 +5289,6 @@ app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), a
 
 // ==================== API ИСПОЛНИТЕЛЕЙ ====================
 
-// Получение доступных задач для исполнителя (этот маршрут вызывается из performer.html)
 app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 'superadmin', 'manager']), async (req, res) => {
     try {
         const { category_id, min_price, priority } = req.query;
@@ -5331,7 +5330,7 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.client_id = u.id
-            WHERE t.status = 'searching' 
+            WHERE (t.status = 'searching' OR t.status = 'new')  <!-- ИЩЕМ ОБА СТАТУСА -->
               AND t.category_id IN (${categoryIds.map(() => '?').join(',')})
         `;
         
@@ -5398,6 +5397,37 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
             success: false,
             error: 'Внутренняя ошибка сервера при получении задач',
             message: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+// Получение специализаций исполнителя
+app.get('/api/performer/categories', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const categories = await db.all(`
+            SELECT 
+                c.*,
+                pc.experience_years,
+                pc.hourly_rate,
+                pc.is_active
+            FROM performer_categories pc
+            JOIN categories c ON pc.category_id = c.id
+            WHERE pc.performer_id = ?
+            ORDER BY c.display_name ASC
+        `, [req.user.id]);
+        
+        res.json({
+            success: true,
+            data: {
+                categories,
+                count: categories.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения специализаций:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения специализаций'
         });
     }
 });
