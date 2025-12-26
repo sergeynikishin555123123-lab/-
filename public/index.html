@@ -2432,37 +2432,37 @@ img[src*="data:image/svg"] {
     </div>
     
     <div class="user-menu" id="userMenu">
-            <div style="padding: 10px; border-bottom: 1px solid rgba(61, 61, 61, 0.1);">
-                <div style="font-weight: 600;" id="menuUserName">Гость</div>
-                <div style="font-size: 0.9rem; color: var(--graphite-medium);" id="menuUserEmail"></div>
-            </div>
-            <div style="padding: 5px 0;">
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('profile')">
-                    <i class="fas fa-user"></i>Профиль
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.showTasksPopup()">
-                    <i class="fas fa-tasks"></i>Мои задачи
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.showSupportChat()" id="supportMenuBtn">
-                    <i class="fas fa-headset"></i>Поддержка
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.showLoginModal()" id="loginMenuBtn">
-                    <i class="fas fa-sign-in-alt"></i>Войти
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.logout()" id="logoutMenuBtn" style="display: none;">
-                    <i class="fas fa-sign-out-alt"></i>Выйти
-                </a>
-            </div>
+        <div style="padding: 10px; border-bottom: 1px solid rgba(61, 61, 61, 0.1);">
+            <div style="font-weight: 600;" id="menuUserName">Гость</div>
+            <div style="font-size: 0.9rem; color: var(--graphite-medium);" id="menuUserEmail"></div>
         </div>
-    </nav>
-    
+        <div style="padding: 5px 0;">
+            <a href="#" class="nav-menu-item" onclick="app.navigateToPage('profile')">
+                <i class="fas fa-user"></i>Профиль
+            </a>
+            <a href="#" class="nav-menu-item" onclick="app.showTasksPopup()">
+                <i class="fas fa-tasks"></i>Мои задачи
+            </a>
+            <a href="#" class="nav-menu-item" onclick="app.showSupportChat()" id="supportMenuBtn">
+                <i class="fas fa-headset"></i>Поддержка
+            </a>
+            <a href="#" class="nav-menu-item" onclick="app.showLoginModal()" id="loginMenuBtn">
+                <i class="fas fa-sign-in-alt"></i>Войти
+            </a>
+            <a href="#" class="nav-menu-item" onclick="app.logout()" id="logoutMenuBtn" style="display: none;">
+                <i class="fas fa-sign-out-alt"></i>Выйти
+            </a>
+        </div>
+    </div>
+</nav>    
     <!-- Основной контент -->
     <main>
         <!-- Экран авторизации -->
 <div id="auth-page" class="page active">
     <div class="container auth-screen">
         <div class="auth-content">
-            <div class="card auth-card" style="padding: 30px 20px;">
+            <div class="card auth-card" style="padding: 40px 30px;">
+                <!-- ЛОГОТИП -->
                 <div class="auth-logo-container">
                     <div class="auth-logo-frame">
                         <img src="" 
@@ -2476,59 +2476,67 @@ img[src*="data:image/svg"] {
                             <span class="auth-logo-woman">WOMAN</span>
                             <span class="auth-logo-help">HELP</span>
                         </div>
-                        <div class="tagline" style="font-size: 1.2rem; color: var(--pastel-pink); font-weight: 600; margin-bottom: 10px;">
-                            Решение есть
-                        </div>
-                        <p class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 25px;">
-                            Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.
-                        </p>
-                        
-                        <div class="auth-actions">
-                            <button class="btn btn-primary" onclick="app.showLoginModal()" style="padding: 12px 20px; font-size: 0.9rem;">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Войти в систему
-                            </button>
-                            <button class="btn btn-secondary" onclick="app.showRegisterModal()" style="padding: 12px 20px; font-size: 0.9rem;">
-                                <i class="fas fa-user-plus"></i>
-                                Зарегистрироваться
-                            </button>
-                        </div>
+                        <div class="auth-logo-tagline">Премиум сервис помощи для женщин</div>
+                    </div>
+                </div>
+                
+                <!-- ТЕГЛАЙН -->
+                <div class="tagline" style="font-size: 1.2rem; color: var(--pastel-pink); font-weight: 600; margin-bottom: 10px; text-align: center;">
+                    Решение есть
+                </div>
+                
+                <!-- ОПИСАНИЕ -->
+                <p class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 25px; text-align: center;">
+                    Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.
+                </p>
+                
+                <!-- КНОПКИ -->
+                <div class="auth-actions">
+                    <button class="btn btn-primary" onclick="app.showLoginModal()" style="padding: 12px 20px; font-size: 0.9rem;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Войти в систему
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.showRegisterModal()" style="padding: 12px 20px; font-size: 0.9rem;">
+                        <i class="fas fa-user-plus"></i>
+                        Зарегистрироваться
+                    </button>
+                </div>
 
-                        <!-- Компактная статистика сервиса В РАМКЕ -->
-                        <div class="service-stats-compact" style="margin-top: 30px;">
-                            <div class="stats-header" style="text-align: center; margin-bottom: 15px;">
-                                <h4 style="font-size: 1rem; color: var(--graphite-dark); margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                                    <i class="fas fa-chart-line" style="color: var(--pastel-pink);"></i>
-                                    Статистика сервиса
-                                </h4>
-                            </div>
-                            
-                            <div class="stats-grid-compact">
-                                <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="usersCount">1356</div>
-                                    <div class="stat-title-compact">Пользователей</div>
-                                </div>
-                                <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="tasksCount">3257</div>
-                                    <div class="stat-title-compact">Выполнено задач</div>
-                                </div>
-                                <div class="stat-item-compact">
-                                    <div class="stat-number-compact" id="hoursCount">10365</div>
-                                    <div class="stat-title-compact">Часов экономии</div>
-                                </div>
-                            </div>
-                            
-                            <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
-                                <button class="btn btn-secondary btn-sm" onclick="app.showSupportChat()" style="padding: 8px 16px; font-size: 0.85rem;">
-                                    <i class="fas fa-headset"></i>
-                                    Поддержка
-                                </button>
-                            </div>
+                <!-- СТАТИСТИКА -->
+                <div class="service-stats-compact" style="margin-top: 30px;">
+                    <div class="stats-header" style="text-align: center; margin-bottom: 15px;">
+                        <h4 style="font-size: 1rem; color: var(--graphite-dark); margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fas fa-chart-line" style="color: var(--pastel-pink);"></i>
+                            Статистика сервиса
+                        </h4>
+                    </div>
+                    
+                    <div class="stats-grid-compact">
+                        <div class="stat-item-compact">
+                            <div class="stat-number-compact" id="usersCount">1356</div>
+                            <div class="stat-title-compact">Пользователей</div>
                         </div>
+                        <div class="stat-item-compact">
+                            <div class="stat-number-compact" id="tasksCount">3257</div>
+                            <div class="stat-title-compact">Выполнено задач</div>
+                        </div>
+                        <div class="stat-item-compact">
+                            <div class="stat-number-compact" id="hoursCount">10365</div>
+                            <div class="stat-title-compact">Часов экономии</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
+                        <button class="btn btn-secondary btn-sm" onclick="app.showSupportChat()" style="padding: 8px 16px; font-size: 0.85rem;">
+                            <i class="fas fa-headset"></i>
+                            Поддержка
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
         
         <!-- Главная страница -->
         <div id="home-page" class="page">
