@@ -1617,7 +1617,7 @@ app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin
     }
 });
 
-app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
+app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), simpleUpload.single('image'), async (req, res) => {
     try {
         console.log('📤 Загрузка файла через универсальный endpoint...');
         console.log('📁 Файл:', req.file);
