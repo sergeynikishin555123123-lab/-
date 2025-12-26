@@ -3394,95 +3394,83 @@
                 hours: 10365
             },
 
-          getImageUrl: function(imageUrl, type) {
+// ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
+getImageUrl: function(imageUrl, type) {
     if (!imageUrl || imageUrl.trim() === '') {
-        console.log(`Нет image_url для типа ${type}`);
         return this.createSvgFallback(type);
     }
     
-    console.log(`getImageUrl called:`, { imageUrl, type });
+    if (imageUrl.includes('/api/images/test/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
     
-    // Если изображение уже полный URL
+    if (type === 'service') {
+        if (imageUrl.startsWith('/uploads/services/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
+        } else if (!imageUrl.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
+        }
+    }
+    
+    if (type === 'category') {
+        if (imageUrl.startsWith('/uploads/categories/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
+        }
+    }
+    
+    if (imageUrl.startsWith('/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl + '?t=' + Date.now();
     }
     
-    // Для загруженных изображений через админку - базовый URL
-    if (imageUrl.startsWith('/uploads/') || imageUrl.startsWith('uploads/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    // Для изображений из /storage
-    if (imageUrl.startsWith('/storage/') || imageUrl.startsWith('storage/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    // Для статических изображений
-    if (imageUrl.startsWith('/images/') || imageUrl.startsWith('images/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    // Если это просто имя файла, предполагаем, что оно в uploads
-    if (!imageUrl.includes('/')) {
-        // Для Laravel storage обычно путь /storage/
-        return this.API_BASE_URL + '/storage/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
-    }
-    
-    // По умолчанию - полный путь
-    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
 },
 
-            createSvgFallback: function(type) {
-                const colors = {
-                    'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
-                    'category': { bg: '#E8CCD9', text: '#A78B65', char: 'C' },
-                    'service': { bg: '#D4B8C7', text: '#8B7355', char: 'S' },
-                    'user': { bg: '#B9AFFF', text: '#FFFFFF', char: 'U' },
-                    'default': { bg: '#F9F7F3', text: '#888888', char: '?' }
-                };
-                
-                const config = colors[type] || colors['default'];
-                
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-                    <rect width="200" height="200" fill="${config.bg}" rx="10"/>
-                    <text x="100" y="100" font-family="Arial, sans-serif" font-size="80" fill="${config.text}" 
-                          text-anchor="middle" dominant-baseline="middle" font-weight="bold">${config.char}</text>
-                </svg>`;
-                
-                return 'data:image/svg+xml;base64,' + btoa(svg);
-            },
+createSvgFallback: function(type) {
+    const colors = {
+        'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
+        'category': { bg: '#E8CCD9', text: '#A78B65', char: 'C' },
+        'service': { bg: '#D4B8C7', text: '#8B7355', char: 'S' },
+        'user': { bg: '#B9AFFF', text: '#FFFFFF', char: 'U' },
+        'default': { bg: '#F9F7F3', text: '#888888', char: '?' }
+    };
+    
+    const config = colors[type] || colors['default'];
+    
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <rect width="200" height="200" fill="${config.bg}" rx="10"/>
+        <text x="100" y="100" font-family="Arial, sans-serif" font-size="80" fill="${config.text}" 
+              text-anchor="middle" dominant-baseline="middle" font-weight="bold">${config.char}</text>
+    </svg>`;
+    
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+},
 
-           loadLogo: async function() {
+loadLogo: async function() {
     try {
-        console.log('Загрузка логотипа...');
+        const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
         const response = await fetch(this.API_BASE_URL + '/api/logo');
         
         if (response.ok) {
             const result = await response.json();
-            console.log('Логотип API ответ:', result);
-            
             if (result.success && result.data) {
-                let logoUrl;
+                const logoUrl = result.data.logo_url 
+                    ? this.getImageUrl(result.data.logo_url, 'logo')
+                    : fallbackLogoUrl;
                 
-                // Проверяем разные форматы URL логотипа
-                if (result.data.logo_url) {
-                    logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
-                } else if (result.data.image_url) {
-                    logoUrl = this.getImageUrl(result.data.image_url, 'logo');
-                } else if (result.data.file_url) {
-                    logoUrl = this.getImageUrl(result.data.file_url, 'logo');
-                } else {
-                    throw new Error('URL логотипа не найден');
-                }
-                
-                console.log('URL логотипа:', logoUrl);
-                
-                // Обновляем все логотипы на странице
                 document.querySelectorAll('.logo-img').forEach(function(img) {
                     img.src = logoUrl;
                     img.onerror = function() {
-                        console.error('Ошибка загрузки логотипа:', logoUrl);
-                        this.src = app.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
+                        this.src = fallbackLogoUrl;
                         this.onerror = null;
                     };
                 });
@@ -3493,7 +3481,6 @@
         console.log('Ошибка API логотипа:', error.message);
     }
     
-    // Fallback на тестовый логотип
     const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
     document.querySelectorAll('.logo-img').forEach(function(img) {
         img.src = fallbackLogoUrl;
@@ -3502,43 +3489,43 @@
     return false;
 },
 
-            setupDefaultImages: function() {
-                const handleImageError = function() {
-                    let type = 'default';
-                    if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
-                        type = 'logo';
-                    } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
-                        type = 'category';
-                    } else if (this.closest('.service-image') || this.closest('.service-image-container') || this.src.includes('service')) {
-                        type = 'service';
-                    } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
-                        type = 'user';
-                    }
-                    
-                    this.src = app.createSvgFallback(type);
-                    this.onerror = null;
-                };
-                
-                document.querySelectorAll('img').forEach(function(img) {
-                    img.onerror = handleImageError;
-                    
-                    if (!img.src || img.src === '' || img.src === window.location.href) {
-                        let type = 'default';
-                        if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
-                            type = 'logo';
-                        } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                            type = 'category';
-                        } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                            type = 'service';
-                        } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
-                            type = 'user';
-                        }
-                        img.src = app.createSvgFallback(type);
-                    }
-                });
-                
-                this.loadLogo();
-            },
+setupDefaultImages: function() {
+    const handleImageError = function() {
+        let type = 'default';
+        if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
+            type = 'logo';
+        } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
+            type = 'category';
+        } else if (this.closest('.service-image') || this.closest('.service-image-container') || this.src.includes('service')) {
+            type = 'service';
+        } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
+            type = 'user';
+        }
+        
+        this.src = app.createSvgFallback(type);
+        this.onerror = null;
+    };
+    
+    document.querySelectorAll('img').forEach(function(img) {
+        img.onerror = handleImageError;
+        
+        if (!img.src || img.src === '' || img.src === window.location.href) {
+            let type = 'default';
+            if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
+                type = 'logo';
+            } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                type = 'category';
+            } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                type = 'service';
+            } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
+                type = 'user';
+            }
+            img.src = app.createSvgFallback(type);
+        }
+    });
+    
+    this.loadLogo();
+},
 
             // ==================== ПОИСК УСЛУГ С АВТОКОМПЛИТОМ ====================
             filterServices: function() {
@@ -3998,7 +3985,9 @@
             // Если есть иконка, показываем её вместо изображения
             imageUrl = this.createSvgFallback('category');
         } else {
-            imageUrl = this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+           imageUrl = category.image_url ? 
+    this.getImageUrl(category.image_url, 'category') : 
+    this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
         }
         
         const svgFallback = this.createSvgFallback('category');
