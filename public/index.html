@@ -499,17 +499,17 @@
         }
 
         .category-image-main {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-        }
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent; /* или белый фон */
+}
 
         .category-card-main-style:hover .category-image-main img {
             transform: scale(1.05);
@@ -3394,10 +3394,9 @@
                 hours: 10365
             },
 
-            // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-            // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-getImageUrl: function(imageUrl, type) {
+          getImageUrl: function(imageUrl, type) {
     if (!imageUrl || imageUrl.trim() === '') {
+        console.log(`Нет image_url для типа ${type}`);
         return this.createSvgFallback(type);
     }
     
@@ -3413,30 +3412,24 @@ getImageUrl: function(imageUrl, type) {
         return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
     }
     
+    // Для изображений из /storage
+    if (imageUrl.startsWith('/storage/') || imageUrl.startsWith('storage/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
     // Для статических изображений
     if (imageUrl.startsWith('/images/') || imageUrl.startsWith('images/')) {
         return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
     }
     
-    // Для изображений с API (если это только имя файла)
+    // Если это просто имя файла, предполагаем, что оно в uploads
     if (!imageUrl.includes('/')) {
-        // Проверяем тип и формируем соответствующий URL
-        switch(type) {
-            case 'logo':
-                return this.API_BASE_URL + '/api/logo/file?t=' + Date.now();
-            case 'category':
-                return this.API_BASE_URL + '/api/categories/image/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
-            case 'service':
-                return this.API_BASE_URL + '/api/services/image/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
-            case 'user':
-                return this.API_BASE_URL + '/api/users/avatar/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
-            default:
-                return this.API_BASE_URL + '/api/images/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
-        }
+        // Для Laravel storage обычно путь /storage/
+        return this.API_BASE_URL + '/storage/' + encodeURIComponent(imageUrl) + '?t=' + Date.now();
     }
     
-    // По умолчанию создаем SVG
-    return this.createSvgFallback(type);
+    // По умолчанию - полный путь
+    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
 },
 
             createSvgFallback: function(type) {
