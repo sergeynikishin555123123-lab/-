@@ -6852,53 +6852,7 @@ init: async function() {
         }
         
         // Тестирование загрузки изображений
-        console.log('Тестирование загрузки изображений...');
-        this.testImageLoading();
-        
-        // Показываем загрузочный экран
-        const loadingBar = document.getElementById('loading-bar');
-        if (loadingBar) {
-            loadingBar.style.transition = 'transform 0.5s ease';
-            loadingBar.style.transform = 'translateX(0)';
-            
-            setTimeout(() => {
-                loadingBar.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    loadingBar.style.display = 'none';
-                }, 500);
-            }, 800);
-        }
-        
-        console.log('Приложение инициализировано');
-        
-    } catch (error) {
-        console.error('Ошибка инициализации приложения:', error);
-        
-        // Показываем сообщение об ошибке
-        document.body.innerHTML += '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-lg); text-align: center; z-index: 10000;">' +
-            '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--error); margin-bottom: 15px;"></i>' +
-            '<h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Ошибка загрузки</h3>' +
-            '<p style="color: var(--graphite-medium); margin-bottom: 20px;">Приложение временно недоступно. Пожалуйста, обновите страницу.</p>' +
-            '<button class="btn btn-primary" onclick="window.location.reload()">Обновить страницу</button>' +
-        '</div>';
-    }
-},
-
-        window.addEventListener('DOMContentLoaded', function() {
-            try {
-                app.init();
-            } catch (error) {
-                console.error('Критическая ошибка инициализации:', error);
-                document.body.innerHTML = '<div style="padding: 40px; text-align: center; font-family: Inter, sans-serif; color: var(--graphite-dark);">' +
-                    '<i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--error); margin-bottom: 20px;"></i>' +
-                    '<h1 style="font-size: 1.8rem; margin-bottom: 15px;">Ошибка загрузки приложение</h1>' +
-                    '<p style="color: var(--graphite-medium); margin-bottom: 25px;">Пожалуйста, обновите страницу или попробуйте позже.</p>' +
-                    '<button onclick="window.location.reload()" style="background: var(--pastel-pink); color: var(--graphite-dark); border: none; padding: 12px 24px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 1rem;">' +
-                        '<i class="fas fa-redo"></i> Обновить страницу' +
-                    '</button>' +
-                '</div>';
-            }
-        });
+console.log('Тестирование загрузки изображений...'
     </script>
 </body>
 </html>
