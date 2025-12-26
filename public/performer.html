@@ -881,6 +881,12 @@
         </div>
     </nav>
     
+    <!-- Временно для отладки -->
+    <button onclick="debugCheckTasks()" 
+            style="position: fixed; bottom: 120px; right: 20px; z-index: 9999; background: #ff9800; color: white; border: none; padding: 10px; border-radius: 5px;">
+        🔍 Отладка
+    </button>
+    
     <!-- Основной контент -->
     <main>
         <!-- Экран авторизации -->
@@ -2040,7 +2046,7 @@
             });
         }
         
-        // Загрузка доступных задач
+        // Загрузка доступных задач (ИСПРАВЛЕННАЯ ВЕРСИЯ)
         async function loadAvailableTasks() {
             try {
                 if (!currentToken) return;
@@ -2049,14 +2055,15 @@
                 
                 // Собираем параметры фильтра
                 const params = new URLSearchParams();
+                params.append('status', 'searching'); // Только задачи в поиске исполнителя
                 if (filters.category !== 'all') params.append('category_id', filters.category);
                 if (filters.budgetFrom) params.append('min_price', filters.budgetFrom);
                 if (filters.priority !== 'all') params.append('priority', filters.priority);
                 
                 console.log(`📡 Запрос доступных задач с фильтрами: ${params.toString()}`);
                 
-                // Используем правильный URL
-                const response = await fetch(`${API_BASE_URL}/api/performer/available-tasks?${params.toString()}`, {
+                // ИСПРАВЛЕНИЕ: Используем правильный endpoint
+                const response = await fetch(`${API_BASE_URL}/api/tasks?${params.toString()}`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`,
                         'Accept': 'application/json'
@@ -2064,6 +2071,13 @@
                 });
                 
                 console.log('Статус ответа:', response.status);
+                
+                if (!response.ok) {
+                    console.error('Ошибка сервера:', response.status);
+                    const errorText = await response.text();
+                    console.error('Текст ошибки:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
                 
                 const data = await response.json();
                 console.log('Данные ответа:', data);
@@ -2073,125 +2087,144 @@
                 const noTasks = document.getElementById('noAvailableTasks');
                 const countBadge = document.getElementById('availableTasksCount');
                 
-                if (data.success && data.data.tasks && data.data.tasks.length > 0) {
-                    availableTasks = data.data.tasks;
+                if (data.success && data.data && data.data.tasks && data.data.tasks.length > 0) {
+                    // ФИЛЬТРУЕМ: только задачи в статусе searching
+                    availableTasks = data.data.tasks.filter(task => task.status === 'searching');
+                    console.log('Доступные задачи после фильтрации:', availableTasks);
                     
                     // Обновляем счетчик
                     countBadge.textContent = `${availableTasks.length} задач`;
                     
-                    // Заполняем таблицу (для десктопа)
-                    container.innerHTML = availableTasks.map(task => {
-                        const priorityClass = getPriorityClass(task.priority);
-                        const priorityText = getPriorityText(task.priority);
-                        
-                        return `
-                            <tr onclick="viewAvailableTask(${task.id})" style="cursor: pointer;">
-                                <td>
-                                    <div style="font-weight: 600;">${task.title}</div>
-                                    <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
-                                        ${(task.description || '').substring(0, 80)}...
-                                    </div>
-                                </td>
-                                <td>${task.category_name}</td>
-                                <td>
-                                    <div style="font-weight: 600; color: var(--success);">
-                                        ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                    </div>
-                                </td>
-                                <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
-                                <td>
-                                    <span class="status-badge ${priorityClass}">${priorityText}</span>
-                                </td>
-                                <td>
-                                    <div style="display: flex; gap: 8px;" onclick="event.stopPropagation()">
-                                        <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" 
-                                                style="padding: 6px 12px; font-size: 0.85rem; white-space: nowrap;">
-                                            <i class="fas fa-check"></i> Принять
-                                        </button>
-                                        <button class="btn btn-secondary btn-sm" onclick="viewAvailableTask(${task.id})" 
-                                                style="padding: 6px 12px; font-size: 0.85rem;">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                    
-                    // Заполняем мобильные карточки
-                    if (mobileContainer) {
-                        mobileContainer.innerHTML = availableTasks.map(task => {
+                    // Заполняем таблицу
+                    if (availableTasks.length > 0) {
+                        container.innerHTML = availableTasks.map(task => {
                             const priorityClass = getPriorityClass(task.priority);
                             const priorityText = getPriorityText(task.priority);
                             
                             return `
-                                <div class="mobile-card">
-                                    <div class="mobile-card-header">
-                                        <div class="mobile-card-title">${task.title}</div>
-                                        <span class="status-badge ${priorityClass} mobile-card-badge">${priorityText}</span>
-                                    </div>
-                                    
-                                    <div class="mobile-card-info">
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Категория</span>
-                                            <span class="mobile-card-value">${task.category_name}</span>
+                                <tr onclick="viewAvailableTask(${task.id})" style="cursor: pointer;">
+                                    <td>
+                                        <div style="font-weight: 600;">${task.title}</div>
+                                        <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
+                                            ${(task.description || '').substring(0, 80)}...
                                         </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Бюджет</span>
-                                            <span class="mobile-card-value" style="color: var(--success);">
-                                                ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                            </span>
+                                    </td>
+                                    <td>${task.category_name || 'Без категории'}</td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--success);">
+                                            ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
                                         </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Дедлайн</span>
-                                            <span class="mobile-card-value">${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</span>
+                                    </td>
+                                    <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
+                                    <td>
+                                        <span class="status-badge ${priorityClass}">${priorityText}</span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                                            <button class="btn btn-primary btn-sm" onclick="acceptTask(${task.id})" 
+                                                    style="padding: 6px 12px; font-size: 0.85rem; white-space: nowrap;">
+                                                <i class="fas fa-check"></i> Принять
+                                            </button>
+                                            <button class="btn btn-secondary btn-sm" onclick="viewAvailableTask(${task.id})" 
+                                                    style="padding: 6px 12px; font-size: 0.85rem;">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
                                         </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Клиент</span>
-                                            <span class="mobile-card-value">${task.client_first_name}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <p class="mobile-card-description">${(task.description || '').substring(0, 100)}...</p>
-                                    
-                                    <div class="mobile-card-actions">
-                                        <button class="btn btn-primary mobile-card-btn" onclick="acceptTask(${task.id})">
-                                            <i class="fas fa-check"></i> Принять
-                                        </button>
-                                        <button class="btn btn-secondary mobile-card-btn" onclick="viewAvailableTask(${task.id})">
-                                            <i class="fas fa-eye"></i> Просмотр
-                                        </button>
-                                    </div>
-                                </div>
+                                    </td>
+                                </tr>
                             `;
                         }).join('');
+                        
+                        // Заполняем мобильные карточки
+                        if (mobileContainer) {
+                            mobileContainer.innerHTML = availableTasks.map(task => {
+                                const priorityClass = getPriorityClass(task.priority);
+                                const priorityText = getPriorityText(task.priority);
+                                
+                                return `
+                                    <div class="mobile-card">
+                                        <div class="mobile-card-header">
+                                            <div class="mobile-card-title">${task.title}</div>
+                                            <span class="status-badge ${priorityClass} mobile-card-badge">${priorityText}</span>
+                                        </div>
+                                        
+                                        <div class="mobile-card-info">
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Категория</span>
+                                                <span class="mobile-card-value">${task.category_name || 'Без категории'}</span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Бюджет</span>
+                                                <span class="mobile-card-value" style="color: var(--success);">
+                                                    ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
+                                                </span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Дедлайн</span>
+                                                <span class="mobile-card-value">${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Клиент</span>
+                                                <span class="mobile-card-value">${task.client_first_name || 'Клиент'}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <p class="mobile-card-description">${(task.description || '').substring(0, 100)}...</p>
+                                        
+                                        <div class="mobile-card-actions">
+                                            <button class="btn btn-primary mobile-card-btn" onclick="acceptTask(${task.id})">
+                                                <i class="fas fa-check"></i> Принять
+                                            </button>
+                                            <button class="btn btn-secondary mobile-card-btn" onclick="viewAvailableTask(${task.id})">
+                                                <i class="fas fa-eye"></i> Просмотр
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                        
+                        noTasks.style.display = 'none';
+                        if (container.closest('.table-container')) {
+                            container.closest('.table-container').style.display = 'block';
+                        }
+                        
+                    } else {
+                        throw new Error('Нет задач в статусе "searching"');
                     }
-                    
-                    noTasks.style.display = 'none';
-                    container.closest('.table-container').style.display = 'block';
-                    
                 } else {
-                    container.innerHTML = '';
-                    if (mobileContainer) mobileContainer.innerHTML = '';
-                    container.closest('.table-container').style.display = 'none';
-                    noTasks.style.display = 'block';
-                    countBadge.textContent = '0 задач';
-                    
-                    // Показываем сообщение из API
-                    if (data.data && data.data.message) {
-                        noTasks.querySelector('.empty-state-description').textContent = data.data.message;
-                    }
+                    throw new Error(data.error || 'Нет доступных задач');
                 }
             } catch (error) {
                 console.error('🔥 Ошибка загрузки доступных задач:', error);
-                showNotification('Ошибка загрузки задач: ' + error.message, 'error');
-                document.getElementById('noAvailableTasks').style.display = 'block';
+                showNotification('Нет доступных задач для выполнения', 'info');
+                
+                const container = document.getElementById('availableTasksTable');
+                const mobileContainer = document.getElementById('availableTasksMobile');
+                const noTasks = document.getElementById('noAvailableTasks');
+                const countBadge = document.getElementById('availableTasksCount');
+                
+                if (container) container.innerHTML = '';
+                if (mobileContainer) mobileContainer.innerHTML = '';
+                if (container && container.closest('.table-container')) {
+                    container.closest('.table-container').style.display = 'none';
+                }
+                if (noTasks) noTasks.style.display = 'block';
+                if (countBadge) countBadge.textContent = '0 задач';
+                
+                // Обновляем текст в пустом состоянии
+                if (noTasks) {
+                    const description = noTasks.querySelector('.empty-state-description');
+                    if (description) {
+                        description.textContent = error.message || 'Новые задачи появятся здесь, когда клиенты создадут заказы';
+                    }
+                }
             } finally {
                 hideLoading();
             }
         }
         
-        // Загрузка моих задач
+        // Загрузка моих задач (ИСПРАВЛЕННАЯ ВЕРСИЯ)
         async function loadMyTasks() {
             try {
                 if (!currentToken) return;
@@ -2204,172 +2237,190 @@
                 if (filters.dateFrom) params.append('date_from', filters.dateFrom);
                 if (filters.dateTo) params.append('date_to', filters.dateTo);
                 
-                // Ключевое изменение: фильтруем только задачи, где исполнитель - текущий пользователь
-                // ИЛИ статус не 'searching' (новые задачи, которые еще никто не принял)
-        const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
-            headers: {
-                'Authorization': `Bearer ${currentToken}`
-            }
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            // ФИКС: фильтруем только задачи, где мы исполнитель
-            myTasks = data.data.recent_reviews || []; // или другой источник
-            
-            // ИЛИ используем отдельный API для задач исполнителя
-            const tasksResponse = await fetch(`${API_BASE_URL}/api/tasks/user`, {
-                headers: { 'Authorization': `Bearer ${currentToken}` }
-            });
-            
-            const tasksData = await tasksResponse.json();
-            if (tasksData.success) {
-                // Фильтруем только задачи, где мы исполнитель
-                myTasks = tasksData.data.tasks.filter(task => 
-                    task.performer_id === currentPerformer.id
-                );
-            }
+                console.log('Загрузка моих задач с фильтром:', filters.status);
+                
+                // ИСПРАВЛЕНИЕ: Простой запрос задач пользователя
+                const response = await fetch(`${API_BASE_URL}/api/tasks/user?${params.toString()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('Статус ответа моих задач:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Ошибка загрузки моих задач:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
                 
                 const data = await response.json();
+                console.log('Данные моих задач:', data);
+                
                 const container = document.getElementById('myTasksTable');
                 const mobileContainer = document.getElementById('myTasksMobile');
                 const noTasks = document.getElementById('noMyTasks');
                 const countBadge = document.getElementById('myTasksCount');
                 
-                if (data.success && data.data.tasks && data.data.tasks.length > 0) {
-                    // Фильтруем задачи: показываем только те, где мы исполнитель
-                    // ИЛИ статус не 'searching' (новые задачи)
+                if (data.success && data.data && data.data.tasks) {
+                    // ФИЛЬТРУЕМ: только задачи где текущий пользователь - исполнитель
                     myTasks = data.data.tasks.filter(task => 
-    task.performer_id === currentPerformer.id
-);
+                        task.performer_id === currentPerformer.id
+                    );
                     
-                    // Заполняем таблицу (для десктопа)
-                    container.innerHTML = myTasks.map(task => {
-                        const status = getStatusInfo(task.status);
-                        
-                        return `
-                            <tr onclick="viewTask(${task.id})" style="cursor: pointer;">
-                                <td>
-                                    <div style="font-weight: 600;">${task.title}</div>
-                                    <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
-                                        #${task.task_number}
-                                    </div>
-                                </td>
-                                <td>${task.client_first_name} ${task.client_last_name || ''}</td>
-                                <td>
-                                    <span class="status-badge ${status.class}">${status.name}</span>
-                                </td>
-                                <td>
-                                    <div style="font-weight: 600; color: var(--success);">
-                                        ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                    </div>
-                                </td>
-                                <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
-                                <td>
-                                    <div style="display: flex; gap: 4px;" onclick="event.stopPropagation()">
-                                        ${task.status === 'assigned' ? `
-                                            <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" 
-                                                    style="padding: 4px 8px; font-size: 0.8rem;">
-                                                <i class="fas fa-play"></i>
-                                            </button>
-                                        ` : ''}
-                                        ${task.status === 'in_progress' ? `
-                                            <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" 
-                                                    style="padding: 4px 8px; font-size: 0.8rem;">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        ` : ''}
-                                        ${['assigned', 'in_progress'].includes(task.status) ? `
-                                            <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" 
-                                                    style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        ` : ''}
-                                        <button class="btn btn-secondary btn-sm" onclick="viewTask(${task.id})" 
-                                                style="padding: 4px 8px; font-size: 0.8rem;">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
+                    console.log('Мои задачи после фильтрации:', myTasks);
                     
-                    // Заполняем мобильные карточки
-                    if (mobileContainer) {
-                        mobileContainer.innerHTML = myTasks.map(task => {
+                    if (myTasks.length > 0) {
+                        // Заполняем таблицу
+                        container.innerHTML = myTasks.map(task => {
                             const status = getStatusInfo(task.status);
                             
                             return `
-                                <div class="mobile-card" onclick="viewTask(${task.id})">
-                                    <div class="mobile-card-header">
-                                        <div class="mobile-card-title">${task.title}</div>
-                                        <span class="status-badge ${status.class} mobile-card-badge">${status.name}</span>
-                                    </div>
-                                    
-                                    <div class="mobile-card-info">
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Клиент</span>
-                                            <span class="mobile-card-value">${task.client_first_name}</span>
+                                <tr onclick="viewTask(${task.id})" style="cursor: pointer;">
+                                    <td>
+                                        <div style="font-weight: 600;">${task.title}</div>
+                                        <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 4px;">
+                                            #${task.task_number || task.id}
                                         </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Бюджет</span>
-                                            <span class="mobile-card-value" style="color: var(--success);">
-                                                ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
-                                            </span>
+                                    </td>
+                                    <td>${task.client_first_name || 'Клиент'} ${task.client_last_name || ''}</td>
+                                    <td>
+                                        <span class="status-badge ${status.class}">${status.name}</span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 600; color: var(--success);">
+                                            ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
                                         </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Дедлайн</span>
-                                            <span class="mobile-card-value">${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</span>
-                                        </div>
-                                        <div class="mobile-card-info-item">
-                                            <span class="mobile-card-label">Дата</span>
-                                            <span class="mobile-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mobile-card-actions" onclick="event.stopPropagation()">
-                                        ${task.status === 'assigned' ? `
-                                            <button class="btn btn-success mobile-card-btn" onclick="startTask(${task.id})">
-                                                <i class="fas fa-play"></i> Начать
+                                    </td>
+                                    <td>${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</td>
+                                    <td>
+                                        <div style="display: flex; gap: 4px;" onclick="event.stopPropagation()">
+                                            ${task.status === 'assigned' ? `
+                                                <button class="btn btn-success btn-sm" onclick="startTask(${task.id})" 
+                                                        style="padding: 4px 8px; font-size: 0.8rem;">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            ` : ''}
+                                            ${task.status === 'in_progress' ? `
+                                                <button class="btn btn-warning btn-sm" onclick="completeTask(${task.id})" 
+                                                        style="padding: 4px 8px; font-size: 0.8rem;">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            ` : ''}
+                                            ${['assigned', 'in_progress'].includes(task.status) ? `
+                                                <button class="btn btn-error btn-sm" onclick="rejectTask(${task.id})" 
+                                                        style="padding: 4px 8px; font-size: 0.8rem; background: var(--error); color: white;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            ` : ''}
+                                            <button class="btn btn-secondary btn-sm" onclick="viewTask(${task.id})" 
+                                                    style="padding: 4px 8px; font-size: 0.8rem;">
+                                                <i class="fas fa-eye"></i>
                                             </button>
-                                        ` : ''}
-                                        ${task.status === 'in_progress' ? `
-                                            <button class="btn btn-warning mobile-card-btn" onclick="completeTask(${task.id})">
-                                                <i class="fas fa-check"></i> Завершить
-                                            </button>
-                                        ` : ''}
-                                        ${['assigned', 'in_progress'].includes(task.status) ? `
-                                            <button class="btn btn-error mobile-card-btn" onclick="rejectTask(${task.id})" 
-                                                    style="background: var(--error); color: white;">
-                                                <i class="fas fa-times"></i> Отказаться
-                                            </button>
-                                        ` : ''}
-                                        <button class="btn btn-primary mobile-card-btn" onclick="viewTask(${task.id})">
-                                            <i class="fas fa-eye"></i> Подробнее
-                                        </button>
-                                    </div>
-                                </div>
+                                        </div>
+                                    </td>
+                                </tr>
                             `;
                         }).join('');
+                        
+                        // Заполняем мобильные карточки
+                        if (mobileContainer) {
+                            mobileContainer.innerHTML = myTasks.map(task => {
+                                const status = getStatusInfo(task.status);
+                                
+                                return `
+                                    <div class="mobile-card" onclick="viewTask(${task.id})">
+                                        <div class="mobile-card-header">
+                                            <div class="mobile-card-title">${task.title}</div>
+                                            <span class="status-badge ${status.class} mobile-card-badge">${status.name}</span>
+                                        </div>
+                                        
+                                        <div class="mobile-card-info">
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Клиент</span>
+                                                <span class="mobile-card-value">${task.client_first_name || 'Клиент'}</span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Бюджет</span>
+                                                <span class="mobile-card-value" style="color: var(--success);">
+                                                    ${task.price ? formatNumber(task.price) + ' ₽' : 'Договорная'}
+                                                </span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Дедлайн</span>
+                                                <span class="mobile-card-value">${task.deadline ? new Date(task.deadline).toLocaleDateString('ru-RU') : '—'}</span>
+                                            </div>
+                                            <div class="mobile-card-info-item">
+                                                <span class="mobile-card-label">Дата</span>
+                                                <span class="mobile-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mobile-card-actions" onclick="event.stopPropagation()">
+                                            ${task.status === 'assigned' ? `
+                                                <button class="btn btn-success mobile-card-btn" onclick="startTask(${task.id})">
+                                                    <i class="fas fa-play"></i> Начать
+                                                </button>
+                                            ` : ''}
+                                            ${task.status === 'in_progress' ? `
+                                                <button class="btn btn-warning mobile-card-btn" onclick="completeTask(${task.id})">
+                                                    <i class="fas fa-check"></i> Завершить
+                                                </button>
+                                            ` : ''}
+                                            ${['assigned', 'in_progress'].includes(task.status) ? `
+                                                <button class="btn btn-error mobile-card-btn" onclick="rejectTask(${task.id})" 
+                                                        style="background: var(--error); color: white;">
+                                                    <i class="fas fa-times"></i> Отказаться
+                                                </button>
+                                            ` : ''}
+                                            <button class="btn btn-primary mobile-card-btn" onclick="viewTask(${task.id})">
+                                                <i class="fas fa-eye"></i> Подробнее
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        }
+                        
+                        noTasks.style.display = 'none';
+                        if (container.closest('.table-container')) {
+                            container.closest('.table-container').style.display = 'block';
+                        }
+                        
+                        // Обновляем счетчик
+                        countBadge.textContent = `${myTasks.length} задач`;
+                    } else {
+                        throw new Error('У вас нет принятых задач');
                     }
-                    
-                    noTasks.style.display = 'none';
-                    container.closest('.table-container').style.display = 'block';
-                    
-                    // Обновляем счетчик
-                    countBadge.textContent = `${myTasks.length} задач`;
                 } else {
-                    container.innerHTML = '';
-                    if (mobileContainer) mobileContainer.innerHTML = '';
-                    container.closest('.table-container').style.display = 'none';
-                    noTasks.style.display = 'block';
-                    countBadge.textContent = '0 задач';
+                    throw new Error(data.error || 'Ошибка загрузки задач');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки моих задач:', error);
-                showNotification('Ошибка загрузки задач', 'error');
+                
+                const container = document.getElementById('myTasksTable');
+                const mobileContainer = document.getElementById('myTasksMobile');
+                const noTasks = document.getElementById('noMyTasks');
+                const countBadge = document.getElementById('myTasksCount');
+                
+                if (container) container.innerHTML = '';
+                if (mobileContainer) mobileContainer.innerHTML = '';
+                if (container && container.closest('.table-container')) {
+                    container.closest('.table-container').style.display = 'none';
+                }
+                if (noTasks) noTasks.style.display = 'block';
+                if (countBadge) countBadge.textContent = '0 задач';
+                
+                // Обновляем текст в пустом состоянии
+                if (noTasks) {
+                    const description = noTasks.querySelector('.empty-state-description');
+                    if (description) {
+                        description.textContent = error.message || 'Примите свою первую задачу из раздела "Доступные задачи"';
+                    }
+                }
+                
+                showNotification(error.message || 'Задач пока нет', 'info');
             } finally {
                 hideLoading();
             }
@@ -2606,8 +2657,7 @@
             }
         }
         
-        // Принять задачу
-               // Принять задачу
+        // Принять задачу (ИСПРАВЛЕННАЯ ВЕРСИЯ)
         async function acceptTask(taskId) {
             try {
                 console.log(`📋 Принимаем задачу ID: ${taskId}`);
@@ -3546,7 +3596,7 @@
                 'cancelled': { name: 'Отменена', class: 'status-cancelled' }
             };
             
-            return statuses[status] || statuses.new;
+            return statuses[status] || { name: status, class: 'status-new' };
         }
         
         function getPriorityClass(priority) {
@@ -3796,6 +3846,43 @@
             closePerformerMenu();
         }
         
+        // Отладочная функция для проверки всех задач
+        async function debugCheckTasks() {
+            try {
+                console.log('=== ОТЛАДКА: Проверка задач ===');
+                
+                if (!currentToken) {
+                    console.log('Токен не найден');
+                    return;
+                }
+                
+                // Проверяем ВСЕ задачи
+                const response = await fetch(`${API_BASE_URL}/api/tasks`, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Все задачи в системе:', data.data.tasks);
+                    
+                    // Задачи в поиске
+                    const searchingTasks = data.data.tasks.filter(t => t.status === 'searching');
+                    console.log('Задачи в поиске исполнителя:', searchingTasks);
+                    
+                    // Мои задачи (где я исполнитель)
+                    const myTasks = data.data.tasks.filter(t => t.performer_id === currentPerformer.id);
+                    console.log('Мои задачи как исполнителя:', myTasks);
+                    
+                    showNotification(`Найдено ${searchingTasks.length} задач в поиске, ${myTasks.length} моих задач`, 'info');
+                }
+            } catch (error) {
+                console.error('Ошибка отладки:', error);
+            }
+        }
+        
         // Экспортируем функции для глобального использования
         window.navigateToPage = navigateToPage;
         window.showPerformerLoginModal = showPerformerLoginModal;
@@ -3822,6 +3909,7 @@
         window.savePerformerProfile = savePerformerProfile;
         window.loadAvailableTasks = loadAvailableTasks;
         window.loadMyTasks = loadMyTasks;
+        window.debugCheckTasks = debugCheckTasks;
     </script>
 </body>
 </html>
