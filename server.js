@@ -3933,7 +3933,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         
         const finalPrice = 0;
         const taskNumber = generateTaskNumber();
-        const taskStatus = 'new';
+        const taskStatus = 'searching'; // ИЗМЕНЕНО С 'new' НА 'searching'
         
         const result = await db.run(
             `INSERT INTO tasks 
@@ -3953,7 +3953,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
                 deadline,
                 contact_info,
                 additional_requirements || null,
-                taskStatus
+                taskStatus // ТЕПЕРЬ 'searching'
             ]
         );
         
