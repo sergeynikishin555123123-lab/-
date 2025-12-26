@@ -487,29 +487,57 @@
             background: white;
         }
         
-        /* Исправление изображений в карточках */
-        .category-image-main img,
-        .service-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-            display: block !important;
-        }
+/* ИСПРАВЛЕНИЯ ДЛЯ ИЗОБРАЖЕНИЙ */
+.category-image-main img,
+.service-image-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    display: block !important;
+    position: relative !important;
+    z-index: 2 !important;
+}
 
-        .category-image-main {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-        }
+        /* Убираем градиентные фоны которые перекрывают изображения */
+.category-image-main::before,
+.service-image-container::before {
+    display: none !important;
+}
+
+/* Исправление для iOS */
+@supports (-webkit-touch-callout: none) {
+    .category-image-main img,
+    .service-image-container img {
+        object-fit: cover !important;
+        -webkit-object-fit: cover !important;
+    }
+}
+
+/* Гарантируем что изображения видны */
+.category-card-main-style .category-image-main img {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Исправление для отображения SVG фолбэков */
+img[src*="data:image/svg"] {
+    background: var(--pink-light) !important;
+    padding: 20px !important;
+}
+
+.category-image-main {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* УБЕРИТЕ градиентный фон */
+}
 
         .category-card-main-style:hover .category-image-main img {
             transform: scale(1.05);
@@ -3991,6 +4019,8 @@ renderHomeCategories: function() {
     const container = document.getElementById('categoriesGrid');
     if (!container || !this.categories) return;
     
+    console.log('Категории для отображения:', this.categories);
+    
     if (this.categories.length === 0) {
         container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
             '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
@@ -4005,10 +4035,15 @@ renderHomeCategories: function() {
         card.className = 'category-card-main-style';
         card.onclick = () => { this.selectCategoryForServices(category); };
         
-        // ИСПРАВЛЕНО: используем getImageUrl
+        // ДЛЯ ОТЛАДКИ
+        console.log('Категория:', category.display_name);
+        console.log('URL изображения:', category.image_url);
+        
         const imageUrl = category.image_url ? 
             this.getImageUrl(category.image_url, 'category') : 
             this.createSvgFallback('category');
+        
+        console.log('Итоговый URL:', imageUrl);
         
         const svgFallback = this.createSvgFallback('category');
         
@@ -4017,8 +4052,9 @@ renderHomeCategories: function() {
                 <img src="${imageUrl}" 
                      alt="${category.display_name}"
                      loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                     onerror="console.log('Ошибка загрузки изображения для ${category.display_name}'); this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; position: relative; z-index: 2;">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--pink-light); border-radius: 50%; z-index: 1;"></div>
             </div>
             <h3>${category.display_name}</h3>
             <div class="category-description-main">${category.description}</div>
@@ -4029,6 +4065,14 @@ renderHomeCategories: function() {
         `;
         
         container.appendChild(card);
+        
+        // Принудительно загружаем изображение
+        setTimeout(() => {
+            const img = card.querySelector('img');
+            if (img) {
+                img.src = imageUrl;
+            }
+        }, 100);
     });
 },
             
