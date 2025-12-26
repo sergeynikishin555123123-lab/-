@@ -3939,45 +3939,42 @@ img[src*="data:image/svg"] {
             return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
         },
 
-       // В функции loadLogo добавьте:
-loadLogo: async function() {
-    try {
-        console.log('Загрузка логотипа...');
-        
-        const response = await fetch(this.API_BASE_URL + '/api/logo');
-        
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data && result.data.logo_url) {
-                const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
-                console.log('Логотип из API:', logoUrl);
+        loadLogo: async function() {
+            try {
+                console.log('Загрузка логотипа...');
                 
-                // Загружаем во все логотипы
-                document.querySelectorAll('.logo-img, .auth-logo-img').forEach(function(img) {
-                    img.src = logoUrl;
-                    img.onerror = function() {
-                        console.log('Ошибка загрузки логотипа из API, используем фолбэк');
-                        this.src = app.createSvgFallback('logo');
-                        this.onerror = null;
-                    };
-                });
-                return true;
+                const response = await fetch(this.API_BASE_URL + '/api/logo');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.logo_url) {
+                        const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
+                        console.log('Логотип из API:', logoUrl);
+                        
+                        document.querySelectorAll('.logo-img').forEach(function(img) {
+                            img.src = logoUrl;
+                            img.onerror = function() {
+                                console.log('Ошибка загрузки логотипа из API, используем фолбэк');
+                                this.src = app.createSvgFallback('logo');
+                                this.onerror = null;
+                            };
+                        });
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.log('Ошибка API логотипа:', error.message);
             }
-        }
-    } catch (error) {
-        console.log('Ошибка API логотипа:', error.message);
-    }
-    
-    // Используем SVG фолбэк для всех логотипов
-    const svgFallback = this.createSvgFallback('logo');
-    console.log('Используем SVG фолбэк для логотипа');
-    
-    document.querySelectorAll('.logo-img, .auth-logo-img').forEach(function(img) {
-        img.src = svgFallback;
-        img.onerror = null;
-    });
-    return false;
-},
+            
+            const svgFallback = this.createSvgFallback('logo');
+            console.log('Используем SVG фолбэк для логотипа');
+            
+            document.querySelectorAll('.logo-img').forEach(function(img) {
+                img.src = svgFallback;
+                img.onerror = null;
+            });
+            return false;
+        },
 
         setupDefaultImages: function() {
             const handleImageError = function() {
