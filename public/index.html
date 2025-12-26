@@ -3548,13 +3548,13 @@
                     
                     <!-- Табы -->
                     <div class="tabs" id="tasksTabs">
-                        <div class="tab active" onclick="app.filterTasks('all')">Все</div>
-                        <div class="tab" onclick="app.filterTasks('new')">Новые</div>
-                        <div class="tab" onclick="app.filterTasks('searching')">В поиске</div>
-                        <div class="tab" onclick="app.filterTasks('in_progress')">В работе</div>
-                        <div class="tab" onclick="app.filterTasks('completed')">Завершенные</div>
-                        <div class="tab" onclick="app.filterTasks('cancelled')">Отмененные</div>
-                    </div>
+    <div class="tab active" onclick="app.loadUserTasks('all')">Все</div>
+    <div class="tab" onclick="app.loadUserTasks('new')">Новые</div>
+    <div class="tab" onclick="app.loadUserTasks('searching')">В поиске</div>
+    <div class="tab" onclick="app.loadUserTasks('in_progress')">В работе</div>
+    <div class="tab" onclick="app.loadUserTasks('completed')">Завершенные</div>
+    <div class="tab" onclick="app.loadUserTasks('cancelled')">Отмененные</div>
+</div>
                     
                     <!-- Контейнер для карточек задач (для мобильных) -->
                     <div class="task-cards-container" id="userTasksCards">
@@ -5828,6 +5828,11 @@ createTask: async function() {
     }
 },
 
+// Добавьте этот метод в объект app (например, после loadUserTasks)
+filterTasks: function(filter) {
+    this.loadUserTasks(filter);
+},
+            
             renderUserTasks: function() {
     const cardsContainer = document.getElementById('userTasksCards');
     const tableContainer = document.getElementById('userTasksTable');
