@@ -3838,7 +3838,7 @@ app.post('/api/subscriptions/subscribe', authMiddleware(['client']), async (req,
 
 // ==================== ЗАДАЧИ ====================
 
-// В server.js, найдите функцию создания задачи и обновите ее:
+// Создание новой задачи
 app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
     try {
         const { 
@@ -3933,7 +3933,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
         
         const finalPrice = 0;
         const taskNumber = generateTaskNumber();
-        const taskStatus = 'new'; // Меняем на 'new' вместо 'searching'
+        const taskStatus = 'new';
         
         const result = await db.run(
             `INSERT INTO tasks 
@@ -3993,7 +3993,7 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
             success: true,
             message: 'Задача успешно создана!',
             data: { 
-                task: task, // Возвращаем задачу полностью
+                task: task,
                 user: updatedUser,
                 tasks_used: updatedUser?.tasks_used || 0,
                 tasks_remaining: (updatedUser?.tasks_limit || 0) - (updatedUser?.tasks_used || 0)
@@ -4013,130 +4013,41 @@ app.post('/api/tasks', authMiddleware(['client', 'admin', 'superadmin']), async 
 });
 
 // Получение задач пользователя
-app.get('/api/tasks', authMiddleware(), async (req, res) => {
+app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
     try {
-        const { status, category_id, limit = 50, offset = 0, date_filter } = req.query;
+        console.log(`📋 Получение задач для пользователя: ${req.user.id}`);
         
-        let query = `
-            SELECT t.*, 
-                   c.display_name as category_name,
-                   c.icon as category_icon,
-                   s.name as service_name,
-                   u1.first_name as client_first_name, 
-                   u1.last_name as client_last_name,
-                   u2.first_name as performer_first_name,
-                   u2.last_name as performer_last_name,
-                   u2.user_rating as performer_rating
+        const tasks = await db.all(`
+            SELECT 
+                t.*,
+                c.display_name as category_name,
+                c.icon as category_icon,
+                s.name as service_name
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN services s ON t.service_id = s.id
-            LEFT JOIN users u1 ON t.client_id = u1.id
-            LEFT JOIN users u2 ON t.performer_id = u2.id
-            WHERE 1=1
-        `;
+            WHERE t.client_id = ?
+            ORDER BY t.created_at DESC
+        `, [req.user.id]);
         
-        const params = [];
-        
-        if (req.user.role === 'client') {
-            query += ' AND t.client_id = ?';
-            params.push(req.user.id);
-        } else if (req.user.role === 'performer') {
-            query += ' AND (t.performer_id = ? OR t.status = "searching")';
-            params.push(req.user.id);
-        }
-        
-        if (status && status !== 'all') {
-            query += ' AND t.status = ?';
-            params.push(status);
-        }
-        
-        if (category_id && category_id !== 'all') {
-            query += ' AND t.category_id = ?';
-            params.push(category_id);
-        }
-        
-        if (date_filter) {
-            const now = new Date();
-            let startDate;
-            
-            switch(date_filter) {
-                case 'today':
-                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    query += ' AND t.created_at >= ?';
-                    params.push(startDate.toISOString());
-                    break;
-                case 'week':
-                    startDate = new Date(now);
-                    startDate.setDate(now.getDate() - 7);
-                    query += ' AND t.created_at >= ?';
-                    params.push(startDate.toISOString());
-                    break;
-                case 'month':
-                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                    query += ' AND t.created_at >= ?';
-                    params.push(startDate.toISOString());
-                    break;
-            }
-        }
-        
-        query += ' ORDER BY t.created_at DESC LIMIT ? OFFSET ?';
-        params.push(parseInt(limit), parseInt(offset));
-        
-        const tasks = await db.all(query, params);
-        
-        if (req.user.role === 'performer') {
-            for (const task of tasks) {
-                if (task.status === 'searching') {
-                    const canTake = await db.get(
-                        `SELECT 1 FROM performer_categories 
-                         WHERE performer_id = ? AND category_id = ? AND is_active = 1`,
-                        [req.user.id, task.category_id]
-                    );
-                    task.can_take = canTake ? true : false;
-                }
-            }
-        }
-        
-        let countQuery = `SELECT COUNT(*) as total FROM tasks WHERE 1=1`;
-        let countParams = [];
-        
-        if (req.user.role === 'client') {
-            countQuery += ' AND client_id = ?';
-            countParams.push(req.user.id);
-        } else if (req.user.role === 'performer') {
-            countQuery += ' AND (performer_id = ? OR status = "searching")';
-            countParams.push(req.user.id);
-        }
-        
-        if (status && status !== 'all') {
-            countQuery += ' AND status = ?';
-            countParams.push(status);
-        }
-        
-        const countResult = await db.get(countQuery, countParams);
+        console.log(`✅ Найдено задач: ${tasks.length} для пользователя ${req.user.id}`);
         
         res.json({
             success: true,
             data: {
                 tasks,
-                pagination: {
-                    total: countResult?.total || 0,
-                    limit: parseInt(limit),
-                    offset: parseInt(offset),
-                    pages: Math.ceil((countResult?.total || 0) / parseInt(limit))
-                }
+                count: tasks.length
             }
         });
         
     } catch (error) {
-        console.error('Ошибка получения задач:', error.message);
+        console.error('❌ Ошибка получения задач пользователя:', error.message);
         res.status(500).json({
             success: false,
-            error: 'Ошибка получения задач'
+            error: 'Ошибка получения задач: ' + error.message
         });
     }
 });
-
 // Получение деталей задачи
 app.get('/api/tasks/:id', authMiddleware(), async (req, res) => {
     const taskId = req.params.id;
@@ -7736,122 +7647,6 @@ app.post('/api/subscriptions/select', authMiddleware(['client']), async (req, re
         });
     }
 });
-
-// ==================== ЗАДАЧИ ====================
-
-// Добавьте этот маршрут в server.js
-// Получение задач пользователя
-app.get('/api/tasks/user', authMiddleware(), async (req, res) => {
-    try {
-        console.log(`📋 Получение задач для пользователя: ${req.user.id}`);
-        
-        // Получаем задачи клиента
-        const tasks = await db.all(`
-            SELECT 
-                t.*,
-                c.display_name as category_name,
-                c.icon as category_icon,
-                s.name as service_name,
-                COUNT(tm.id) as messages_count
-            FROM tasks t
-            LEFT JOIN categories c ON t.category_id = c.id
-            LEFT JOIN services s ON t.service_id = s.id
-            LEFT JOIN task_messages tm ON t.id = tm.task_id
-            WHERE t.client_id = ?
-            GROUP BY t.id
-            ORDER BY t.created_at DESC
-        `, [req.user.id]);
-        
-        console.log(`✅ Найдено задач: ${tasks.length} для пользователя ${req.user.id}`);
-        
-        // Добавляем форматированные данные для отображения
-        const formattedTasks = tasks.map(task => ({
-            ...task,
-            status_text: task.status === 'new' ? 'Новая' : 
-                        task.status === 'searching' ? 'Поиск исполнителя' :
-                        task.status === 'assigned' ? 'Назначена' :
-                        task.status === 'in_progress' ? 'В работе' :
-                        task.status === 'completed' ? 'Выполнена' :
-                        task.status === 'cancelled' ? 'Отменена' : task.status
-        }));
-        
-        res.json({
-            success: true,
-            data: {
-                tasks: formattedTasks,
-                count: tasks.length
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка получения задач пользователя:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения задач: ' + error.message
-        });
-    }
-});
-
-// Получение недавних задач пользователя (добавьте этот код)
-app.get('/api/tasks/recent', authMiddleware(), async (req, res) => {
-    try {
-        console.log(`📋 Получение недавних задач для пользователя: ${req.user.id}`);
-        
-        // Если пользователь не авторизован, возвращаем пустой список
-        if (!req.user.id) {
-            return res.json({
-                success: true,
-                data: {
-                    tasks: [],
-                    count: 0
-                }
-            });
-        }
-        
-        const tasks = await db.all(`
-            SELECT 
-                t.id,
-                t.task_number,
-                t.title,
-                t.description,
-                t.status,
-                t.created_at,
-                t.updated_at,
-                t.priority,
-                t.address,
-                t.deadline,
-                c.display_name as category_name,
-                c.icon as category_icon
-            FROM tasks t
-            LEFT JOIN categories c ON t.category_id = c.id
-            WHERE t.client_id = ?
-            ORDER BY t.created_at DESC
-            LIMIT 5
-        `, [req.user.id]);
-        
-        console.log(`✅ Найдено недавних задач: ${tasks.length}`);
-        
-        res.json({
-            success: true,
-            message: 'Недавние задачи получены',
-            data: {
-                tasks,
-                count: tasks.length,
-                timestamp: new Date().toISOString()
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка получения недавних задач:', error.message);
-        
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка получения недавних задач',
-            message: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
-
 // ==================== ЧАТ ЗАДАЧИ ====================
 // Отправка SMS кода
 app.post('/api/auth/send-verification-code', async (req, res) => {
