@@ -2070,36 +2070,110 @@
                 margin-top: 20px;
             }
             
-            .task-history-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-                display: table;
-            }
-            
-            .task-history-table th {
-                background: rgba(61, 61, 61, 0.05);
-                padding: 12px;
-                text-align: left;
-                font-weight: 600;
-                color: var(--graphite-dark);
-                border-bottom: 2px solid rgba(61, 61, 61, 0.1);
-            }
-            
-            .task-history-table td {
-                padding: 12px;
-                border-bottom: 1px solid rgba(61, 61, 61, 0.08);
-                vertical-align: top;
-            }
-            
-            .task-history-table tr:hover {
-                background: rgba(61, 61, 61, 0.02);
-            }
-            
-            .task-cards-container {
-                display: none;
-            }
-        }
+.task-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.task-history-table th {
+    background: var(--pink-light);
+    color: var(--graphite-dark);
+    font-weight: 600;
+    text-align: left;
+    padding: 15px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(61, 61, 61, 0.1);
+}
+
+.task-history-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(61, 61, 61, 0.05);
+    color: var(--graphite-medium);
+}
+
+.task-history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.task-history-table tr:hover {
+    background: rgba(242, 221, 230, 0.05);
+}
+
+.task-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(61, 61, 61, 0.05);
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+}
+
+.task-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.task-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-card-label {
+    color: var(--graphite-medium);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.task-card-value {
+    color: var(--graphite-dark);
+    font-weight: 500;
+}
+
+.task-card-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .task-history-table {
+        display: none;
+    }
+    
+    .task-cards-container {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    .task-cards-container {
+        display: none;
+    }
+    
+    .task-table-container {
+        display: block;
+    }
+}
         
         @media (max-width: 768px) {
             .task-table-container {
@@ -5233,12 +5307,18 @@ createTask: async function() {
     try {
         this.showLoading('Создание задачи...');
         
+        console.log('Отправка данных на сервер:', {
+            title: taskTitle,
+            category_id: this.selectedCategory?.id,
+            service_id: this.selectedService?.id
+        });
+        
         const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks', {
             method: 'POST',
             body: JSON.stringify({
                 title: taskTitle,
                 description: taskDescription,
-                category_id: this.selectedCategory?.id,
+                category_id: this.selectedCategory?.id || 1, // Если категория не выбрана, используем первую
                 service_id: this.selectedService?.id || null,
                 priority: 'medium',
                 deadline: taskDeadline,
@@ -5248,11 +5328,16 @@ createTask: async function() {
             })
         });
         
+        console.log('Ответ сервера:', response.status, response.statusText);
+        
         if (!response.ok) {
-            throw new Error('HTTP error! status: ' + response.status);
+            const errorText = await response.text();
+            console.error('Ошибка сервера:', errorText);
+            throw new Error(`HTTP ошибка! статус: ${response.status}. ${errorText}`);
         }
         
         const result = await response.json();
+        console.log('Результат создания задачи:', result);
         
         if (!result.success) {
             throw new Error(result.error || 'Ошибка создания задачи');
@@ -5260,7 +5345,7 @@ createTask: async function() {
         
         this.showNotification('Задача успешно создана!', 'success');
         
-        // Обновляем статистику пользователя
+        // Обновляем данные пользователя
         if (result.data.user) {
             this.currentUser.tasks_used = result.data.user.tasks_used;
             this.currentUser.tasks_limit = result.data.user.tasks_limit;
@@ -5271,10 +5356,10 @@ createTask: async function() {
         this.updateUserInterface();
         this.updateHomeStats();
         
-        // Сбрасываем форму и возвращаемся
+        // Сбрасываем форму
         this.cancelTask();
         
-        // Загружаем задачи через 1 секунду
+        // Загружаем обновленный список задач через 1 секунду
         setTimeout(() => {
             this.loadUserTasks('all');
         }, 1000);
@@ -5816,6 +5901,139 @@ createTask: async function() {
     }
 },
 
+            renderUserTasks: function() {
+    const cardsContainer = document.getElementById('userTasksCards');
+    const tableContainer = document.getElementById('userTasksTable');
+    
+    if (!cardsContainer || !tableContainer) return;
+    
+    // Очищаем контейнеры
+    cardsContainer.innerHTML = '';
+    tableContainer.innerHTML = '';
+    
+    // Если задач нет
+    if (!this.userTasks || this.userTasks.length === 0) {
+        const noTasksHtml = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Задач пока нет</h3>
+                <p style="color: var(--graphite-medium); margin-bottom: 25px;">
+                    Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц
+                </p>
+                <button class="btn btn-primary" onclick="app.checkSubscription()">
+                    <i class="fas fa-plus"></i> Создать задачу
+                </button>
+            </div>`;
+        
+        cardsContainer.innerHTML = noTasksHtml;
+        tableContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--graphite-medium);">Задач пока нет</p>';
+        return;
+    }
+    
+    // Сортируем задачи по дате (новые сверху)
+    const sortedTasks = [...this.userTasks].sort((a, b) => {
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    // Рендерим карточки для мобильных
+    sortedTasks.forEach(task => {
+        const statusInfo = this.getStatusInfo(task.status);
+        
+        const taskCard = document.createElement('div');
+        taskCard.className = 'task-card';
+        taskCard.onclick = () => { 
+            this.showTaskDetailsCompact(task.id);
+        };
+        
+        taskCard.innerHTML = `
+            <div class="task-card-content">
+                <div class="task-card-row">
+                    <div class="task-card-label">Номер:</div>
+                    <div class="task-card-value">${task.task_number || 'N/A'}</div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Задача:</div>
+                    <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Категория:</div>
+                    <div class="task-card-value">${task.category_name || 'Без категории'}</div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Статус:</div>
+                    <div class="task-card-value">
+                        <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                              color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                              padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                              font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="${statusInfo.icon}"></i>
+                            ${statusInfo.name}
+                        </span>
+                    </div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Создана:</div>
+                    <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
+                </div>
+                <div class="task-card-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
+                        <i class="fas fa-eye"></i> Подробнее
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        cardsContainer.appendChild(taskCard);
+    });
+    
+    // Рендерим таблицу для десктопа
+    const tableHtml = `
+        <table class="task-history-table">
+            <thead>
+                <tr>
+                    <th>Номер задачи</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Статус</th>
+                    <th>Дата создания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sortedTasks.map(task => {
+                    const statusInfo = this.getStatusInfo(task.status);
+                    return `
+                        <tr>
+                            <td>${task.task_number}</td>
+                            <td><strong>${task.title}</strong></td>
+                            <td>${task.category_name || ''}</td>
+                            <td>
+                                <span class="task-status ${task.status}" 
+                                      style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                                             color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                                             padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                                             font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="${statusInfo.icon}"></i>
+                                    ${statusInfo.name}
+                                </span>
+                            </td>
+                            <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    tableContainer.innerHTML = tableHtml;
+},
+
+            
 filterTasksByStatus: function(tasks, filter) {
     if (!tasks || tasks.length === 0) return [];
     
@@ -6123,17 +6341,17 @@ filterTasksByStatus: function(tasks, filter) {
                 return statusMap[status] || status;
             },
 
-            getStatusInfo: function(status) {
-                const statuses = {
-                    'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1976D2' },
-                    'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#FF9800' },
-                    'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#2196F3' },
-                    'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#673AB7' },
-                    'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
-                    'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
-                };
-                return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
-            },
+           getStatusInfo: function(status) {
+    const statuses = {
+        'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1976D2' },
+        'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#FF9800' },
+        'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#2196F3' },
+        'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#673AB7' },
+        'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
+        'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
+    };
+    return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
+},
 
             // ==================== АВТОРИЗАЦИЯ ====================
             login: async function() {
