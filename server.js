@@ -5330,8 +5330,10 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.client_id = u.id
-            WHERE (t.status = 'searching' OR t.status = 'new')  <!-- ИЩЕМ ОБА СТАТУСА -->
+            WHERE t.status = 'searching'  <!-- ТОЛЬКО задачи в поиске -->
               AND t.category_id IN (${categoryIds.map(() => '?').join(',')})
+              AND t.client_id != ?
+              AND (t.performer_id IS NULL OR t.performer_id = 0)
         `;
         
         const params = [...categoryIds];
