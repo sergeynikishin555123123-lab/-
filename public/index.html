@@ -2362,12 +2362,12 @@
     <!-- Верхняя навигация -->
     <nav class="top-nav">
         <a href="#" class="logo" onclick="app.navigateToPage('home')">
-            <img src="/api/logo/file" 
-                 alt="WOMAN HELP" 
-                 class="logo-img" 
-                 id="logoImg"
-                 onerror="this.onerror=null; this.src='/api/images/test/logo';"
-                 loading="eager">
+           <img src="/api/logo/file" 
+     alt="WOMAN HELP" 
+     class="logo-img" 
+     id="logoImg"
+     onerror="this.onerror=null; this.src='/api/images/test/logo';"
+     loading="eager">
             <span class="logo-woman">WOMAN</span>
             <span class="logo-help">HELP</span>
         </a>
@@ -2412,12 +2412,12 @@
                 <div class="auth-content">
                     <div class="card auth-card" style="padding: 30px 20px;">
                         <div class="logo" style="justify-content: center; margin-bottom: 15px;">
-                            <img src="/api/logo/file" 
-                                 alt="WOMAN HELP" 
-                                 class="logo-img" 
-                                 id="authLogoImg"
-                                 onerror="this.onerror=null; this.src='/api/images/test/logo';"
-                                 loading="eager">
+<img src="/api/logo/file" 
+     alt="WOMAN HELP" 
+     class="logo-img" 
+     id="logoImg"
+     onerror="this.onerror=null; this.src='/api/images/test/logo';"
+     loading="eager">
                             <span class="logo-woman">WOMAN</span>
                             <span class="logo-help">HELP</span>
                         </div>
@@ -3395,131 +3395,116 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-            getImageUrl: function(imageUrl, type) {
-                if (!imageUrl || imageUrl.trim() === '') {
-                    return this.createSvgFallback(type);
-                }
+getImageUrl: function(imageUrl, type) {
+    if (!imageUrl || imageUrl.trim() === '') {
+        return this.createSvgFallback(type);
+    }
+    
+    if (imageUrl.includes('/api/images/test/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (type === 'service') {
+        if (imageUrl.startsWith('/uploads/services/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
+        } else if (!imageUrl.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
+        }
+    }
+    
+    if (type === 'category') {
+        if (imageUrl.startsWith('/uploads/categories/')) {
+            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
+            const filename = imageUrl.split('/').pop();
+            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
+        }
+    }
+    
+    if (imageUrl.startsWith('/')) {
+        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl + '?t=' + Date.now();
+    }
+    
+    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+},
+           loadLogo: async function() {
+    try {
+        const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
+        const response = await fetch(this.API_BASE_URL + '/api/logo');
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+                const logoUrl = result.data.logo_url 
+                    ? this.getImageUrl(result.data.logo_url, 'logo')
+                    : fallbackLogoUrl;
                 
-                // Если изображение уже полный URL
-                if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                    return imageUrl + '?t=' + Date.now();
-                }
-                
-                // Для загруженных изображений через админку
-                if (imageUrl.startsWith('/uploads/')) {
-                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                }
-                
-                // Для тестовых изображений
-                if (imageUrl.includes('/api/images/test/')) {
-                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-                }
-                
-                // Для категорий
-                if (type === 'category') {
-                    return this.API_BASE_URL + '/api/categories/' + imageUrl + '/image?t=' + Date.now();
-                }
-                
-                // Для логотипа
-                if (type === 'logo') {
-                    return this.API_BASE_URL + '/api/logo/file?t=' + Date.now();
-                }
-                
-                // По умолчанию
-                return this.createSvgFallback(type);
-            },
-
-            createSvgFallback: function(type) {
-                const colors = {
-                    'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
-                    'category': { bg: '#E8CCD9', text: '#A78B65', char: 'C' },
-                    'service': { bg: '#D4B8C7', text: '#8B7355', char: 'S' },
-                    'user': { bg: '#B9AFFF', text: '#FFFFFF', char: 'U' },
-                    'default': { bg: '#F9F7F3', text: '#888888', char: '?' }
-                };
-                
-                const config = colors[type] || colors['default'];
-                
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-                    <rect width="200" height="200" fill="${config.bg}" rx="10"/>
-                    <text x="100" y="100" font-family="Arial, sans-serif" font-size="80" fill="${config.text}" 
-                          text-anchor="middle" dominant-baseline="middle" font-weight="bold">${config.char}</text>
-                </svg>`;
-                
-                return 'data:image/svg+xml;base64,' + btoa(svg);
-            },
-
-            loadLogo: async function() {
-                try {
-                    const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
-                    const response = await fetch(this.API_BASE_URL + '/api/logo');
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success && result.data) {
-                            const logoUrl = result.data.logo_url 
-                                ? this.getImageUrl(result.data.logo_url, 'logo')
-                                : fallbackLogoUrl;
-                            
-                            document.querySelectorAll('.logo-img').forEach(function(img) {
-                                img.src = logoUrl;
-                                img.onerror = function() {
-                                    this.src = fallbackLogoUrl;
-                                    this.onerror = null;
-                                };
-                            });
-                            return true;
-                        }
-                    }
-                } catch (error) {
-                    console.log('Ошибка API логотипа:', error.message);
-                }
-                
-                const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
                 document.querySelectorAll('.logo-img').forEach(function(img) {
-                    img.src = fallbackLogoUrl;
-                    img.onerror = null;
+                    img.src = logoUrl;
+                    img.onerror = function() {
+                        this.src = fallbackLogoUrl;
+                        this.onerror = null;
+                    };
                 });
-                return false;
-            },
+                return true;
+            }
+        }
+    } catch (error) {
+        console.log('Ошибка API логотипа:', error.message);
+    }
+    
+    const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
+    document.querySelectorAll('.logo-img').forEach(function(img) {
+        img.src = fallbackLogoUrl;
+        img.onerror = null;
+    });
+    return false;
+},
 
-            setupDefaultImages: function() {
-                const handleImageError = function() {
-                    let type = 'default';
-                    if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
-                        type = 'logo';
-                    } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
-                        type = 'category';
-                    } else if (this.closest('.service-image') || this.closest('.service-image-container') || this.src.includes('service')) {
-                        type = 'service';
-                    } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
-                        type = 'user';
-                    }
-                    
-                    this.src = app.createSvgFallback(type);
-                    this.onerror = null;
-                };
-                
-                document.querySelectorAll('img').forEach(function(img) {
-                    img.onerror = handleImageError;
-                    
-                    if (!img.src || img.src === '' || img.src === window.location.href) {
-                        let type = 'default';
-                        if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
-                            type = 'logo';
-                        } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                            type = 'category';
-                        } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                            type = 'service';
-                        } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
-                            type = 'user';
-                        }
-                        img.src = app.createSvgFallback(type);
-                    }
-                });
-                
-                this.loadLogo();
-            },
+           setupDefaultImages: function() {
+    const handleImageError = function() {
+        let type = 'default';
+        if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
+            type = 'logo';
+        } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
+            type = 'category';
+        } else if (this.closest('.service-image') || this.closest('.service-image-container') || this.src.includes('service')) {
+            type = 'service';
+        } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
+            type = 'user';
+        }
+        
+        this.src = app.createSvgFallback(type);
+        this.onerror = null;
+    };
+    
+    document.querySelectorAll('img').forEach(function(img) {
+        img.onerror = handleImageError;
+        
+        if (!img.src || img.src === '' || img.src === window.location.href) {
+            let type = 'default';
+            if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
+                type = 'logo';
+            } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                type = 'category';
+            } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                type = 'service';
+            } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
+                type = 'user';
+            }
+            img.src = app.createSvgFallback(type);
+        }
+    });
+    
+    this.loadLogo();
+},
 
             // ==================== ПОИСК УСЛУГ С АВТОКОМПЛИТОМ ====================
             filterServices: function() {
@@ -3561,7 +3546,7 @@
                 services.slice(0, 10).forEach(service => {
                     const imageUrl = service.image_url ? 
                         this.getImageUrl(service.image_url, 'service') : 
-                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                        this.getImageUrl(service.image_url, 'service')
                     
                     html += `
                         <div class="search-autocomplete-item" onclick="app.selectServiceFromSearch(${service.id})">
@@ -3971,7 +3956,7 @@
                     
                     const imageUrl = category.image_url ? 
                         this.getImageUrl(category.image_url, 'category') : 
-                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                        this.getImageUrl(category.image_url, 'category')
                     
                     const svgFallback = this.createSvgFallback('category');
                     
@@ -4065,7 +4050,7 @@
                     
                     const imageUrl = service.image_url ? 
                         this.getImageUrl(service.image_url, 'service') : 
-                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                       this.getImageUrl(service.image_url, 'service')
                     
                     const svgFallback = this.createSvgFallback('service');
                     
@@ -4138,7 +4123,7 @@
                     
                     const imageUrl = category.image_url ? 
                         this.getImageUrl(category.image_url, 'category') : 
-                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                        this.getImageUrl(category.image_url, 'category')
                     
                     const svgFallback = this.createSvgFallback('category');
                     
@@ -4352,7 +4337,7 @@
                     
                     const imageUrl = service.image_url ? 
                         this.getImageUrl(service.image_url, 'service') : 
-                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                        this.getImageUrl(service.image_url, 'service')
                     
                     const svgFallback = this.createSvgFallback('service');
                     
@@ -4451,7 +4436,7 @@
                     
                     const imageUrl = service.image_url ? 
                         this.getImageUrl(service.image_url, 'service') : 
-                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                        this.getImageUrl(service.image_url, 'service')
                     
                     const svgFallback = this.createSvgFallback('service');
                     
@@ -6634,7 +6619,7 @@
                     
                     const imageUrl = category.image_url ? 
                         this.getImageUrl(category.image_url, 'category') : 
-                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                        this.getImageUrl(category.image_url, 'category')
                     
                     const svgFallback = this.createSvgFallback('category');
                     
@@ -6768,62 +6753,63 @@
                     }
                     
                     // Наблюдатель для динамически добавляемых изображений
-                    if (window.MutationObserver) {
-                        const imageObserver = new MutationObserver((mutations) => {
-                            mutations.forEach((mutation) => {
-                                if (mutation.type === 'childList') {
-                                    mutation.addedNodes.forEach((node) => {
-                                        if (node.nodeType === 1) {
-                                            let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
-                                            if (node.tagName === 'IMG') {
-                                                images = [node];
-                                            }
-                                            
-                                            images.forEach((img) => {
-                                                if (!img.src || img.src === '' || img.src === window.location.href) {
-                                                    let type = 'default';
-                                                    let testUrl = '/api/images/test/default';
-                                                    
-                                                    if (img.classList.contains('logo-img') || img.id.includes('logo')) {
-                                                        type = 'logo';
-                                                        testUrl = '/api/images/test/logo';
-                                                    } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                                                        type = 'category';
-                                                        testUrl = '/api/images/test/category';
-                                                    } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                                                        type = 'service';
-                                                        testUrl = '/api/images/test/service';
-                                                    } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
-                                                        type = 'user';
-                                                        testUrl = '/api/images/test/user';
-                                                    }
-                                                    
-                                                    if (!img.hasAttribute('data-image-set')) {
-                                                        img.setAttribute('data-image-set', 'true');
-                                                        img.src = testUrl;
-                                                        
-                                                        img.onerror = function() {
-                                                            this.onerror = null;
-                                                            const svgFallback = app.createSvgFallback(type);
-                                                            this.src = svgFallback;
-                                                        };
-                                                        
-                                                        img.loading = 'lazy';
-                                                        img.decoding = 'async';
-                                                    }
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        });
+                  // Наблюдатель для динамически добавляемых изображений
+if (window.MutationObserver) {
+    const imageObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                        if (node.tagName === 'IMG') {
+                            images = [node];
+                        }
                         
-                        imageObserver.observe(document.body, {
-                            childList: true,
-                            subtree: true
+                        images.forEach((img) => {
+                            if (!img.src || img.src === '' || img.src === window.location.href) {
+                                let type = 'default';
+                                let testUrl = '/api/images/test/default';
+                                
+                                if (img.classList.contains('logo-img') || img.id.includes('logo')) {
+                                    type = 'logo';
+                                    testUrl = '/api/images/test/logo';
+                                } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                                    type = 'category';
+                                    testUrl = '/api/images/test/category';
+                                } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                                    type = 'service';
+                                    testUrl = '/api/images/test/service';
+                                } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
+                                    type = 'user';
+                                    testUrl = '/api/images/test/user';
+                                }
+                                
+                                if (!img.hasAttribute('data-image-set')) {
+                                    img.setAttribute('data-image-set', 'true');
+                                    img.src = testUrl;
+                                    
+                                    img.onerror = function() {
+                                        this.onerror = null;
+                                        const svgFallback = app.createSvgFallback(type);
+                                        this.src = svgFallback;
+                                    };
+                                    
+                                    img.loading = 'lazy';
+                                    img.decoding = 'async';
+                                }
+                            }
                         });
                     }
+                });
+            }
+        });
+    });
+    
+    imageObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
                     
                     // Устанавливаем глобальную ссылку на приложение
                     window.App = this;
