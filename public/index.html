@@ -5742,7 +5742,7 @@ createTask: async function() {
             },
 
             // ==================== ЗАДАЧИ ====================
-           loadUserTasks: async function(filter) {
+          loadUserTasks: async function(filter) {
     try {
         this.currentTaskFilter = filter;
         
@@ -5750,14 +5750,31 @@ createTask: async function() {
         document.querySelectorAll('.tab').forEach((tab) => {
             tab.classList.remove('active');
         });
-        const activeTab = document.querySelector('.tab[onclick*="' + filter + '"]');
-        if (activeTab) activeTab.classList.add('active');
         
-        this.showLoading('Загрузка задач...');
+        // Находим активную вкладку по тексту
+        const tabTexts = {
+            'all': 'Все',
+            'new': 'Новые', 
+            'searching': 'В поиске',
+            'in_progress': 'В работе',
+            'completed': 'Завершенные',
+            'cancelled': 'Отмененные'
+        };
+        
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            if (tab.textContent.includes(tabTexts[filter])) {
+                tab.classList.add('active');
+            }
+        });
         
         const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/user');
-        if (!response.ok) {
-            throw new Error('Ошибка загрузки задач');
+        
+        if (!response || !response.ok) {
+            if (response.status === 404) {
+                throw new Error('Маршрут не найден. Проверьте настройки сервера.');
+            }
+            throw new Error(`HTTP ошибка: ${response.status}`);
         }
         
         const result = await response.json();
@@ -5766,149 +5783,55 @@ createTask: async function() {
             throw new Error(result.error || 'Ошибка получения задач');
         }
         
-        this.userTasks = this.filterTasksByStatus(result.data.tasks, filter);
+        this.userTasks = this.filterTasksByStatus(result.data.tasks || [], filter);
         this.renderUserTasks();
         
     } catch (error) {
         console.error('Ошибка загрузки задач:', error);
-        this.showNotification('Ошибка загрузки задач', 'error');
+        this.showNotification(error.message || 'Ошибка загрузки задач', 'error');
         
-        // Для демо показываем тестовые задачи
-        this.userTasks = this.filterTasksByStatus(this.getDemoTasks(), filter);
+        // Показываем демо-данные если API не работает
+        this.userTasks = this.filterTasksByStatus([
+            {
+                id: 1,
+                task_number: "TASK-001",
+                title: "Уборка квартиры",
+                category_name: "Дом и быт",
+                status: "new",
+                created_at: new Date().toISOString(),
+                price: 0
+            },
+            {
+                id: 2,
+                task_number: "TASK-002", 
+                title: "Помощь с детьми",
+                category_name: "Семья и дети",
+                status: "completed",
+                created_at: new Date(Date.now() - 86400000).toISOString(),
+                price: 0
+            }
+        ], filter);
+        
         this.renderUserTasks();
-    } finally {
-        this.hideLoading();
     }
 },
 
-            filterTasks: function(filterType) {
-                this.currentTaskFilter = filterType;
-                
-                document.querySelectorAll('.tab').forEach((tab) => {
-                    tab.classList.remove('active');
-                });
-                
-                const activeTab = Array.from(document.querySelectorAll('.tab')).find(tab => {
-                    return tab.textContent.includes(this.getFilterDisplayName(filterType));
-                });
-                
-                if (activeTab) {
-                    activeTab.classList.add('active');
-                }
-                
-                this.loadUserTasks(filterType);
-            },
-
-            getFilterDisplayName: function(filterType) {
-                const filterMap = {
-                    'all': 'Все',
-                    'new': 'Новые',
-                    'searching': 'В поиске',
-                    'in_progress': 'В работе',
-                    'completed': 'Завершенные',
-                    'cancelled': 'Отмененные'
-                };
-                return filterMap[filterType] || filterType;
-            },
-            
-           filterTasksByStatus: function(tasks, filter) {
+filterTasksByStatus: function(tasks, filter) {
     if (!tasks || tasks.length === 0) return [];
     
-    switch(filter) {
-        case 'all':
-            return tasks;
-        case 'new':
-            return tasks.filter(task => task.status === 'new');
-        case 'searching':
-            return tasks.filter(task => task.status === 'searching');
-        case 'in_progress':
-            return tasks.filter(task => 
-                task.status === 'in_progress' || 
-                task.status === 'assigned'
-            );
-        case 'completed':
-            return tasks.filter(task => task.status === 'completed');
-        case 'cancelled':
-            return tasks.filter(task => task.status === 'cancelled');
-        default:
-            return tasks;
-    }
+    const statusMap = {
+        'all': () => tasks,
+        'new': () => tasks.filter(task => task.status === 'new'),
+        'searching': () => tasks.filter(task => task.status === 'searching'),
+        'in_progress': () => tasks.filter(task => 
+            task.status === 'in_progress' || task.status === 'assigned'
+        ),
+        'completed': () => tasks.filter(task => task.status === 'completed'),
+        'cancelled': () => tasks.filter(task => task.status === 'cancelled')
+    };
+    
+    return statusMap[filter] ? statusMap[filter]() : tasks;
 },
-
-            renderUserTasks: function() {
-                const container = document.getElementById('userTasksCards');
-                if (!container) return;
-                
-                container.innerHTML = '<div style="text-align: right; margin-bottom: 15px;">' +
-                    '<button class="btn btn-secondary btn-sm" onclick="app.loadUserTasks(app.currentTaskFilter)">' +
-                        '<i class="fas fa-sync-alt"></i> Обновить' +
-                    '</button>' +
-                '</div>';
-                
-                if (this.userTasks.length === 0) {
-                    container.innerHTML += '<div class="empty-state">' +
-                        '<i class="fas fa-tasks empty-state-icon"></i>' +
-                        '<h3 class="empty-state-title">Задач пока нет</h3>' +
-                        '<p class="empty-state-description">Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц</p>' +
-                        '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
-                            '<i class="fas fa-plus"></i>' +
-                            'Создать задачу' +
-                        '</button>' +
-                    '</div>';
-                    return;
-                }
-                
-                container.innerHTML = '';
-                
-                this.userTasks.forEach((task) => {
-                    const taskCard = document.createElement('div');
-                    taskCard.className = 'task-card';
-                    taskCard.onclick = () => { 
-                        this.showTaskDetailsCompact(task.id);
-                    };
-                    
-                    const statusInfo = this.getStatusInfo(task.status);
-                    
-                    taskCard.innerHTML = `
-                        <div class="task-card-content">
-                            <div class="task-card-row">
-                                <div class="task-card-label">Номер:</div>
-                                <div class="task-card-value">${task.task_number || 'N/A'}</div>
-                            </div>
-                            <div class="task-card-row">
-                                <div class="task-card-label">Задача:</div>
-                                <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
-                            </div>
-                            <div class="task-card-row">
-                                <div class="task-card-label">Категория:</div>
-                                <div class="task-card-value">${task.category_name || 'Без категории'}</div>
-                            </div>
-                            <div class="task-card-row">
-                                <div class="task-card-label">Статус:</div>
-                                <div class="task-card-value">
-                                    <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; color: ${statusInfo.color || 'var(--graphite-dark)'}; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                        <i class="${statusInfo.icon}"></i>
-                                        ${statusInfo.name}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="task-card-row">
-                                <div class="task-card-label">Создана:</div>
-                                <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
-                            </div>
-                            <div class="task-card-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
-                                    <i class="fas fa-eye"></i> Подробнее
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    
-                    container.appendChild(taskCard);
-                });
-                
-                this.renderUserTasksTable();
-            },
             
             renderUserTasksTable: function() {
                 const container = document.getElementById('userTasksTable');
