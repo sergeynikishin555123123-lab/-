@@ -6851,8 +6851,25 @@ init: async function() {
             deadlineInput.value = tomorrow.toISOString().split('T')[0];
         }
         
-        // Тестирование загрузки изображений
-console.log('Тестирование загрузки изображений...'
+        /        // Тестирование загрузки изображений
+        console.log('Тестирование загрузки изображений...');
+        
+        console.log('Приложение успешно инициализировано');
+    } catch (error) {
+        console.error('Ошибка инициализации приложения:', error);
+        this.showNotification('Ошибка запуска приложения', 'error');
+    }
+}
+
+// Инициализация приложения при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        app.init();
+    }, 100);
+});
+
+// Делаем app глобально доступным
+window.app = app;
     </script>
 </body>
 </html>
