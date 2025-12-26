@@ -2741,7 +2741,7 @@
                     </div>
                     
                     <div class="all-services-header">
-                        <div class="search-box">
+                        <div class="search-box" id="servicesSearchBox">
                             <i class="fas fa-search search-icon"></i>
                             <input type="text" id="serviceSearch" class="search-input" 
                                    placeholder="Поиск услуг по названию..." 
@@ -3395,116 +3395,171 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-getImageUrl: function(imageUrl, type) {
-    if (!imageUrl || imageUrl.trim() === '') {
-        return this.createSvgFallback(type);
-    }
-    
-    if (imageUrl.includes('/api/images/test/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    if (type === 'service') {
-        if (imageUrl.startsWith('/uploads/services/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
-        } else if (!imageUrl.startsWith('/')) {
-            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
-        }
-    }
-    
-    if (type === 'category') {
-        if (imageUrl.startsWith('/uploads/categories/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
-        }
-    }
-    
-    if (imageUrl.startsWith('/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl + '?t=' + Date.now();
-    }
-    
-    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
-},
-           loadLogo: async function() {
-    try {
-        const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
-        const response = await fetch(this.API_BASE_URL + '/api/logo');
-        
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success && result.data) {
-                const logoUrl = result.data.logo_url 
-                    ? this.getImageUrl(result.data.logo_url, 'logo')
-                    : fallbackLogoUrl;
+            createSvgFallback: function(type) {
+                let svgContent = '';
+                let color = '#F2DDE6';
+                let text = 'W';
                 
-                document.querySelectorAll('.logo-img').forEach(function(img) {
-                    img.src = logoUrl;
-                    img.onerror = function() {
-                        this.src = fallbackLogoUrl;
-                        this.onerror = null;
-                    };
-                });
-                return true;
-            }
-        }
-    } catch (error) {
-        console.log('Ошибка API логотипа:', error.message);
-    }
-    
-    const fallbackLogoUrl = this.API_BASE_URL + '/api/images/test/logo?t=' + Date.now();
-    document.querySelectorAll('.logo-img').forEach(function(img) {
-        img.src = fallbackLogoUrl;
-        img.onerror = null;
-    });
-    return false;
-},
+                switch(type) {
+                    case 'logo':
+                        color = '#C5A880';
+                        text = 'WH';
+                        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                            <rect width="100" height="100" rx="8" fill="${color}"/>
+                            <text x="50" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">${text}</text>
+                        </svg>`;
+                        break;
+                    case 'category':
+                        color = '#F2DDE6';
+                        text = 'C';
+                        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="50" fill="${color}"/>
+                            <text x="50" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="#3D3D3D">${text}</text>
+                        </svg>`;
+                        break;
+                    case 'service':
+                        color = '#B9AFFF';
+                        text = 'S';
+                        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="50" fill="${color}"/>
+                            <text x="50" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="white">${text}</text>
+                        </svg>`;
+                        break;
+                    case 'user':
+                        color = '#C5A880';
+                        text = 'U';
+                        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="50" fill="${color}"/>
+                            <circle cx="50" cy="35" r="15" fill="white"/>
+                            <path d="M30,60 Q50,90 70,60" fill="white"/>
+                            <text x="50" y="70" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#3D3D3D">${text}</text>
+                        </svg>`;
+                        break;
+                    default:
+                        color = '#F9F7F3';
+                        text = '?';
+                        svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+                            <rect width="100" height="100" rx="8" fill="${color}" stroke="#E8CCD9" stroke-width="2"/>
+                            <text x="50" y="60" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#888888">${text}</text>
+                        </svg>`;
+                }
+                
+                return 'data:image/svg+xml;base64,' + btoa(svgContent);
+            },
 
-           setupDefaultImages: function() {
-    const handleImageError = function() {
-        let type = 'default';
-        if (this.classList.contains('logo-img') || this.id.includes('Logo') || this.src.includes('logo')) {
-            type = 'logo';
-        } else if (this.closest('.category-image') || this.closest('.category-image-container') || this.src.includes('category')) {
-            type = 'category';
-        } else if (this.closest('.service-image') || this.closest('.service-image-container') || this.src.includes('service')) {
-            type = 'service';
-        } else if (this.classList.contains('user-avatar') || this.closest('.profile-avatar') || this.src.includes('user')) {
-            type = 'user';
-        }
-        
-        this.src = app.createSvgFallback(type);
-        this.onerror = null;
-    };
-    
-    document.querySelectorAll('img').forEach(function(img) {
-        img.onerror = handleImageError;
-        
-        if (!img.src || img.src === '' || img.src === window.location.href) {
-            let type = 'default';
-            if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
-                type = 'logo';
-            } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                type = 'category';
-            } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                type = 'service';
-            } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
-                type = 'user';
-            }
-            img.src = app.createSvgFallback(type);
-        }
-    });
-    
-    this.loadLogo();
-},
+            getImageUrl: function(imageUrl, type) {
+                if (!imageUrl || imageUrl.trim() === '') {
+                    return this.createSvgFallback(type);
+                }
+                
+                if (imageUrl.includes('/api/images/test/')) {
+                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                }
+                
+                if (type === 'service') {
+                    if (imageUrl.startsWith('/uploads/services/')) {
+                        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                    } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
+                        const filename = imageUrl.split('/').pop();
+                        return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
+                    } else if (!imageUrl.startsWith('/')) {
+                        return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
+                    }
+                }
+                
+                if (type === 'category') {
+                    if (imageUrl.startsWith('/uploads/categories/')) {
+                        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                    } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
+                        const filename = imageUrl.split('/').pop();
+                        return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
+                    }
+                }
+                
+                if (imageUrl.startsWith('/')) {
+                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                }
+                
+                if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                    return imageUrl + '?t=' + Date.now();
+                }
+                
+                return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+            },
+
+            loadLogo: async function() {
+                try {
+                    const fallbackLogoUrl = this.createSvgFallback('logo');
+                    const response = await fetch(this.API_BASE_URL + '/api/logo');
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success && result.data) {
+                            const logoUrl = result.data.logo_url 
+                                ? this.getImageUrl(result.data.logo_url, 'logo')
+                                : fallbackLogoUrl;
+                            
+                            document.querySelectorAll('.logo-img').forEach(function(img) {
+                                img.src = logoUrl;
+                                img.onerror = function() {
+                                    this.src = fallbackLogoUrl;
+                                    this.onerror = null;
+                                };
+                            });
+                            return true;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Ошибка API логотипа:', error.message);
+                }
+                
+                const fallbackLogoUrl = this.createSvgFallback('logo');
+                document.querySelectorAll('.logo-img').forEach(function(img) {
+                    img.src = fallbackLogoUrl;
+                    img.onerror = null;
+                });
+                return false;
+            },
+
+            setupDefaultImages: function() {
+                const handleImageError = (event) => {
+                    const img = event.target;
+                    let type = 'default';
+                    
+                    if (img.classList.contains('logo-img') || img.id.includes('Logo') || img.src.includes('logo')) {
+                        type = 'logo';
+                    } else if (img.closest('.category-image') || img.closest('.category-image-container') || img.src.includes('category')) {
+                        type = 'category';
+                    } else if (img.closest('.service-image') || img.closest('.service-image-container') || img.src.includes('service')) {
+                        type = 'service';
+                    } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar') || img.src.includes('user')) {
+                        type = 'user';
+                    }
+                    
+                    img.src = this.createSvgFallback(type);
+                    img.onerror = null;
+                };
+                
+                document.querySelectorAll('img').forEach(function(img) {
+                    img.addEventListener('error', handleImageError.bind(this));
+                    
+                    if (!img.src || img.src === '' || img.src === window.location.href) {
+                        let type = 'default';
+                        if (img.classList.contains('logo-img') || img.id.includes('Logo')) {
+                            type = 'logo';
+                        } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                            type = 'category';
+                        } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                            type = 'service';
+                        } else if (img.classList.contains('user-avatar') || img.closest('.profile-avatar')) {
+                            type = 'user';
+                        }
+                        img.src = this.createSvgFallback(type);
+                    }
+                }.bind(this));
+                
+                this.loadLogo();
+            },
 
             // ==================== ПОИСК УСЛУГ С АВТОКОМПЛИТОМ ====================
             filterServices: function() {
@@ -3544,9 +3599,7 @@ getImageUrl: function(imageUrl, type) {
                 
                 let html = '';
                 services.slice(0, 10).forEach(service => {
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                        this.getImageUrl(service.image_url, 'service')
+                    const imageUrl = this.getImageUrl(service.image_url, 'service');
                     
                     html += `
                         <div class="search-autocomplete-item" onclick="app.selectServiceFromSearch(${service.id})">
@@ -3954,18 +4007,14 @@ getImageUrl: function(imageUrl, type) {
                     card.className = 'category-card-main-style';
                     card.onclick = () => { this.selectCategoryForServices(category); };
                     
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.getImageUrl(category.image_url, 'category')
-                    
-                    const svgFallback = this.createSvgFallback('category');
+                    const imageUrl = this.getImageUrl(category.image_url, 'category');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
                             <img src="${imageUrl}" 
                                  alt="${category.display_name}"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('category')}';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <h3>${category.display_name}</h3>
@@ -4012,7 +4061,7 @@ getImageUrl: function(imageUrl, type) {
                     const backBtn = document.getElementById('backToCategoriesBtn');
                     if (backBtn) backBtn.style.display = 'none';
                     
-                    const searchBox = document.querySelector('.search-box');
+                    const searchBox = document.getElementById('servicesSearchBox');
                     if (searchBox) searchBox.style.display = 'block';
                     
                 } catch (error) {
@@ -4024,6 +4073,7 @@ getImageUrl: function(imageUrl, type) {
             renderAllServices: function() {
                 const container = document.getElementById('allServicesList');
                 const pageTitle = document.getElementById('servicesPageTitle');
+                const searchBox = document.getElementById('servicesSearchBox');
                 
                 if (!container) return;
                 
@@ -4039,6 +4089,10 @@ getImageUrl: function(imageUrl, type) {
                     pageTitle.textContent = 'Все услуги';
                 }
                 
+                if (searchBox) {
+                    searchBox.style.display = 'block';
+                }
+                
                 container.innerHTML = '';
                 
                 this.allServices.forEach((service) => {
@@ -4048,18 +4102,14 @@ getImageUrl: function(imageUrl, type) {
                         this.selectService(service);
                     };
                     
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                       this.getImageUrl(service.image_url, 'service')
-                    
-                    const svgFallback = this.createSvgFallback('service');
+                    const imageUrl = this.getImageUrl(service.image_url, 'service');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
                             <img src="${imageUrl}" 
                                  alt="${service.name}"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <h3>${service.name}</h3>
@@ -4085,11 +4135,6 @@ getImageUrl: function(imageUrl, type) {
                 try {
                     await this.loadCategories();
                     this.renderAllCategories();
-                    
-                    const serviceSearch = document.getElementById('serviceSearch');
-                    if (serviceSearch) serviceSearch.style.display = 'none';
-                    const categorySearch = document.getElementById('categorySearch');
-                    if (categorySearch) categorySearch.style.display = 'block';
                     
                 } catch (error) {
                     console.error('Ошибка загрузки страницы категорий:', error);
@@ -4121,18 +4166,14 @@ getImageUrl: function(imageUrl, type) {
                         this.selectCategoryForServices(category);
                     };
                     
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.getImageUrl(category.image_url, 'category')
-                    
-                    const svgFallback = this.createSvgFallback('category');
+                    const imageUrl = this.getImageUrl(category.image_url, 'category');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
                             <img src="${imageUrl}" 
                                  alt="${category.display_name}"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('category')}';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <h3>${category.display_name}</h3>
@@ -4275,7 +4316,7 @@ getImageUrl: function(imageUrl, type) {
                 const container = document.getElementById('allServicesList');
                 const pageTitle = document.getElementById('servicesPageTitle');
                 const backBtn = document.getElementById('backToCategoriesBtn');
-                const searchBox = document.querySelector('.search-box');
+                const searchBox = document.getElementById('servicesSearchBox');
                 
                 if (!container) return;
                 
@@ -4335,18 +4376,14 @@ getImageUrl: function(imageUrl, type) {
                         this.selectService(service);
                     };
                     
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                        this.getImageUrl(service.image_url, 'service')
-                    
-                    const svgFallback = this.createSvgFallback('service');
+                    const imageUrl = this.getImageUrl(service.image_url, 'service');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
                             <img src="${imageUrl}" 
                                  alt="${service.name}"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}'; this.style.objectFit='cover';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
                         </div>
                         <h3>${service.name}</h3>
@@ -4373,7 +4410,7 @@ getImageUrl: function(imageUrl, type) {
                 }
                 
                 if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-                    this.showNotification('Для выбора категории необходима активная подписка', 'warning');
+                                        this.showNotification('Для выбора категории необходима активная подписка', 'warning');
                     this.navigateToPage('subscription');
                     return;
                 }
@@ -4434,11 +4471,7 @@ getImageUrl: function(imageUrl, type) {
                     card.className = 'category-card-main-style';
                     card.onclick = () => { this.selectService(service); };
                     
-                    const imageUrl = service.image_url ? 
-                        this.getImageUrl(service.image_url, 'service') : 
-                        this.getImageUrl(service.image_url, 'service')
-                    
-                    const svgFallback = this.createSvgFallback('service');
+                    const imageUrl = this.getImageUrl(service.image_url, 'service');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
@@ -6377,7 +6410,7 @@ getImageUrl: function(imageUrl, type) {
                 }
             },
 
-                       // ==================== ОБНОВЛЕНИЕ ПРОФИЛЯ В ШАПКЕ ====================
+            // ==================== ОБНОВЛЕНИЕ ПРОФИЛЯ В ШАПКЕ ====================
             updateProfileInHeader: function() {
                 const userAvatar = document.getElementById('userAvatar');
                 const menuUserName = document.getElementById('menuUserName');
@@ -6434,20 +6467,15 @@ getImageUrl: function(imageUrl, type) {
             // ==================== ПРЕДВАРИТЕЛЬНАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ ====================
             preloadImages: function() {
                 // Предзагрузка логотипа
-                const logoUrl = this.getImageUrl('', 'logo');
+                const logoUrl = this.createSvgFallback('logo');
                 const logoImg = new Image();
                 logoImg.src = logoUrl;
                 
                 // Предзагрузка основных изображений
-                const preloadUrls = [
-                    '/api/images/test/category',
-                    '/api/images/test/service',
-                    '/api/images/test/user'
-                ];
-                
-                preloadUrls.forEach(url => {
+                const types = ['category', 'service', 'user'];
+                types.forEach(type => {
                     const img = new Image();
-                    img.src = this.API_BASE_URL + url;
+                    img.src = this.createSvgFallback(type);
                 });
             },
 
@@ -6617,18 +6645,14 @@ getImageUrl: function(imageUrl, type) {
                         this.selectCategoryForServices(category);
                     };
                     
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.getImageUrl(category.image_url, 'category')
-                    
-                    const svgFallback = this.createSvgFallback('category');
+                    const imageUrl = this.getImageUrl(category.image_url, 'category');
                     
                     card.innerHTML = `
                         <div class="category-image-main">
                             <img src="${imageUrl}" 
                                  alt="${category.display_name}"
                                  loading="lazy"
-                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('category')}';"
                                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         </div>
                         <h3>${category.display_name}</h3>
@@ -6746,70 +6770,58 @@ getImageUrl: function(imageUrl, type) {
                         deadlineInput.value = tomorrow.toISOString().split('T')[0];
                     }
                     
-                    // Настраиваем поиск категорий
-                    const categorySearch = document.getElementById('categorySearch');
-                    if (categorySearch) {
-                        categorySearch.style.display = 'none';
-                    }
-                    
                     // Наблюдатель для динамически добавляемых изображений
-                  // Наблюдатель для динамически добавляемых изображений
-if (window.MutationObserver) {
-    const imageObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) {
-                        let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
-                        if (node.tagName === 'IMG') {
-                            images = [node];
-                        }
+                    if (window.MutationObserver) {
+                        const imageObserver = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'childList') {
+                                    mutation.addedNodes.forEach((node) => {
+                                        if (node.nodeType === 1) {
+                                            let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                                            if (node.tagName === 'IMG') {
+                                                images = [node];
+                                            }
+                                            
+                                            images.forEach((img) => {
+                                                if (!img.src || img.src === '' || img.src === window.location.href) {
+                                                    let type = 'default';
+                                                    
+                                                    if (img.classList.contains('logo-img') || img.id.includes('logo')) {
+                                                        type = 'logo';
+                                                    } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                                                        type = 'category';
+                                                    } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                                                        type = 'service';
+                                                    } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
+                                                        type = 'user';
+                                                    }
+                                                    
+                                                    if (!img.hasAttribute('data-image-set')) {
+                                                        img.setAttribute('data-image-set', 'true');
+                                                        img.src = this.createSvgFallback(type);
+                                                        
+                                                        img.onerror = function() {
+                                                            this.onerror = null;
+                                                            const svgFallback = app.createSvgFallback(type);
+                                                            this.src = svgFallback;
+                                                        };
+                                                        
+                                                        img.loading = 'lazy';
+                                                        img.decoding = 'async';
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        });
                         
-                        images.forEach((img) => {
-                            if (!img.src || img.src === '' || img.src === window.location.href) {
-                                let type = 'default';
-                                let testUrl = '/api/images/test/default';
-                                
-                                if (img.classList.contains('logo-img') || img.id.includes('logo')) {
-                                    type = 'logo';
-                                    testUrl = '/api/images/test/logo';
-                                } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                                    type = 'category';
-                                    testUrl = '/api/images/test/category';
-                                } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                                    type = 'service';
-                                    testUrl = '/api/images/test/service';
-                                } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
-                                    type = 'user';
-                                    testUrl = '/api/images/test/user';
-                                }
-                                
-                                if (!img.hasAttribute('data-image-set')) {
-                                    img.setAttribute('data-image-set', 'true');
-                                    img.src = testUrl;
-                                    
-                                    img.onerror = function() {
-                                        this.onerror = null;
-                                        const svgFallback = app.createSvgFallback(type);
-                                        this.src = svgFallback;
-                                    };
-                                    
-                                    img.loading = 'lazy';
-                                    img.decoding = 'async';
-                                }
-                            }
+                        imageObserver.observe(document.body, {
+                            childList: true,
+                            subtree: true
                         });
                     }
-                });
-            }
-        });
-    });
-    
-    imageObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-}
                     
                     // Устанавливаем глобальную ссылку на приложение
                     window.App = this;
@@ -6849,7 +6861,7 @@ if (window.MutationObserver) {
                 console.error('Критическая ошибка инициализации:', error);
                 document.body.innerHTML = '<div style="padding: 40px; text-align: center; font-family: Inter, sans-serif; color: var(--graphite-dark);">' +
                     '<i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--error); margin-bottom: 20px;"></i>' +
-                    '<h1 style="font-size: 1.8rem; margin-bottom: 15px;">Ошибка загрузки приложения</h1>' +
+                    '<h1 style="font-size: 1.8rem; margin-bottom: 15px;">Ошибка загрузки приложение</h1>' +
                     '<p style="color: var(--graphite-medium); margin-bottom: 25px;">Пожалуйста, обновите страницу или попробуйте позже.</p>' +
                     '<button onclick="window.location.reload()" style="background: var(--pastel-pink); color: var(--graphite-dark); border: none; padding: 12px 24px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 1rem;">' +
                         '<i class="fas fa-redo"></i> Обновить страницу' +
