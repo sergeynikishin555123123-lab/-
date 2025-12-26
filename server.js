@@ -1616,42 +1616,6 @@ app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin
         res.status(500).json({ success: false, error: 'Ошибка загрузки' });
     }
 });
-// Загрузка аватара пользователя
-app.post('/api/admin/upload-user-avatar', authMiddleware(['admin', 'superadmin']), uploadUserAvatar.single('avatar'), async (req, res) => {
-    try {
-        console.log('📤 Загрузка аватара пользователя...');
-        
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл аватара не был загружен'
-            });
-        }
-        
-        const fileUrl = `/uploads/users/${req.file.filename}`;
-        console.log(`✅ Аватар пользователя сохранен: ${fileUrl}`);
-        
-        res.json({
-            success: true,
-            message: 'Аватар пользователя успешно загружен',
-            data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
-                url: fileUrl,
-                path: req.file.path
-            }
-        });
-        
-    } catch (error) {
-        console.error('❌ Ошибка загрузки аватара пользователя:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки аватара пользователя'
-        });
-    }
-});
 
 app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('image'), async (req, res) => {
     try {
