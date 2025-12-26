@@ -6652,47 +6652,49 @@ setupDefaultImages: function() {
             },
 
             // ==================== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ====================
-            init: async function() {
-                try {
-                    // Анимируем счетчики статистики
-                    this.animateCounters();
-                    
-                    // Загружаем основные данные
-                    await Promise.all([
-                        this.loadLogo(),
-                        this.loadCategories(),
-                        this.loadAllServices(),
-                        this.loadSubscriptions()
-                    ]);
-                    
-                    // Настраиваем изображения
-                    this.setupDefaultImages();
-                    this.setupLazyLoading();
-                    this.preloadImages();
-                    
-                    // Настраиваем обработчики событий
-                    this.setupEventListeners();
-                    this.initSearchFunctionality();
-                    
-                    // Определяем начальный экран
-                    this.determineInitialScreen();
-                    
-                    // Обновляем интерфейс пользователя
-                    this.updateProfileInHeader();
-                    this.updateUserInterface();
-                    
-                    // Загружаем настройки
-                    this.loadSettings();
-                    
-                    // Инициализируем чат поддержки
-                    this.supportChat.init();
-                    
-                    // Загружаем задачи если пользователь авторизован
-                    if (this.currentUser) {
-                        setTimeout(() => {
-                            this.loadUserTasks('all');
-                        }, 500);
-                    }
+           init: async function() {
+    try {
+        // Анимируем счетчики статистики
+        this.animateCounters();
+        
+        // Загружаем основные данные
+        await Promise.all([
+            this.loadLogo(),
+            this.loadCategories(),
+            this.loadAllServices(),
+            this.loadSubscriptions()
+        ]);
+        
+        // Настраиваем изображения
+        this.setupDefaultImages();
+        // УДАЛИТЬ ЭТУ СТРОКУ: this.setupLazyLoading();
+        // УДАЛИТЬ ЭТУ СТРОКУ: this.preloadImages();
+        
+        // Настраиваем обработчики событий
+        this.setupEventListeners();
+        // УДАЛИТЬ ЭТУ СТРОКУ: this.initSearchFunctionality();
+        
+        // Определяем начальный экран
+        this.determineInitialScreen();
+        
+        // Обновляем интерфейс пользователя
+        this.updateProfileInHeader();
+        this.updateUserInterface();
+        
+        // Загружаем настройки
+        this.loadSettings();
+        
+        // Инициализируем чат поддержки
+        this.supportChat.init();
+        
+        // Загружаем задачи если пользователь авторизован
+        if (this.currentUser) {
+            setTimeout(() => {
+                this.loadUserTasks('all');
+            }, 500);
+        }
+        
+        // ... остальной код без изменений
                     
                     // Настраиваем поля формы
                     const deadlineInput = document.getElementById('taskDeadline');
