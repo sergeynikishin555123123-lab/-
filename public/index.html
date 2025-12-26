@@ -2031,6 +2031,400 @@ img[src*="data:image/svg"] {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
+
+/* ==================== СТИЛИ ДЛЯ ЛОГОТИПА ==================== */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    width: auto;
+    overflow: visible;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--graphite-dark);
+    text-decoration: none;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(249, 247, 243, 0.9), rgba(242, 221, 230, 0.3));
+    border-radius: var(--radius);
+    border: 1px solid var(--pastel-pink);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.logo-container:hover {
+    background: linear-gradient(135deg, rgba(249, 247, 243, 0.95), rgba(242, 221, 230, 0.4));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.logo-frame {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 3px solid var(--pastel-pink);
+    box-shadow: 0 4px 12px rgba(242, 221, 230, 0.3);
+    padding: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.logo-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(242, 221, 230, 0.2) 100%);
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.logo-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 2px !important;
+    background: var(--white) !important;
+}
+
+.logo-text-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.logo-main-text {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.logo-woman, .logo-help {
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+.logo-woman {
+    color: var(--graphite-dark);
+}
+
+.logo-help {
+    color: var(--gold-metallic);
+}
+
+.logo-tagline {
+    font-size: 0.7rem;
+    color: var(--graphite-medium);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+/* Логотип на странице авторизации */
+.auth-logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.auth-logo-frame {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 4px solid var(--pastel-pink);
+    box-shadow: 0 6px 20px rgba(242, 221, 230, 0.4);
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-logo-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(242, 221, 230, 0.3) 100%);
+    border-radius: 12px;
+    z-index: 1;
+}
+
+.auth-logo-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 10px !important;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 3px !important;
+    background: var(--white) !important;
+}
+
+.auth-logo-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.auth-logo-main-text {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.auth-logo-woman, .auth-logo-help {
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: -0.5px;
+}
+
+.auth-logo-woman {
+    color: var(--graphite-dark);
+}
+
+.auth-logo-help {
+    color: var(--gold-metallic);
+}
+
+.auth-logo-tagline {
+    font-size: 0.9rem;
+    color: var(--graphite-medium);
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-align: center;
+}
+
+/* Логотип в хедере */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.header-logo-frame {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 2px solid var(--pastel-pink);
+    box-shadow: 0 3px 10px rgba(242, 221, 230, 0.2);
+    padding: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.header-logo-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(242, 221, 230, 0.2) 100%);
+    border-radius: 8px;
+    z-index: 1;
+}
+
+.header-logo-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    border-radius: 6px !important;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 2px !important;
+    background: var(--white) !important;
+}
+
+.header-logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.header-logo-main-text {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.header-logo-woman, .header-logo-help {
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.3px;
+}
+
+.header-logo-woman {
+    color: var(--graphite-dark);
+}
+
+.header-logo-help {
+    color: var(--gold-metallic);
+}
+
+.header-logo-tagline {
+    font-size: 0.6rem;
+    color: var(--graphite-medium);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Адаптивность для логотипа */
+@media (max-width: 768px) {
+    .logo-container {
+        padding: 6px 12px;
+        font-size: 1.4rem;
+    }
+    
+    .logo-frame {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .logo-woman, .logo-help {
+        font-size: 1.2rem;
+    }
+    
+    .logo-tagline {
+        font-size: 0.6rem;
+    }
+    
+    .auth-logo-container {
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .auth-logo-frame {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .auth-logo-woman, .auth-logo-help {
+        font-size: 1.6rem;
+    }
+    
+    .auth-logo-tagline {
+        font-size: 0.8rem;
+    }
+    
+    .header-logo-frame {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .header-logo-woman, .header-logo-help {
+        font-size: 1.1rem;
+    }
+    
+    .header-logo-tagline {
+        font-size: 0.55rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-container {
+        padding: 4px 8px;
+        font-size: 1.2rem;
+    }
+    
+    .logo-frame {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+    }
+    
+    .logo-woman, .logo-help {
+        font-size: 1rem;
+    }
+    
+    .logo-tagline {
+        display: none;
+    }
+    
+    .auth-logo-frame {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+    }
+    
+    .auth-logo-woman, .auth-logo-help {
+        font-size: 1.4rem;
+    }
+    
+    .auth-logo-tagline {
+        font-size: 0.7rem;
+        max-width: 200px;
+        line-height: 1.2;
+    }
+    
+    .header-logo-frame {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .header-logo-woman, .header-logo-help {
+        font-size: 0.9rem;
+    }
+    
+    .header-logo-tagline {
+        display: none;
+    }
+}
+
+/* Стили для SVG фолбэка логотипа */
+.logo-img[src*="data:image/svg"] {
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark)) !important;
+    padding: 8px !important;
+}
+
+.auth-logo-img[src*="data:image/svg"] {
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark)) !important;
+    padding: 12px !important;
+}
+
+.header-logo-img[src*="data:image/svg"] {
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark)) !important;
+    padding: 6px !important;
+}
+
+/* Анимация логотипа */
+@keyframes logoPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.logo-container:hover .logo-frame {
+    animation: logoPulse 0.5s ease;
+}
+
+.auth-logo-frame {
+    animation: logoPulse 2s infinite;
+}
         
         /* Стили для планшетов */
         @media (min-width: 481px) and (max-width: 768px) {
@@ -2406,25 +2800,32 @@ img[src*="data:image/svg"] {
     <div id="mobile-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
     
     <!-- Верхняя навигация -->
-    <nav class="top-nav">
-        <a href="#" class="logo" onclick="app.navigateToPage('home')">
-<img src="" 
-     alt="WOMAN HELP" 
-     class="logo-img" 
-     id="authLogoImg"
-     loading="lazy">
-            <span class="logo-woman">WOMAN</span>
-            <span class="logo-help">HELP</span>
-        </a>
-        
-        <div class="user-avatar" id="userAvatar" onclick="app.toggleUserMenu()" style="display: none;">
-            <img id="userAvatarImg" 
-                 alt="Аватар пользователя"
-                 onerror="this.style.display='none'; this.parentElement.innerHTML=this.parentElement.textContent || 'Г';"
-                 style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+<nav class="top-nav">
+    <a href="#" class="logo-container" onclick="app.navigateToPage('home')">
+        <div class="logo-frame">
+            <img src="" 
+                 alt="WOMAN HELP" 
+                 class="logo-img" 
+                 id="mainLogoImg"
+                 loading="lazy">
         </div>
-        
-        <div class="user-menu" id="userMenu">
+        <div class="logo-text-container">
+            <div class="logo-main-text">
+                <span class="logo-woman">WOMAN</span>
+                <span class="logo-help">HELP</span>
+            </div>
+            <div class="logo-tagline">Премиум сервис для женщин</div>
+        </div>
+    </a>
+    
+    <div class="user-avatar" id="userAvatar" onclick="app.toggleUserMenu()" style="display: none;">
+        <img id="userAvatarImg" 
+             alt="Аватар пользователя"
+             onerror="this.style.display='none'; this.parentElement.innerHTML=this.parentElement.textContent || 'Г';"
+             style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+    </div>
+    
+    <div class="user-menu" id="userMenu">
             <div style="padding: 10px; border-bottom: 1px solid rgba(61, 61, 61, 0.1);">
                 <div style="font-weight: 600;" id="menuUserName">Гость</div>
                 <div style="font-size: 0.9rem; color: var(--graphite-medium);" id="menuUserEmail"></div>
@@ -2452,18 +2853,22 @@ img[src*="data:image/svg"] {
     <!-- Основной контент -->
     <main>
         <!-- Экран авторизации -->
-        <div id="auth-page" class="page active">
-            <div class="container auth-screen">
-                <div class="auth-content">
-                    <div class="card auth-card" style="padding: 30px 20px;">
-                        <div class="logo" style="justify-content: center; margin-bottom: 15px;">
-<img src="" 
-     alt="WOMAN HELP" 
-     class="logo-img" 
-     id="authLogoImg"
-     loading="lazy">
-                            <span class="logo-woman">WOMAN</span>
-                            <span class="logo-help">HELP</span>
+<div id="auth-page" class="page active">
+    <div class="container auth-screen">
+        <div class="auth-content">
+            <div class="card auth-card" style="padding: 30px 20px;">
+                <div class="auth-logo-container">
+                    <div class="auth-logo-frame">
+                        <img src="" 
+                             alt="WOMAN HELP" 
+                             class="auth-logo-img" 
+                             id="authLogoImg"
+                             loading="lazy">
+                    </div>
+                    <div class="auth-logo-text-container">
+                        <div class="auth-logo-main-text">
+                            <span class="auth-logo-woman">WOMAN</span>
+                            <span class="auth-logo-help">HELP</span>
                         </div>
                         <div class="tagline" style="font-size: 1.2rem; color: var(--pastel-pink); font-weight: 600; margin-bottom: 10px;">
                             Решение есть
@@ -3534,42 +3939,45 @@ img[src*="data:image/svg"] {
             return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
         },
 
-        loadLogo: async function() {
-            try {
-                console.log('Загрузка логотипа...');
+       // В функции loadLogo добавьте:
+loadLogo: async function() {
+    try {
+        console.log('Загрузка логотипа...');
+        
+        const response = await fetch(this.API_BASE_URL + '/api/logo');
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data && result.data.logo_url) {
+                const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
+                console.log('Логотип из API:', logoUrl);
                 
-                const response = await fetch(this.API_BASE_URL + '/api/logo');
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data && result.data.logo_url) {
-                        const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
-                        console.log('Логотип из API:', logoUrl);
-                        
-                        document.querySelectorAll('.logo-img').forEach(function(img) {
-                            img.src = logoUrl;
-                            img.onerror = function() {
-                                console.log('Ошибка загрузки логотипа из API, используем фолбэк');
-                                this.src = app.createSvgFallback('logo');
-                                this.onerror = null;
-                            };
-                        });
-                        return true;
-                    }
-                }
-            } catch (error) {
-                console.log('Ошибка API логотипа:', error.message);
+                // Загружаем во все логотипы
+                document.querySelectorAll('.logo-img, .auth-logo-img').forEach(function(img) {
+                    img.src = logoUrl;
+                    img.onerror = function() {
+                        console.log('Ошибка загрузки логотипа из API, используем фолбэк');
+                        this.src = app.createSvgFallback('logo');
+                        this.onerror = null;
+                    };
+                });
+                return true;
             }
-            
-            const svgFallback = this.createSvgFallback('logo');
-            console.log('Используем SVG фолбэк для логотипа');
-            
-            document.querySelectorAll('.logo-img').forEach(function(img) {
-                img.src = svgFallback;
-                img.onerror = null;
-            });
-            return false;
-        },
+        }
+    } catch (error) {
+        console.log('Ошибка API логотипа:', error.message);
+    }
+    
+    // Используем SVG фолбэк для всех логотипов
+    const svgFallback = this.createSvgFallback('logo');
+    console.log('Используем SVG фолбэк для логотипа');
+    
+    document.querySelectorAll('.logo-img, .auth-logo-img').forEach(function(img) {
+        img.src = svgFallback;
+        img.onerror = null;
+    });
+    return false;
+},
 
         setupDefaultImages: function() {
             const handleImageError = function() {
