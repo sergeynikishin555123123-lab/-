@@ -158,13 +158,15 @@ const DEMO_MODE = true;
 
 // ==================== УЛУЧШЕННАЯ НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
 
+// ==================== ПРОСТАЯ НАСТРОЙКА ДИРЕКТОРИЙ ====================
+
+// Убедитесь что директории существуют
 const ensureUploadDirs = () => {
     const dirs = [
         'public/uploads',
         'public/uploads/categories',
-        'public/uploads/users',
         'public/uploads/services',
-        'public/uploads/tasks',
+        'public/uploads/users',
         'public/uploads/logo'
     ];
     
@@ -176,38 +178,24 @@ const ensureUploadDirs = () => {
     });
 };
 
-// Создаем дефолтный логотип при старте
+// Вызываем сразу
+ensureUploadDirs();
+
+// Создаем дефолтный логотип
 const createDefaultLogo = () => {
-    const logoDir = path.join(__dirname, 'public/uploads/logo');
-    const logoPath = path.join(logoDir, 'logo.svg');
-    
+    const logoPath = path.join(__dirname, 'public/uploads/logo/logo.svg');
     if (!fsSync.existsSync(logoPath)) {
-        const defaultLogoSvg = `<?xml version="1.0" encoding="UTF-8"?>
+        const logoSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="200" height="60" viewBox="0 0 200 60">
-    <style>
-        .logo-text {
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            fill: #C5A880;
-        }
-        .logo-bg {
-            fill: #F2DDE6;
-        }
-    </style>
-    <rect width="200" height="60" class="logo-bg" rx="10"/>
-    <text x="100" y="35" class="logo-text" font-size="24" text-anchor="middle" dy=".3em">
-        Женский Консьерж
-    </text>
+    <rect width="200" height="60" fill="#F2DDE6" rx="10"/>
+    <text x="100" y="35" font-family="Arial" font-size="24" font-weight="bold" 
+          fill="#C5A880" text-anchor="middle" dy=".3em">WOMAN HELP</text>
 </svg>`;
-        
-        if (!fsSync.existsSync(logoDir)) {
-            fsSync.mkdirSync(logoDir, { recursive: true });
-        }
-        
-        fsSync.writeFileSync(logoPath, defaultLogoSvg);
+        fsSync.writeFileSync(logoPath, logoSvg);
         console.log(`✅ Создан дефолтный логотип: ${logoPath}`);
     }
 };
+createDefaultLogo();
 
 // Настраиваем хранилище для разных типов загрузок
 const categoryStorage = multer.diskStorage({
@@ -289,37 +277,60 @@ const imageFilter = function (req, file, cb) {
     }
 };
 
-// Создаем разные загрузчики для разных типов файлов
-const uploadCategoryImage = multer({ 
-    storage: categoryStorage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: imageFilter
+// ==================== УПРОЩЕННЫЙ ЗАГРУЗЧИК ФАЙЛОВ ====================
+
+const simpleStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        ensureUploadDirs();
+        
+        // Определяем папку по типу загрузки
+        let folder = 'uploads';
+        if (req.path.includes('logo')) {
+            folder = 'uploads/logo';
+        } else if (req.path.includes('category')) {
+            folder = 'uploads/categories';
+        } else if (req.path.includes('service')) {
+            folder = 'uploads/services';
+        } else if (req.path.includes('user')) {
+            folder = 'uploads/users';
+        }
+        
+        cb(null, `public/${folder}`);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname).toLowerCase();
+        
+        let filename;
+        if (req.path.includes('logo')) {
+            filename = `logo${extension}`; // Всегда logo.jpg, logo.png и т.д.
+        } else {
+            const type = req.path.includes('category') ? 'category' : 
+                        req.path.includes('service') ? 'service' : 
+                        req.path.includes('user') ? 'user' : 'file';
+            filename = `${type}-${uniqueSuffix}${extension}`;
+        }
+        
+        cb(null, filename);
+    }
 });
 
-const uploadUserAvatar = multer({ 
-    storage: userStorage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: imageFilter
+const simpleUpload = multer({ 
+    storage: simpleStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: function (req, file, cb) {
+        const allowedTypes = /jpeg|jpg|png|gif|svg|webp/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        
+        if (mimetype && extname) {
+            cb(null, true);
+        } else {
+            cb(new Error('Только изображения разрешены'));
+        }
+    }
 });
 
-const uploadLogo = multer({ 
-    storage: logoStorage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: imageFilter
-});
-
-const uploadServiceImage = multer({ 
-    storage: serviceStorage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: imageFilter
-});
-
-const uploadGeneral = multer({ 
-    storage: generalStorage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: imageFilter
-});
-// Инициализируем директории при старте
 ensureUploadDirs();
 
 // ==================== БАЗА ДАННЫХ ====================
@@ -1483,21 +1494,17 @@ app.get('/health', async (req, res) => {
 // ==================== API ЗАГРУЗКИ ФОТО (ИСПРАВЛЕННЫЕ) ====================
 
 // Загрузка логотипа сайта
-app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), uploadLogo.single('logo'), async (req, res) => {
+// 1. Загрузка логотипа
+app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), simpleUpload.single('logo'), async (req, res) => {
     try {
-        console.log('📤 Загрузка логотипа сайта...');
-        
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл логотипа не был загружен'
-            });
+            return res.status(400).json({ success: false, error: 'Файл не был загружен' });
         }
         
         const fileUrl = `/uploads/logo/${req.file.filename}`;
         console.log(`✅ Логотип сохранен: ${fileUrl}`);
         
-        // Обновляем настройку в базе данных
+        // Обновляем в БД
         await db.run(
             `INSERT OR REPLACE INTO settings (key, value, description, category, updated_at) 
              VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
@@ -1506,23 +1513,17 @@ app.post('/api/admin/upload-logo', authMiddleware(['admin', 'superadmin']), uplo
         
         res.json({
             success: true,
-            message: 'Логотип успешно загружен и установлен',
+            message: 'Логотип загружен',
             data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path
+                filename: req.file.filename,
+                size: req.file.size
             }
         });
         
     } catch (error) {
         console.error('❌ Ошибка загрузки логотипа:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки логотипа'
-        });
+        res.status(500).json({ success: false, error: 'Ошибка загрузки' });
     }
 });
 
@@ -1566,17 +1567,11 @@ app.get('/api/admin/categories', authMiddleware(['admin', 'superadmin']), async 
     }
 });
 
-// Загрузка изображения категории - исправленная версия
-// Загрузка изображения категории
-app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmin']), uploadCategoryImage.single('image'), async (req, res) => {
+// 2. Загрузка изображения категории
+app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmin']), simpleUpload.single('image'), async (req, res) => {
     try {
-        console.log('📤 Загрузка изображения категории...');
-        
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл изображения не был загружен'
-            });
+            return res.status(400).json({ success: false, error: 'Файл не был загружен' });
         }
         
         const fileUrl = `/uploads/categories/${req.file.filename}`;
@@ -1584,64 +1579,43 @@ app.post('/api/admin/upload-category-image', authMiddleware(['admin', 'superadmi
         
         res.json({
             success: true,
-            message: 'Изображение категории успешно загружено',
+            message: 'Изображение категории загружено',
             data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path,
+                filename: req.file.filename,
                 category_id: req.body.category_id || null
             }
         });
         
     } catch (error) {
         console.error('❌ Ошибка загрузки изображения категории:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки изображения категории'
-        });
+        res.status(500).json({ success: false, error: 'Ошибка загрузки' });
     }
 });
-
-// Загрузка изображения услуги
-app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), uploadServiceImage.single('image'), async (req, res) => {
+// 3. Загрузка изображения услуги
+app.post('/api/admin/upload-service-image', authMiddleware(['admin', 'superadmin']), simpleUpload.single('image'), async (req, res) => {
     try {
-        console.log('📤 Загрузка изображения услуги...');
-        
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл изображения не был загружен'
-            });
+            return res.status(400).json({ success: false, error: 'Файл не был загружен' });
         }
         
-        const fileUrl = `/uploads/services/${req.file.filename}`; // ← ОБНОВИТЕ ПУТЬ
+        const fileUrl = `/uploads/services/${req.file.filename}`;
         console.log(`✅ Изображение услуги сохранено: ${fileUrl}`);
         
         res.json({
             success: true,
-            message: 'Изображение услуги успешно загружено',
+            message: 'Изображение услуги загружено',
             data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path
+                filename: req.file.filename
             }
         });
         
     } catch (error) {
         console.error('❌ Ошибка загрузки изображения услуги:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки изображения услуги'
-        });
+        res.status(500).json({ success: false, error: 'Ошибка загрузки' });
     }
 });
-
 // Загрузка аватара пользователя
 app.post('/api/admin/upload-user-avatar', authMiddleware(['admin', 'superadmin']), uploadUserAvatar.single('avatar'), async (req, res) => {
     try {
@@ -1798,39 +1772,40 @@ app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), uploadGen
 });
 
 // Общая загрузка файла
-app.post('/api/admin/upload-file', authMiddleware(['admin', 'superadmin']), uploadGeneral.single('file'), async (req, res) => {
+// 4. Общая загрузка (для админки)
+app.post('/api/admin/upload', authMiddleware(['admin', 'superadmin']), simpleUpload.single('file'), async (req, res) => {
     try {
-        console.log('📤 Общая загрузка файла...');
-        
         if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'Файл не был загружен'
-            });
+            return res.status(400).json({ success: false, error: 'Файл не был загружен' });
         }
         
-        const fileUrl = `/uploads/${req.file.filename}`;
-        console.log(`✅ Файл сохранен: ${fileUrl}`);
+        // Определяем тип
+        let fileUrl;
+        if (req.body.type === 'logo') {
+            fileUrl = `/uploads/logo/${req.file.filename}`;
+        } else if (req.body.type === 'category') {
+            fileUrl = `/uploads/categories/${req.file.filename}`;
+        } else if (req.body.type === 'service') {
+            fileUrl = `/uploads/services/${req.file.filename}`;
+        } else {
+            fileUrl = `/uploads/${req.file.filename}`;
+        }
+        
+        console.log(`✅ Файл сохранен: ${fileUrl} (тип: ${req.body.type || 'общий'})`);
         
         res.json({
             success: true,
-            message: 'Файл успешно загружен',
+            message: 'Файл загружен',
             data: {
-                filename: req.file.filename,
-                originalname: req.file.originalname,
-                size: req.file.size,
-                mimetype: req.file.mimetype,
                 url: fileUrl,
-                path: req.file.path
+                filename: req.file.filename,
+                type: req.body.type || 'general'
             }
         });
         
     } catch (error) {
         console.error('❌ Ошибка загрузки файла:', error.message);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка загрузки файла'
-        });
+        res.status(500).json({ success: false, error: 'Ошибка загрузки' });
     }
 });
 
@@ -7296,58 +7271,40 @@ app.get('/api/logo', async (req, res) => {
     }
 });
 
-// Получение самого файла логотипа
+// ==================== ПРОСТОЙ МАРШРУТ ДЛЯ ЛОГОТИПА ====================
+
 app.get('/api/logo/file', async (req, res) => {
     try {
-        const logoSetting = await db.get(
-            "SELECT value FROM settings WHERE key = 'site_logo'"
-        );
+        const logoPath = path.join(__dirname, 'public/uploads/logo/logo.svg');
         
-        let logoUrl = '/api/images/test/logo';
-        if (logoSetting && logoSetting.value) {
-            logoUrl = logoSetting.value;
-        }
-        
-        const logoPath = path.join(__dirname, 'public', logoUrl);
-        
-        // Проверяем существует ли файл
         if (fsSync.existsSync(logoPath)) {
-            const ext = path.extname(logoPath).toLowerCase();
-            const mimeTypes = {
-                '.svg': 'image/svg+xml',
-                '.png': 'image/png',
-                '.jpg': 'image/jpeg',
-                '.jpeg': 'image/jpeg',
-                '.webp': 'image/webp'
-            };
-            
-            res.set('Content-Type', mimeTypes[ext] || 'image/svg+xml');
-            res.set('Cache-Control', 'public, max-age=31536000, immutable');
+            res.set('Content-Type', 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=31536000');
             res.set('Access-Control-Allow-Origin', '*');
-            
             return res.sendFile(logoPath);
         }
         
-        // Если файл не найден, возвращаем placeholder
-        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
-            <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
-                  fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
-        </svg>`;
+        // Если файла нет, возвращаем placeholder
+        const placeholder = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+    <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+          fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+</svg>`;
         
         res.set('Content-Type', 'image/svg+xml');
-        res.set('Cache-Control', 'public, max-age=31536000, immutable');
         res.set('Access-Control-Allow-Origin', '*');
         res.send(placeholder);
         
     } catch (error) {
         console.error('❌ Ошибка отдачи логотипа:', error.message);
         
-        const placeholder = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-            <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
-            <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
-                  fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
-        </svg>`;
+        const placeholder = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#F2DDE6" rx="20"/>
+    <text x="50" y="50" font-family="Arial" font-size="40" font-weight="bold" 
+          fill="#C5A880" text-anchor="middle" dy=".3em">W</text>
+</svg>`;
         
         res.set('Content-Type', 'image/svg+xml');
         res.send(placeholder);
