@@ -2362,12 +2362,12 @@
     <!-- Верхняя навигация -->
     <nav class="top-nav">
         <a href="#" class="logo" onclick="app.navigateToPage('home')">
-            <img src="/api/logo/file" 
-                 alt="WOMAN HELP" 
-                 class="logo-img" 
-                 id="logoImg"
-                 onerror="this.onerror=null; this.src='/api/images/test/logo';"
-                 loading="eager">
+           <img src="/api/logo/file" 
+     alt="WOMAN HELP" 
+     class="logo-img" 
+     id="logoImg"
+     onerror="this.src='/api/images/test/logo'"
+     loading="eager">
             <span class="logo-woman">WOMAN</span>
             <span class="logo-help">HELP</span>
         </a>
@@ -3396,44 +3396,88 @@
 
 // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
 getImageUrl: function(imageUrl, type) {
+    // Если нет изображения, возвращаем SVG placeholder
     if (!imageUrl || imageUrl.trim() === '') {
-        return this.createSvgFallback(type);
+        return this.API_BASE_URL + '/api/images/test/' + type;
     }
     
-    if (imageUrl.includes('/api/images/test/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    if (type === 'service') {
-        if (imageUrl.startsWith('/uploads/services/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
-        } else if (!imageUrl.startsWith('/')) {
-            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
-        }
-    }
-    
-    if (type === 'category') {
-        if (imageUrl.startsWith('/uploads/categories/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
-        }
-    }
-    
-    if (imageUrl.startsWith('/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
+    // Если уже полный URL (включая тестовые)
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl + '?t=' + Date.now();
     }
     
-    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+    // Если это путь на сервере
+    if (imageUrl.startsWith('/')) {
+        // Проверяем существование файла
+        const fullUrl = this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+        
+        // Возвращаем полный URL
+        return fullUrl;
+    }
+    
+    // Для относительных путей
+    if (type === 'service') {
+        return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (type === 'category') {
+        return this.API_BASE_URL + '/uploads/categories/' + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (type === 'logo') {
+        return this.API_BASE_URL + '/uploads/logo/' + imageUrl + '?t=' + Date.now();
+    }
+    
+    if (type === 'user') {
+        return this.API_BASE_URL + '/uploads/users/' + imageUrl + '?t=' + Date.now();
+    }
+    
+    // По умолчанию
+    return this.API_BASE_URL + '/api/images/test/' + type;
 },
+
+
+// Простая проверка изображения
+checkImage: function(url, callback) {
+    const img = new Image();
+    img.onload = function() { callback(true); };
+    img.onerror = function() { callback(false); };
+    img.src = url;
+},
+
+// Обновленная функция получения URL изображения
+getImageUrl: function(imageUrl, type) {
+    // Всегда используем тестовое изображение для отладки
+    const testUrl = this.API_BASE_URL + '/api/images/test/' + type;
+    
+    // Если нет пути к изображению, возвращаем тестовое
+    if (!imageUrl || imageUrl.trim() === '') {
+        return testUrl;
+    }
+    
+    // Формируем URL
+    let fullUrl;
+    if (imageUrl.startsWith('http')) {
+        fullUrl = imageUrl;
+    } else if (imageUrl.startsWith('/')) {
+        fullUrl = this.API_BASE_URL + imageUrl;
+    } else {
+        // Для относительных путей
+        const folderMap = {
+            'category': 'categories',
+            'service': 'services', 
+            'logo': 'logo',
+            'user': 'users'
+        };
+        
+        const folder = folderMap[type] || 'uploads';
+        fullUrl = this.API_BASE_URL + '/uploads/' + folder + '/' + imageUrl;
+    }
+    
+    // Добавляем timestamp для предотвращения кеширования
+    return fullUrl + (fullUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+},
+            
 createSvgFallback: function(type) {
     const colors = {
         'logo': { bg: '#F2DDE6', text: '#C5A880', char: 'WH' },
@@ -3973,9 +4017,14 @@ setupDefaultImages: function() {
         card.onclick = () => { this.selectCategoryForServices(category); };
         
         // ИСПРАВЛЕННЫЙ КОД:
-        const imageUrl = category.image_url ? 
-            this.getImageUrl(category.image_url, 'category') : 
-            this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+       
+        // Простая и понятная логика
+let imageUrl;
+if (category.image_url && category.image_url.trim() !== '') {
+    imageUrl = this.getImageUrl(category.image_url, 'category');
+} else {
+    imageUrl = this.API_BASE_URL + '/api/images/test/category';
+}
         
         const svgFallback = this.createSvgFallback('category');
         
@@ -4140,9 +4189,13 @@ setupDefaultImages: function() {
                         this.selectCategoryForServices(category);
                     };
                     
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                   // Простая и понятная логика
+let imageUrl;
+if (category.image_url && category.image_url.trim() !== '') {
+    imageUrl = this.getImageUrl(category.image_url, 'category');
+} else {
+    imageUrl = this.API_BASE_URL + '/api/images/test/category';
+}
                     
                     const svgFallback = this.createSvgFallback('category');
                     
@@ -4356,25 +4409,22 @@ setupDefaultImages: function() {
         
         // Получаем URL изображения для услуги
         let imageUrl;
-        if (service.image_url) {
-            imageUrl = this.getImageUrl(service.image_url, 'service');
-            console.log(`Услуга "${service.name}" image_url:`, service.image_url);
-            console.log(`Сгенерированный URL:`, imageUrl);
-        } else {
-            imageUrl = this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
-        }
+        // Получаем URL изображения для услуги
+let imageUrl;
+if (service.image_url && service.image_url.trim() !== '') {
+    imageUrl = this.getImageUrl(service.image_url, 'service');
+} else {
+    imageUrl = this.API_BASE_URL + '/api/images/test/service';
+}
         
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;"
-                     onload="console.log('Изображение услуги загружено:', this.src)"
-                     onerror="console.error('Ошибка загрузки услуги:', this.src); this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';">
-            </div>
+card.innerHTML = `
+    <div class="category-image-main">
+        <img src="${imageUrl}" 
+             alt="${category.display_name}"
+             loading="lazy"
+             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+             onerror="this.src='${this.API_BASE_URL}/api/images/test/category'">
+    </div>
             <h3>${service.name}</h3>
             <div class="category-description-main">${service.description}</div>
             <div class="category-card-footer">
@@ -6574,11 +6624,13 @@ setupDefaultImages: function() {
                         this.selectCategoryForServices(category);
                     };
                     
-                    const imageUrl = category.image_url ? 
-                        this.getImageUrl(category.image_url, 'category') : 
-                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
-                    
-                    const svgFallback = this.createSvgFallback('category');
+// Простая и понятная логика
+let imageUrl;
+if (category.image_url && category.image_url.trim() !== '') {
+    imageUrl = this.getImageUrl(category.image_url, 'category');
+} else {
+    imageUrl = this.API_BASE_URL + '/api/images/test/category';
+}
                     
                     card.innerHTML = `
                         <div class="category-image-main">
