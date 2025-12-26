@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -141,8 +140,8 @@
         }
         
         .user-avatar {
-            width: 42px;
-            height: 42px;
+            width: 46px;
+            height: 46px;
             background: var(--primary-gradient);
             border-radius: 50%;
             display: flex;
@@ -150,14 +149,25 @@
             justify-content: center;
             color: white;
             font-weight: 600;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
             cursor: pointer;
             transition: var(--transition);
+            flex-shrink: 0;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(197, 168, 128, 0.2);
         }
         
         .user-avatar:hover {
             transform: scale(1.05);
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
         }
         
         .user-menu {
@@ -273,13 +283,18 @@
         
         /* Карточки */
         .card {
-            background: var(--white);
+            background: var(--ivory-light);
             border-radius: var(--radius);
             padding: 20px;
-            border: 1px solid rgba(61, 61, 61, 0.08);
+            border: 1px solid rgba(242, 221, 230, 0.5);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
             width: 100%;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card:hover {
+            background: white;
         }
         
         /* Кнопки */
@@ -297,6 +312,10 @@
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
+        }
+        
+        .btn:active {
+            transform: translateY(0) !important;
         }
         
         .btn-primary {
@@ -514,12 +533,15 @@
             border: 1px solid rgba(242, 221, 230, 0.1);
             text-align: center;
             align-items: center;
+            background: var(--ivory-light);
+            backdrop-filter: blur(10px);
         }
         
         .service-card:hover {
             transform: translateY(-4px);
             box-shadow: var(--shadow);
             border-color: var(--pastel-pink);
+            background: white;
         }
         
         .service-image {
@@ -600,232 +622,90 @@
             gap: 4px;
         }
 
-/* Карточки услуг */
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    padding: 12px;
-}
+        /* Сетка услуг */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 12px;
+        }
 
-.service-card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
+        .service-image-container {
+            width: 100%;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 0;
+            background: linear-gradient(135deg, #F2DDE6 0%, #F9F7F3 100%);
+        }
 
-.service-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-}
+        .service-image-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid white;
+            box-shadow: 0 3px 8px rgba(198, 168, 128, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
 
-/* Круглое изображение услуги */
-.service-image-container {
-    width: 100%;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 15px 0;
-    background: linear-gradient(135deg, #F2DDE6 0%, #F9F7F3 100%);
-}
+        .service-image-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-.service-image-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid white;
-    box-shadow: 0 3px 8px rgba(198, 168, 128, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: white;
-}
+        .service-content {
+            padding: 12px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
 
-.service-image-circle img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+        .service-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            min-height: 36px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-/* Контент карточки */
-.service-content {
-    padding: 12px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
+        .service-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 10px;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
-.service-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 6px;
-    line-height: 1.3;
-    min-height: 36px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+        .service-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #C5A880;
+            margin-bottom: 4px;
+        }
 
-.service-description {
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-    margin-bottom: 10px;
-    flex-grow: 1;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
+        .service-time {
+            font-size: 11px;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-.service-price {
-    font-size: 16px;
-    font-weight: 700;
-    color: #C5A880;
-    margin-bottom: 4px;
-}
-
-.service-time {
-    font-size: 11px;
-    color: #888;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-/* Адаптивность - ВСЕГДА 2 КОЛОНКИ */
-@media (max-width: 480px) {
-    .services-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding: 10px;
-    }
-    
-    .service-image-container {
-        height: 100px;
-        padding: 12px 0;
-    }
-    
-    .service-image-circle {
-        width: 70px;
-        height: 70px;
-        border-width: 2px;
-    }
-    
-    .service-title {
-        font-size: 13px;
-        min-height: 34px;
-        -webkit-line-clamp: 2;
-    }
-    
-    .service-description {
-        font-size: 11px;
-        -webkit-line-clamp: 2;
-    }
-    
-    .service-price {
-        font-size: 14px;
-    }
-    
-    .service-time {
-        font-size: 10px;
-    }
-}
-
-/* Для очень маленьких экранов (менее 360px) */
-@media (max-width: 360px) {
-    .services-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        padding: 8px;
-    }
-    
-    .service-image-container {
-        height: 90px;
-        padding: 10px 0;
-    }
-    
-    .service-image-circle {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .service-title {
-        font-size: 12px;
-        min-height: 32px;
-    }
-    
-    .service-description {
-        font-size: 10px;
-        -webkit-line-clamp: 2;
-    }
-    
-    .service-price {
-        font-size: 13px;
-    }
-}
-
-/* Для планшетов и десктопов - тоже 2 колонки */
-@media (min-width: 481px) and (max-width: 1024px) {
-    .services-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
-        padding: 16px;
-    }
-    
-    .service-image-container {
-        height: 140px;
-    }
-    
-    .service-image-circle {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .service-title {
-        font-size: 15px;
-    }
-    
-    .service-description {
-        font-size: 13px;
-    }
-}
-
-/* Для больших десктопов - можно сделать 3 колонки если нужно */
-@media (min-width: 1025px) {
-    .services-grid {
-        grid-template-columns: repeat(3, 1fr); /* или 2 если хотите только 2 */
-        gap: 20px;
-        max-width: 900px; /* для 3 колонок */
-        margin: 0 auto;
-    }
-    
-    .service-image-container {
-        height: 160px;
-    }
-    
-    .service-image-circle {
-        width: 120px;
-        height: 120px;
-    }
-}
-
-/* Иконка времени */
-.time-icon {
-    width: 14px;
-    height: 14px;
-    fill: #888;
-}
-        
         /* Профиль */
         .profile-header {
             background: var(--primary-gradient);
@@ -1023,20 +903,25 @@
         /* Уведомления */
         .notification {
             position: fixed;
-            top: 100px;
-            right: 16px;
+            top: 80px;
+            right: 20px;
             z-index: 3000;
             background: white;
             border-radius: var(--radius);
-            padding: 16px;
+            padding: 16px 20px;
             box-shadow: var(--shadow-lg);
             border-left: 4px solid var(--pastel-pink);
-            animation: slideInRight 0.3s ease;
+            animation: slideInDown 0.3s ease;
             display: flex;
             align-items: center;
             gap: 12px;
             max-width: 90%;
             width: 350px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .notification.hiding {
+            animation: slideOutUp 0.3s ease forwards;
         }
         
         .notification.error {
@@ -1086,6 +971,10 @@
             display: flex;
         }
         
+        .modal.active .modal-content {
+            animation: modalSlideIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        
         .modal-content {
             background: white;
             padding: 30px;
@@ -1124,12 +1013,14 @@
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
             transition: var(--transition);
+            background: var(--ivory-light);
         }
         
         .form-input:focus {
             outline: none;
             border-color: var(--pastel-pink);
-            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.1);
+            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2);
+            background: white;
         }
         
         /* Создание задачи */
@@ -1182,33 +1073,39 @@
         }
         
         .task-status.new {
-            background: rgba(25, 118, 210, 0.1);
-            color: #1976D2;
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(33, 150, 243, 0.1));
+            color: #1565C0;
+            border: 1px solid rgba(25, 118, 210, 0.2);
         }
         
         .task-status.in_progress {
-            background: rgba(103, 58, 183, 0.1);
-            color: #673AB7;
+            background: linear-gradient(135deg, rgba(103, 58, 183, 0.15), rgba(124, 77, 255, 0.1));
+            color: #512DA8;
+            border: 1px solid rgba(103, 58, 183, 0.2);
         }
         
         .task-status.completed {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4CAF50;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.1));
+            color: #2E7D32;
+            border: 1px solid rgba(76, 175, 80, 0.2);
         }
         
         .task-status.cancelled {
-            background: rgba(244, 67, 54, 0.1);
-            color: #F44336;
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(239, 83, 80, 0.1));
+            color: #C62828;
+            border: 1px solid rgba(244, 67, 54, 0.2);
         }
         
         .task-status.searching {
-            background: rgba(255, 152, 0, 0.1);
-            color: #FF9800;
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 167, 38, 0.1));
+            color: #EF6C00;
+            border: 1px solid rgba(255, 152, 0, 0.2);
         }
         
         .task-status.assigned {
-            background: rgba(33, 150, 243, 0.1);
-            color: #2196F3;
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(66, 165, 245, 0.1));
+            color: #0277BD;
+            border: 1px solid rgba(33, 150, 243, 0.2);
         }
         
         /* Кнопка "Все услуги" */
@@ -1296,6 +1193,16 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes slideInDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutUp {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-100%); opacity: 0; }
+        }
+        
         @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -1320,311 +1227,6 @@
             0% { box-shadow: 0 0 0 0 rgba(242, 221, 230, 0.3); }
             70% { box-shadow: 0 0 0 10px rgba(242, 221, 230, 0); }
             100% { box-shadow: 0 0 0 0 rgba(242, 221, 230, 0); }
-        }
-        
-        /* Адаптивность */
-@media (max-width: 360px) {
-    .grid-2-main {
-        gap: 8px;
-        padding: 8px;
-    }
-    
-    .category-card-main-style {
-        padding: 12px;
-    }
-    
-    .category-image-main {
-        width: 70px;
-        height: 70px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 13px;
-        min-height: 32px;
-    }
-    
-    .category-description-main {
-        font-size: 11px;
-        padding: 6px;
-    }
-}
-
-/* Для планшетов */
-@media (min-width: 481px) and (max-width: 768px) {
-    .grid-2-main {
-        gap: 15px;
-        padding: 15px;
-    }
-    
-    .category-image-main {
-        width: 90px;
-        height: 90px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 15px;
-    }
-    
-    .category-description-main {
-        font-size: 13px;
-    }
-}
-
-/* Для десктопов */
-@media (min-width: 769px) {
-    .grid-2-main {
-        grid-template-columns: repeat(3, 1fr); /* 3 колонки на десктопе */
-        gap: 20px;
-        padding: 20px;
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
-    .category-image-main {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 16px;
-    }
-    
-    .category-description-main {
-        font-size: 14px;
-    }
-}
-        
-        @media (max-width: 480px) {
-            .container {
-                padding: 0 8px !important;
-            }
-            
-            .hero {
-                padding: 20px;
-            }
-            
-            .hero h1 {
-                font-size: 1.6rem;
-            }
-            
-            .hero .tagline {
-                font-size: 1.2rem;
-            }
-            
-            .section-title {
-                font-size: 1.4rem !important;
-            }
-            
-            .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            
-            .profile-stats {
-                grid-template-columns: 1fr;
-                gap: 8px !important;
-            }
-            
-            .stat-item {
-                padding: 10px !important;
-            }
-            
-            .nav-item span {
-                font-size: 0.7rem;
-            }
-            
-            .nav-item i {
-                font-size: 1rem !important;
-                margin-bottom: 2px !important;
-            }
-            
-            .notification {
-                width: 90%;
-                right: 5%;
-            }
-            
-            .bottom-nav {
-                height: 55px !important;
-                padding: 0 5px !important;
-            }
-            
-            .nav-item span {
-                font-size: 0.65rem !important;
-            }
-            
-            .service-card {
-                min-height: 180px;
-            }
-            
-            .service-header h4 {
-                min-height: 40px;
-                font-size: 0.9rem;
-            }
-            
-            .service-description {
-                font-size: 0.8rem;
-                -webkit-line-clamp: 2;
-            }
-            
-            .category-image,
-            .service-image {
-                height: 80px;
-            }
-        }
-        
-        /* Стили для планшетов */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-            
-            .container {
-                padding: 0 16px !important;
-            }
-        }
-        
-        /* Ховеры только для десктопа */
-        @media (min-width: 1025px) {
-            .card:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow);
-            }
-            
-            .btn:hover {
-                transform: translateY(-2px);
-            }
-            
-            .btn-primary:hover {
-                box-shadow: 0 8px 20px rgba(197, 168, 128, 0.3);
-            }
-            
-            .btn-secondary:hover {
-                background: rgba(61, 61, 61, 0.02);
-                border-color: var(--graphite-light);
-                transform: translateY(-1px);
-            }
-            
-            .btn-action:hover {
-                background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
-                transform: translateY(-2px);
-            }
-            
-            .category-card:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow);
-            }
-        }
-        
-        /* Админ кнопка */
-        .admin-access-btn,
-        .performer-access-btn,
-        .quick-tasks-btn {
-            position: fixed;
-            z-index: 1000;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            box-shadow: var(--shadow-lg);
-            transition: var(--transition);
-            animation: pulse 2s infinite;
-        }
-        
-        .admin-access-btn {
-            bottom: 80px;
-            right: 20px;
-            background: var(--primary-gradient);
-            color: white;
-        }
-        
-        .quick-tasks-btn {
-            bottom: 80px;
-            left: 20px;
-            background: var(--action-gradient);
-            color: var(--graphite-dark);
-        }
-        
-        /* Утилиты */
-        .text-center { text-align: center; }
-        .mt-20 { margin-top: 20px; }
-        .mb-20 { margin-bottom: 20px; }
-        .w-100 { width: 100%; }
-        .d-flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .align-center { align-items: center; }
-        .gap-10 { gap: 10px; }
-        .gap-20 { gap: 20px; }
-        
-        /* Исправления для текста */
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        button {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        /* Плейсхолдеры */
-        ::placeholder {
-            color: var(--graphite-light);
-            opacity: 0.7;
-        }
-        
-        /* Скроллбар */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--ivory-bg);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--pastel-pink);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--pink-medium);
-        }
-        
-        /* Новые стили для состояний пользователя */
-        .auth-screen {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .auth-content {
-            text-align: center;
-            max-width: 400px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .auth-card {
-            padding: 40px 30px;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--pastel-pink);
-        }
-        
-        .auth-icon {
-            font-size: 4rem;
-            color: var(--pastel-pink);
-            margin-bottom: 20px;
-        }
-        
-        .auth-actions {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
         }
         
         /* Табы для задач */
@@ -1690,6 +1292,24 @@
             gap: 12px;
         }
         
+        .chat-messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages-container::-webkit-scrollbar-track {
+            background: rgba(242, 221, 230, 0.1);
+            border-radius: 3px;
+        }
+
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: var(--pastel-pink);
+            border-radius: 3px;
+        }
+
+        .chat-messages-container::-webkit-scrollbar-thumb:hover {
+            background: var(--pink-medium);
+        }
+        
         .chat-message {
             display: flex;
             max-width: 80%;
@@ -1741,18 +1361,29 @@
             background: white;
             display: flex;
             gap: 10px;
+            align-items: flex-end;
         }
         
         .chat-input {
             flex: 1;
-            padding: 12px 16px;
-            border: 1px solid rgba(61, 61, 61, 0.1);
+            padding: 14px 18px;
+            border: 1.5px solid rgba(242, 221, 230, 0.5);
             border-radius: 24px;
             font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
+            font-size: 1rem;
             resize: none;
-            min-height: 48px;
-            max-height: 120px;
+            min-height: 56px;
+            max-height: 150px;
+            transition: var(--transition);
+            background: var(--ivory-light);
+            box-shadow: inset 0 2px 4px rgba(61, 61, 61, 0.03);
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--pastel-pink);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2), inset 0 2px 4px rgba(61, 61, 61, 0.03);
         }
         
         .send-message-btn {
@@ -1760,13 +1391,45 @@
             color: var(--graphite-dark);
             border: none;
             border-radius: 50%;
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 4px;
+        }
+
+        .send-message-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .send-message-btn i {
+            font-size: 1.2rem;
+        }
+
+        .send-message-btn::after {
+            content: 'Отправить';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--graphite-dark);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .send-message-btn:hover::after {
+            opacity: 1;
         }
         
         @keyframes fadeInMessage {
@@ -1871,7 +1534,7 @@
         .search-input:focus {
             outline: none;
             border-color: var(--pastel-pink);
-            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.1);
+            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2);
         }
         
         .search-icon {
@@ -1882,78 +1545,6 @@
             color: var(--graphite-light);
         }
         
-
-        
-        /* Убираем стикеры из карточек */
-.category-icon-badge {
-    display: flex !important; /* Важно! */
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.95);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    color: var(--pastel-pink);
-    font-size: 1.2rem;
-    box-shadow: var(--shadow-sm);
-    z-index: 2;
-    border: 2px solid var(--ivory-bg);
-}
-        
-        .services-count {
-            font-size: 0.85rem;
-            color: var(--graphite-light);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(242, 221, 230, 0.1);
-            padding: 4px 10px;
-            border-radius: 12px;
-        }
-        
-        .category-content {
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .category-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--graphite-dark);
-            line-height: 1.3;
-        }
-        
-        .category-description {
-            font-size: 0.9rem;
-            color: var(--graphite-medium);
-            margin-bottom: 16px;
-            line-height: 1.4;
-            flex: 1;
-        }
-        
-        .category-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-        }
-        
-        .select-service-btn {
-            color: var(--pastel-pink);
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: var(--transition-fast);
-        }
-
         /* Стили для компактной статистики на странице авторизации */
         .service-stats-compact {
             background: var(--white);
@@ -2001,14 +1592,435 @@
             line-height: 1.3;
         }
 
-        /* Стили для кнопок поддержки */
-        .btn-sm {
-            padding: 8px 16px !important;
-            font-size: 0.85rem !important;
+        /* Стили для компактного профиля */
+        .compact-profile-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Адаптивность для компактной статистики */
+        .compact-profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pastel-pink);
+            font-size: 2rem;
+            font-weight: 700;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: var(--shadow);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .compact-profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
+
+        .compact-profile-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .compact-profile-email {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .compact-profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .compact-stat-item {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .compact-stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .compact-stat-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        /* Стили для квадратных карточек услуг */
+        .service-card-square {
+            background: var(--ivory-light);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            border: 1px solid rgba(242, 221, 230, 0.5);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
+            overflow: hidden;
+            height: 280px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .service-card-square:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+            border-color: var(--pastel-pink);
+            background: white;
+        }
+
+        .service-image-container {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            margin: 20px auto 15px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--pink-light);
+        }
+
+        .service-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .service-card-square:hover .service-image-container img {
+            transform: scale(1.05);
+        }
+
+        /* Стили для чата поддержки */
+        .support-message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            animation: fadeInMessage 0.3s ease;
+        }
+
+        .support-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+            color: var(--graphite-dark);
+            border-bottom-right-radius: 4px;
+        }
+
+        .support-message.support {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid rgba(61, 61, 61, 0.1);
+            color: var(--graphite-dark);
+            border-bottom-left-radius: 4px;
+        }
+
+        .support-message-time {
+            font-size: 0.7rem;
+            color: var(--graphite-light);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .support-message.support .support-message-time {
+            text-align: left;
+        }
+
+        .support-message-sender {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--graphite-medium);
+        }
+
+        /* Кнопка поддержки в верхнем меню */
+        .support-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--pastel-pink);
+            color: var(--graphite-dark);
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .support-menu-btn:hover {
+            background: var(--pink-medium);
+            transform: translateY(-1px);
+        }
+
+        /* Цвета статусов задач */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .status-new {
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(33, 150, 243, 0.1));
+            color: #1565C0;
+            border: 1px solid rgba(25, 118, 210, 0.2);
+        }
+        
+        .status-in_progress {
+            background: linear-gradient(135deg, rgba(103, 58, 183, 0.15), rgba(124, 77, 255, 0.1));
+            color: #512DA8;
+            border: 1px solid rgba(103, 58, 183, 0.2);
+        }
+        
+        .status-completed {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.1));
+            color: #2E7D32;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+        
+        .status-cancelled {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(239, 83, 80, 0.1));
+            color: #C62828;
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+        
+        .status-searching {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 167, 38, 0.1));
+            color: #EF6C00;
+            border: 1px solid rgba(255, 152, 0, 0.2);
+        }
+        
+        .status-assigned {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(66, 165, 245, 0.1));
+            color: #0277BD;
+            border: 1px solid rgba(33, 150, 243, 0.2);
+        }
+
+        /* Стиль карточек как на главной (круглые изображения) */
+        .category-card-main-style {
+            background: var(--ivory-light);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid rgba(242, 221, 230, 0.5);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            width: 100%;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .category-card-main-style:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+            border-color: var(--pastel-pink);
+            background: white;
+        }
+
+        .category-image-main {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
+        }
+
+        .category-image-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: block;
+        }
+
+        .category-card-main-style:hover .category-image-main img {
+            transform: scale(1.05);
+        }
+
+        .category-card-main-style h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--graphite-dark);
+            text-align: center;
+            width: 100%;
+        }
+
+        .category-description-main {
+            color: var(--graphite-medium);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            line-height: 1.4;
+            flex-grow: 1;
+            background: rgba(242, 221, 230, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            width: 100%;
+        }
+
+        .category-card-footer {
+            margin-top: 15px;
+            color: var(--pastel-pink);
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        /* Утилиты */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .w-100 { width: 100%; }
+        .d-flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .gap-10 { gap: 10px; }
+        .gap-20 { gap: 20px; }
+        
+        /* Адаптивность */
         @media (max-width: 480px) {
+            .container {
+                padding: 0 8px !important;
+            }
+            
+            .hero {
+                padding: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 1.6rem;
+            }
+            
+            .hero .tagline {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem !important;
+            }
+            
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-stats {
+                grid-template-columns: 1fr;
+                gap: 8px !important;
+            }
+            
+            .stat-item {
+                padding: 10px !important;
+            }
+            
+            .nav-item span {
+                font-size: 0.7rem;
+            }
+            
+            .nav-item i {
+                font-size: 1rem !important;
+                margin-bottom: 2px !important;
+            }
+            
+            .notification {
+                width: 90%;
+                right: 5%;
+            }
+            
+            .bottom-nav {
+                height: 55px !important;
+                padding: 0 5px !important;
+            }
+            
+            .nav-item span {
+                font-size: 0.65rem !important;
+            }
+            
+            .service-card {
+                min-height: 180px;
+            }
+            
+            .service-header h4 {
+                min-height: 40px;
+                font-size: 0.9rem;
+            }
+            
+            .service-description {
+                font-size: 0.8rem;
+                -webkit-line-clamp: 2;
+            }
+            
+            .category-image,
+            .service-image {
+                height: 80px;
+            }
+            
+            .chat-input {
+                min-height: 50px;
+                font-size: 0.9rem;
+            }
+            
+            .send-message-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .form-group > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
+            
             .stats-grid-compact {
                 grid-template-columns: 1fr;
                 gap: 12px;
@@ -2030,8 +2042,17 @@
                 padding: 15px;
             }
         }
-
-        @media (min-width: 481px) and (max-width: 768px) {
+        
+        /* Стили для планшетов */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .container {
+                padding: 0 16px !important;
+            }
+            
             .stats-grid-compact {
                 grid-template-columns: repeat(3, 1fr);
                 gap: 10px;
@@ -2045,24 +2066,141 @@
                 font-size: 0.7rem;
             }
         }
-
-        /* Для квадратных карточек */
-        .category-card-square .category-image-container {
-            width: 100%;
-            height: 180px;
-            overflow: hidden;
-            position: relative;
-            border-radius: 0;
+        
+        /* Ховеры только для десктопа */
+        @media (min-width: 1025px) {
+            .card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow);
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+            
+            .btn-primary:hover {
+                box-shadow: 0 8px 20px rgba(197, 168, 128, 0.3);
+            }
+            
+            .btn-secondary:hover {
+                background: rgba(61, 61, 61, 0.02);
+                border-color: var(--graphite-light);
+                transform: translateY(-1px);
+            }
+            
+            .btn-action:hover {
+                background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
+                transform: translateY(-2px);
+            }
+            
+            .category-card:hover {
+                transform: translateY(-4px);
+                box-shadow: var(--shadow);
+            }
         }
-
-        .category-card-square .category-image-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            display: block;
+        
+        /* Админ кнопка */
+        .admin-access-btn,
+        .performer-access-btn,
+        .quick-tasks-btn {
+            position: fixed;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+            animation: pulse 2s infinite;
         }
-
+        
+        .admin-access-btn {
+            bottom: 80px;
+            right: 20px;
+            background: var(--primary-gradient);
+            color: white;
+        }
+        
+        .quick-tasks-btn {
+            bottom: 80px;
+            left: 20px;
+            background: var(--action-gradient);
+            color: var(--graphite-dark);
+        }
+        
+        /* Исправления для текста */
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        button {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Плейсхолдеры */
+        ::placeholder {
+            color: var(--graphite-light);
+            opacity: 0.7;
+        }
+        
+        /* Скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--ivory-bg);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--pastel-pink);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--pink-medium);
+        }
+        
+        /* Новые стили для состояний пользователя */
+        .auth-screen {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .auth-content {
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .auth-card {
+            padding: 40px 30px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--pastel-pink);
+        }
+        
+        .auth-icon {
+            font-size: 4rem;
+            color: var(--pastel-pink);
+            margin-bottom: 20px;
+        }
+        
+        .auth-actions {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
         /* Стили для таблицы задач (только для десктопа) */
         @media (min-width: 769px) {
             .task-table-container {
@@ -2148,12 +2286,18 @@
                 margin-top: 12px;
                 justify-content: flex-end;
             }
+            
+            .grid.grid-2,
+            .grid.grid-3 {
+                grid-template-columns: 1fr;
+            }
         }
         
         /* Стили для изображений - исправление для всех устройств */
         .category-image img,
         .service-image img,
-        .category-image-container img {
+        .category-image-container img,
+        .category-image-main img {
             display: block;
             width: 100%;
             height: 100%;
@@ -2162,745 +2306,241 @@
             user-select: none;
         }
         
-        /* Исправление для iOS */
-        @supports (-webkit-touch-callout: none) {
-            .category-image img,
-            .service-image img,
-            .category-image-container img {
-                object-fit: cover !important;
-            }
-        }
-
-/* Стиль карточек как на главной (круглые изображения) */
-.category-card-main-style {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 20px;
-    border: 1px solid rgba(61, 61, 61, 0.08);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-    width: 100%;
-    text-align: center;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-}
-
-.category-card-main-style:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow);
-    border-color: var(--pastel-pink);
-}
-
-.category-card-main-style .category-image-main {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-}
-
-.category-card-main-style .category-image-main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-.category-card-main-style:hover .category-image-main img {
-    transform: scale(1.05);
-}
-
-.category-card-main-style h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--graphite-dark);
-    text-align: center;
-}
-
-.category-card-main-style .category-description-main {
-    color: var(--graphite-medium);
-    font-size: 0.85rem;
-    margin-bottom: 16px;
-    line-height: 1.4;
-    flex-grow: 1;
-    background: rgba(242, 221, 230, 0.1);
-    padding: 10px;
-    border-radius: 12px;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
-    width: 100%;
-}
-
-/* Адаптивность для круглых изображений */
-@media (max-width: 768px) {
-    .category-card-main-style .category-image-main {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 1rem;
-        min-height: 36px;
-    }
-    
-    .category-card-main-style .category-description-main {
-        font-size: 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .category-card-main-style .category-image-main {
-        width: 80px;
-        height: 80px;
-    }
-}
-        
-        /* Адаптивность для квадратной сетки */
+        /* Адаптивность для круглых изображений */
         @media (max-width: 768px) {
-            .square-grid {
-                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                gap: 15px;
+            .category-image-main {
+                width: 100px;
+                height: 100px;
             }
             
-            .category-card-square {
-                height: 240px;
-            }
-            
-            .category-image-container {
-                height: 130px;
-            }
-            
-            .category-content {
-                padding: 15px;
-            }
-            
-            .category-title {
+            .category-card-main-style h3 {
                 font-size: 1rem;
-                margin-bottom: 6px;
+                min-height: 36px;
             }
             
-            .category-description {
-                font-size: 0.85rem;
-                margin-bottom: 12px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .square-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 12px;
+            .category-description-main {
+                font-size: 0.8rem;
             }
             
-            .category-card-square {
-                height: 220px;
-            }
-            
-            .category-image-container {
-                height: 110px;
-            }
-            
-            .category-content {
-                padding: 12px;
-            }
-        }
-        
-        /* Цвета статусов задач */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .status-new {
-            background: rgba(25, 118, 210, 0.1);
-            color: #1976D2;
-        }
-        
-        .status-in_progress {
-            background: rgba(103, 58, 183, 0.1);
-            color: #673AB7;
-        }
-        
-        .status-completed {
-            background: rgba(76, 175, 80, 0.1);
-            color: #4CAF50;
-        }
-        
-        .status-cancelled {
-            background: rgba(244, 67, 54, 0.1);
-            color: #F44336;
-        }
-        
-        .status-searching {
-            background: rgba(255, 152, 0, 0.1);
-            color: #FF9800;
-        }
-        
-        .status-assigned {
-            background: rgba(33, 150, 243, 0.1);
-            color: #2196F3;
-        }
-        
-        /* Стили для чата поддержки */
-        .support-message {
-            max-width: 80%;
-            padding: 10px 15px;
-            border-radius: 18px;
-            margin-bottom: 8px;
-            word-wrap: break-word;
-            animation: fadeInMessage 0.3s ease;
-        }
-
-        .support-message.user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
-            color: var(--graphite-dark);
-            border-bottom-right-radius: 4px;
-        }
-
-        .support-message.support {
-            align-self: flex-start;
-            background: white;
-            border: 1px solid rgba(61, 61, 61, 0.1);
-            color: var(--graphite-dark);
-            border-bottom-left-radius: 4px;
-        }
-
-        .support-message-time {
-            font-size: 0.7rem;
-            color: var(--graphite-light);
-            margin-top: 4px;
-            text-align: right;
-        }
-
-        .support-message.support .support-message-time {
-            text-align: left;
-        }
-
-        .support-message-sender {
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--graphite-medium);
-        }
-
-        /* Кнопка поддержки в верхнем меню */
-        .support-menu-btn {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: var(--pastel-pink);
-            color: var(--graphite-dark);
-            border-radius: var(--radius);
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            border: none;
-            font-size: 0.9rem;
-        }
-
-        .support-menu-btn:hover {
-            background: var(--pink-medium);
-            transform: translateY(-1px);
-        }
-
-        /* Квадратные карточки услуг */
-        .service-card-square {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 0;
-            border: 1px solid rgba(61, 61, 61, 0.08);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            cursor: pointer;
-            overflow: hidden;
-            height: 280px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .service-card-square:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-        }
-
-.service-image-container {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    margin: 20px auto 15px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--pink-light);
-}
-
-.service-image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-}
-
-        .service-card-square:hover .service-image-container img {
-            transform: scale(1.05);
-        }
-
-        /* Стили для компактного профиля */
-        .compact-profile-header {
-            background: var(--primary-gradient);
-            color: white;
-            padding: 20px;
-            border-radius: var(--radius);
-            margin-bottom: 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .compact-profile-avatar {
-            width: 70px;
-            height: 70px;
-            background: white;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--pastel-pink);
-            font-size: 1.8rem;
-            font-weight: 700;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .compact-profile-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .compact-profile-email {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-bottom: 15px;
-        }
-
-        .compact-profile-stats {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .compact-stat-item {
-            text-align: center;
-            min-width: 60px;
-        }
-
-        .compact-stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-
-        .compact-stat-label {
-            font-size: 0.7rem;
-            opacity: 0.9;
-        }
-
-@media (max-width: 768px) {
-    .grid.grid-2,
-    .grid.grid-3 {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .grid.grid-3 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* ==================== СТИЛИ ДЛЯ КАРТОЧЕК КАК НА ГЛАВНОЙ ==================== */
-.grid-2-main {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-.grid-3-main {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-.category-card-main-style {
-    background: var(--white);
-    border-radius: var(--radius);
-    padding: 20px;
-    border: 1px solid rgba(61, 61, 61, 0.08);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-    width: 100%;
-    text-align: center;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-}
-
-.category-card-main-style:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow);
-    border-color: var(--pastel-pink);
-}
-
-.category-image-main {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-}
-
-.category-image-main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-.category-card-main-style:hover .category-image-main img {
-    transform: scale(1.05);
-}
-
-.category-card-main-style h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--graphite-dark);
-    text-align: center;
-    width: 100%;
-}
-
-.category-description-main {
-    color: var(--graphite-medium);
-    font-size: 0.85rem;
-    margin-bottom: 16px;
-    line-height: 1.4;
-    flex-grow: 1;
-    background: rgba(242, 221, 230, 0.1);
-    padding: 10px;
-    border-radius: 12px;
-    border-bottom-left-radius: 25px;
-    border-bottom-right-radius: 25px;
-    width: 100%;
-}
-
-
-.category-card-footer {
-    margin-top: 15px;
-    color: var(--pastel-pink);
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-}
-
-/* Адаптивность для круглых изображений */
-@media (max-width: 768px) {
-    .category-image-main {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 1rem;
-        min-height: 36px;
-    }
-    
-    .category-description-main {
-        font-size: 0.8rem;
-    }
-    
-    .grid-2-main,
-    .grid-3-main {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ИСПРАВЛЕНИЕ: Для страницы "Все услуги" на телефонах - 2 колонки */
-#allServicesList {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    width: 100%;
-}
-
-/* Карточка услуги в сетке 2 колонки для "Все услуги" */
-#allServicesList .category-card-main-style {
-    width: 100%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 320px;
-    padding: 15px;
-}
-
-/* Изображение в карточке для "Все услуги" */
-#allServicesList .category-image-main {
-    width: 90px;
-    height: 90px;
-    margin-bottom: 12px;
-}
-
-/* Заголовок для "Все услуги" */
-#allServicesList .category-card-main-style h3 {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-    min-height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1.3;
-}
-
-/* Описание для "Все услуги" */
-#allServicesList .category-description-main {
-    font-size: 0.8rem;
-    line-height: 1.4;
-    margin-bottom: 12px;
-    padding: 8px;
-}
-
-/* Футер для "Все услуги" */
-#allServicesList .category-card-footer {
-    font-size: 0.8rem;
-    margin-top: 10px;
-}
-
-/* Адаптивность для "Все услуги" */
-@media (max-width: 480px) {
-    #allServicesList {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        padding: 0 5px;
-    }
-    
-    #allServicesList .category-card-main-style {
-        padding: 12px;
-        min-height: 280px;
-    }
-    
-    #allServicesList .category-image-main {
-        width: 80px;
-        height: 80px;
-    }
-    
-    #allServicesList .category-card-main-style h3 {
-        font-size: 0.9rem;
-        min-height: 32px;
-        -webkit-line-clamp: 2;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-    
-    #allServicesList .category-description-main {
-        font-size: 0.75rem;
-        padding: 6px;
-        -webkit-line-clamp: 3;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-}
-
-/* Для очень маленьких экранов (менее 360px) */
-@media (max-width: 360px) {
-    #allServicesList {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-        padding: 0 4px;
-    }
-    
-    #allServicesList .category-card-main-style {
-        padding: 10px;
-        min-height: 260px;
-    }
-    
-    #allServicesList .category-image-main {
-        width: 70px;
-        height: 70px;
-    }
-    
-    #allServicesList .category-card-main-style h3 {
-        font-size: 0.85rem;
-        min-height: 30px;
-    }
-}
-
-/* Для планшетов */
-@media (min-width: 481px) and (max-width: 768px) {
-    #allServicesList {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        padding: 0 10px;
-    }
-    
-    #allServicesList .category-card-main-style {
-        min-height: 340px;
-    }
-    
-    #allServicesList .category-image-main {
-        width: 100px;
-        height: 100px;
-    }
-    
-    #allServicesList .category-card-main-style h3 {
-        font-size: 1rem;
-    }
-    
-    #allServicesList .category-description-main {
-        font-size: 0.85rem;
-    }
-}
-
-/* Для десктопов */
-@media (min-width: 769px) and (max-width: 1024px) {
-    #allServicesList {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        padding: 0 15px;
-    }
-    
-    #allServicesList .category-card-main-style {
-        min-height: 360px;
-    }
-    
-    #allServicesList .category-image-main {
-        width: 110px;
-        height: 110px;
-    }
-    
-    #allServicesList .category-card-main-style h3 {
-        font-size: 1.1rem;
-    }
-}
-
-/* Для больших десктопов */
-@media (min-width: 1025px) {
-    #allServicesList {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 25px;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-    
-    #allServicesList .category-card-main-style {
-        min-height: 380px;
-    }
-    
-    #allServicesList .category-image-main {
-        width: 120px;
-        height: 120px;
-    }
-}
-
-/* Для других страниц (категории, главная) оставляем адаптивную сетку */
-.grid-2-main:not(#allServicesList),
-.grid-3-main:not(#allServicesList) {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-@media (max-width: 768px) {
-    .grid-2-main:not(#allServicesList),
-    .grid-3-main:not(#allServicesList) {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .grid-2-main:not(#allServicesList),
-    .grid-3-main:not(#allServicesList) {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-        
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            .services-grid {
+            .grid-2-main:not(#allServicesList),
+            .grid-3-main:not(#allServicesList) {
                 grid-template-columns: 1fr;
-                gap: 12px;
-                padding: 12px;
-            }
-            
-            .service-image-container {
-                height: 120px;
-            }
-            
-            .service-image-circle {
-                width: 80px;
-                height: 80px;
             }
         }
 
         @media (min-width: 769px) and (max-width: 1024px) {
-            .services-grid {
+            .grid.grid-3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .grid-2-main:not(#allServicesList),
+            .grid-3-main:not(#allServicesList) {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        
+        /* ==================== СТИЛИ ДЛЯ КАРТОЧЕК КАК НА ГЛАВНОЙ ==================== */
+        .grid-2-main {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
 
-        @media (min-width: 1025px) {
-            .services-grid {
+        .grid-3-main {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+        
+        /* ИСПРАВЛЕНИЕ: Для страницы "Все услуги" на телефонах - 2 колонки */
+        #allServicesList {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        /* Карточка услуги в сетке 2 колонки для "Все услуги" */
+        #allServicesList .category-card-main-style {
+            width: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 320px;
+            padding: 15px;
+        }
+
+        /* Изображение в карточке для "Все услуги" */
+        #allServicesList .category-image-main {
+            width: 90px;
+            height: 90px;
+            margin-bottom: 12px;
+        }
+
+        /* Заголовок для "Все услуги" */
+        #allServicesList .category-card-main-style h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        /* Описание для "Все услуги" */
+        #allServicesList .category-description-main {
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            padding: 8px;
+        }
+
+        /* Футер для "Все услуги" */
+        #allServicesList .category-card-footer {
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* Адаптивность для "Все услуги" */
+        @media (max-width: 480px) {
+            #allServicesList {
                 grid-template-columns: repeat(2, 1fr);
-                max-width: 600px;
+                gap: 10px;
+                padding: 0 5px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                padding: 12px;
+                min-height: 280px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 80px;
+                height: 80px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 0.9rem;
+                min-height: 32px;
+                -webkit-line-clamp: 2;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            #allServicesList .category-description-main {
+                font-size: 0.75rem;
+                padding: 6px;
+                -webkit-line-clamp: 3;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
+
+        /* Для очень маленьких экранов (менее 360px) */
+        @media (max-width: 360px) {
+            #allServicesList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 0 4px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                padding: 10px;
+                min-height: 260px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 70px;
+                height: 70px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 0.85rem;
+                min-height: 30px;
+            }
+        }
+
+        /* Для планшетов */
+        @media (min-width: 481px) and (max-width: 768px) {
+            #allServicesList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                padding: 0 10px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                min-height: 340px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 100px;
+                height: 100px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 1rem;
+            }
+            
+            #allServicesList .category-description-main {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Для десктопов */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #allServicesList {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                padding: 0 15px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                min-height: 360px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 110px;
+                height: 110px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        /* Для больших десктопов */
+        @media (min-width: 1025px) {
+            #allServicesList {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 25px;
+                max-width: 1200px;
                 margin: 0 auto;
             }
+            
+            #allServicesList .category-card-main-style {
+                min-height: 380px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Для других страниц (категории, главная) оставляем адаптивную сетку */
+        .grid-2-main:not(#allServicesList),
+        .grid-3-main:not(#allServicesList) {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
         }
         
         /* Уменьшаем отступы в карточке профиля для мобильных */
@@ -2947,6 +2587,16 @@
             width: 100px;
             height: 100px;
             margin: 0 auto 10px;
+        }
+        
+        /* Стили для изображений прелоадера */
+        img {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        img.loaded {
+            opacity: 1;
         }
     </style>
 </head>
@@ -3462,14 +3112,14 @@
                         <form id="createTaskForm" class="create-task-form">
                             <div class="form-group">
                                 <label class="form-label">Категория</label>
-                                <div class="form-input" style="background: #f9f9f9; padding: 12px; border-radius: var(--radius-sm);" id="selectedCategoryDisplay">
+                                <div class="form-input" style="background: rgba(242, 221, 230, 0.1); padding: 12px; border-radius: var(--radius-sm); border-left: 4px solid var(--pastel-pink); font-weight: 600; color: var(--graphite-dark);" id="selectedCategoryDisplay">
                                     Не выбрана
                                 </div>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">Услуга</label>
-                                <div class="form-input" style="background: #f9f9f9; padding: 12px; border-radius: var(--radius-sm);" id="selectedServiceDisplay">
+                                <div class="form-input" style="background: rgba(242, 221, 230, 0.1); padding: 12px; border-radius: var(--radius-sm); border-left: 4px solid var(--gold-metallic); font-weight: 600; color: var(--graphite-dark);" id="selectedServiceDisplay">
                                     Не выбрана
                                 </div>
                             </div>
@@ -3486,7 +3136,11 @@
                             
                             <div class="form-group">
                                 <label class="form-label" for="taskAddress">Адрес *</label>
-                                <input type="text" id="taskAddress" class="form-input" placeholder="Где нужно выполнить задачу" required>
+                                <input type="text" id="taskAddress" class="form-input" placeholder="Например: ул. Ленина, д. 10, кв. 25, 3 этаж, код домофона 25" required>
+                                <div style="font-size: 0.85rem; color: var(--graphite-medium); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-info-circle" style="color: var(--pastel-pink);"></i>
+                                    Укажите улицу, дом, квартиру, этаж и код домофона если есть
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -3497,6 +3151,27 @@
                             <div class="form-group">
                                 <label class="form-label" for="taskContact">Контакт для связи *</label>
                                 <input type="text" id="taskContact" class="form-input" placeholder="Телефон или Telegram" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Предпочтительный способ связи *</label>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 8px;">
+                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                        <input type="radio" name="contactType" value="phone" checked style="display: none;">
+                                        <i class="fas fa-phone" style="font-size: 1.5rem; color: var(--pastel-pink); margin-bottom: 8px;"></i>
+                                        <span style="font-size: 0.9rem; font-weight: 500;">Телефон</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                        <input type="radio" name="contactType" value="whatsapp" style="display: none;">
+                                        <i class="fab fa-whatsapp" style="font-size: 1.5rem; color: #25D366; margin-bottom: 8px;"></i>
+                                        <span style="font-size: 0.9rem; font-weight: 500;">WhatsApp</span>
+                                    </label>
+                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                        <input type="radio" name="contactType" value="telegram" style="display: none;">
+                                        <i class="fab fa-telegram" style="font-size: 1.5rem; color: #0088cc; margin-bottom: 8px;"></i>
+                                        <span style="font-size: 0.9rem; font-weight: 500;">Telegram</span>
+                                    </label>
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -3531,13 +3206,13 @@
                     
                     <!-- Табы -->
                     <div class="tabs" id="tasksTabs">
-    <div class="tab active" onclick="app.loadUserTasks('all')">Все</div>
-    <div class="tab" onclick="app.loadUserTasks('new')">Новые</div>
-    <div class="tab" onclick="app.loadUserTasks('searching')">В поиске</div>
-    <div class="tab" onclick="app.loadUserTasks('in_progress')">В работе</div>
-    <div class="tab" onclick="app.loadUserTasks('completed')">Завершенные</div>
-    <div class="tab" onclick="app.loadUserTasks('cancelled')">Отмененные</div>
-</div>
+                        <div class="tab active" onclick="app.loadUserTasks('all')">Все</div>
+                        <div class="tab" onclick="app.loadUserTasks('new')">Новые</div>
+                        <div class="tab" onclick="app.loadUserTasks('searching')">В поиске</div>
+                        <div class="tab" onclick="app.loadUserTasks('in_progress')">В работе</div>
+                        <div class="tab" onclick="app.loadUserTasks('completed')">Завершенные</div>
+                        <div class="tab" onclick="app.loadUserTasks('cancelled')">Отмененные</div>
+                    </div>
                     
                     <!-- Контейнер для карточек задач (для мобильных) -->
                     <div class="task-cards-container" id="userTasksCards">
@@ -3584,8 +3259,8 @@
                         </div>
                         
                         <div class="chat-input-area">
-                            <textarea id="inlineChatMessage" placeholder="Введите сообщение..."></textarea>
-                            <button onclick="app.sendInlineChatMessage()">
+                            <textarea id="inlineChatMessage" class="chat-input" placeholder="Введите сообщение..." rows="1"></textarea>
+                            <button class="send-message-btn" onclick="app.sendInlineChatMessage()">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -3767,7 +3442,7 @@
             </div>
             
             <div style="display: flex; gap: 10px; flex-shrink: 0;">
-                <textarea id="supportMessageInput" placeholder="Введите ваше сообщение..." style="flex: 1; padding: 12px; border: 1.5px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius); font-family: 'Inter', sans-serif; resize: none; min-height: 60px;"></textarea>
+                <textarea id="supportMessageInput" placeholder="Введите ваше сообщение..." style="flex: 1; padding: 14px 18px; min-height: 60px; border: 1.5px solid rgba(242, 221, 230, 0.5); border-radius: 20px; background: var(--ivory-light); font-family: 'Inter', sans-serif; font-size: 1rem; resize: none; transition: var(--transition);"></textarea>
                 <button class="btn btn-primary" onclick="app.sendSupportMessage()" style="align-self: flex-end; padding: 12px 20px;">
                     <i class="fas fa-paper-plane"></i>
                 </button>
@@ -4114,26 +3789,28 @@
                 if (!this.currentToken && !url.includes('/api/auth/')) {
                     return Promise.resolve({
                         ok: false,
-                        status: 401
+                        status: 401,
+                        json: async () => ({ success: false, error: 'Требуется авторизация' })
                     });
                 }
                 
                 const headers = {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 };
-                
-                if (options && options.headers) {
-                    Object.assign(headers, options.headers);
-                }
                 
                 if (this.currentToken) {
                     headers['Authorization'] = 'Bearer ' + this.currentToken;
                 }
                 
+                if (options && options.headers) {
+                    Object.assign(headers, options.headers);
+                }
+                
                 try {
                     const response = await fetch(url, Object.assign({}, options, { headers: headers }));
                     
-                    if (response.status === 401) {
+                    if (response.status === 401 || response.status === 403) {
                         if (this.currentToken) {
                             localStorage.removeItem('token');
                             localStorage.removeItem('currentUser');
@@ -4142,12 +3819,18 @@
                             this.showNotification('Сессия истекла. Войдите снова.', 'error');
                             setTimeout(() => { this.navigateToPage('auth'); }, 1000);
                         }
+                        return response;
                     }
+                    
                     return response;
                 } catch (error) {
                     console.error('Ошибка запроса:', error);
-                    this.showNotification('Ошибка соединения с сервером', 'error');
-                    return { ok: false };
+                    this.showNotification('Ошибка соединения с сервером. Проверьте интернет.', 'error');
+                    return { 
+                        ok: false, 
+                        status: 0,
+                        json: async () => ({ success: false, error: 'Ошибка сети' })
+                    };
                 }
             },
 
@@ -4299,6 +3982,32 @@
                         }
                     });
                 }
+                
+                // Стилизация выбора типа связи
+                document.querySelectorAll('input[name="contactType"]').forEach(input => {
+                    input.addEventListener('change', function() {
+                        const parent = this.closest('label');
+                        document.querySelectorAll('input[name="contactType"]').forEach(otherInput => {
+                            const otherParent = otherInput.closest('label');
+                            if (otherParent) {
+                                otherParent.style.borderColor = 'rgba(61, 61, 61, 0.1)';
+                                const icon = otherParent.querySelector('i');
+                                if (icon && icon.classList.contains('fa-phone')) {
+                                    icon.style.color = 'var(--pastel-pink)';
+                                } else if (icon && icon.classList.contains('fa-whatsapp')) {
+                                    icon.style.color = '#25D366';
+                                } else if (icon && icon.classList.contains('fa-telegram')) {
+                                    icon.style.color = '#0088cc';
+                                }
+                            }
+                        });
+                        
+                        if (parent) {
+                            parent.style.borderColor = 'var(--pastel-pink)';
+                            parent.style.backgroundColor = 'rgba(242, 221, 230, 0.1)';
+                        }
+                    });
+                });
             },
 
             formatPhoneInput: function(input) {
@@ -4373,50 +4082,49 @@
                 return this.categories;
             },
 
-renderHomeCategories: function() {
-    const container = document.getElementById('categoriesGrid');
-    if (!container || !this.categories) return;
-    
-    if (this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    this.categories.slice(0, 4).forEach((category) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { this.selectCategoryForServices(category); };
-        
-        const imageUrl = category.image_url ? 
-            this.getImageUrl(category.image_url, 'category') : 
-            this.createSvgFallback('category');
-        
-        const svgFallback = this.createSvgFallback('category');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${category.display_name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                <!-- УБРАН category-icon-badge-main -->
-            </div>
-            <h3>${category.display_name}</h3>
-            <div class="category-description-main">${category.description}</div>
-            <div class="category-card-footer">
-                <span>${category.services_count || '0'} услуг</span>
-                <span>Выбрать <i class="fas fa-arrow-right"></i></span>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
-},
+            renderHomeCategories: function() {
+                const container = document.getElementById('categoriesGrid');
+                if (!container || !this.categories) return;
+                
+                if (this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                this.categories.slice(0, 4).forEach((category) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { this.selectCategoryForServices(category); };
+                    
+                    const imageUrl = category.image_url ? 
+                        this.getImageUrl(category.image_url, 'category') : 
+                        this.createSvgFallback('category');
+                    
+                    const svgFallback = this.createSvgFallback('category');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${category.display_name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <div class="category-description-main">${category.description}</div>
+                        <div class="category-card-footer">
+                            <span>${category.services_count || '0'} услуг</span>
+                            <span>Выбрать <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            },
             
             loadAllServices: async function() {
                 try {
@@ -4460,65 +4168,64 @@ renderHomeCategories: function() {
             },
 
             renderAllServices: function() {
-    const container = document.getElementById('allServicesList');
-    const pageTitle = document.getElementById('servicesPageTitle');
-    
-    if (!container) return;
-    
-    if (!this.allServices || this.allServices.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-            '</div>';
-        return;
-    }
-    
-    if (pageTitle) {
-        pageTitle.textContent = 'Все услуги';
-    }
-    
-    container.innerHTML = '';
-    
-    this.allServices.forEach((service) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectService(service);
-        };
-        
-        const imageUrl = service.image_url ? 
-            this.getImageUrl(service.image_url, 'service') : 
-            this.createSvgFallback('service');
-        
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                <!-- УБРАН category-icon-badge-main -->
-            </div>
-            <h3>${service.name}</h3>
-            <div class="category-description-main">${service.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                    ${service.category_name || 'Без категории'}
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-    
-    const backBtn = document.getElementById('backToCategoriesBtn');
-    if (backBtn) backBtn.style.display = 'none';
-},
+                const container = document.getElementById('allServicesList');
+                const pageTitle = document.getElementById('servicesPageTitle');
+                
+                if (!container) return;
+                
+                if (!this.allServices || this.allServices.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+                        '</div>';
+                    return;
+                }
+                
+                if (pageTitle) {
+                    pageTitle.textContent = 'Все услуги';
+                }
+                
+                container.innerHTML = '';
+                
+                this.allServices.forEach((service) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectService(service);
+                    };
+                    
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.createSvgFallback('service');
+                    
+                    const svgFallback = this.createSvgFallback('service');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${service.name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${service.name}</h3>
+                        <div class="category-description-main">${service.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
+                                ${service.category_name || 'Без категории'}
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                const backBtn = document.getElementById('backToCategoriesBtn');
+                if (backBtn) backBtn.style.display = 'none';
+            },
 
             loadAllCategoriesPage: async function() {
                 try {
@@ -4537,60 +4244,59 @@ renderHomeCategories: function() {
             },
 
             renderAllCategories: function() {
-    const container = document.getElementById('allCategoriesList');
-    if (!container) return;
-    
-    if (!this.categories || this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
-        '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
-    '</div>';
-    
-    this.categories.forEach((category) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectCategoryForServices(category);
-        };
-        
-        const imageUrl = category.image_url ? 
-            this.getImageUrl(category.image_url, 'category') : 
-            this.createSvgFallback('category');
-        
-        const svgFallback = this.createSvgFallback('category');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${category.display_name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                <!-- УБРАН category-icon-badge-main -->
-            </div>
-            <h3>${category.display_name}</h3>
-            <div class="category-description-main">${category.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-list"></i>
-                    ${category.services_count || 0} услуг
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
-},
+                const container = document.getElementById('allCategoriesList');
+                if (!container) return;
+                
+                if (!this.categories || this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                    '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
+                    '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
+                '</div>';
+                
+                this.categories.forEach((category) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectCategoryForServices(category);
+                    };
+                    
+                    const imageUrl = category.image_url ? 
+                        this.getImageUrl(category.image_url, 'category') : 
+                        this.createSvgFallback('category');
+                    
+                    const svgFallback = this.createSvgFallback('category');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${category.display_name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <div class="category-description-main">${category.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-list"></i>
+                                ${category.services_count || 0} услуг
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            },
 
             filterCategories: function() {
                 const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
@@ -4703,7 +4409,6 @@ renderHomeCategories: function() {
                         this.getImageUrl(service.image_url, 'service') : 
                         this.createSvgFallback('service');
                     
-                    const iconClass = service.icon || 'fas fa-star';
                     const svgFallback = this.createSvgFallback('service');
                     
                     card.innerHTML = `
@@ -4850,100 +4555,99 @@ renderHomeCategories: function() {
                 }
             },
 
-renderServicesForCategory: function(category) {
-    const container = document.getElementById('allServicesList');
-    const pageTitle = document.getElementById('servicesPageTitle');
-    const backBtn = document.getElementById('backToCategoriesBtn');
-    const searchBox = document.querySelector('.search-box');
-    
-    if (!container) return;
-    
-    if (searchBox) searchBox.style.display = 'block';
-    if (backBtn) backBtn.style.display = 'block';
-    
-    if (!this.services || this.services.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-            '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
-                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                    '<i class="fas fa-list"></i>' +
-                    'Все услуги' +
-                '</button>' +
-                '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Назад к категориям' +
-                '</button>' +
-            '</div>' +
-        '</div>';
-        
-        if (pageTitle) {
-            pageTitle.textContent = category.display_name + ' (нет услуг)';
-        }
-        return;
-    }
-    
-    if (pageTitle) {
-        pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
-    }
-    
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
-            '<div>' +
-                '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
-                '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
-            '</div>' +
-            '<div style="display: flex; gap: 10px;">' +
-                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                    '<i class="fas fa-list"></i>' +
-                    'Все услуги' +
-                '</button>' +
-                '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Категории' +
-                '</button>' +
-            '</div>' +
-        '</div>' +
-        '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
-    '</div>';
-    
-    this.services.forEach((service) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectService(service);
-        };
-        
-        const imageUrl = service.image_url ? 
-            this.getImageUrl(service.image_url, 'service') : 
-            this.createSvgFallback('service');
-        
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
-                <!-- УБРАН category-icon-badge-main -->
-            </div>
-            <h3>${service.name}</h3>
-            <div class="category-description-main">${service.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                    ${category.display_name}
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-},
+            renderServicesForCategory: function(category) {
+                const container = document.getElementById('allServicesList');
+                const pageTitle = document.getElementById('servicesPageTitle');
+                const backBtn = document.getElementById('backToCategoriesBtn');
+                const searchBox = document.querySelector('.search-box');
+                
+                if (!container) return;
+                
+                if (searchBox) searchBox.style.display = 'block';
+                if (backBtn) backBtn.style.display = 'block';
+                
+                if (!this.services || this.services.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
+                        '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
+                            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                                '<i class="fas fa-list"></i>' +
+                                'Все услуги' +
+                            '</button>' +
+                            '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
+                                '<i class="fas fa-arrow-left"></i>' +
+                                'Назад к категориям' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>';
+                    
+                    if (pageTitle) {
+                        pageTitle.textContent = category.display_name + ' (нет услуг)';
+                    }
+                    return;
+                }
+                
+                if (pageTitle) {
+                    pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
+                }
+                
+                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                    '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
+                        '<div>' +
+                            '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
+                            '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
+                        '</div>' +
+                        '<div style="display: flex; gap: 10px;">' +
+                            '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
+                                '<i class="fas fa-list"></i>' +
+                                'Все услуги' +
+                            '</button>' +
+                            '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
+                                '<i class="fas fa-arrow-left"></i>' +
+                                'Категории' +
+                            '</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
+                '</div>';
+                
+                this.services.forEach((service) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectService(service);
+                    };
+                    
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.createSvgFallback('service');
+                    
+                    const svgFallback = this.createSvgFallback('service');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${service.name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+                        </div>
+                        <h3>${service.name}</h3>
+                        <div class="category-description-main">${service.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
+                                ${category.display_name}
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            },
 
             selectCategory: function(category) {
                 if (!this.currentUser) {
@@ -4996,54 +4700,53 @@ renderServicesForCategory: function(category) {
                 this.renderTopServices(topServicesData);
             },
 
-           renderTopServices: function(services) {
-    const container = document.getElementById('topServicesGrid');
-    if (!container) return;
-    
-    if (!services || services.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    services.forEach((service) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { this.selectService(service); };
-        
-        const imageUrl = service.image_url ? 
-            this.API_BASE_URL + service.image_url + '?t=' + Date.now() : 
-            this.createSvgFallback('service');
-        
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                <!-- УБРАН category-icon-badge-main -->
-            </div>
-            <h3>${service.name}</h3>
-            <div class="category-description-main">${service.description}</div>
-            <div class="category-card-footer">
-                <span style="color: var(--gold-metallic); display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-star"></i>
-                    Топ услуга
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать
-                </span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-},
+            renderTopServices: function(services) {
+                const container = document.getElementById('topServicesGrid');
+                if (!container) return;
+                
+                if (!services || services.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                services.forEach((service) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { this.selectService(service); };
+                    
+                    const imageUrl = service.image_url ? 
+                        this.API_BASE_URL + service.image_url + '?t=' + Date.now() : 
+                        this.createSvgFallback('service');
+                    
+                    const svgFallback = this.createSvgFallback('service');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${service.name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${service.name}</h3>
+                        <div class="category-description-main">${service.description}</div>
+                        <div class="category-card-footer">
+                            <span style="color: var(--gold-metallic); display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-star"></i>
+                                Топ услуга
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            },
 
             selectService: function(service) {
                 if (!this.currentUser) {
@@ -5116,8 +4819,13 @@ renderServicesForCategory: function(category) {
                 if (this.selectedCategory) {
                     const categoryDisplay = document.getElementById('selectedCategoryDisplay');
                     if (categoryDisplay) {
-                        categoryDisplay.textContent = this.selectedCategory.display_name;
+                        categoryDisplay.textContent = this.selectedCategory.display_name || this.selectedCategory.name;
                         categoryDisplay.style.color = 'var(--graphite-dark)';
+                        categoryDisplay.style.fontWeight = '600';
+                        categoryDisplay.style.background = 'rgba(242, 221, 230, 0.1)';
+                        categoryDisplay.style.padding = '12px';
+                        categoryDisplay.style.borderRadius = 'var(--radius-sm)';
+                        categoryDisplay.style.borderLeft = '4px solid var(--pastel-pink)';
                     }
                 }
                 
@@ -5126,6 +4834,11 @@ renderServicesForCategory: function(category) {
                     if (serviceDisplay) {
                         serviceDisplay.textContent = this.selectedService.name;
                         serviceDisplay.style.color = 'var(--graphite-dark)';
+                        serviceDisplay.style.fontWeight = '600';
+                        serviceDisplay.style.background = 'rgba(242, 221, 230, 0.1)';
+                        serviceDisplay.style.padding = '12px';
+                        serviceDisplay.style.borderRadius = 'var(--radius-sm)';
+                        serviceDisplay.style.borderLeft = '4px solid var(--gold-metallic)';
                     }
                 }
                 
@@ -5153,117 +4866,133 @@ renderServicesForCategory: function(category) {
                 if (categoryDisplay) {
                     categoryDisplay.textContent = 'Не выбрана';
                     categoryDisplay.style.color = 'var(--graphite-medium)';
+                    categoryDisplay.style.fontWeight = '400';
+                    categoryDisplay.style.background = '#f9f9f9';
+                    categoryDisplay.style.borderLeft = 'none';
                 }
                 
                 const serviceDisplay = document.getElementById('selectedServiceDisplay');
                 if (serviceDisplay) {
                     serviceDisplay.textContent = 'Не выбрана';
                     serviceDisplay.style.color = 'var(--graphite-medium)';
+                    serviceDisplay.style.fontWeight = '400';
+                    serviceDisplay.style.background = '#f9f9f9';
+                    serviceDisplay.style.borderLeft = 'none';
                 }
                 
                 this.navigateToPage('home');
             },
 
-createTask: async function() {
-    if (!this.currentUser) {
-        this.showNotification('Для создания задачи необходимо войти в систему', 'error');
-        return;
-    }
-    
-    if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
-        this.showNotification('Для создания задачи необходима активная подписка', 'error');
-        this.navigateToPage('subscription');
-        return;
-    }
-    
-    const tasksUsed = this.currentUser.tasks_used || 0;
-    const tasksLimit = this.currentUser.tasks_limit || 0;
-    const availableTasks = tasksLimit - tasksUsed;
-    
-    if (availableTasks <= 0) {
-        this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'error');
-        return;
-    }
-    
-    const taskTitle = document.getElementById('taskTitle')?.value;
-    const taskDescription = document.getElementById('taskDescription')?.value;
-    const taskAddress = document.getElementById('taskAddress')?.value;
-    const taskDeadline = document.getElementById('taskDeadline')?.value;
-    const taskContact = document.getElementById('taskContact')?.value;
-    const additionalRequirements = document.getElementById('additionalRequirements')?.value;
-    
-    if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
-        this.showNotification('Заполните все обязательные поля', 'error');
-        return;
-    }
-    
-    try {
-        this.showLoading('Создание задачи...');
-        
-        console.log('Отправка данных на сервер:', {
-            title: taskTitle,
-            category_id: this.selectedCategory?.id,
-            service_id: this.selectedService?.id
-        });
-        
-        const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({
-                title: taskTitle,
-                description: taskDescription,
-                category_id: this.selectedCategory?.id || 1, // Если категория не выбрана, используем первую
-                service_id: this.selectedService?.id || null,
-                priority: 'medium',
-                deadline: taskDeadline,
-                address: taskAddress,
-                contact_info: taskContact,
-                additional_requirements: additionalRequirements || ''
-            })
-        });
-        
-        console.log('Ответ сервера:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Ошибка сервера:', errorText);
-            throw new Error(`HTTP ошибка! статус: ${response.status}. ${errorText}`);
-        }
-        
-        const result = await response.json();
-        console.log('Результат создания задачи:', result);
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Ошибка создания задачи');
-        }
-        
-        this.showNotification('Задача успешно создана!', 'success');
-        
-        // Обновляем данные пользователя
-        if (result.data.user) {
-            this.currentUser.tasks_used = result.data.user.tasks_used;
-            this.currentUser.tasks_limit = result.data.user.tasks_limit;
-            localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
-        }
-        
-        // Обновляем интерфейс
-        this.updateUserInterface();
-        this.updateHomeStats();
-        
-        // Сбрасываем форму
-        this.cancelTask();
-        
-        // Загружаем обновленный список задач через 1 секунду
-        setTimeout(() => {
-            this.loadUserTasks('all');
-        }, 1000);
-        
-    } catch (error) {
-        console.error('Ошибка создания задачи:', error);
-        this.showNotification(error.message || 'Ошибка создания задачи', 'error');
-    } finally {
-        this.hideLoading();
-    }
-},
+            createTask: async function() {
+                if (!this.currentUser) {
+                    this.showNotification('Для создания задачи необходимо войти в систему', 'error');
+                    return;
+                }
+                
+                if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+                    this.showNotification('Для создания задачи необходима активная подписка', 'error');
+                    this.navigateToPage('subscription');
+                    return;
+                }
+                
+                const tasksUsed = this.currentUser.tasks_used || 0;
+                const tasksLimit = this.currentUser.tasks_limit || 0;
+                const availableTasks = tasksLimit - tasksUsed;
+                
+                if (availableTasks <= 0) {
+                    this.showNotification('У вас закончились доступные задачи в текущем месяце. Пожалуйста, дождитесь обновления лимита или обратитесь в поддержку.', 'error');
+                    return;
+                }
+                
+                const taskTitle = document.getElementById('taskTitle')?.value;
+                const taskDescription = document.getElementById('taskDescription')?.value;
+                const taskAddress = document.getElementById('taskAddress')?.value;
+                const taskDeadline = document.getElementById('taskDeadline')?.value;
+                const taskContact = document.getElementById('taskContact')?.value;
+                const additionalRequirements = document.getElementById('additionalRequirements')?.value;
+                const contactType = document.querySelector('input[name="contactType"]:checked')?.value || 'phone';
+                
+                if (!taskTitle || !taskDescription || !taskAddress || !taskDeadline || !taskContact) {
+                    this.showNotification('Заполните все обязательные поля', 'error');
+                    return;
+                }
+                
+                try {
+                    this.showLoading('Создание задачи...');
+                    
+                    console.log('Отправка данных на сервер:', {
+                        title: taskTitle,
+                        category_id: this.selectedCategory?.id,
+                        service_id: this.selectedService?.id,
+                        contact_type: contactType
+                    });
+                    
+                    const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            title: taskTitle,
+                            description: taskDescription,
+                            category_id: this.selectedCategory?.id || 1,
+                            service_id: this.selectedService?.id || null,
+                            priority: 'medium',
+                            deadline: taskDeadline,
+                            address: taskAddress,
+                            contact_info: taskContact,
+                            contact_type: contactType,
+                            additional_requirements: additionalRequirements || ''
+                        })
+                    });
+                    
+                    console.log('Ответ сервера:', response.status, response.statusText);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Ошибка сервера:', errorText);
+                        throw new Error(`HTTP ошибка! статус: ${response.status}. ${errorText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('Результат создания задачи:', result);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Ошибка создания задачи');
+                    }
+                    
+                    this.showNotification('✅ Задача успешно создана! С вами свяжется исполнитель в течение 15 минут.', 'success');
+                    
+                    // Обновляем данные пользователя
+                    if (result.data.user) {
+                        this.currentUser.tasks_used = result.data.user.tasks_used;
+                        this.currentUser.tasks_limit = result.data.user.tasks_limit;
+                        localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                    }
+                    
+                    // Обновляем интерфейс
+                    this.updateUserInterface();
+                    this.updateHomeStats();
+                    
+                    // Сбрасываем форму
+                    this.cancelTask();
+                    
+                    // Показываем дополнительное уведомление
+                    setTimeout(() => {
+                        this.showNotification('📞 Исполнитель свяжется с вами для уточнения деталей. Проверьте раздел "Мои задачи".', 'info');
+                    }, 1500);
+                    
+                    // Загружаем обновленный список задач
+                    setTimeout(() => {
+                        this.loadUserTasks('all');
+                        this.navigateToPage('tasks');
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Ошибка создания задачи:', error);
+                    this.showNotification(error.message || 'Ошибка создания задачи', 'error');
+                } finally {
+                    this.hideLoading();
+                }
+            },
+
             // ==================== ПОДПИСКИ ====================
             loadSubscriptions: async function() {
                 try {
@@ -5720,234 +5449,232 @@ createTask: async function() {
             },
 
             // ==================== ЗАДАЧИ ====================
-          loadUserTasks: async function(filter) {
-    try {
-        this.currentTaskFilter = filter;
-        
-        // Обновляем активную вкладку
-        document.querySelectorAll('.tab').forEach((tab) => {
-            tab.classList.remove('active');
-        });
-        
-        // Находим активную вкладку по тексту
-        const tabTexts = {
-            'all': 'Все',
-            'new': 'Новые', 
-            'searching': 'В поиске',
-            'in_progress': 'В работе',
-            'completed': 'Завершенные',
-            'cancelled': 'Отмененные'
-        };
-        
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach(tab => {
-            if (tab.textContent.includes(tabTexts[filter])) {
-                tab.classList.add('active');
-            }
-        });
-        
-        const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/user');
-        
-        if (!response || !response.ok) {
-            if (response.status === 404) {
-                throw new Error('Маршрут не найден. Проверьте настройки сервера.');
-            }
-            throw new Error(`HTTP ошибка: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-            throw new Error(result.error || 'Ошибка получения задач');
-        }
-        
-        this.userTasks = this.filterTasksByStatus(result.data.tasks || [], filter);
-        this.renderUserTasks();
-        
-    } catch (error) {
-        console.error('Ошибка загрузки задач:', error);
-        this.showNotification(error.message || 'Ошибка загрузки задач', 'error');
-        
-        // Показываем демо-данные если API не работает
-        this.userTasks = this.filterTasksByStatus([
-            {
-                id: 1,
-                task_number: "TASK-001",
-                title: "Уборка квартиры",
-                category_name: "Дом и быт",
-                status: "new",
-                created_at: new Date().toISOString(),
-                price: 0
+            loadUserTasks: async function(filter) {
+                try {
+                    this.currentTaskFilter = filter;
+                    
+                    // Обновляем активную вкладку
+                    document.querySelectorAll('.tab').forEach((tab) => {
+                        tab.classList.remove('active');
+                    });
+                    
+                    // Находим активную вкладку по тексту
+                    const tabTexts = {
+                        'all': 'Все',
+                        'new': 'Новые', 
+                        'searching': 'В поиске',
+                        'in_progress': 'В работе',
+                        'completed': 'Завершенные',
+                        'cancelled': 'Отмененные'
+                    };
+                    
+                    const tabs = document.querySelectorAll('.tab');
+                    tabs.forEach(tab => {
+                        if (tab.textContent.includes(tabTexts[filter])) {
+                            tab.classList.add('active');
+                        }
+                    });
+                    
+                    const response = await this.fetchWithAuth(this.API_BASE_URL + '/api/tasks/user');
+                    
+                    if (!response || !response.ok) {
+                        if (response.status === 404) {
+                            throw new Error('Маршрут не найден. Проверьте настройки сервера.');
+                        }
+                        throw new Error(`HTTP ошибка: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Ошибка получения задач');
+                    }
+                    
+                    this.userTasks = this.filterTasksByStatus(result.data.tasks || [], filter);
+                    this.renderUserTasks();
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки задач:', error);
+                    this.showNotification(error.message || 'Ошибка загрузки задач', 'error');
+                    
+                    // Показываем демо-данные если API не работает
+                    this.userTasks = this.filterTasksByStatus([
+                        {
+                            id: 1,
+                            task_number: "TASK-001",
+                            title: "Уборка квартиры",
+                            category_name: "Дом и быт",
+                            status: "new",
+                            created_at: new Date().toISOString(),
+                            price: 0
+                        },
+                        {
+                            id: 2,
+                            task_number: "TASK-002", 
+                            title: "Помощь с детьми",
+                            category_name: "Семья и дети",
+                            status: "completed",
+                            created_at: new Date(Date.now() - 86400000).toISOString(),
+                            price: 0
+                        }
+                    ], filter);
+                    
+                    this.renderUserTasks();
+                }
             },
-            {
-                id: 2,
-                task_number: "TASK-002", 
-                title: "Помощь с детьми",
-                category_name: "Семья и дети",
-                status: "completed",
-                created_at: new Date(Date.now() - 86400000).toISOString(),
-                price: 0
-            }
-        ], filter);
-        
-        this.renderUserTasks();
-    }
-},
 
-// Добавьте этот метод в объект app (например, после loadUserTasks)
-filterTasks: function(filter) {
-    this.loadUserTasks(filter);
-},
+            filterTasks: function(filter) {
+                this.loadUserTasks(filter);
+            },
             
             renderUserTasks: function() {
-    const cardsContainer = document.getElementById('userTasksCards');
-    const tableContainer = document.getElementById('userTasksTable');
-    
-    if (!cardsContainer || !tableContainer) return;
-    
-    // Очищаем контейнеры
-    cardsContainer.innerHTML = '';
-    tableContainer.innerHTML = '';
-    
-    // Если задач нет
-    if (!this.userTasks || this.userTasks.length === 0) {
-        const noTasksHtml = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                <h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Задач пока нет</h3>
-                <p style="color: var(--graphite-medium); margin-bottom: 25px;">
-                    Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц
-                </p>
-                <button class="btn btn-primary" onclick="app.checkSubscription()">
-                    <i class="fas fa-plus"></i> Создать задачу
-                </button>
-            </div>`;
-        
-        cardsContainer.innerHTML = noTasksHtml;
-        tableContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--graphite-medium);">Задач пока нет</p>';
-        return;
-    }
-    
-    // Сортируем задачи по дате (новые сверху)
-    const sortedTasks = [...this.userTasks].sort((a, b) => {
-        return new Date(b.created_at) - new Date(a.created_at);
-    });
-    
-    // Рендерим карточки для мобильных
-    sortedTasks.forEach(task => {
-        const statusInfo = this.getStatusInfo(task.status);
-        
-        const taskCard = document.createElement('div');
-        taskCard.className = 'task-card';
-        taskCard.onclick = () => { 
-            this.showTaskDetailsCompact(task.id);
-        };
-        
-        taskCard.innerHTML = `
-            <div class="task-card-content">
-                <div class="task-card-row">
-                    <div class="task-card-label">Номер:</div>
-                    <div class="task-card-value">${task.task_number || 'N/A'}</div>
-                </div>
-                <div class="task-card-row">
-                    <div class="task-card-label">Задача:</div>
-                    <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
-                </div>
-                <div class="task-card-row">
-                    <div class="task-card-label">Категория:</div>
-                    <div class="task-card-value">${task.category_name || 'Без категории'}</div>
-                </div>
-                <div class="task-card-row">
-                    <div class="task-card-label">Статус:</div>
-                    <div class="task-card-value">
-                        <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
-                              color: ${statusInfo.color || 'var(--graphite-dark)'}; 
-                              padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
-                              font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                            <i class="${statusInfo.icon}"></i>
-                            ${statusInfo.name}
-                        </span>
-                    </div>
-                </div>
-                <div class="task-card-row">
-                    <div class="task-card-label">Создана:</div>
-                    <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
-                </div>
-                <div class="task-card-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
-                        <i class="fas fa-eye"></i> Подробнее
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        cardsContainer.appendChild(taskCard);
-    });
-    
-    // Рендерим таблицу для десктопа
-    const tableHtml = `
-        <table class="task-history-table">
-            <thead>
-                <tr>
-                    <th>Номер задачи</th>
-                    <th>Название</th>
-                    <th>Категория</th>
-                    <th>Статус</th>
-                    <th>Дата создания</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${sortedTasks.map(task => {
+                const cardsContainer = document.getElementById('userTasksCards');
+                const tableContainer = document.getElementById('userTasksTable');
+                
+                if (!cardsContainer || !tableContainer) return;
+                
+                // Очищаем контейнеры
+                cardsContainer.innerHTML = '';
+                tableContainer.innerHTML = '';
+                
+                // Если задач нет
+                if (!this.userTasks || this.userTasks.length === 0) {
+                    const noTasksHtml = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                            <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                            <h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Задач пока нет</h3>
+                            <p style="color: var(--graphite-medium); margin-bottom: 25px;">
+                                Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц
+                            </p>
+                            <button class="btn btn-primary" onclick="app.checkSubscription()">
+                                <i class="fas fa-plus"></i> Создать задачу
+                            </button>
+                        </div>`;
+                    
+                    cardsContainer.innerHTML = noTasksHtml;
+                    tableContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--graphite-medium);">Задач пока нет</p>';
+                    return;
+                }
+                
+                // Сортируем задачи по дате (новые сверху)
+                const sortedTasks = [...this.userTasks].sort((a, b) => {
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+                
+                // Рендерим карточки для мобильных
+                sortedTasks.forEach(task => {
                     const statusInfo = this.getStatusInfo(task.status);
-                    return `
-                        <tr>
-                            <td>${task.task_number}</td>
-                            <td><strong>${task.title}</strong></td>
-                            <td>${task.category_name || ''}</td>
-                            <td>
-                                <span class="task-status ${task.status}" 
-                                      style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
-                                             color: ${statusInfo.color || 'var(--graphite-dark)'}; 
-                                             padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
-                                             font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i class="${statusInfo.icon}"></i>
-                                    ${statusInfo.name}
-                                </span>
-                            </td>
-                            <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
-                            <td>
-                                <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
-                                    <i class="fas fa-eye"></i>
+                    
+                    const taskCard = document.createElement('div');
+                    taskCard.className = 'task-card';
+                    taskCard.onclick = () => { 
+                        this.showTaskDetailsCompact(task.id);
+                    };
+                    
+                    taskCard.innerHTML = `
+                        <div class="task-card-content">
+                            <div class="task-card-row">
+                                <div class="task-card-label">Номер:</div>
+                                <div class="task-card-value">${task.task_number || 'N/A'}</div>
+                            </div>
+                            <div class="task-card-row">
+                                <div class="task-card-label">Задача:</div>
+                                <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
+                            </div>
+                            <div class="task-card-row">
+                                <div class="task-card-label">Категория:</div>
+                                <div class="task-card-value">${task.category_name || 'Без категории'}</div>
+                            </div>
+                            <div class="task-card-row">
+                                <div class="task-card-label">Статус:</div>
+                                <div class="task-card-value">
+                                    <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                                          color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                                          padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                                          font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="${statusInfo.icon}"></i>
+                                        ${statusInfo.name}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="task-card-row">
+                                <div class="task-card-label">Создана:</div>
+                                <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
+                            </div>
+                            <div class="task-card-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
+                                    <i class="fas fa-eye"></i> Подробнее
                                 </button>
-                            </td>
-                        </tr>
+                            </div>
+                        </div>
                     `;
-                }).join('')}
-            </tbody>
-        </table>
-    `;
-    
-    tableContainer.innerHTML = tableHtml;
-},
+                    
+                    cardsContainer.appendChild(taskCard);
+                });
+                
+                // Рендерим таблицу для десктопа
+                const tableHtml = `
+                    <table class="task-history-table">
+                        <thead>
+                            <tr>
+                                <th>Номер задачи</th>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Статус</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sortedTasks.map(task => {
+                                const statusInfo = this.getStatusInfo(task.status);
+                                return `
+                                    <tr>
+                                        <td>${task.task_number}</td>
+                                        <td><strong>${task.title}</strong></td>
+                                        <td>${task.category_name || ''}</td>
+                                        <td>
+                                            <span class="task-status ${task.status}" 
+                                                  style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                                                         color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                                                         padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                                                         font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="${statusInfo.icon}"></i>
+                                                ${statusInfo.name}
+                                            </span>
+                                        </td>
+                                        <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                                        <td>
+                                            <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+                tableContainer.innerHTML = tableHtml;
+            },
 
-            
-filterTasksByStatus: function(tasks, filter) {
-    if (!tasks || tasks.length === 0) return [];
-    
-    const statusMap = {
-        'all': () => tasks,
-        'new': () => tasks.filter(task => task.status === 'new'),
-        'searching': () => tasks.filter(task => task.status === 'searching'),
-        'in_progress': () => tasks.filter(task => 
-            task.status === 'in_progress' || task.status === 'assigned'
-        ),
-        'completed': () => tasks.filter(task => task.status === 'completed'),
-        'cancelled': () => tasks.filter(task => task.status === 'cancelled')
-    };
-    
-    return statusMap[filter] ? statusMap[filter]() : tasks;
-},
+            filterTasksByStatus: function(tasks, filter) {
+                if (!tasks || tasks.length === 0) return [];
+                
+                const statusMap = {
+                    'all': () => tasks,
+                    'new': () => tasks.filter(task => task.status === 'new'),
+                    'searching': () => tasks.filter(task => task.status === 'searching'),
+                    'in_progress': () => tasks.filter(task => 
+                        task.status === 'in_progress' || task.status === 'assigned'
+                    ),
+                    'completed': () => tasks.filter(task => task.status === 'completed'),
+                    'cancelled': () => tasks.filter(task => task.status === 'cancelled')
+                };
+                
+                return statusMap[filter] ? statusMap[filter]() : tasks;
+            },
             
             renderUserTasksTable: function() {
                 const container = document.getElementById('userTasksTable');
@@ -6239,17 +5966,17 @@ filterTasksByStatus: function(tasks, filter) {
                 return statusMap[status] || status;
             },
 
-           getStatusInfo: function(status) {
-    const statuses = {
-        'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1976D2' },
-        'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#FF9800' },
-        'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#2196F3' },
-        'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#673AB7' },
-        'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
-        'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
-    };
-    return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
-},
+            getStatusInfo: function(status) {
+                const statuses = {
+                    'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1565C0' },
+                    'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#EF6C00' },
+                    'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#0277BD' },
+                    'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#512DA8' },
+                    'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#2E7D32' },
+                    'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#C62828' }
+                };
+                return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
+            },
 
             // ==================== АВТОРИЗАЦИЯ ====================
             login: async function() {
@@ -6279,10 +6006,11 @@ filterTasksByStatus: function(tasks, filter) {
                         body: JSON.stringify(loginData)
                     });
                     
-                    if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
-                    
                     const result = await response.json();
-                    if (!result.success) throw new Error(result.error);
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Ошибка входа');
+                    }
                     
                     this.currentUser = result.data.user;
                     this.currentToken = result.data.token;
@@ -6293,11 +6021,19 @@ filterTasksByStatus: function(tasks, filter) {
                     this.showNotification('Успешный вход!', 'success');
                     this.closeModal('loginModal');
                     this.updateUserInterface();
-                    this.determineInitialScreen();
+                    
+                    // Переход на нужную страницу в зависимости от статуса пользователя
+                    if (!this.currentUser.phone_verified) {
+                        this.openVerifyPhoneModal(this.currentUser.phone);
+                    } else if (this.currentUser.subscription_status !== 'active' || !this.currentUser.initial_fee_paid) {
+                        this.navigateToPage('subscription');
+                    } else {
+                        this.navigateToPage('home');
+                    }
                     
                 } catch (error) {
                     console.error('Ошибка входа:', error);
-                    this.showNotification(error.message, 'error');
+                    this.showNotification(error.message || 'Ошибка входа. Проверьте данные.', 'error');
                 } finally {
                     this.hideLoading();
                 }
@@ -6617,8 +6353,7 @@ filterTasksByStatus: function(tasks, filter) {
                 
                 setTimeout(function() {
                     if (notification.parentNode) {
-                        notification.style.opacity = '0';
-                        notification.style.transform = 'translateX(100%)';
+                        notification.classList.add('hiding');
                         setTimeout(function() {
                             if (notification.parentNode) notification.remove();
                         }, 300);
