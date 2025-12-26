@@ -65,7 +65,7 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        body {
+        html, body {
             font-family: 'Inter', sans-serif;
             background: var(--ivory-bg);
             color: var(--graphite-dark);
@@ -75,6 +75,8 @@
             padding-top: var(--nav-height);
             padding-bottom: var(--bottom-nav-height);
             overflow-x: hidden;
+            max-width: 100%;
+            position: relative;
         }
         
         .container {
@@ -84,7 +86,9 @@
             width: 100%;
         }
         
-        /* Основная навигация сверху */
+        /* ==================== ОСНОВНЫЕ ИСПРАВЛЕНИЯ ==================== */
+        
+        /* Исправление для логотипа и шапки */
         .top-nav {
             position: fixed;
             top: 0;
@@ -101,24 +105,32 @@
             backdrop-filter: blur(10px);
         }
         
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--graphite-dark);
-            text-decoration: none;
+        .top-nav .logo {
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
+            width: auto;
+            overflow: visible;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--graphite-dark);
+            text-decoration: none;
         }
         
         .logo-img {
-            height: 44px;
-            width: 44px;
-            border-radius: 10px;
-            object-fit: cover;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: contain;
             padding: 0;
             background: none;
+        }
+        
+        .logo-woman, .logo-help {
+            font-weight: 700;
+            font-size: 1.4rem;
         }
         
         .logo-woman {
@@ -130,31 +142,27 @@
         }
         
         .logo-tagline {
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--graphite-medium);
-            margin-left: 10px;
-            font-family: 'Inter', sans-serif;
-            padding-left: 10px;
-            border-left: 1px solid var(--graphite-light);
+            display: none;
         }
         
+        /* Профиль в шапке */
         .user-avatar {
-            width: 46px;
-            height: 46px;
-            background: var(--primary-gradient);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
+            background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
-            border: 3px solid rgba(255, 255, 255, 0.9);
             font-size: 1.1rem;
             cursor: pointer;
-            transition: var(--transition);
+            margin-left: auto;
+            margin-right: 10px;
             flex-shrink: 0;
-            overflow: hidden;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            transition: var(--transition);
             box-shadow: 0 4px 12px rgba(197, 168, 128, 0.2);
         }
         
@@ -170,17 +178,17 @@
             display: block;
         }
         
+        /* Исправление для меню профиля */
         .user-menu {
             display: none;
             position: absolute;
-            top: 70px;
-            right: 20px;
-            background: var(--white);
+            top: 60px;
+            right: 15px;
+            background: white;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-xl);
-            padding: 10px;
-            min-width: 200px;
-            z-index: 1001;
+            box-shadow: var(--shadow-lg);
+            width: 280px;
+            z-index: 1000;
             border: 1px solid rgba(61, 61, 61, 0.1);
             animation: fadeIn 0.2s ease;
         }
@@ -188,17 +196,24 @@
         .nav-menu-item {
             display: flex;
             align-items: center;
-            padding: 10px;
+            padding: 12px 16px;
             text-decoration: none;
             color: var(--graphite-dark);
             border-radius: var(--radius-sm);
             transition: var(--transition-fast);
-            gap: 10px;
+            gap: 12px;
             width: 100%;
         }
         
         .nav-menu-item:hover {
-            background: rgba(61, 61, 61, 0.05);
+            background: rgba(242, 221, 230, 0.1);
+        }
+        
+        /* Убираем ненужные пункты меню */
+        .nav-menu-item[onclick*="all-categories"],
+        .nav-menu-item[onclick*="all-services"],
+        .nav-menu-item[onclick*="guides"] {
+            display: none !important;
         }
         
         /* Нижняя навигация */
@@ -295,6 +310,8 @@
         
         .card:hover {
             background: white;
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
         }
         
         /* Кнопки */
@@ -324,16 +341,32 @@
             box-shadow: 0 4px 12px rgba(197, 168, 128, 0.25);
         }
         
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(197, 168, 128, 0.3);
+        }
+        
         .btn-secondary {
             background: var(--white);
             color: var(--graphite-dark);
             border: 2px solid rgba(61, 61, 61, 0.1);
         }
         
+        .btn-secondary:hover {
+            background: rgba(61, 61, 61, 0.02);
+            border-color: var(--graphite-light);
+            transform: translateY(-1px);
+        }
+        
         .btn-action {
             background: var(--action-gradient);
             color: var(--graphite-dark);
             border: none;
+        }
+        
+        .btn-action:hover {
+            background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
+            transform: translateY(-2px);
         }
         
         /* Hero секция */
@@ -428,82 +461,61 @@
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         }
         
-        /* Категории */
-        .category-card {
-            text-align: center;
-            padding: 20px 16px;
-            cursor: pointer;
-            height: 100%;
+        /* Исправление карточек услуг на главной */
+        .category-card-main-style {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: all 0.3s ease;
+            align-items: center;
+            padding: 20px 15px;
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(242, 221, 230, 0.3);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
             position: relative;
             overflow: hidden;
-        }
-        
-        .category-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--pastel-pink);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-        
-        .category-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .category-icon {
-            font-size: 2rem;
-            color: var(--pastel-pink);
-            margin-bottom: 10px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
+            height: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
         }
 
-        .service-icon {
-            font-size: 2rem;
-            color: var(--pastel-pink);
-            margin-bottom: 10px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
+        .category-card-main-style:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+            border-color: var(--pastel-pink);
+            background: white;
         }
         
-        .category-image {
+        /* Исправление изображений в карточках */
+        .category-image-main img,
+        .service-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+            display: block !important;
+        }
+
+        .category-image-main {
             width: 120px;
             height: 120px;
             border-radius: 50%;
             margin: 0 auto 15px;
             overflow: hidden;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
         }
 
-        .category-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            display: block;
-        }
-
-        .category-card:hover .category-image img {
+        .category-card-main-style:hover .category-image-main img {
             transform: scale(1.05);
         }
-        
-        .category-card h3 {
+
+        .category-card-main-style h3 {
             font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 8px;
@@ -512,227 +524,222 @@
             align-items: center;
             justify-content: center;
             color: var(--graphite-dark);
-        }
-        
-        .category-card p {
-            color: var(--graphite-medium);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            flex-grow: 1;
-        }
-
-/* Стили для круглых изображений категорий */
-.category-card-main-style .category-image-main {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin: 0 auto 15px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-}
-
-.category-card-main-style .category-image-main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    display: block;
-}
-
-.category-card-main-style:hover .category-image-main img {
-    transform: scale(1.05);
-}
-        
-        /* Услуги */
-        .service-card {
-            padding: 16px;
-            cursor: pointer;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            min-height: 220px;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(242, 221, 230, 0.1);
             text-align: center;
-            align-items: center;
-            background: var(--ivory-light);
-            backdrop-filter: blur(10px);
-        }
-        
-        .service-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-            border-color: var(--pastel-pink);
-            background: white;
-        }
-        
-        .service-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .service-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-            display: block;
-        }
-
-        .service-card:hover .service-image img {
-            transform: scale(1.05);
-        }
-        
-        .service-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 12px;
             width: 100%;
         }
-        
-        .service-header h4 {
-            font-size: 1rem;
-            font-weight: 600;
-            flex: 1;
-            margin-right: 10px;
-            min-height: 48px;
-            color: var(--graphite-dark);
-            text-align: center;
-        }
-        
-        .service-description {
+
+        .category-description-main {
             color: var(--graphite-medium);
             font-size: 0.85rem;
             margin-bottom: 16px;
             line-height: 1.4;
             flex-grow: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            text-align: center;
-            padding: 10px;
             background: rgba(242, 221, 230, 0.1);
-            border-radius: 12px 12px 12px 12px;
+            padding: 10px;
+            border-radius: 12px;
             border-bottom-left-radius: 25px;
             border-bottom-right-radius: 25px;
-        }
-        
-        .service-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
             width: 100%;
         }
-        
-        .service-price {
+
+        .category-card-footer {
+            margin-top: 15px;
             color: var(--pastel-pink);
             font-weight: 600;
             font-size: 0.9rem;
-            background: rgba(242, 221, 230, 0.08);
-            padding: 4px 8px;
-            border-radius: 6px;
             display: flex;
             align-items: center;
-            gap: 4px;
-        }
-
-        /* Сетка услуг */
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 12px;
-        }
-
-        .service-image-container {
+            justify-content: space-between;
             width: 100%;
-            height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px 0;
-            background: linear-gradient(135deg, #F2DDE6 0%, #F9F7F3 100%);
+        }
+        
+        /* Поисковая строка на странице всех услуг */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
         }
 
-        .service-image-circle {
-            width: 80px;
-            height: 80px;
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border: 2px solid rgba(242, 221, 230, 0.5);
+            border-radius: 50px;
+            font-size: 1rem;
+            background: var(--ivory-light);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--pastel-pink);
+            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.3);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--graphite-light);
+            z-index: 1;
+        }
+
+        /* Автокомплит поиска */
+        .search-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            border: 1px solid rgba(61, 61, 61, 0.1);
+        }
+
+        .search-autocomplete-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(61, 61, 61, 0.1);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-autocomplete-item:hover {
+            background: rgba(242, 221, 230, 0.1);
+        }
+
+        .search-autocomplete-item .service-image {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             overflow: hidden;
-            border: 3px solid white;
-            box-shadow: 0 3px 8px rgba(198, 168, 128, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
+            flex-shrink: 0;
         }
 
-        .service-image-circle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        .search-autocomplete-item .service-info {
+            flex: 1;
         }
 
-        .service-content {
-            padding: 12px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .service-title {
-            font-size: 14px;
+        .search-autocomplete-item .service-name {
             font-weight: 600;
-            color: #333;
-            margin-bottom: 6px;
-            line-height: 1.3;
-            min-height: 36px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .service-description {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.4;
-            margin-bottom: 10px;
-            flex-grow: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .service-price {
-            font-size: 16px;
-            font-weight: 700;
-            color: #C5A880;
+            color: var(--graphite-dark);
             margin-bottom: 4px;
         }
 
-        .service-time {
-            font-size: 11px;
-            color: #888;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .search-autocomplete-item .service-category {
+            font-size: 0.8rem;
+            color: var(--graphite-medium);
+        }
+        
+        /* Карточка создания задачи - компактные кнопки связи */
+        .contact-type-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 8px;
+            margin-top: 8px;
         }
 
+        .contact-type-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 5px;
+            border: 2px solid rgba(61, 61, 61, 0.1);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            background: white;
+            text-align: center;
+        }
+
+        .contact-type-btn.selected {
+            border-color: var(--gold-metallic);
+            background: rgba(197, 168, 128, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .contact-type-btn i {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .contact-type-btn .btn-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+        
+        /* Цвета статусов задач */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-new {
+            background: rgba(21, 101, 192, 0.1);
+            color: #1565C0;
+        }
+
+        .status-searching {
+            background: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+
+        .status-assigned {
+            background: rgba(3, 169, 244, 0.1);
+            color: #03A9F4;
+        }
+
+        .status-in_progress {
+            background: rgba(0, 188, 212, 0.1);
+            color: #00BCD4;
+        }
+
+        .status-completed {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+
+        .status-cancelled {
+            background: rgba(244, 67, 54, 0.1);
+            color: #F44336;
+        }
+        
+        /* Уведомление о создании задачи */
+        .notification.success {
+            background: linear-gradient(135deg, var(--success), #2ECC71);
+            color: white;
+            border-left: 4px solid #27AE60;
+        }
+        
+        @keyframes stayVisible {
+            0%, 90% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Исправление положения карточек */
+        .grid-2-main, .grid-3-main {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
         /* Профиль */
         .profile-header {
             background: var(--primary-gradient);
@@ -1543,35 +1550,6 @@
             gap: 20px;
         }
         
-        .search-box {
-            flex: 1;
-            min-width: 300px;
-            position: relative;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 12px 16px 12px 45px;
-            border: 1.5px solid rgba(61, 61, 61, 0.1);
-            border-radius: var(--radius);
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: var(--pastel-pink);
-            box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2);
-        }
-        
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--graphite-light);
-        }
-        
         /* Стили для компактной статистики на странице авторизации */
         .service-stats-compact {
             background: var(--white);
@@ -1804,146 +1782,51 @@
             transform: translateY(-1px);
         }
 
-        /* Цвета статусов задач */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .status-badge:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .status-new {
-            background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(33, 150, 243, 0.1));
-            color: #1565C0;
-            border: 1px solid rgba(25, 118, 210, 0.2);
-        }
-        
-        .status-in_progress {
-            background: linear-gradient(135deg, rgba(103, 58, 183, 0.15), rgba(124, 77, 255, 0.1));
-            color: #512DA8;
-            border: 1px solid rgba(103, 58, 183, 0.2);
-        }
-        
-        .status-completed {
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.1));
-            color: #2E7D32;
-            border: 1px solid rgba(76, 175, 80, 0.2);
-        }
-        
-        .status-cancelled {
-            background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(239, 83, 80, 0.1));
-            color: #C62828;
-            border: 1px solid rgba(244, 67, 54, 0.2);
-        }
-        
-        .status-searching {
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 167, 38, 0.1));
-            color: #EF6C00;
-            border: 1px solid rgba(255, 152, 0, 0.2);
-        }
-        
-        .status-assigned {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(66, 165, 245, 0.1));
-            color: #0277BD;
-            border: 1px solid rgba(33, 150, 243, 0.2);
-        }
-
-        /* Стиль карточек как на главной (круглые изображения) */
-        .category-card-main-style {
-            background: var(--ivory-light);
-            border-radius: var(--radius);
+        /* Стили для компактной статистики на странице авторизации */
+        .service-stats-compact {
+            background: var(--white);
+            border: 1px solid var(--pastel-pink);
+            border-radius: var(--radius-lg);
             padding: 20px;
-            border: 1px solid rgba(242, 221, 230, 0.5);
             box-shadow: var(--shadow-sm);
+            margin-top: 30px;
+        }
+
+        .stats-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .stat-item-compact {
+            text-align: center;
+            padding: 12px 8px;
+            background: linear-gradient(135deg, rgba(242, 221, 230, 0.05), rgba(232, 204, 217, 0.05));
+            border-radius: var(--radius);
+            border: 1px solid rgba(242, 221, 230, 0.2);
             transition: var(--transition);
-            width: 100%;
-            text-align: center;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.5s ease;
         }
 
-        .category-card-main-style:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
+        .stat-item-compact:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
             border-color: var(--pastel-pink);
-            background: white;
         }
 
-        .category-image-main {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--pink-light), var(--lavender-light));
-        }
-
-        .category-image-main img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            display: block;
-        }
-
-        .category-card-main-style:hover .category-image-main img {
-            transform: scale(1.05);
-        }
-
-        .category-card-main-style h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--graphite-dark);
-            text-align: center;
-            width: 100%;
-        }
-
-        .category-description-main {
-            color: var(--graphite-medium);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            line-height: 1.4;
-            flex-grow: 1;
-            background: rgba(242, 221, 230, 0.1);
-            padding: 10px;
-            border-radius: 12px;
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            width: 100%;
-        }
-
-        .category-card-footer {
-            margin-top: 15px;
+        .stat-number-compact {
+            font-size: 1.4rem;
+            font-weight: 700;
             color: var(--pastel-pink);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .stat-title-compact {
+            font-size: 0.75rem;
             font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
+            color: var(--graphite-medium);
+            line-height: 1.3;
         }
 
         /* Утилиты */
@@ -1957,8 +1840,197 @@
         .gap-10 { gap: 10px; }
         .gap-20 { gap: 20px; }
         
-        /* Адаптивность */
-        @media (max-width: 480px) {
+        /* Стили для изображений - исправление для всех устройств */
+        .category-image img,
+        .service-image img,
+        .category-image-container img,
+        .category-image-main img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        
+        /* Стили для таблицы задач (только для десктопа) */
+        @media (min-width: 769px) {
+            .task-table-container {
+                display: block;
+                overflow-x: auto;
+                margin-top: 20px;
+            }
+            
+            .task-history-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                display: table;
+            }
+            
+            .task-history-table th {
+                background: rgba(61, 61, 61, 0.05);
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                color: var(--graphite-dark);
+                border-bottom: 2px solid rgba(61, 61, 61, 0.1);
+            }
+            
+            .task-history-table td {
+                padding: 12px;
+                border-bottom: 1px solid rgba(61, 61, 61, 0.08);
+                vertical-align: top;
+            }
+            
+            .task-history-table tr:hover {
+                background: rgba(61, 61, 61, 0.02);
+            }
+            
+            .task-cards-container {
+                display: none;
+            }
+            
+            /* Исправление для "Все услуги" на десктопе */
+            #allServicesList {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 25px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .task-table-container {
+                display: none;
+            }
+            
+            .task-cards-container {
+                display: block;
+            }
+            
+            .task-card {
+                display: block;
+                margin-bottom: 16px;
+                padding: 16px;
+                background: white;
+                border-radius: var(--radius);
+                border: 1px solid rgba(61, 61, 61, 0.08);
+                box-shadow: var(--shadow-sm);
+            }
+            
+            .task-card-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid rgba(61, 61, 61, 0.05);
+            }
+            
+            .task-card-label {
+                font-size: 0.75rem;
+                color: var(--graphite-medium);
+                font-weight: 500;
+            }
+            
+            .task-card-value {
+                font-size: 0.9rem;
+                color: var(--graphite-dark);
+                font-weight: 500;
+                text-align: right;
+            }
+            
+            .task-card-actions {
+                display: flex;
+                gap: 8px;
+                margin-top: 12px;
+                justify-content: flex-end;
+            }
+            
+            /* Адаптивность для круглых изображений */
+            .category-image-main {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .category-card-main-style h3 {
+                font-size: 1rem;
+                min-height: 36px;
+            }
+            
+            .category-description-main {
+                font-size: 0.8rem;
+            }
+            
+            .grid.grid-2,
+            .grid.grid-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Исправление для "Все услуги" на мобильных */
+            #allServicesList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                padding: 12px;
+                min-height: 280px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 80px;
+                height: 80px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 0.9rem;
+                min-height: 32px;
+                -webkit-line-clamp: 2;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            #allServicesList .category-description-main {
+                font-size: 0.75rem;
+                padding: 6px;
+                -webkit-line-clamp: 3;
+                display: -webkit-box;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+            
+            .contact-type-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* Стили для планшетов */
+        @media (min-width: 481px) and (max-width: 768px) {
+            #allServicesList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            #allServicesList .category-card-main-style {
+                min-height: 340px;
+            }
+            
+            #allServicesList .category-image-main {
+                width: 100px;
+                height: 100px;
+            }
+            
+            #allServicesList .category-card-main-style h3 {
+                font-size: 1rem;
+            }
+            
+            #allServicesList .category-description-main {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Для очень маленьких экранов (менее 360px) */
+        @media (max-width: 360px) {
             .container {
                 padding: 0 8px !important;
             }
@@ -1977,10 +2049,6 @@
             
             .section-title {
                 font-size: 1.4rem !important;
-            }
-            
-            .grid-3 {
-                grid-template-columns: 1fr;
             }
             
             .profile-stats {
@@ -2068,59 +2136,32 @@
             .service-stats-compact {
                 padding: 15px;
             }
-        }
-        
-        /* Стили для планшетов */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-3 {
-                grid-template-columns: repeat(2, 1fr) !important;
+            
+            #allServicesList {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+                padding: 0 4px;
             }
             
-            .container {
-                padding: 0 16px !important;
+            #allServicesList .category-card-main-style {
+                padding: 10px;
+                min-height: 260px;
             }
             
-            .stats-grid-compact {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
+            #allServicesList .category-image-main {
+                width: 70px;
+                height: 70px;
             }
             
-            .stat-number-compact {
-                font-size: 1.2rem;
-            }
-            
-            .stat-title-compact {
-                font-size: 0.7rem;
+            #allServicesList .category-card-main-style h3 {
+                font-size: 0.85rem;
+                min-height: 30px;
             }
         }
         
         /* Ховеры только для десктопа */
         @media (min-width: 1025px) {
-            .card:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow);
-            }
-            
-            .btn:hover {
-                transform: translateY(-2px);
-            }
-            
-            .btn-primary:hover {
-                box-shadow: 0 8px 20px rgba(197, 168, 128, 0.3);
-            }
-            
-            .btn-secondary:hover {
-                background: rgba(61, 61, 61, 0.02);
-                border-color: var(--graphite-light);
-                transform: translateY(-1px);
-            }
-            
-            .btn-action:hover {
-                background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
-                transform: translateY(-2px);
-            }
-            
-            .category-card:hover {
+            .category-card-main-style:hover {
                 transform: translateY(-4px);
                 box-shadow: var(--shadow);
             }
@@ -2228,346 +2269,44 @@
             gap: 12px;
         }
         
-        /* Стили для таблицы задач (только для десктопа) */
-        @media (min-width: 769px) {
-            .task-table-container {
-                display: block;
-                overflow-x: auto;
-                margin-top: 20px;
-            }
-            
-            .task-history-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-                display: table;
-            }
-            
-            .task-history-table th {
-                background: rgba(61, 61, 61, 0.05);
-                padding: 12px;
-                text-align: left;
-                font-weight: 600;
-                color: var(--graphite-dark);
-                border-bottom: 2px solid rgba(61, 61, 61, 0.1);
-            }
-            
-            .task-history-table td {
-                padding: 12px;
-                border-bottom: 1px solid rgba(61, 61, 61, 0.08);
-                vertical-align: top;
-            }
-            
-            .task-history-table tr:hover {
-                background: rgba(61, 61, 61, 0.02);
-            }
-            
-            .task-cards-container {
-                display: none;
-            }
+        /* Стили для изображений прелоадера */
+        img {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        img.loaded {
+            opacity: 1;
         }
         
+        /* Исправление для мобильных устройств */
         @media (max-width: 768px) {
-            .task-table-container {
-                display: none;
+            .top-nav {
+                padding: 10px 15px;
             }
             
-            .task-cards-container {
-                display: block;
+            .logo-woman, .logo-help {
+                font-size: 1.2rem;
             }
             
-            .task-card {
-                display: block;
-                margin-bottom: 16px;
-                padding: 16px;
-                background: white;
-                border-radius: var(--radius);
-                border: 1px solid rgba(61, 61, 61, 0.08);
-                box-shadow: var(--shadow-sm);
+            .grid-2-main, .grid-3-main {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 12px;
             }
             
-            .task-card-row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 8px;
-                padding-bottom: 8px;
-                border-bottom: 1px solid rgba(61, 61, 61, 0.05);
+            .category-card-main-style {
+                padding: 15px 10px;
             }
             
-            .task-card-label {
-                font-size: 0.75rem;
-                color: var(--graphite-medium);
-                font-weight: 500;
-            }
-            
-            .task-card-value {
-                font-size: 0.9rem;
-                color: var(--graphite-dark);
-                font-weight: 500;
-                text-align: right;
-            }
-            
-            .task-card-actions {
-                display: flex;
-                gap: 8px;
-                margin-top: 12px;
-                justify-content: flex-end;
-            }
-            
-            .grid.grid-2,
-            .grid.grid-3 {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Стили для изображений - исправление для всех устройств */
-        .category-image img,
-        .service-image img,
-        .category-image-container img,
-        .category-image-main img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            -webkit-user-drag: none;
-            user-select: none;
-        }
-        
-        /* Адаптивность для круглых изображений */
-/* Адаптивность для круглых изображений */
-@media (max-width: 768px) {
-    .category-image-main {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .category-card-main-style h3 {
-        font-size: 1rem;
-        min-height: 36px;
-    }
-    
-    .category-description-main {
-        font-size: 0.8rem;
-    }
-}
-
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid.grid-3 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .grid-2-main:not(#allServicesList),
-            .grid-3-main:not(#allServicesList) {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        /* ==================== СТИЛИ ДЛЯ КАРТОЧЕК КАК НА ГЛАВНОЙ ==================== */
-        .grid-2-main {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-
-        .grid-3-main {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-        
-        /* ИСПРАВЛЕНИЕ: Для страницы "Все услуги" на телефонах - 2 колонки */
-        #allServicesList {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            width: 100%;
-        }
-
-        /* Карточка услуги в сетке 2 колонки для "Все услуги" */
-        #allServicesList .category-card-main-style {
-            width: 100%;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 320px;
-            padding: 15px;
-        }
-
-        /* Изображение в карточке для "Все услуги" */
-        #allServicesList .category-image-main {
-            width: 90px;
-            height: 90px;
-            margin-bottom: 12px;
-        }
-
-        /* Заголовок для "Все услуги" */
-        #allServicesList .category-card-main-style h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            min-height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1.3;
-        }
-
-        /* Описание для "Все услуги" */
-        #allServicesList .category-description-main {
-            font-size: 0.8rem;
-            line-height: 1.4;
-            margin-bottom: 12px;
-            padding: 8px;
-        }
-
-        /* Футер для "Все услуги" */
-        #allServicesList .category-card-footer {
-            font-size: 0.8rem;
-            margin-top: 10px;
-        }
-
-        /* Адаптивность для "Все услуги" */
-        @media (max-width: 480px) {
-            #allServicesList {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                padding: 0 5px;
-            }
-            
-            #allServicesList .category-card-main-style {
-                padding: 12px;
-                min-height: 280px;
-            }
-            
-            #allServicesList .category-image-main {
+            .category-image-main {
                 width: 80px;
                 height: 80px;
             }
             
-            #allServicesList .category-card-main-style h3 {
-                font-size: 0.9rem;
-                min-height: 32px;
-                -webkit-line-clamp: 2;
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-            
-            #allServicesList .category-description-main {
-                font-size: 0.75rem;
-                padding: 6px;
-                -webkit-line-clamp: 3;
-                display: -webkit-box;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-            }
-        }
-
-        /* Для очень маленьких экранов (менее 360px) */
-        @media (max-width: 360px) {
-            #allServicesList {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-                padding: 0 4px;
-            }
-            
-            #allServicesList .category-card-main-style {
-                padding: 10px;
-                min-height: 260px;
-            }
-            
-            #allServicesList .category-image-main {
-                width: 70px;
-                height: 70px;
-            }
-            
-            #allServicesList .category-card-main-style h3 {
-                font-size: 0.85rem;
-                min-height: 30px;
-            }
-        }
-
-        /* Для планшетов */
-        @media (min-width: 481px) and (max-width: 768px) {
-            #allServicesList {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-                padding: 0 10px;
-            }
-            
-            #allServicesList .category-card-main-style {
-                min-height: 340px;
-            }
-            
-            #allServicesList .category-image-main {
-                width: 100px;
-                height: 100px;
-            }
-            
-            #allServicesList .category-card-main-style h3 {
-                font-size: 1rem;
-            }
-            
-            #allServicesList .category-description-main {
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Для десктопов */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            #allServicesList {
+            .contact-type-buttons {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 20px;
-                padding: 0 15px;
             }
             
-            #allServicesList .category-card-main-style {
-                min-height: 360px;
-            }
-            
-            #allServicesList .category-image-main {
-                width: 110px;
-                height: 110px;
-            }
-            
-            #allServicesList .category-card-main-style h3 {
-                font-size: 1.1rem;
-            }
-        }
-
-        /* Для больших десктопов */
-        @media (min-width: 1025px) {
-            #allServicesList {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 25px;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-            
-            #allServicesList .category-card-main-style {
-                min-height: 380px;
-            }
-            
-            #allServicesList .category-image-main {
-                width: 120px;
-                height: 120px;
-            }
-        }
-
-        /* Для других страниц (категории, главная) оставляем адаптивную сетку */
-        .grid-2-main:not(#allServicesList),
-        .grid-3-main:not(#allServicesList) {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-        }
-        
-        /* Уменьшаем отступы в карточке профиля для мобильных */
-        @media (max-width: 768px) {
             .compact-profile-header {
                 padding: 15px;
             }
@@ -2598,8 +2337,8 @@
                 font-size: 0.65rem;
             }
         }
-
-        /* Стили для категорий на главной в grid-2 */
+        
+        /* Для категорий на главной в grid-2 */
         .grid-2 .category-card .category-image {
             width: 100px;
             height: 100px;
@@ -2611,24 +2350,15 @@
             height: 100px;
             margin: 0 auto 10px;
         }
-        
-        /* Стили для изображений прелоадера */
-        img {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        img.loaded {
-            opacity: 1;
-        }
     </style>
 </head>
 <body>
-        <!-- Прогресс-бар загрузки -->
+    <!-- Прогресс-бар загрузки -->
     <div id="loading-bar" style="position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: var(--pastel-pink); z-index: 9999; transform: translateX(-100%);"></div>
     
     <!-- Оверлей для мобильного меню -->
     <div id="mobile-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+    
     <!-- Верхняя навигация -->
     <nav class="top-nav">
         <a href="#" class="logo" onclick="app.navigateToPage('home')">
@@ -2640,7 +2370,6 @@
                  loading="eager">
             <span class="logo-woman">WOMAN</span>
             <span class="logo-help">HELP</span>
-            <span class="logo-tagline">Решение есть</span>
         </a>
         
         <div class="user-avatar" id="userAvatar" onclick="app.toggleUserMenu()" style="display: none;">
@@ -2661,15 +2390,6 @@
                 </a>
                 <a href="#" class="nav-menu-item" onclick="app.showTasksPopup()">
                     <i class="fas fa-tasks"></i>Мои задачи
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('guides')">
-                    <i class="fas fa-book"></i>Гайды
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('all-categories')">
-                    <i class="fas fa-folder"></i>Категории
-                </a>
-                <a href="#" class="nav-menu-item" onclick="app.navigateToPage('all-services')">
-                    <i class="fas fa-list"></i>Все услуги
                 </a>
                 <a href="#" class="nav-menu-item" onclick="app.showSupportChat()" id="supportMenuBtn">
                     <i class="fas fa-headset"></i>Поддержка
@@ -3023,7 +2743,13 @@
                     <div class="all-services-header">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" id="serviceSearch" class="search-input" placeholder="Поиск услуг..." oninput="app.filterServices()">
+                            <input type="text" id="serviceSearch" class="search-input" 
+                                   placeholder="Поиск услуг по названию..." 
+                                   oninput="app.filterServices()"
+                                   onfocus="app.showSearchAutocomplete()">
+                            <div class="search-autocomplete" id="searchAutocomplete">
+                                <!-- Результаты поиска будут здесь -->
+                            </div>
                         </div>
                         <div>
                             <button class="guides-btn" onclick="app.navigateToPage('guides')">
@@ -3134,13 +2860,6 @@
                     <div class="card">
                         <form id="createTaskForm" class="create-task-form">
                             <div class="form-group">
-                                <label class="form-label">Категория</label>
-                                <div class="form-input" style="background: rgba(242, 221, 230, 0.1); padding: 12px; border-radius: var(--radius-sm); border-left: 4px solid var(--pastel-pink); font-weight: 600; color: var(--graphite-dark);" id="selectedCategoryDisplay">
-                                    Не выбрана
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
                                 <label class="form-label">Услуга</label>
                                 <div class="form-input" style="background: rgba(242, 221, 230, 0.1); padding: 12px; border-radius: var(--radius-sm); border-left: 4px solid var(--gold-metallic); font-weight: 600; color: var(--graphite-dark);" id="selectedServiceDisplay">
                                     Не выбрана
@@ -3178,28 +2897,29 @@
                             
                             <div class="form-group">
                                 <label class="form-label">Предпочтительный способ связи *</label>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 8px;">
-                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                <div class="contact-type-buttons">
+                                    <label class="contact-type-btn" data-type="phone">
                                         <input type="radio" name="contactType" value="phone" checked style="display: none;">
-                                        <i class="fas fa-phone" style="font-size: 1.5rem; color: var(--pastel-pink); margin-bottom: 8px;"></i>
-                                        <span style="font-size: 0.9rem; font-weight: 500;">Телефон</span>
+                                        <i class="fas fa-phone" style="color: var(--gold-metallic);"></i>
+                                        <span class="btn-label">Телефон</span>
                                     </label>
-                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                    <label class="contact-type-btn" data-type="whatsapp">
                                         <input type="radio" name="contactType" value="whatsapp" style="display: none;">
-                                        <i class="fab fa-whatsapp" style="font-size: 1.5rem; color: #25D366; margin-bottom: 8px;"></i>
-                                        <span style="font-size: 0.9rem; font-weight: 500;">WhatsApp</span>
+                                        <i class="fab fa-whatsapp" style="color: #25D366;"></i>
+                                        <span class="btn-label">WhatsApp</span>
                                     </label>
-                                    <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid rgba(61, 61, 61, 0.1); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);">
+                                    <label class="contact-type-btn" data-type="telegram">
                                         <input type="radio" name="contactType" value="telegram" style="display: none;">
-                                        <i class="fab fa-telegram" style="font-size: 1.5rem; color: #0088cc; margin-bottom: 8px;"></i>
-                                        <span style="font-size: 0.9rem; font-weight: 500;">Telegram</span>
+                                        <i class="fab fa-telegram" style="color: #0088cc;"></i>
+                                        <span class="btn-label">Telegram</span>
                                     </label>
                                 </div>
                             </div>
                             
                             <div class="form-group">
-                                <label class="form-label" for="additionalRequirements">Дополнительные требования</label>
-                                <textarea id="additionalRequirements" class="form-input" rows="2" placeholder="Любые дополнительные пожелания..."></textarea>
+                                <label class="form-label" for="additionalRequirements">Особые требования</label>
+                                <textarea id="additionalRequirements" class="form-input" rows="2" 
+                                          placeholder="Особые требования или пожелания..."></textarea>
                             </div>
                             
                             <div style="display: flex; gap: 12px; margin-top: 30px;">
@@ -3675,45 +3395,39 @@
             },
 
             // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-           getImageUrl: function(imageUrl, type) {
-    if (!imageUrl || imageUrl.trim() === '') {
-        return this.createSvgFallback(type);
-    }
-    
-    if (imageUrl.includes('/api/images/test/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    if (type === 'service') {
-        if (imageUrl.startsWith('/uploads/services/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/services/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/services/' + filename + '?t=' + Date.now();
-        } else if (!imageUrl.startsWith('/')) {
-            return this.API_BASE_URL + '/uploads/services/' + imageUrl + '?t=' + Date.now();
-        }
-    }
-    
-    if (type === 'category') {
-        if (imageUrl.startsWith('/uploads/categories/')) {
-            return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-        } else if (imageUrl.startsWith('/uploads/') && !imageUrl.startsWith('/uploads/categories/')) {
-            const filename = imageUrl.split('/').pop();
-            return this.API_BASE_URL + '/uploads/categories/' + filename + '?t=' + Date.now();
-        }
-    }
-    
-    if (imageUrl.startsWith('/')) {
-        return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
-    }
-    
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl + '?t=' + Date.now();
-    }
-    
-    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
-},
+            getImageUrl: function(imageUrl, type) {
+                if (!imageUrl || imageUrl.trim() === '') {
+                    return this.createSvgFallback(type);
+                }
+                
+                // Если изображение уже полный URL
+                if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+                    return imageUrl + '?t=' + Date.now();
+                }
+                
+                // Для загруженных изображений через админку
+                if (imageUrl.startsWith('/uploads/')) {
+                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                }
+                
+                // Для тестовых изображений
+                if (imageUrl.includes('/api/images/test/')) {
+                    return this.API_BASE_URL + imageUrl + '?t=' + Date.now();
+                }
+                
+                // Для категорий
+                if (type === 'category') {
+                    return this.API_BASE_URL + '/api/categories/' + imageUrl + '/image?t=' + Date.now();
+                }
+                
+                // Для логотипа
+                if (type === 'logo') {
+                    return this.API_BASE_URL + '/api/logo/file?t=' + Date.now();
+                }
+                
+                // По умолчанию
+                return this.createSvgFallback(type);
+            },
 
             createSvgFallback: function(type) {
                 const colors = {
@@ -3805,6 +3519,164 @@
                 });
                 
                 this.loadLogo();
+            },
+
+            // ==================== ПОИСК УСЛУГ С АВТОКОМПЛИТОМ ====================
+            filterServices: function() {
+                const searchInput = document.getElementById('serviceSearch');
+                const autocomplete = document.getElementById('searchAutocomplete');
+                
+                if (!searchInput || !autocomplete) return;
+                
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                
+                if (searchTerm.length < 2) {
+                    autocomplete.style.display = 'none';
+                    this.renderAllServices();
+                    return;
+                }
+                
+                // Фильтруем услуги
+                const filteredServices = this.allServices.filter(service => {
+                    return service.name.toLowerCase().includes(searchTerm) || 
+                           service.description.toLowerCase().includes(searchTerm) ||
+                           (service.category_name && service.category_name.toLowerCase().includes(searchTerm));
+                });
+                
+                // Показываем автокомплит
+                this.renderSearchAutocomplete(filteredServices);
+            },
+
+            renderSearchAutocomplete: function(services) {
+                const autocomplete = document.getElementById('searchAutocomplete');
+                if (!autocomplete) return;
+                
+                if (!services || services.length === 0) {
+                    autocomplete.innerHTML = '<div class="search-autocomplete-item" style="color: var(--graphite-medium);">Ничего не найдено</div>';
+                    autocomplete.style.display = 'block';
+                    return;
+                }
+                
+                let html = '';
+                services.slice(0, 10).forEach(service => {
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                    
+                    html += `
+                        <div class="search-autocomplete-item" onclick="app.selectServiceFromSearch(${service.id})">
+                            <div class="service-image">
+                                <img src="${imageUrl}" 
+                                     alt="${service.name}"
+                                     loading="lazy"
+                                     onerror="this.src='${this.createSvgFallback('service')}'">
+                            </div>
+                            <div class="service-info">
+                                <div class="service-name">${service.name}</div>
+                                <div class="service-category">${service.category_name || 'Без категории'}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                autocomplete.innerHTML = html;
+                autocomplete.style.display = 'block';
+            },
+
+            showSearchAutocomplete: function() {
+                const searchInput = document.getElementById('serviceSearch');
+                const autocomplete = document.getElementById('searchAutocomplete');
+                
+                if (!searchInput || !autocomplete || searchInput.value.trim() === '') {
+                    if (autocomplete) autocomplete.style.display = 'none';
+                    return;
+                }
+                
+                this.filterServices();
+            },
+
+            selectServiceFromSearch: function(serviceId) {
+                const service = this.allServices.find(s => s.id === serviceId);
+                if (service) {
+                    this.selectService(service);
+                    
+                    // Скрываем автокомплит и очищаем поиск
+                    const autocomplete = document.getElementById('searchAutocomplete');
+                    if (autocomplete) autocomplete.style.display = 'none';
+                    
+                    const searchInput = document.getElementById('serviceSearch');
+                    if (searchInput) searchInput.value = '';
+                }
+            },
+
+            // ==================== ОБРАБОТКА ВЫБОРА ТИПА СВЯЗИ ====================
+            setupContactTypeButtons: function() {
+                // Эта функция будет вызвана при загрузке страницы создания задачи
+                const buttons = document.querySelectorAll('.contact-type-btn');
+                buttons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Снимаем выделение со всех кнопок
+                        buttons.forEach(b => {
+                            b.classList.remove('selected');
+                            const icon = b.querySelector('i');
+                            if (icon.classList.contains('fa-phone')) {
+                                icon.style.color = 'var(--pastel-pink)';
+                            } else if (icon.classList.contains('fa-whatsapp')) {
+                                icon.style.color = '#25D366';
+                            } else if (icon.classList.contains('fa-telegram')) {
+                                icon.style.color = '#0088cc';
+                            }
+                        });
+                        
+                        // Выделяем выбранную кнопку
+                        this.classList.add('selected');
+                        const icon = this.querySelector('i');
+                        icon.style.color = 'var(--gold-metallic)';
+                        
+                        // Устанавливаем значение radio
+                        const input = this.querySelector('input[type="radio"]');
+                        if (input) input.checked = true;
+                    });
+                });
+                
+                // Выбираем первую кнопку по умолчанию
+                if (buttons.length > 0) {
+                    buttons[0].click();
+                }
+            },
+
+            // ==================== ИСПРАВЛЕННОЕ СОЗДАНИЕ ЗАДАЧИ ====================
+            updateTaskForm: function() {
+                // Категория больше не отображается
+                if (this.selectedService) {
+                    const serviceDisplay = document.getElementById('selectedServiceDisplay');
+                    if (serviceDisplay) {
+                        serviceDisplay.textContent = this.selectedService.name;
+                        serviceDisplay.style.color = 'var(--graphite-dark)';
+                        serviceDisplay.style.fontWeight = '600';
+                        serviceDisplay.style.background = 'rgba(242, 221, 230, 0.1)';
+                        serviceDisplay.style.padding = '12px';
+                        serviceDisplay.style.borderRadius = 'var(--radius-sm)';
+                        serviceDisplay.style.borderLeft = '4px solid var(--gold-metallic)';
+                    }
+                }
+                
+                const contactInput = document.getElementById('taskContact');
+                if (contactInput && this.currentUser && this.currentUser.phone) {
+                    contactInput.value = this.currentUser.phone;
+                }
+                
+                const deadlineInput = document.getElementById('taskDeadline');
+                if (deadlineInput) {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                }
+                
+                // Настраиваем кнопки выбора типа связи
+                setTimeout(() => {
+                    this.setupContactTypeButtons();
+                }, 100);
             },
 
             // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
@@ -4005,32 +3877,6 @@
                         }
                     });
                 }
-                
-                // Стилизация выбора типа связи
-                document.querySelectorAll('input[name="contactType"]').forEach(input => {
-                    input.addEventListener('change', function() {
-                        const parent = this.closest('label');
-                        document.querySelectorAll('input[name="contactType"]').forEach(otherInput => {
-                            const otherParent = otherInput.closest('label');
-                            if (otherParent) {
-                                otherParent.style.borderColor = 'rgba(61, 61, 61, 0.1)';
-                                const icon = otherParent.querySelector('i');
-                                if (icon && icon.classList.contains('fa-phone')) {
-                                    icon.style.color = 'var(--pastel-pink)';
-                                } else if (icon && icon.classList.contains('fa-whatsapp')) {
-                                    icon.style.color = '#25D366';
-                                } else if (icon && icon.classList.contains('fa-telegram')) {
-                                    icon.style.color = '#0088cc';
-                                }
-                            }
-                        });
-                        
-                        if (parent) {
-                            parent.style.borderColor = 'var(--pastel-pink)';
-                            parent.style.backgroundColor = 'rgba(242, 221, 230, 0.1)';
-                        }
-                    });
-                });
             },
 
             formatPhoneInput: function(input) {
@@ -4105,49 +3951,49 @@
                 return this.categories;
             },
 
-           renderHomeCategories: function() {
-    const container = document.getElementById('categoriesGrid');
-    if (!container || !this.categories) return;
-    
-    if (this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '';
-    this.categories.slice(0, 4).forEach((category) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { this.selectCategoryForServices(category); };
-        
-        const imageUrl = category.image_url ? 
-    this.getImageUrl(category.image_url, 'category') : 
-    this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
-        
-        const svgFallback = this.createSvgFallback('category');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${category.display_name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            </div>
-            <h3>${category.display_name}</h3>
-            <div class="category-description-main">${category.description}</div>
-            <div class="category-card-footer">
-                <span>${category.services_count || '0'} услуг</span>
-                <span>Выбрать <i class="fas fa-arrow-right"></i></span>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
-},
+            renderHomeCategories: function() {
+                const container = document.getElementById('categoriesGrid');
+                if (!container || !this.categories) return;
+                
+                if (this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                this.categories.slice(0, 4).forEach((category) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { this.selectCategoryForServices(category); };
+                    
+                    const imageUrl = category.image_url ? 
+                        this.getImageUrl(category.image_url, 'category') : 
+                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                    
+                    const svgFallback = this.createSvgFallback('category');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${category.display_name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <div class="category-description-main">${category.description}</div>
+                        <div class="category-card-footer">
+                            <span>${category.services_count || '0'} услуг</span>
+                            <span>Выбрать <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            },
             
             loadAllServices: async function() {
                 try {
@@ -4190,66 +4036,65 @@
                 }
             },
 
-           renderAllServices: function() {
-    const container = document.getElementById('allServicesList');
-    const pageTitle = document.getElementById('servicesPageTitle');
-    
-    if (!container) return;
-    
-    if (!this.allServices || this.allServices.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-            '</div>';
-        return;
-    }
-    
-    if (pageTitle) {
-        pageTitle.textContent = 'Все услуги';
-    }
-    
-    container.innerHTML = '';
-    
-    this.allServices.forEach((service) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectService(service);
-        };
-        
-        // ИСПРАВЛЕНИЕ ЗДЕСЬ:
-        const imageUrl = service.image_url ? 
-            this.getImageUrl(service.image_url, 'service') : 
-            this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
-        
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            </div>
-            <h3>${service.name}</h3>
-            <div class="category-description-main">${service.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                    ${service.category_name || 'Без категории'}
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-    
-    const backBtn = document.getElementById('backToCategoriesBtn');
-    if (backBtn) backBtn.style.display = 'none';
-},
+            renderAllServices: function() {
+                const container = document.getElementById('allServicesList');
+                const pageTitle = document.getElementById('servicesPageTitle');
+                
+                if (!container) return;
+                
+                if (!this.allServices || this.allServices.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+                        '</div>';
+                    return;
+                }
+                
+                if (pageTitle) {
+                    pageTitle.textContent = 'Все услуги';
+                }
+                
+                container.innerHTML = '';
+                
+                this.allServices.forEach((service) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectService(service);
+                    };
+                    
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                    
+                    const svgFallback = this.createSvgFallback('service');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${service.name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${service.name}</h3>
+                        <div class="category-description-main">${service.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
+                                ${service.category_name || 'Без категории'}
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                const backBtn = document.getElementById('backToCategoriesBtn');
+                if (backBtn) backBtn.style.display = 'none';
+            },
 
             loadAllCategoriesPage: async function() {
                 try {
@@ -4267,156 +4112,60 @@
                 }
             },
 
-renderAllCategories: function() {
-    const container = document.getElementById('allCategoriesList');
-    if (!container) return;
-    
-    if (!this.categories || this.categories.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
-        '</div>';
-        return;
-    }
-    
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
-        '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
-    '</div>';
-    
-    this.categories.forEach((category) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectCategoryForServices(category);
-        };
-        
-        // ИСПРАВЛЕНИЕ ЗДЕСЬ:
-        const imageUrl = category.image_url ? 
-            this.getImageUrl(category.image_url, 'category') : 
-            this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
-        
-        const svgFallback = this.createSvgFallback('category');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${category.display_name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            </div>
-            <h3>${category.display_name}</h3>
-            <div class="category-description-main">${category.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-list"></i>
-                    ${category.services_count || 0} услуг
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        
-        container.appendChild(card);
-    });
-},
-
-renderServicesForCategory: function(category) {
-    const container = document.getElementById('allServicesList');
-    const pageTitle = document.getElementById('servicesPageTitle');
-    const backBtn = document.getElementById('backToCategoriesBtn');
-    const searchBox = document.querySelector('.search-box');
-    
-    if (!container) return;
-    
-    if (searchBox) searchBox.style.display = 'block';
-    if (backBtn) backBtn.style.display = 'block';
-    
-    if (!this.services || this.services.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-            '<p style="color: var(--graphite-medium);">В этой категории пока нет услуг</p>' +
-            '<div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">' +
-                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                    '<i class="fas fa-list"></i>' +
-                    'Все услуги' +
-                '</button>' +
-                '<button class="btn btn-primary" onclick="app.navigateToPage(\'all-categories\')">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Назад к категориям' +
-                '</button>' +
-            '</div>' +
-        '</div>';
-        
-        if (pageTitle) {
-            pageTitle.textContent = category.display_name + ' (нет услуг)';
-        }
-        return;
-    }
-    
-    if (pageTitle) {
-        pageTitle.textContent = category.display_name + ' (' + this.services.length + ' услуг)';
-    }
-    
-    container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
-        '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">' +
-            '<div>' +
-                '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 5px;">' + category.display_name + '</h3>' +
-                '<p style="color: var(--graphite-medium);">' + this.services.length + ' услуг</p>' +
-            '</div>' +
-            '<div style="display: flex; gap: 10px;">' +
-                '<button class="btn btn-secondary" onclick="app.loadAllServicesPage()">' +
-                    '<i class="fas fa-list"></i>' +
-                    'Все услуги' +
-                '</button>' +
-                '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
-                    '<i class="fas fa-arrow-left"></i>' +
-                    'Категории' +
-                '</button>' +
-            '</div>' +
-        '</div>' +
-        '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
-    '</div>';
-    
-    this.services.forEach((service) => {
-        const card = document.createElement('div');
-        card.className = 'category-card-main-style';
-        card.onclick = () => { 
-            this.selectService(service);
-        };
-        
-        // ИСПРАВЛЕНИЕ ЗДЕСЬ:
-        const imageUrl = service.image_url ? 
-            this.getImageUrl(service.image_url, 'service') : 
-            this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
-        
-        const svgFallback = this.createSvgFallback('service');
-        
-        card.innerHTML = `
-            <div class="category-image-main">
-                <img src="${imageUrl}" 
-                     alt="${service.name}"
-                     loading="lazy"
-                     onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
-            </div>
-            <h3>${service.name}</h3>
-            <div class="category-description-main">${service.description}</div>
-            <div class="category-card-footer">
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                    ${category.display_name}
-                </span>
-                <span style="display: flex; align-items: center; gap: 4px;">
-                    Выбрать <i class="fas fa-arrow-right"></i>
-                </span>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-},
+            renderAllCategories: function() {
+                const container = document.getElementById('allCategoriesList');
+                if (!container) return;
+                
+                if (!this.categories || this.categories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
+                }
+                
+                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                    '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Все категории услуг</h3>' +
+                    '<p style="color: var(--graphite-medium);">Выберите категорию для просмотра услуг</p>' +
+                '</div>';
+                
+                this.categories.forEach((category) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectCategoryForServices(category);
+                    };
+                    
+                    const imageUrl = category.image_url ? 
+                        this.getImageUrl(category.image_url, 'category') : 
+                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                    
+                    const svgFallback = this.createSvgFallback('category');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${category.display_name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <div class="category-description-main">${category.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-list"></i>
+                                ${category.services_count || 0} услуг
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            },
 
             selectCategoryForServices: async function(category) {
                 if (!this.currentUser) {
@@ -4601,9 +4350,9 @@ renderServicesForCategory: function(category) {
                         this.selectService(service);
                     };
                     
-                  const imageUrl = service.image_url ? 
-    this.getImageUrl(service.image_url, 'service') : 
-    this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();;
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
                     
                     const svgFallback = this.createSvgFallback('service');
                     
@@ -4700,9 +4449,9 @@ renderServicesForCategory: function(category) {
                     card.className = 'category-card-main-style';
                     card.onclick = () => { this.selectService(service); };
                     
-const imageUrl = service.image_url ? 
-    this.getImageUrl(service.image_url, 'service') : 
-    this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
+                    const imageUrl = service.image_url ? 
+                        this.getImageUrl(service.image_url, 'service') : 
+                        this.API_BASE_URL + '/api/images/test/service?t=' + Date.now();
                     
                     const svgFallback = this.createSvgFallback('service');
                     
@@ -4797,61 +4546,12 @@ const imageUrl = service.image_url ?
                 }
             },
 
-            updateTaskForm: function() {
-                if (this.selectedCategory) {
-                    const categoryDisplay = document.getElementById('selectedCategoryDisplay');
-                    if (categoryDisplay) {
-                        categoryDisplay.textContent = this.selectedCategory.display_name || this.selectedCategory.name;
-                        categoryDisplay.style.color = 'var(--graphite-dark)';
-                        categoryDisplay.style.fontWeight = '600';
-                        categoryDisplay.style.background = 'rgba(242, 221, 230, 0.1)';
-                        categoryDisplay.style.padding = '12px';
-                        categoryDisplay.style.borderRadius = 'var(--radius-sm)';
-                        categoryDisplay.style.borderLeft = '4px solid var(--pastel-pink)';
-                    }
-                }
-                
-                if (this.selectedService) {
-                    const serviceDisplay = document.getElementById('selectedServiceDisplay');
-                    if (serviceDisplay) {
-                        serviceDisplay.textContent = this.selectedService.name;
-                        serviceDisplay.style.color = 'var(--graphite-dark)';
-                        serviceDisplay.style.fontWeight = '600';
-                        serviceDisplay.style.background = 'rgba(242, 221, 230, 0.1)';
-                        serviceDisplay.style.padding = '12px';
-                        serviceDisplay.style.borderRadius = 'var(--radius-sm)';
-                        serviceDisplay.style.borderLeft = '4px solid var(--gold-metallic)';
-                    }
-                }
-                
-                const contactInput = document.getElementById('taskContact');
-                if (contactInput && this.currentUser && this.currentUser.phone) {
-                    contactInput.value = this.currentUser.phone;
-                }
-                
-                const deadlineInput = document.getElementById('taskDeadline');
-                if (deadlineInput) {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    deadlineInput.value = tomorrow.toISOString().split('T')[0];
-                }
-            },
-
             cancelTask: function() {
                 this.selectedCategory = null;
                 this.selectedService = null;
                 
                 const taskForm = document.getElementById('createTaskForm');
                 if (taskForm) taskForm.reset();
-                
-                const categoryDisplay = document.getElementById('selectedCategoryDisplay');
-                if (categoryDisplay) {
-                    categoryDisplay.textContent = 'Не выбрана';
-                    categoryDisplay.style.color = 'var(--graphite-medium)';
-                    categoryDisplay.style.fontWeight = '400';
-                    categoryDisplay.style.background = '#f9f9f9';
-                    categoryDisplay.style.borderLeft = 'none';
-                }
                 
                 const serviceDisplay = document.getElementById('selectedServiceDisplay');
                 if (serviceDisplay) {
@@ -5658,50 +5358,6 @@ const imageUrl = service.image_url ?
                 return statusMap[filter] ? statusMap[filter]() : tasks;
             },
             
-            renderUserTasksTable: function() {
-                const container = document.getElementById('userTasksTable');
-                if (!container) return;
-                
-                if (!this.userTasks || this.userTasks.length === 0) {
-                    container.innerHTML = '';
-                    return;
-                }
-                
-                const table = document.createElement('table');
-                table.className = 'task-history-table';
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Номер задачи</th>
-                            <th>Название</th>
-                            <th>Категория</th>
-                            <th>Статус</th>
-                            <th>Дата создания</th>
-                            <th>Действия</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${this.userTasks.map(task => `
-                            <tr>
-                                <td>${task.task_number}</td>
-                                <td>${task.title}</td>
-                                <td>${task.category_name || ''}</td>
-                                <td><span class="task-status ${task.status}">${this.getStatusText(task.status)}</span></td>
-                                <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
-                                <td>
-                                    <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                
-                container.innerHTML = '';
-                container.appendChild(table);
-            },
-
             showTaskDetailsCompact: async function(taskId) {
                 try {
                     this.showLoading('Загрузка задачи...');
@@ -5951,13 +5607,44 @@ const imageUrl = service.image_url ?
             getStatusInfo: function(status) {
                 const statuses = {
                     'new': { name: 'Новая', icon: 'fas fa-plus-circle', color: '#1565C0' },
-                    'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#EF6C00' },
-                    'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#0277BD' },
-                    'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#512DA8' },
-                    'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#2E7D32' },
-                    'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#C62828' }
+                    'searching': { name: 'Поиск исполнителя', icon: 'fas fa-search', color: '#2196F3' },
+                    'assigned': { name: 'Назначена', icon: 'fas fa-user-check', color: '#03A9F4' },
+                    'in_progress': { name: 'В работе', icon: 'fas fa-cogs', color: '#00BCD4' },
+                    'completed': { name: 'Выполнена', icon: 'fas fa-check-circle', color: '#4CAF50' },
+                    'cancelled': { name: 'Отменена', icon: 'fas fa-times-circle', color: '#F44336' }
                 };
                 return statuses[status] || { name: status, icon: 'fas fa-question-circle', color: '#9E9E9E' };
+            },
+
+            // ==================== ИСПРАВЛЕННОЕ УВЕДОМЛЕНИЕ ====================
+            showNotification: function(message, type) {
+                const oldNotifications = document.querySelectorAll('.notification');
+                oldNotifications.forEach(function(notif) {
+                    notif.remove();
+                });
+                
+                const notification = document.createElement('div');
+                notification.className = 'notification ' + (type || 'success');
+                
+                let icon = 'fas fa-check-circle';
+                if (type === 'error') icon = 'fas fa-exclamation-circle';
+                if (type === 'warning') icon = 'fas fa-exclamation-triangle';
+                if (type === 'info') icon = 'fas fa-info-circle';
+                
+                notification.innerHTML = '<i class="' + icon + '"></i><span>' + message + '</span>';
+                document.body.appendChild(notification);
+                
+                // Показываем 4 секунды для успешных уведомлений
+                const duration = type === 'success' ? 4000 : 5000;
+                
+                setTimeout(function() {
+                    if (notification.parentNode) {
+                        notification.classList.add('hiding');
+                        setTimeout(function() {
+                            if (notification.parentNode) notification.remove();
+                        }, 300);
+                    }
+                }, duration);
             },
 
             // ==================== АВТОРИЗАЦИЯ ====================
@@ -6314,33 +6001,6 @@ const imageUrl = service.image_url ?
             formatNumber: function(num) {
                 if (!num && num !== 0) return '0';
                 return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-            },
-
-            showNotification: function(message, type) {
-                const oldNotifications = document.querySelectorAll('.notification');
-                oldNotifications.forEach(function(notif) {
-                    notif.remove();
-                });
-                
-                const notification = document.createElement('div');
-                notification.className = 'notification ' + (type || 'success');
-                
-                let icon = 'fas fa-check-circle';
-                if (type === 'error') icon = 'fas fa-exclamation-circle';
-                if (type === 'warning') icon = 'fas fa-exclamation-triangle';
-                if (type === 'info') icon = 'fas fa-info-circle';
-                
-                notification.innerHTML = '<i class="' + icon + '"></i><span>' + message + '</span>';
-                document.body.appendChild(notification);
-                
-                setTimeout(function() {
-                    if (notification.parentNode) {
-                        notification.classList.add('hiding');
-                        setTimeout(function() {
-                            if (notification.parentNode) notification.remove();
-                        }, 300);
-                    }
-                }, 5000);
             },
 
             showLoading: function(message) {
@@ -6706,6 +6366,132 @@ const imageUrl = service.image_url ?
                 if (modal) modal.remove();
             },
 
+            // ==================== ИНИЦИАЛИЗАЦИЯ ПОИСКА ====================
+            initSearchFunctionality: function() {
+                // Скрываем автокомплит при клике вне его
+                document.addEventListener('click', (event) => {
+                    const autocomplete = document.getElementById('searchAutocomplete');
+                    const searchInput = document.getElementById('serviceSearch');
+                    
+                    if (autocomplete && searchInput) {
+                        if (!autocomplete.contains(event.target) && !searchInput.contains(event.target)) {
+                            autocomplete.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Обработка клавиш в поиске
+                const searchInput = document.getElementById('serviceSearch');
+                if (searchInput) {
+                    searchInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') {
+                            const autocomplete = document.getElementById('searchAutocomplete');
+                            if (autocomplete) autocomplete.style.display = 'none';
+                        }
+                    });
+                }
+            },
+
+            // ==================== ОБНОВЛЕНИЕ ПРОФИЛЯ В ШАПКЕ ====================
+            updateProfileInHeader: function() {
+                const userAvatar = document.getElementById('userAvatar');
+                const menuUserName = document.getElementById('menuUserName');
+                const menuUserEmail = document.getElementById('menuUserEmail');
+                const loginMenuBtn = document.getElementById('loginMenuBtn');
+                const logoutMenuBtn = document.getElementById('logoutMenuBtn');
+                const supportMenuBtn = document.getElementById('supportMenuBtn');
+                
+                if (this.currentUser) {
+                    // Показываем аватар пользователя
+                    if (userAvatar) {
+                        userAvatar.style.display = 'flex';
+                        
+                        // Если есть URL аватара, используем его
+                        if (this.currentUser.avatar_url) {
+                            const avatarUrl = this.getImageUrl(this.currentUser.avatar_url, 'user');
+                            const avatarImg = userAvatar.querySelector('img');
+                            if (avatarImg) {
+                                avatarImg.src = avatarUrl;
+                                avatarImg.onerror = function() {
+                                    // При ошибке загрузки показываем первую букву имени
+                                    avatarImg.style.display = 'none';
+                                    userAvatar.textContent = app.currentUser.first_name?.charAt(0).toUpperCase() || 'Г';
+                                };
+                            }
+                        } else {
+                            // Показываем первую букву имени
+                            const firstLetter = this.currentUser.first_name?.charAt(0).toUpperCase() || 'Г';
+                            userAvatar.textContent = firstLetter;
+                        }
+                    }
+                    
+                    // Обновляем данные в меню
+                    if (menuUserName) menuUserName.textContent = this.currentUser.first_name || 'Пользователь';
+                    if (menuUserEmail) menuUserEmail.textContent = this.currentUser.email || this.currentUser.phone || '';
+                    
+                    // Настраиваем кнопки меню
+                    if (loginMenuBtn) loginMenuBtn.style.display = 'none';
+                    if (logoutMenuBtn) logoutMenuBtn.style.display = 'block';
+                    if (supportMenuBtn) supportMenuBtn.style.display = 'block';
+                    
+                } else {
+                    // Пользователь не авторизован
+                    if (userAvatar) userAvatar.style.display = 'none';
+                    if (menuUserName) menuUserName.textContent = 'Гость';
+                    if (menuUserEmail) menuUserEmail.textContent = '';
+                    
+                    if (loginMenuBtn) loginMenuBtn.style.display = 'block';
+                    if (logoutMenuBtn) logoutMenuBtn.style.display = 'none';
+                    if (supportMenuBtn) supportMenuBtn.style.display = 'none';
+                }
+            },
+
+            // ==================== ПРЕДВАРИТЕЛЬНАЯ ЗАГРУЗКА ИЗОБРАЖЕНИЙ ====================
+            preloadImages: function() {
+                // Предзагрузка логотипа
+                const logoUrl = this.getImageUrl('', 'logo');
+                const logoImg = new Image();
+                logoImg.src = logoUrl;
+                
+                // Предзагрузка основных изображений
+                const preloadUrls = [
+                    '/api/images/test/category',
+                    '/api/images/test/service',
+                    '/api/images/test/user'
+                ];
+                
+                preloadUrls.forEach(url => {
+                    const img = new Image();
+                    img.src = this.API_BASE_URL + url;
+                });
+            },
+
+            // ==================== ОПТИМИЗАЦИЯ ЗАГРУЗКИ ИЗОБРАЖЕНИЙ ====================
+            setupLazyLoading: function() {
+                if ('IntersectionObserver' in window) {
+                    const imageObserver = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                if (img.dataset.src) {
+                                    img.src = img.dataset.src;
+                                    img.removeAttribute('data-src');
+                                }
+                                observer.unobserve(img);
+                            }
+                        });
+                    }, {
+                        rootMargin: '50px 0px',
+                        threshold: 0.01
+                    });
+                    
+                    // Наблюдаем за всеми изображениями с data-src
+                    document.querySelectorAll('img[data-src]').forEach(img => {
+                        imageObserver.observe(img);
+                    });
+                }
+            },
+
             // ==================== МОДАЛЬНЫЕ ОКНА ====================
             showLoginModal: function() {
                 this.closeAllModals();
@@ -6745,14 +6531,17 @@ const imageUrl = service.image_url ?
 
             // ==================== НАВИГАЦИЯ ====================
             navigateToPage: function(pageId) {
+                // Скрываем все страницы
                 document.querySelectorAll('.page').forEach(function(page) {
                     page.classList.remove('active');
                 });
                 
+                // Показываем целевую страницу
                 const targetPage = document.getElementById(pageId + '-page');
                 if (targetPage) {
                     targetPage.classList.add('active');
                     
+                    // Обновляем активную навигацию
                     document.querySelectorAll('.nav-item').forEach(function(item) {
                         item.classList.remove('active');
                         if (item.getAttribute('data-page') === pageId) {
@@ -6760,6 +6549,7 @@ const imageUrl = service.image_url ?
                         }
                     });
                     
+                    // Загружаем данные для страницы
                     switch(pageId) {
                         case 'home': 
                             this.loadHomePage(); 
@@ -6783,109 +6573,285 @@ const imageUrl = service.image_url ?
                         case 'subscription': 
                             this.loadSubscriptionPage(); 
                             break;
+                        case 'guides': 
+                            // Страница гайдов уже загружена статически
+                            break;
                     }
                     
+                    // Скрываем меню пользователя
                     const userMenu = document.getElementById('userMenu');
                     if (userMenu && userMenu.style.display === 'block') {
                         userMenu.style.display = 'none';
                     }
+                    
+                    // Скрываем автокомплит поиска
+                    const autocomplete = document.getElementById('searchAutocomplete');
+                    if (autocomplete) autocomplete.style.display = 'none';
                 }
             },
 
-
-            
-            // ==================== ИНИЦИАЛИЗАЦИЯ ====================
-            init: async function() {
-                this.animateCounters();
-                await this.loadLogo();
-                await this.loadCategories();
-                await this.loadAllServices();
-                await this.loadSubscriptions();
-                this.setupDefaultImages();
+            // ==================== ФИЛЬТРАЦИЯ КАТЕГОРИЙ ====================
+            filterCategories: function() {
+                const searchInput = document.getElementById('categorySearch');
+                if (!searchInput) return;
                 
-                this.setupEventListeners();
-                this.determineInitialScreen();
-                this.updateUserInterface();
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const container = document.getElementById('allCategoriesList');
                 
-                this.supportChat.init();
+                if (!container || !this.categories) return;
                 
-                if (this.currentUser) {
-                    setTimeout(() => {
-                        this.loadUserTasks('all');
-                    }, 500);
+                if (searchTerm.length < 2) {
+                    this.renderAllCategories();
+                    return;
                 }
                 
-                const deadlineInput = document.getElementById('taskDeadline');
-                if (deadlineInput) {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    deadlineInput.min = new Date().toISOString().split('T')[0];
-                    deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                // Фильтруем категории
+                const filteredCategories = this.categories.filter(category => {
+                    return category.display_name.toLowerCase().includes(searchTerm) || 
+                           category.description.toLowerCase().includes(searchTerm);
+                });
+                
+                // Показываем отфильтрованные категории
+                if (filteredCategories.length === 0) {
+                    container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+                        '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+                        '<p style="color: var(--graphite-medium);">Категории не найдены</p>' +
+                    '</div>';
+                    return;
                 }
                 
-                const categorySearch = document.getElementById('categorySearch');
-                if (categorySearch) {
-                    categorySearch.style.display = 'none';
-                }
+                container.innerHTML = '<div style="grid-column: 1 / -1; margin-bottom: 20px;">' +
+                    '<h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 10px;">Результаты поиска</h3>' +
+                    '<p style="color: var(--graphite-medium);">Найдено категорий: ' + filteredCategories.length + '</p>' +
+                '</div>';
                 
-                if (window.MutationObserver) {
-                    const imageObserver = new MutationObserver((mutations) => {
-                        mutations.forEach((mutation) => {
-                            if (mutation.type === 'childList') {
-                                mutation.addedNodes.forEach((node) => {
-                                    if (node.nodeType === 1) {
-                                        let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
-                                        if (node.tagName === 'IMG') {
-                                            images = [node];
-                                        }
-                                        
-                                        images.forEach((img) => {
-                                            if (!img.src || img.src === '' || img.src === window.location.href) {
-                                                let type = 'default';
-                                                let testUrl = '/api/images/test/default';
-                                                
-                                                if (img.classList.contains('logo-img') || img.id.includes('logo')) {
-                                                    type = 'logo';
-                                                    testUrl = '/api/images/test/logo';
-                                                } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
-                                                    type = 'category';
-                                                    testUrl = '/api/images/test/category';
-                                                } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
-                                                    type = 'service';
-                                                    testUrl = '/api/images/test/service';
-                                                } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
-                                                    type = 'user';
-                                                    testUrl = '/api/images/test/user';
-                                                }
-                                                
-                                                if (!img.hasAttribute('data-image-set')) {
-                                                    img.setAttribute('data-image-set', 'true');
-                                                    img.src = testUrl;
-                                                    
-                                                    img.onerror = function() {
-                                                        this.onerror = null;
-                                                        const svgFallback = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                                                            <rect width="100" height="100" fill="#F2DDE6" rx="10"/>
-                                                            <text x="50" y="50" font-family="Arial" font-size="30" fill="#C5A880" text-anchor="middle" dy=".3em">${type.charAt(0).toUpperCase()}</text>
-                                                        </svg>`;
-                                                        this.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgFallback)));
-                                                    };
-                                                    
-                                                    img.loading = 'lazy';
-                                                    img.decoding = 'async';
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    });
+                filteredCategories.forEach((category) => {
+                    const card = document.createElement('div');
+                    card.className = 'category-card-main-style';
+                    card.onclick = () => { 
+                        this.selectCategoryForServices(category);
+                    };
                     
-                    imageObserver.observe(document.body, {
-                        childList: true,
-                        subtree: true
-                    });
+                    const imageUrl = category.image_url ? 
+                        this.getImageUrl(category.image_url, 'category') : 
+                        this.API_BASE_URL + '/api/images/test/category?t=' + Date.now();
+                    
+                    const svgFallback = this.createSvgFallback('category');
+                    
+                    card.innerHTML = `
+                        <div class="category-image-main">
+                            <img src="${imageUrl}" 
+                                 alt="${category.display_name}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${svgFallback}';"
+                                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        </div>
+                        <h3>${category.display_name}</h3>
+                        <div class="category-description-main">${category.description}</div>
+                        <div class="category-card-footer">
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-list"></i>
+                                ${category.services_count || 0} услуг
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 4px;">
+                                Выбрать <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    `;
+                    
+                    container.appendChild(card);
+                });
+            },
+
+            // ==================== СОХРАНЕНИЕ НАСТРОЕК ====================
+            saveSettings: function() {
+                try {
+                    const settings = {
+                        notifyEmail: document.getElementById('notifyEmail').checked,
+                        notifySMS: document.getElementById('notifySMS').checked,
+                        notifyPush: document.getElementById('notifyPush').checked,
+                        privacyProfile: document.getElementById('privacyProfile').checked,
+                        privacyTasks: document.getElementById('privacyTasks').checked
+                    };
+                    
+                    localStorage.setItem('userSettings', JSON.stringify(settings));
+                    this.showNotification('Настройки сохранены', 'success');
+                } catch (error) {
+                    console.error('Ошибка сохранения настроек:', error);
+                    this.showNotification('Ошибка сохранения настроек', 'error');
+                }
+            },
+
+            loadSettings: function() {
+                try {
+                    const savedSettings = localStorage.getItem('userSettings');
+                    if (savedSettings) {
+                        const settings = JSON.parse(savedSettings);
+                        
+                        if (document.getElementById('notifyEmail')) {
+                            document.getElementById('notifyEmail').checked = settings.notifyEmail;
+                        }
+                        if (document.getElementById('notifySMS')) {
+                            document.getElementById('notifySMS').checked = settings.notifySMS;
+                        }
+                        if (document.getElementById('notifyPush')) {
+                            document.getElementById('notifyPush').checked = settings.notifyPush;
+                        }
+                        if (document.getElementById('privacyProfile')) {
+                            document.getElementById('privacyProfile').checked = settings.privacyProfile;
+                        }
+                        if (document.getElementById('privacyTasks')) {
+                            document.getElementById('privacyTasks').checked = settings.privacyTasks;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка загрузки настроек:', error);
+                }
+            },
+
+            // ==================== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ====================
+            init: async function() {
+                try {
+                    // Анимируем счетчики статистики
+                    this.animateCounters();
+                    
+                    // Загружаем основные данные
+                    await Promise.all([
+                        this.loadLogo(),
+                        this.loadCategories(),
+                        this.loadAllServices(),
+                        this.loadSubscriptions()
+                    ]);
+                    
+                    // Настраиваем изображения
+                    this.setupDefaultImages();
+                    this.setupLazyLoading();
+                    this.preloadImages();
+                    
+                    // Настраиваем обработчики событий
+                    this.setupEventListeners();
+                    this.initSearchFunctionality();
+                    
+                    // Определяем начальный экран
+                    this.determineInitialScreen();
+                    
+                    // Обновляем интерфейс пользователя
+                    this.updateProfileInHeader();
+                    this.updateUserInterface();
+                    
+                    // Загружаем настройки
+                    this.loadSettings();
+                    
+                    // Инициализируем чат поддержки
+                    this.supportChat.init();
+                    
+                    // Загружаем задачи если пользователь авторизован
+                    if (this.currentUser) {
+                        setTimeout(() => {
+                            this.loadUserTasks('all');
+                        }, 500);
+                    }
+                    
+                    // Настраиваем поля формы
+                    const deadlineInput = document.getElementById('taskDeadline');
+                    if (deadlineInput) {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        deadlineInput.min = new Date().toISOString().split('T')[0];
+                        deadlineInput.value = tomorrow.toISOString().split('T')[0];
+                    }
+                    
+                    // Настраиваем поиск категорий
+                    const categorySearch = document.getElementById('categorySearch');
+                    if (categorySearch) {
+                        categorySearch.style.display = 'none';
+                    }
+                    
+                    // Наблюдатель для динамически добавляемых изображений
+                    if (window.MutationObserver) {
+                        const imageObserver = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                if (mutation.type === 'childList') {
+                                    mutation.addedNodes.forEach((node) => {
+                                        if (node.nodeType === 1) {
+                                            let images = node.querySelectorAll ? node.querySelectorAll('img') : [];
+                                            if (node.tagName === 'IMG') {
+                                                images = [node];
+                                            }
+                                            
+                                            images.forEach((img) => {
+                                                if (!img.src || img.src === '' || img.src === window.location.href) {
+                                                    let type = 'default';
+                                                    let testUrl = '/api/images/test/default';
+                                                    
+                                                    if (img.classList.contains('logo-img') || img.id.includes('logo')) {
+                                                        type = 'logo';
+                                                        testUrl = '/api/images/test/logo';
+                                                    } else if (img.closest('.category-image') || img.closest('.category-image-container')) {
+                                                        type = 'category';
+                                                        testUrl = '/api/images/test/category';
+                                                    } else if (img.closest('.service-image') || img.closest('.service-image-container')) {
+                                                        type = 'service';
+                                                        testUrl = '/api/images/test/service';
+                                                    } else if (img.closest('.user-avatar') || img.closest('.profile-avatar')) {
+                                                        type = 'user';
+                                                        testUrl = '/api/images/test/user';
+                                                    }
+                                                    
+                                                    if (!img.hasAttribute('data-image-set')) {
+                                                        img.setAttribute('data-image-set', 'true');
+                                                        img.src = testUrl;
+                                                        
+                                                        img.onerror = function() {
+                                                            this.onerror = null;
+                                                            const svgFallback = app.createSvgFallback(type);
+                                                            this.src = svgFallback;
+                                                        };
+                                                        
+                                                        img.loading = 'lazy';
+                                                        img.decoding = 'async';
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                        
+                        imageObserver.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
+                    }
+                    
+                    // Устанавливаем глобальную ссылку на приложение
+                    window.App = this;
+                    
+                    // Показываем загрузочный экран
+                    const loadingBar = document.getElementById('loading-bar');
+                    if (loadingBar) {
+                        loadingBar.style.transition = 'transform 0.5s ease';
+                        loadingBar.style.transform = 'translateX(0)';
+                        
+                        setTimeout(() => {
+                            loadingBar.style.transform = 'translateX(100%)';
+                            setTimeout(() => {
+                                loadingBar.style.display = 'none';
+                            }, 500);
+                        }, 800);
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации приложения:', error);
+                    
+                    // Показываем сообщение об ошибке
+                    document.body.innerHTML += '<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow-lg); text-align: center; z-index: 10000;">' +
+                        '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--error); margin-bottom: 15px;"></i>' +
+                        '<h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Ошибка загрузки</h3>' +
+                        '<p style="color: var(--graphite-medium); margin-bottom: 20px;">Приложение временно недоступно. Пожалуйста, обновите страницу.</p>' +
+                        '<button class="btn btn-primary" onclick="window.location.reload()">Обновить страницу</button>' +
+                    '</div>';
                 }
             }
         };
@@ -6893,10 +6859,16 @@ const imageUrl = service.image_url ?
         window.addEventListener('DOMContentLoaded', function() {
             try {
                 app.init();
-                window.App = app;
             } catch (error) {
-                console.error('Ошибка инициализации:', error);
-                document.body.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">Приложение временно недоступно. Пожалуйста, обновите страницу.</div>';
+                console.error('Критическая ошибка инициализации:', error);
+                document.body.innerHTML = '<div style="padding: 40px; text-align: center; font-family: Inter, sans-serif; color: var(--graphite-dark);">' +
+                    '<i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: var(--error); margin-bottom: 20px;"></i>' +
+                    '<h1 style="font-size: 1.8rem; margin-bottom: 15px;">Ошибка загрузки приложения</h1>' +
+                    '<p style="color: var(--graphite-medium); margin-bottom: 25px;">Пожалуйста, обновите страницу или попробуйте позже.</p>' +
+                    '<button onclick="window.location.reload()" style="background: var(--pastel-pink); color: var(--graphite-dark); border: none; padding: 12px 24px; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 1rem;">' +
+                        '<i class="fas fa-redo"></i> Обновить страницу' +
+                    '</button>' +
+                '</div>';
             }
         });
     </script>
