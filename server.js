@@ -5228,6 +5228,7 @@ app.post('/api/performer/tasks/:taskId/accept', authMiddleware(['performer']), a
 
 // ==================== API ИСПОЛНИТЕЛЕЙ ====================
 
+// Получение доступных задач для исполнителя
 app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 'superadmin', 'manager']), async (req, res) => {
     try {
         const { category_id, min_price, priority } = req.query;
@@ -5275,7 +5276,7 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
               AND (t.performer_id IS NULL OR t.performer_id = 0)
         `;
         
-        const params = [...categoryIds];
+        const params = [...categoryIds, req.user.id];
         
         // Фильтр по категории
         if (category_id && category_id !== 'all') {
@@ -5295,14 +5296,6 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
             params.push(priority);
         }
         
-        // Исключаем задачи, где исполнитель уже назначен
-        query += ' AND (t.performer_id IS NULL OR t.performer_id = 0 OR t.performer_id = ?)';
-        params.push(req.user.id);
-        
-        // Исключаем задачи, созданные самим исполнителем
-        query += ' AND t.client_id != ?';
-        params.push(req.user.id);
-        
         query += ' ORDER BY t.priority DESC, t.created_at DESC';
         
         console.log('📊 SQL запрос:', query);
@@ -5312,20 +5305,14 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
         
         console.log(`✅ Найдено доступных задач: ${tasks.length}`);
         
-        // Добавляем флаг, что исполнитель может принять задачу
-        const tasksWithFlag = tasks.map(task => ({
-            ...task,
-            can_take: true
-        }));
-        
         res.json({
             success: true,
             data: {
-                tasks: tasksWithFlag,
-                count: tasksWithFlag.length,
+                tasks: tasks,
+                count: tasks.length,
                 categories: specializations.length,
-                message: tasksWithFlag.length > 0 
-                    ? `Найдено ${tasksWithFlag.length} доступных задач` 
+                message: tasks.length > 0 
+                    ? `Найдено ${tasks.length} доступных задач` 
                     : 'Нет доступных задач в ваших категориях'
             }
         });
@@ -5341,6 +5328,7 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
         });
     }
 });
+// Получение специализаций исполнителя
 // Получение специализаций исполнителя
 app.get('/api/performer/categories', authMiddleware(['performer']), async (req, res) => {
     try {
@@ -5373,6 +5361,71 @@ app.get('/api/performer/categories', authMiddleware(['performer']), async (req, 
     }
 });
 
+// Добавление категории исполнителю
+app.post('/api/performer/categories', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const { category_id, experience_years = 0, hourly_rate = 0, is_active = 1 } = req.body;
+        
+        if (!category_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указана категория'
+            });
+        }
+        
+        // Проверяем существование категории
+        const categoryExists = await db.get('SELECT id FROM categories WHERE id = ?', [category_id]);
+        if (!categoryExists) {
+            return res.status(404).json({
+                success: false,
+                error: 'Категория не найдена'
+            });
+        }
+        
+        await db.run(
+            `INSERT OR REPLACE INTO performer_categories 
+            (performer_id, category_id, experience_years, hourly_rate, is_active) 
+            VALUES (?, ?, ?, ?, ?)`,
+            [req.user.id, category_id, experience_years, hourly_rate, is_active]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Категория добавлена в ваш профиль'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка добавления категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка добавления категории'
+        });
+    }
+});
+
+// Удаление категории у исполнителя
+app.delete('/api/performer/categories/:categoryId', authMiddleware(['performer']), async (req, res) => {
+    try {
+        const categoryId = req.params.categoryId;
+        
+        await db.run(
+            'DELETE FROM performer_categories WHERE performer_id = ? AND category_id = ?',
+            [req.user.id, categoryId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Категория удалена из вашего профиля'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка удаления категории:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления категории'
+        });
+    }
+});
 // ==================== АДМИН API (ПОЛНЫЕ ВОЗМОЖНОСТИ) ====================
 
 // Аутентификация администратора
