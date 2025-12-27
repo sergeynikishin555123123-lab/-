@@ -3232,46 +3232,66 @@ if (!phone || !first_name || !role) {
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    showNotification('Пользователь успешно сохранен', 'success');
+               const data = await response.json();
+
+if (data.success) {
+    showNotification('Пользователь успешно сохранен', 'success');
+    closeModal('userModal');
+    
+    // Автоматически создаем тестовые данные для входа
+    if (!id) {
+        // Для новых пользователей показываем данные для входа
+        setTimeout(() => {
+            showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
+        }, 500);
+    }
+    
+    loadUsers();
+} else {
+    // Обрабатываем специфические ошибки
+    if (data.error && data.error.includes('уже существует')) {
+        if (data.error.includes('email')) {
+            // Если ошибка в email, предлагаем оставить его пустым
+            if (confirm('Пользователь с таким email уже существует. Хотите создать пользователя без email?')) {
+                // Пересоздаем пользователя без email
+                userData.email = null;
+                userData.email_verified = 0;
+                
+                // Повторяем запрос
+                const retryResponse = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const retryData = await retryResponse.json();
+                
+                if (retryData.success) {
+                    showNotification('Пользователь успешно создан без email', 'success');
                     closeModal('userModal');
+                    loadUsers();
                     
-                    // Автоматически создаем тестовые данные для входа
                     if (!id) {
-                        // Для новых пользователей показываем данные для входа
-                        const loginInfo = `
-                            <div style="background: var(--pink-light); padding: 15px; border-radius: 8px; margin-top: 10px;">
-                                <strong>Данные для входа:</strong><br>
-                                📱 Телефон: ${phone}<br>
-                                🔐 Пароль: ${password}<br>
-                                🚪 Ссылка: <a href="/login" target="_blank">/login</a>
-                            </div>
-                        `;
-                        
-                        // Можно вывести alert или добавить информацию в notification
                         setTimeout(() => {
                             showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
                         }, 500);
                     }
-                    
-                    loadUsers();
                 } else {
-                    // Обрабатываем специфические ошибки
-                    if (data.error && data.error.includes('уже существует')) {
-                        throw new Error('Пользователь с таким телефоном уже существует');
-                    } else if (data.error && data.error.includes('email')) {
-                        throw new Error('Пользователь с таким email уже существует');
-                    } else {
-                        throw new Error(data.error || 'Ошибка сохранения пользователя');
-                    }
+                    throw new Error(retryData.error || 'Ошибка создания пользователя');
                 }
-            } catch (error) {
-                console.error('Ошибка сохранения пользователя:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
             }
+        } else if (data.error.includes('телефоном')) {
+            throw new Error('Пользователь с таким телефоном уже существует');
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения пользователя');
         }
+    } else {
+        throw new Error(data.error || 'Ошибка сохранения пользователя');
+    }
+}
         
         async function deleteUser(userId) {
             if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
