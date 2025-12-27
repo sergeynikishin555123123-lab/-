@@ -2146,6 +2146,7 @@
         let isMobile = window.innerWidth <= 767;
         let currentChatUserId = null;
         let currentEditingCategoryId = null;
+        let currentTaskId = null;
         
         // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
@@ -3679,6 +3680,8 @@ async function saveUser() {
             document.getElementById('categoryImagePreview').innerHTML = '';
             showModal('categoryModal');
         }
+
+
         
         async function editCategory(categoryId) {
             try {
@@ -4378,6 +4381,8 @@ async function saveUser() {
                 hideLoading();
             }
         }
+
+
         
         // Управление задачами
         async function loadTasks() {
