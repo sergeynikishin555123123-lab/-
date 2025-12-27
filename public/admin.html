@@ -1587,10 +1587,10 @@
                         <input type="tel" id="userPhone" class="form-input" required placeholder="+7 (999) 123-45-67" value="+79991112233">
                     </div>
                     
-                    <div class="form-group">
-                        <label for="userEmail">Email (опционально)</label>
-                        <input type="email" id="userEmail" class="form-input" placeholder="email@example.com">
-                    </div>
+                   <div class="form-group">
+    <label for="userEmail">Email (необязательно)</label>
+    <input type="email" id="userEmail" class="form-input" placeholder="email@example.com">
+</div>
                     
                     <div class="form-row">
                         <div class="form-group">
@@ -3160,22 +3160,22 @@
             }
         }
         
-        async function saveUser() {
-            const id = document.getElementById('userId').value;
-            const phone = document.getElementById('userPhone').value;
-            const email = document.getElementById('userEmail').value;
-            const password = document.getElementById('userPassword').value;
-            const first_name = document.getElementById('userFirstName').value;
-            const last_name = document.getElementById('userLastName').value;
-            const role = document.getElementById('userRoleSelect').value;
-            const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
-            const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
-            
-            // Валидация полей
-            if (!phone || !first_name || !role || (role === 'client' && !email)) {
-                showNotification('Заполните обязательные поля: телефон, имя, роль' + (role === 'client' ? ', email' : ''), 'error');
-                return;
-            }
+       async function saveUser() {
+    const id = document.getElementById('userId').value;
+    const phone = document.getElementById('userPhone').value;
+    const email = document.getElementById('userEmail').value;
+    const password = document.getElementById('userPassword').value;
+    const first_name = document.getElementById('userFirstName').value;
+    const last_name = document.getElementById('userLastName').value;
+    const role = document.getElementById('userRoleSelect').value;
+    const subscription_plan = role === 'client' ? document.getElementById('userSubscription').value : 'premium';
+    const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
+    
+    // Валидация полей - УБРАЛИ проверку email
+if (!phone || !first_name || !role) {
+    showNotification('Заполните обязательные поля: телефон, имя, роль', 'error');
+    return;
+}
             
             if (!id && !password) {
                 showNotification('Для нового пользователя укажите пароль', 'error');
@@ -3187,15 +3187,15 @@
                 
                 // Формируем данные пользователя
                 const userData = {
-                    phone: phone.replace(/\D/g, ''), // Очищаем телефон от нецифровых символов
-                    email: email || (role === 'client' ? `${phone.replace(/\D/g, '')}@example.com` : null),
-                    first_name,
-                    last_name: last_name || '',
-                    role,
-                    phone_verified,
-                    email_verified: email ? 1 : 0,
-                    is_active: 1
-                };
+        phone: phone.replace(/\D/g, ''),
+        email: email || null,  // Может быть null
+        first_name,
+        last_name: last_name || '',
+        role,
+        phone_verified,
+        email_verified: email ? 1 : 0,  // Проверяем, есть ли email
+        is_active: 1
+    };
                 
                 // Добавляем пароль для нового пользователя
                 if (!id && password) {
