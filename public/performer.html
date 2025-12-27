@@ -2669,10 +2669,16 @@ async function loadMyTasks() {
             }
         }
         
-       // Принять задачу (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+      // Принять задачу (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 async function acceptTask(taskId) {
     try {
         console.log(`📋 Принимаем задачу ID: ${taskId}`);
+        
+        if (!confirm('Вы уверены, что хотите принять эту задачу?')) {
+            return;
+        }
+        
+        showLoading('Принятие задачи...');
         
         const response = await fetch(`${API_BASE_URL}/api/performer/tasks/${taskId}/accept`, {
             method: 'POST',
@@ -2688,23 +2694,27 @@ async function acceptTask(taskId) {
         if (data.success) {
             showNotification('🎉 Задача успешно принята!', 'success');
             
-            // ПЕРЕЗАГРУЗИТЬ все данные
-            await loadAvailableTasks();  // Обновить доступные задачи
-            await loadMyTasks();         // Обновить мои задачи
-            await loadDashboard();       // Обновить дашборд
-            
-            // Перейти к моим задачам
-            navigateToPage('my-tasks');
+            // Обновляем данные с небольшой задержкой
+            setTimeout(async () => {
+                await loadAvailableTasks();  // Обновить доступные задачи
+                await loadMyTasks();         // Обновить мои задачи
+                await loadDashboard();       // Обновить дашборд
+                
+                // Перейти к моим задачам
+                navigateToPage('my-tasks');
+            }, 500);
             
         } else {
-            showNotification(data.error || 'Ошибка принятия задачи', 'error');
+            throw new Error(data.error || 'Ошибка принятия задачи');
         }
     } catch (error) {
         console.error('Ошибка принятия задачи:', error);
-        showNotification('Ошибка принятия задачи', 'error');
+        showNotification(error.message, 'error');
         
         // Перезагружаем список задач
         loadAvailableTasks();
+    } finally {
+        hideLoading();
     }
 }
         
