@@ -2062,6 +2062,73 @@
             </div>
         </div>
     </div>
+
+<!-- Модальное окно деталей задачи -->
+<div class="modal" id="taskDetailsModal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="taskDetailsModalTitle">Детали задачи</h3>
+            <button class="modal-close" id="closeTaskDetailsModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="taskDetailsContent">
+                <div class="loader"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelTaskDetailsModal">Закрыть</button>
+            <button type="button" class="btn btn-primary" id="changeTaskStatusBtn" style="display: none;">
+                <i class="fas fa-exchange-alt"></i>
+                Изменить статус
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно изменения статуса задачи -->
+<div class="modal" id="changeStatusModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Изменение статуса задачи</h3>
+            <button class="modal-close" id="closeChangeStatusModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="newTaskStatus">Новый статус</label>
+                <select id="newTaskStatus" class="form-input">
+                    <option value="new">Новая</option>
+                    <option value="searching">Поиск исполнителя</option>
+                    <option value="assigned">Назначена</option>
+                    <option value="in_progress">В работе</option>
+                    <option value="completed">Завершена</option>
+                    <option value="cancelled">Отменена</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="statusChangeNotes">Примечание (необязательно)</label>
+                <textarea id="statusChangeNotes" class="form-input" rows="3" 
+                          placeholder="Причина изменения статуса..."></textarea>
+            </div>
+            <div class="form-group" id="performerSelectGroup" style="display: none;">
+                <label for="selectPerformer">Назначить исполнителя</label>
+                <select id="selectPerformer" class="form-input">
+                    <option value="">Выберите исполнителя...</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelChangeStatusModal">Отмена</button>
+            <button type="button" class="btn btn-primary" id="saveStatusChangeBtn">
+                <i class="fas fa-save"></i>
+                Сохранить
+            </button>
+        </div>
+    </div>
+</div>
     
     <!-- Глобальный лоадер -->
     <div id="globalLoader" class="modal" style="display: none;">
