@@ -149,37 +149,54 @@
         }
         
         /* Профиль в шапке */
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-left: auto;
-            margin-right: 10px;
-            flex-shrink: 0;
-            border: 3px solid rgba(255, 255, 255, 0.9);
-            transition: var(--transition);
-            box-shadow: 0 4px 12px rgba(197, 168, 128, 0.2);
-        }
+   .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 1.2rem;
+        cursor: pointer;
+        margin-left: auto;
+        margin-right: 5px;
+        flex-shrink: 0;
+        border: 3px solid white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 
+            0 4px 12px rgba(197, 168, 128, 0.25),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
         
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
+            .user-avatar:hover {
+        transform: scale(1.08) rotate(5deg);
+        box-shadow: 
+            0 6px 20px rgba(197, 168, 128, 0.35),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    }
+
+.user-avatar:hover::before {
+        opacity: 1;
+    }
         
         .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            display: block;
-        }
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+    }
+
+.user-avatar.active {
+        background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+        transform: scale(1.05);
+    }
         
         /* Исправление для меню профиля */
         .user-menu {
@@ -1506,6 +1523,187 @@ img[src*="data:image/svg"] {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    /* ==================== СТИЛИ ДЛЯ ЛОГОТИПА ==================== */
+    .logo-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        position: relative;
+    }
+    
+    .logo-frame {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+        padding: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .logo-frame:hover {
+        transform: rotate(5deg) scale(1.05);
+        box-shadow: 0 6px 20px rgba(197, 168, 128, 0.4);
+    }
+    
+    .logo-frame::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.8), 
+            rgba(242, 221, 230, 0.4), 
+            rgba(197, 168, 128, 0.2));
+        border-radius: 13px;
+        z-index: 0;
+    }
+    
+    .logo-img {
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+        background: white;
+        padding: 5px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+        transition: transform 0.3s ease;
+    }
+    
+    .logo-frame:hover .logo-img {
+        transform: scale(1.1);
+    }
+    
+    .logo-text-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .logo-main-text {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        line-height: 1;
+    }
+    
+    .logo-woman {
+        font-size: 1.4rem;
+        color: var(--graphite-dark);
+        letter-spacing: -0.5px;
+    }
+    
+    .logo-help {
+        font-size: 1.4rem;
+        color: var(--gold-metallic);
+        letter-spacing: -0.5px;
+    }
+    
+    .logo-tagline {
+        font-size: 0.7rem;
+        color: var(--graphite-medium);
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        margin-top: 1px;
+        white-space: nowrap;
+    }
+    
+    /* Для экрана авторизации */
+    .auth-logo-container {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .auth-logo-frame {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+        padding: 4px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        box-shadow: 0 6px 20px rgba(197, 168, 128, 0.3);
+        border: 3px solid rgba(255, 255, 255, 0.9);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .auth-logo-frame::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        right: -3px;
+        bottom: -3px;
+        background: linear-gradient(135deg, 
+            rgba(255, 255, 255, 0.9), 
+            rgba(242, 221, 230, 0.5), 
+            rgba(197, 168, 128, 0.3));
+        border-radius: 18px;
+        z-index: 0;
+    }
+    
+    .auth-logo-img {
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+        background: white;
+        padding: 8px;
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.9);
+    }
+    
+    .auth-logo-text-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .auth-logo-main-text {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .auth-logo-woman {
+        font-size: 2rem;
+        color: var(--graphite-dark);
+        letter-spacing: -1px;
+    }
+    
+    .auth-logo-help {
+        font-size: 2rem;
+        color: var(--gold-metallic);
+        letter-spacing: -1px;
+    }
+    
+    .auth-logo-tagline {
+        font-size: 0.9rem;
+        color: var(--graphite-medium);
+        font-weight: 500;
+        max-width: 300px;
+        line-height: 1.4;
+        padding: 0 10px;
+    }
         
         /* Стили для списка задач (поп-ап окна) */
         .tasks-popup-modal {
@@ -2039,6 +2237,182 @@ img[src*="data:image/svg"] {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
+    /* Исправление карточек категорий и услуг */
+    .category-card-main-style {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 15px;
+        background: var(--card-bg);
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(242, 221, 230, 0.3);
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        text-align: center;
+        animation: fadeIn 0.5s ease;
+        min-height: 320px;
+        max-height: 380px;
+    }
+    
+    .category-card-main-style:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow);
+        border-color: var(--pastel-pink);
+        background: var(--card-hover-bg);
+    }
+    
+    .category-image-main {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .category-image-main img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-card-main-style:hover .category-image-main img {
+        transform: scale(1.08);
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--graphite-dark);
+        text-align: center;
+        width: 100%;
+        line-height: 1.3;
+        height: 42px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 5px;
+    }
+    
+    .category-description-main {
+        color: var(--graphite-medium);
+        font-size: 0.85rem;
+        line-height: 1.4;
+        flex-grow: 1;
+        background: rgba(242, 221, 230, 0.1);
+        padding: 12px;
+        border-radius: 12px;
+        border-bottom-left-radius: 25px;
+        border-bottom-right-radius: 25px;
+        width: 100%;
+        max-height: 90px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+        margin-bottom: 15px;
+        border: 1px solid rgba(242, 221, 230, 0.2);
+    }
+    
+    .category-card-footer {
+        margin-top: auto;
+        color: var(--pastel-pink);
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 5px;
+    }
+    
+    /* Для страницы всех услуг */
+    #allServicesList .category-card-main-style {
+        min-height: 300px;
+        max-height: 350px;
+    }
+    
+    #allServicesList .category-card-main-style h3 {
+        height: 38px;
+        font-size: 1rem;
+    }
+    
+    #allServicesList .category-description-main {
+        font-size: 0.8rem;
+        padding: 10px;
+        max-height: 80px;
+        -webkit-line-clamp: 3;
+    }
+    
+    /* Адаптивные стили */
+    @media (max-width: 768px) {
+        .category-card-main-style {
+            min-height: 280px;
+            max-height: 320px;
+            padding: 15px 10px;
+        }
+        
+        .category-image-main {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 12px;
+        }
+        
+        .category-card-main-style h3 {
+            font-size: 1rem;
+            height: 36px;
+            margin-bottom: 8px;
+        }
+        
+        .category-description-main {
+            font-size: 0.8rem;
+            padding: 10px;
+            margin-bottom: 12px;
+            -webkit-line-clamp: 3;
+        }
+        
+        #allServicesList .category-card-main-style {
+            min-height: 260px;
+            max-height: 300px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .category-card-main-style {
+            min-height: 250px;
+            max-height: 280px;
+        }
+        
+        .category-image-main {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .category-card-main-style h3 {
+            font-size: 0.95rem;
+            height: 34px;
+        }
+        
+        .category-description-main {
+            font-size: 0.75rem;
+            padding: 8px;
+            -webkit-line-clamp: 2;
+        }
         
         /* Стили для планшетов */
         @media (min-width: 481px) and (max-width: 768px) {
@@ -2470,7 +2844,7 @@ img[src*="data:image/svg"] {
     <div class="container auth-screen">
         <div class="auth-content">
             <div class="card auth-card" style="padding: 40px 30px;">
-                <!-- ЛОГОТИП -->
+                <!-- ОБНОВЛЕННЫЙ ЛОГОТИП -->
                 <div class="auth-logo-container">
                     <div class="auth-logo-frame">
                         <img src="" 
@@ -2488,7 +2862,7 @@ img[src*="data:image/svg"] {
                     </div>
                 </div>
                 
-                <!-- ТЕГЛАЙН -->
+                <!-- Остальной контент без изменений -->
                 <div class="tagline" style="font-size: 1.2rem; color: var(--pastel-pink); font-weight: 600; margin-bottom: 10px; text-align: center;">
                     Решение есть
                 </div>
@@ -3466,18 +3840,24 @@ img[src*="data:image/svg"] {
         },
 
         // ==================== ФУНКЦИИ ДЛЯ ИЗОБРАЖЕНИЙ ====================
-        createSvgFallback: function(type) {
-            let svgContent = '';
-            let width = 100;
-            let height = 100;
-            
-            switch(type) {
-                case 'logo':
-                    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-                        <rect width="${width}" height="${height}" rx="8" fill="#C5A880"/>
-                        <text x="${width/2}" y="${height/2 + 10}" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">WH</text>
-                    </svg>`;
-                    break;
+createSvgFallback: function(type) {
+    let svgContent = '';
+    let width = 100;
+    let height = 100;
+    
+    switch(type) {
+        case 'logo':
+            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+                <rect width="${width}" height="${height}" rx="12" fill="white"/>
+                <rect width="${width}" height="${height}" rx="12" fill="url(#logoGradient)" opacity="0.9"/>
+                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#C5A880;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#A78B65;stop-opacity:1" />
+                </linearGradient>
+                <text x="${width/2}" y="${height/2 + 12}" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">WH</text>
+                <rect width="${width}" height="${height}" rx="12" fill="none" stroke="white" stroke-width="2"/>
+            </svg>`;
+            break;
                 case 'category':
                     svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
                         <circle cx="${width/2}" cy="${height/2}" r="${width/2}" fill="#F2DDE6"/>
@@ -3561,42 +3941,51 @@ img[src*="data:image/svg"] {
             return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
         },
 
-        loadLogo: async function() {
-            try {
-                console.log('Загрузка логотипа...');
+  loadLogo: async function() {
+    try {
+        console.log('Загрузка логотипа...');
+        
+        const response = await fetch(this.API_BASE_URL + '/api/logo');
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data && result.data.logo_url) {
+                const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
+                console.log('Логотип из API:', logoUrl);
                 
-                const response = await fetch(this.API_BASE_URL + '/api/logo');
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data && result.data.logo_url) {
-                        const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
-                        console.log('Логотип из API:', logoUrl);
-                        
-                        document.querySelectorAll('.logo-img').forEach(function(img) {
-                            img.src = logoUrl;
-                            img.onerror = function() {
-                                console.log('Ошибка загрузки логотипа из API, используем фолбэк');
-                                this.src = app.createSvgFallback('logo');
-                                this.onerror = null;
-                            };
-                        });
-                        return true;
-                    }
-                }
-            } catch (error) {
-                console.log('Ошибка API логотипа:', error.message);
+                // Обновляем оба логотипа
+                const logos = document.querySelectorAll('.logo-img, .auth-logo-img');
+                logos.forEach(function(img) {
+                    img.src = logoUrl;
+                    img.onerror = function() {
+                        console.log('Ошибка загрузки логотипа из API, используем фолбэк');
+                        this.src = app.createSvgFallback('logo');
+                        this.onerror = null;
+                    };
+                    
+                    // Добавляем класс loaded для плавного появления
+                    setTimeout(() => {
+                        img.classList.add('loaded');
+                    }, 100);
+                });
+                return true;
             }
-            
-            const svgFallback = this.createSvgFallback('logo');
-            console.log('Используем SVG фолбэк для логотипа');
-            
-            document.querySelectorAll('.logo-img').forEach(function(img) {
-                img.src = svgFallback;
-                img.onerror = null;
-            });
-            return false;
-        },
+        }
+    } catch (error) {
+        console.log('Ошибка API логотипа:', error.message);
+    }
+    
+    const svgFallback = this.createSvgFallback('logo');
+    console.log('Используем SVG фолбэк для логотипа');
+    
+    const logos = document.querySelectorAll('.logo-img, .auth-logo-img');
+    logos.forEach(function(img) {
+        img.src = svgFallback;
+        img.onerror = null;
+        img.classList.add('loaded');
+    });
+    return false;
+},
 
         setupDefaultImages: function() {
             const handleImageError = function() {
