@@ -5017,10 +5017,18 @@ app.get('/api/performer/stats', authMiddleware(['performer', 'admin', 'superadmi
 });
 
 // Получение доступных задач для исполнителя
-app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (req, res) => {
+app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 'superadmin', 'manager']), async (req, res) => {
     try {
         const { category_id, min_price, priority } = req.query;
         
+        console.log('🎯 Запрос доступных задач для исполнителя:', {
+            performer_id: req.user.id,
+            category_id,
+            min_price,
+            priority
+        });
+        
+        // Получаем специализации исполнителя
         const specializations = await db.all(
             'SELECT category_id FROM performer_categories WHERE performer_id = ? AND is_active = 1',
             [req.user.id]
@@ -5039,6 +5047,7 @@ app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (
         
         const categoryIds = specializations.map(s => s.category_id);
         
+        // ИСПРАВЛЕНИЕ: Убрали HTML комментарий из SQL
         let query = `
             SELECT t.*, 
                    c.display_name as category_name,
@@ -5050,24 +5059,27 @@ app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (
             FROM tasks t
             LEFT JOIN categories c ON t.category_id = c.id
             LEFT JOIN users u ON t.client_id = u.id
-            WHERE t.status = 'searching' 
+            WHERE t.status = 'searching'
               AND t.category_id IN (${categoryIds.map(() => '?').join(',')})
-              AND (t.performer_id IS NULL OR t.performer_id = 0)
               AND t.client_id != ?
+              AND (t.performer_id IS NULL OR t.performer_id = 0)
         `;
         
         const params = [...categoryIds, req.user.id];
         
+        // Фильтр по категории
         if (category_id && category_id !== 'all') {
             query += ' AND t.category_id = ?';
             params.push(category_id);
         }
         
-        if (min_price) {
+        // Фильтр по минимальной цене
+        if (min_price && !isNaN(min_price)) {
             query += ' AND t.price >= ?';
-            params.push(min_price);
+            params.push(parseFloat(min_price));
         }
         
+        // Фильтр по приоритету
         if (priority && priority !== 'all') {
             query += ' AND t.priority = ?';
             params.push(priority);
@@ -5075,27 +5087,28 @@ app.get('/api/performer/tasks/available', authMiddleware(['performer']), async (
         
         query += ' ORDER BY t.priority DESC, t.created_at DESC';
         
+        console.log('📊 SQL запрос:', query);
+        console.log('📊 Параметры:', params);
+        
         const tasks = await db.all(query, params);
         
-        const tasksWithFlag = tasks.map(task => ({
-            ...task,
-            can_take: true
-        }));
+        console.log(`✅ Найдено доступных задач: ${tasks.length}`);
         
         res.json({
             success: true,
             data: {
-                tasks: tasksWithFlag,
-                count: tasksWithFlag.length,
+                tasks: tasks,
+                count: tasks.length,
                 categories: specializations.length,
-                message: tasksWithFlag.length > 0 
-                    ? `Найдено ${tasksWithFlag.length} доступных задач` 
+                message: tasks.length > 0 
+                    ? `Найдено ${tasks.length} доступных задач` 
                     : 'Нет доступных задач в ваших категориях'
             }
         });
         
     } catch (error) {
         console.error('🔥 Ошибка получения доступных задач:', error.message);
+        console.error('🔥 Stack trace:', error.stack);
         
         res.status(500).json({
             success: false,
