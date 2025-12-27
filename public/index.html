@@ -33,6 +33,9 @@
             --secondary-accent-light: var(--lavender-light);
             --action-color: var(--pastel-pink);
             --action-dark: var(--pink-medium);
+            --card-bg: var(--ivory-bg); /* Теперь фон карточек такой же как фон страницы */
+            --card-hover-bg: var(--ivory-light);
+            
             
             --primary-gradient: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
             --secondary-gradient: linear-gradient(135deg, var(--lavender), #A396FF);
@@ -297,22 +300,23 @@
         }
         
         /* Карточки */
-        .card {
-            background: var(--ivory-light);
-            border-radius: var(--radius);
-            padding: 20px;
-            border: 1px solid rgba(242, 221, 230, 0.5);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            width: 100%;
-            backdrop-filter: blur(10px);
-        }
-        
-        .card:hover {
-            background: white;
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-        }
+/* Карточки */
+.card {
+    background: var(--card-bg); /* Изменено с var(--ivory-light) */
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid rgba(242, 221, 230, 0.5);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    width: 100%;
+    backdrop-filter: blur(10px);
+}
+
+.card:hover {
+    background: var(--card-hover-bg); /* Изменено с white */
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+}
         
         /* Кнопки */
         .btn {
@@ -462,30 +466,31 @@
         }
         
         /* Исправление карточек услуг на главной */
-        .category-card-main-style {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 15px;
-            background: white;
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(242, 221, 230, 0.3);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            height: 100%;
-            text-align: center;
-            animation: fadeIn 0.5s ease;
-        }
+/* Исправление карточек услуг на главной */
+.category-card-main-style {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15px;
+    background: var(--card-bg); /* Изменено с white на var(--card-bg) */
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(242, 221, 230, 0.3);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
 
-        .category-card-main-style:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-            border-color: var(--pastel-pink);
-            background: white;
-        }
+.category-card-main-style:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+    background: var(--card-hover-bg); /* Легкое изменение при наведении */
+}
         
 /* ИСПРАВЛЕНИЯ ДЛЯ ИЗОБРАЖЕНИЙ */
 .category-image-main img,
@@ -1097,21 +1102,22 @@ img[src*="data:image/svg"] {
             margin-top: 20px;
         }
         
-        .task-item {
-            margin-bottom: 16px;
-            padding: 16px;
-            background: white;
-            border-radius: var(--radius);
-            border: 1px solid rgba(61, 61, 61, 0.08);
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .task-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
+.task-item {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: var(--card-bg); /* Изменено с white */
+    border-radius: var(--radius);
+    border: 1px solid rgba(61, 61, 61, 0.08);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.task-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    background: var(--card-hover-bg); /* Добавить этот стиль */
+}
         
         .task-header {
             display: flex;
@@ -1700,28 +1706,28 @@ img[src*="data:image/svg"] {
             opacity: 0.9;
         }
 
-        /* Стили для квадратных карточек услуг */
-        .service-card-square {
-            background: var(--ivory-light);
-            border-radius: var(--radius-lg);
-            padding: 0;
-            border: 1px solid rgba(242, 221, 230, 0.5);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            cursor: pointer;
-            overflow: hidden;
-            height: 280px;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-        }
+/* Стили для квадратных карточек услуг */
+.service-card-square {
+    background: var(--card-bg); /* Изменено с var(--ivory-light) */
+    border-radius: var(--radius-lg);
+    padding: 0;
+    border: 1px solid rgba(242, 221, 230, 0.5);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    overflow: hidden;
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px);
+}
 
-        .service-card-square:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow);
-            border-color: var(--pastel-pink);
-            background: white;
-        }
+.service-card-square:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+    background: var(--card-hover-bg); /* Изменено с white */
+}
 
         .service-image-container {
             width: 140px;
