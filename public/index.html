@@ -5161,69 +5161,74 @@ img[src*="data:image/svg"] {
             this.renderProfileTasks();
         },
 
-        renderProfileTasks: function() {
-            const container = document.getElementById('profileTasksList');
-            if (!container) return;
-            
-            if (!this.userTasks || this.userTasks.length === 0) {
-                container.innerHTML = '<div class="empty-state">' +
-                    '<i class="fas fa-tasks empty-state-icon"></i>' +
-                    '<h3 class="empty-state-title">Задач пока нет</h3>' +
-                    '<p class="empty-state-description">Создайте свою первую задачу</p>' +
-                    '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
-                        '<i class="fas fa-plus"></i>' +
-                        'Создать задачу' +
-                    '</button>' +
-                '</div>';
-                return;
-            }
-            
-            const sortedTasks = [...this.userTasks].sort((a, b) => {
-                return new Date(b.created_at) - new Date(a.created_at);
-            });
-            
-            container.innerHTML = '<h4 style="margin-bottom: 15px; color: var(--graphite-dark); font-size: 1.1rem;">Все задачи (' + sortedTasks.length + ')</h4>';
-            
-            sortedTasks.slice(0, 5).forEach((task) => {
-                const taskElement = document.createElement('div');
-                taskElement.className = 'card task-item';
-                taskElement.onclick = () => { this.showTaskDetailsCompact(task.id); };
-                
-                const statusInfo = this.getStatusInfo(task.status);
-                
-                taskElement.innerHTML = '<div class="task-header">' +
-                    '<div class="task-title">' + task.title + '</div>' +
-                    '<span class="task-status ' + task.status + '" style="background: ' + (statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)') + '; color: ' + (statusInfo.color || 'var(--graphite-dark)') + '; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">' +
-                        '<i class="' + statusInfo.icon + '"></i>' +
-                        statusInfo.name +
-                    '</span>' +
-                '</div>' +
-                '<div style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">' +
-                    (task.category_name ? '<span><i class="fas fa-tag"></i> ' + task.category_name + '</span>' : '') +
-                    '<span><i class="fas fa-hashtag"></i> ' + task.task_number + '</span>' +
-                '</div>' +
-                '<div style="color: var(--graphite-light); font-size: 0.8rem; display: flex; justify-content: space-between;">' +
-                    '<span>' +
-                        '<i class="far fa-calendar"></i> ' + new Date(task.created_at).toLocaleDateString('ru-RU') +
-                    '</span>' +
-                    '<span onclick="event.stopPropagation(); app.showTaskDetailsCompact(' + task.id + ')" style="color: var(--pastel-pink); cursor: pointer;">' +
-                        'Подробнее <i class="fas fa-arrow-right"></i>' +
-                    '</span>' +
-                '</div>';
-                container.appendChild(taskElement);
-            });
-            
-            if (sortedTasks.length > 5) {
-                const moreButton = document.createElement('div');
-                moreButton.style.textAlign = 'center';
-                moreButton.style.marginTop = '15px';
-                moreButton.innerHTML = '<button class="btn btn-secondary" onclick="app.navigateToPage(\'tasks\')">' +
-                    '<i class="fas fa-list"></i>' +
-                    'Показать все задачи (' + sortedTasks.length + ')' +
-                '</button>';
-                container.appendChild(moreButton);
-            }
-        },
+renderProfileTasks: function() {
+    const container = document.getElementById('profileTasksList');
+    if (!container) return;
+    
+    if (!this.userTasks || this.userTasks.length === 0) {
+        container.innerHTML = '<div class="empty-state">' +
+            '<i class="fas fa-tasks empty-state-icon"></i>' +
+            '<h3 class="empty-state-title">Задач пока нет</h3>' +
+            '<p class="empty-state-description">Создайте свою первую задачу</p>' +
+            '<button class="btn btn-primary" onclick="app.checkSubscription()">' +
+                '<i class="fas fa-plus"></i>' +
+                'Создать задачу' +
+            '</button>' +
+        '</div>';
+        return;
+    }
+    
+    const sortedTasks = [...this.userTasks].sort((a, b) => {
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    container.innerHTML = '<h4 style="margin-bottom: 15px; color: var(--graphite-dark); font-size: 1.1rem;">Все задачи (' + sortedTasks.length + ')</h4>';
+    
+    sortedTasks.slice(0, 5).forEach((task) => {
+        const taskElement = document.createElement('div');
+        taskElement.className = 'card task-item';
+        taskElement.onclick = () => { this.showTaskDetailsCompact(task.id); };
+        
+        const statusInfo = this.getStatusInfo(task.status);
+        
+        // Определяем что показывать: услугу или категорию
+        const serviceOrCategory = task.service_name ? 
+            task.service_name : 
+            (task.category_name ? task.category_name : '-');
+        
+        taskElement.innerHTML = '<div class="task-header">' +
+            '<div class="task-title">' + task.title + '</div>' +
+            '<span class="task-status ' + task.status + '" style="background: ' + (statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)') + '; color: ' + (statusInfo.color || 'var(--graphite-dark)') + '; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">' +
+                '<i class="' + statusInfo.icon + '"></i>' +
+                statusInfo.name +
+            '</span>' +
+        '</div>' +
+        '<div style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 12px;">' +
+            (serviceOrCategory ? '<span><i class="fas fa-briefcase"></i> ' + serviceOrCategory + '</span>' : '') +
+            '<span><i class="fas fa-hashtag"></i> ' + task.task_number + '</span>' +
+        '</div>' +
+        '<div style="color: var(--graphite-light); font-size: 0.8rem; display: flex; justify-content: space-between;">' +
+            '<span>' +
+                '<i class="far fa-calendar"></i> ' + new Date(task.created_at).toLocaleDateString('ru-RU') +
+            '</span>' +
+            '<span onclick="event.stopPropagation(); app.showTaskDetailsCompact(' + task.id + ')" style="color: var(--pastel-pink); cursor: pointer;">' +
+                'Подробнее <i class="fas fa-arrow-right"></i>' +
+            '</span>' +
+        '</div>';
+        container.appendChild(taskElement);
+    });
+    
+    if (sortedTasks.length > 5) {
+        const moreButton = document.createElement('div');
+        moreButton.style.textAlign = 'center';
+        moreButton.style.marginTop = '15px';
+        moreButton.innerHTML = '<button class="btn btn-secondary" onclick="app.navigateToPage(\'tasks\')">' +
+            '<i class="fas fa-list"></i>' +
+            'Показать все задачи (' + sortedTasks.length + ')' +
+        '</button>';
+        container.appendChild(moreButton);
+    }
+},
 
         // ==================== ЗАДАЧИ ====================
         loadUserTasks: async function(filter) {
@@ -5301,132 +5306,142 @@ img[src*="data:image/svg"] {
             this.loadUserTasks(filter);
         },
         
-        renderUserTasks: function() {
-            const cardsContainer = document.getElementById('userTasksCards');
-            const tableContainer = document.getElementById('userTasksTable');
-            
-            if (!cardsContainer || !tableContainer) return;
-            
-            cardsContainer.innerHTML = '';
-            tableContainer.innerHTML = '';
-            
-            if (!this.userTasks || this.userTasks.length === 0) {
-                const noTasksHtml = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                        <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
-                        <h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Задач пока нет</h3>
-                        <p style="color: var(--graphite-medium); margin-bottom: 25px;">
-                            Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц
-                        </p>
-                        <button class="btn btn-primary" onclick="app.checkSubscription()">
-                            <i class="fas fa-plus"></i> Создать задачу
-                        </button>
-                    </div>`;
-                
-                cardsContainer.innerHTML = noTasksHtml;
-                tableContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--graphite-medium);">Задач пока нет</p>';
-                return;
-            }
-            
-            const sortedTasks = [...this.userTasks].sort((a, b) => {
-                return new Date(b.created_at) - new Date(a.created_at);
-            });
-            
-            sortedTasks.forEach(task => {
-                const statusInfo = this.getStatusInfo(task.status);
-                
-                const taskCard = document.createElement('div');
-                taskCard.className = 'task-card';
-                taskCard.onclick = () => { 
-                    this.showTaskDetailsCompact(task.id);
-                };
-                
-                taskCard.innerHTML = `
-                    <div class="task-card-content">
-                        <div class="task-card-row">
-                            <div class="task-card-label">Номер:</div>
-                            <div class="task-card-value">${task.task_number || 'N/A'}</div>
-                        </div>
-                        <div class="task-card-row">
-                            <div class="task-card-label">Задача:</div>
-                            <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
-                        </div>
-                        <div class="task-card-row">
-                            <div class="task-card-label">Категория:</div>
-                            <div class="task-card-value">${task.category_name || 'Без категории'}</div>
-                        </div>
-                        <div class="task-card-row">
-                            <div class="task-card-label">Статус:</div>
-                            <div class="task-card-value">
-                                <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
-                                      color: ${statusInfo.color || 'var(--graphite-dark)'}; 
-                                      padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
-                                      font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+renderUserTasks: function() {
+    const cardsContainer = document.getElementById('userTasksCards');
+    const tableContainer = document.getElementById('userTasksTable');
+    
+    if (!cardsContainer || !tableContainer) return;
+    
+    cardsContainer.innerHTML = '';
+    tableContainer.innerHTML = '';
+    
+    if (!this.userTasks || this.userTasks.length === 0) {
+        const noTasksHtml = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                <i class="fas fa-tasks" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--graphite-dark); margin-bottom: 10px;">Задач пока нет</h3>
+                <p style="color: var(--graphite-medium); margin-bottom: 25px;">
+                    Создайте свою первую задачу, чтобы получить помощь от профессиональных помощниц
+                </p>
+                <button class="btn btn-primary" onclick="app.checkSubscription()">
+                    <i class="fas fa-plus"></i> Создать задачу
+                </button>
+            </div>`;
+        
+        cardsContainer.innerHTML = noTasksHtml;
+        tableContainer.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--graphite-medium);">Задач пока нет</p>';
+        return;
+    }
+    
+    const sortedTasks = [...this.userTasks].sort((a, b) => {
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    sortedTasks.forEach(task => {
+        const statusInfo = this.getStatusInfo(task.status);
+        
+        // Определяем что показывать: услугу или категорию
+        const serviceOrCategory = task.service_name ? 
+            task.service_name : 
+            (task.category_name ? task.category_name : 'Не указано');
+        
+        const taskCard = document.createElement('div');
+        taskCard.className = 'task-card';
+        taskCard.onclick = () => { 
+            this.showTaskDetailsCompact(task.id);
+        };
+        
+        taskCard.innerHTML = `
+            <div class="task-card-content">
+                <div class="task-card-row">
+                    <div class="task-card-label">Номер:</div>
+                    <div class="task-card-value">${task.task_number || 'N/A'}</div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Задача:</div>
+                    <div class="task-card-value"><strong>${task.title || 'Без названия'}</strong></div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Услуга:</div>
+                    <div class="task-card-value">${serviceOrCategory}</div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Статус:</div>
+                    <div class="task-card-value">
+                        <span class="status-badge" style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                              color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                              padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                              font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="${statusInfo.icon}"></i>
+                            ${statusInfo.name}
+                        </span>
+                    </div>
+                </div>
+                <div class="task-card-row">
+                    <div class="task-card-label">Создана:</div>
+                    <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
+                </div>
+                <div class="task-card-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
+                        <i class="fas fa-eye"></i> Подробнее
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        cardsContainer.appendChild(taskCard);
+    });
+    
+    // Обновляем таблицу тоже
+    const tableHtml = `
+        <table class="task-history-table">
+            <thead>
+                <tr>
+                    <th>Номер задачи</th>
+                    <th>Название</th>
+                    <th>Услуга</th>
+                    <th>Статус</th>
+                    <th>Дата создания</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${sortedTasks.map(task => {
+                    const statusInfo = this.getStatusInfo(task.status);
+                    const serviceOrCategory = task.service_name ? 
+                        task.service_name : 
+                        (task.category_name ? task.category_name : 'Не указано');
+                    
+                    return `
+                        <tr>
+                            <td>${task.task_number}</td>
+                            <td><strong>${task.title}</strong></td>
+                            <td>${serviceOrCategory}</td>
+                            <td>
+                                <span class="task-status ${task.status}" 
+                                      style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
+                                             color: ${statusInfo.color || 'var(--graphite-dark)'}; 
+                                             padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+                                             font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="${statusInfo.icon}"></i>
                                     ${statusInfo.name}
                                 </span>
-                            </div>
-                        </div>
-                        <div class="task-card-row">
-                            <div class="task-card-label">Создана:</div>
-                            <div class="task-card-value">${new Date(task.created_at).toLocaleDateString('ru-RU')}</div>
-                        </div>
-                        <div class="task-card-actions">
-                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); app.showTaskDetailsCompact(${task.id})">
-                                <i class="fas fa-eye"></i> Подробнее
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                cardsContainer.appendChild(taskCard);
-            });
-            
-            const tableHtml = `
-                <table class="task-history-table">
-                    <thead>
-                        <tr>
-                            <th>Номер задачи</th>
-                            <th>Название</th>
-                            <th>Категория</th>
-                            <th>Статус</th>
-                            <th>Дата создания</th>
-                            <th>Действия</th>
+                            </td>
+                            <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
+                            <td>
+                                <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${sortedTasks.map(task => {
-                            const statusInfo = this.getStatusInfo(task.status);
-                            return `
-                                <tr>
-                                    <td>${task.task_number}</td>
-                                    <td><strong>${task.title}</strong></td>
-                                    <td>${task.category_name || ''}</td>
-                                    <td>
-                                        <span class="task-status ${task.status}" 
-                                              style="background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; 
-                                                     color: ${statusInfo.color || 'var(--graphite-dark)'}; 
-                                                     padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
-                                                     font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                                            <i class="${statusInfo.icon}"></i>
-                                            ${statusInfo.name}
-                                        </span>
-                                    </td>
-                                    <td>${new Date(task.created_at).toLocaleDateString('ru-RU')}</td>
-                                    <td>
-                                        <button class="btn btn-secondary btn-sm" onclick="app.showTaskDetailsCompact(${task.id})">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            `;
-            
-            tableContainer.innerHTML = tableHtml;
-        },
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+    
+    tableContainer.innerHTML = tableHtml;
+},
 
         filterTasksByStatus: function(tasks, filter) {
             if (!tasks || tasks.length === 0) return [];
@@ -5483,83 +5498,90 @@ img[src*="data:image/svg"] {
             }
         },
 
-        renderTaskDetailsCompact: function(task, messages) {
-            const container = document.getElementById('taskCompactDetails');
-            const statusInfo = this.getStatusInfo(task.status);
-            
-            const canCancel = task.status === 'new' || task.status === 'searching' || task.status === 'assigned';
-            
-            container.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
-                    <div>
-                        <h3 style="color: var(--graphite-dark); margin-bottom: 8px; font-size: 1.2rem;">${task.title}</h3>
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                            <span class="status-badge status-${task.status}" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; color: ${statusInfo.color || 'var(--graphite-dark)'}">
-                                <i class="${statusInfo.icon || 'fas fa-circle'}"></i>
-                                ${statusInfo.name}
-                            </span>
-                            <span style="font-size: 0.9rem; color: var(--graphite-medium);">
-                                <i class="far fa-calendar"></i> ${new Date(task.created_at).toLocaleDateString('ru-RU')}
-                            </span>
-                            <span style="font-size: 0.9rem; color: var(--graphite-medium);">
-                                <i class="fas fa-hashtag"></i> ${task.task_number}
-                            </span>
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--pastel-pink);">
-                            ${task.price ? this.formatNumber(task.price) + ' ₽' : '<i class="fas fa-crown"></i> Включено в подписку'}
-                        </div>
-                    </div>
+// В функции renderTaskDetailsCompact обновите этот блок:
+
+renderTaskDetailsCompact: function(task, messages) {
+    const container = document.getElementById('taskCompactDetails');
+    const statusInfo = this.getStatusInfo(task.status);
+    
+    const canCancel = task.status === 'new' || task.status === 'searching' || task.status === 'assigned';
+    
+    // Определяем что показывать: услугу или категорию
+    const serviceOrCategory = task.service_name ? 
+        `Услуга: ${task.service_name}` : 
+        (task.category_name ? `Категория: ${task.category_name}` : '-');
+    
+    container.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+            <div>
+                <h3 style="color: var(--graphite-dark); margin-bottom: 8px; font-size: 1.2rem;">${task.title}</h3>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span class="status-badge status-${task.status}" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: ${statusInfo.color ? statusInfo.color + '15' : 'rgba(61,61,61,0.1)'}; color: ${statusInfo.color || 'var(--graphite-dark)'}">
+                        <i class="${statusInfo.icon || 'fas fa-circle'}"></i>
+                        ${statusInfo.name}
+                    </span>
+                    <span style="font-size: 0.9rem; color: var(--graphite-medium);">
+                        <i class="far fa-calendar"></i> ${new Date(task.created_at).toLocaleDateString('ru-RU')}
+                    </span>
+                    <span style="font-size: 0.9rem; color: var(--graphite-medium);">
+                        <i class="fas fa-hashtag"></i> ${task.task_number}
+                    </span>
                 </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Категория</div>
-                        <div style="font-weight: 500;">${task.category_name || '-'}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Адрес</div>
-                        <div style="font-weight: 500;">${task.address || '-'}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Дедлайн</div>
-                        <div style="font-weight: 500;">${new Date(task.deadline).toLocaleDateString('ru-RU')}</div>
-                    </div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--pastel-pink);">
+                    ${task.price ? this.formatNumber(task.price) + ' ₽' : '<i class="fas fa-crown"></i> Включено в подписку'}
                 </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 8px;">Описание</div>
-                    <div style="background: rgba(61,61,61,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(61,61,61,0.05);">
-                        ${task.description}
-                    </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+            <div>
+                <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Услуга</div>
+                <div style="font-weight: 500;">${serviceOrCategory}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Адрес</div>
+                <div style="font-weight: 500;">${task.address || '-'}</div>
+            </div>
+            <div>
+                <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 4px;">Дедлайн</div>
+                <div style="font-weight: 500;">${new Date(task.deadline).toLocaleDateString('ru-RU')}</div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 8px;">Описание</div>
+            <div style="background: rgba(61,61,61,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(61,61,61,0.05);">
+                ${task.description}
+            </div>
+        </div>
+        
+        ${task.additional_requirements ? `
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 8px;">Дополнительные требования</div>
+                <div style="background: rgba(61,61,61,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(61,61,61,0.05); font-size: 0.9rem;">
+                    ${task.additional_requirements}
                 </div>
-                
-                ${task.additional_requirements ? `
-                    <div style="margin-bottom: 20px;">
-                        <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-bottom: 8px;">Дополнительные требования</div>
-                        <div style="background: rgba(61,61,61,0.02); padding: 12px; border-radius: 8px; border: 1px solid rgba(61,61,61,0.05); font-size: 0.9rem;">
-                            ${task.additional_requirements}
-                        </div>
-                    </div>
-                ` : ''}
-                
-                <div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="app.toggleTaskChat(${task.id})" id="toggleChatBtn" style="flex: 1;">
-                        <i class="fas fa-comments"></i>
-                        ${messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат'}
-                    </button>
-                    ${canCancel ? 
-                        `<button class="btn btn-secondary" onclick="app.cancelUserTask(${task.id})" style="flex: 1; background: var(--error); color: white;">
-                            <i class="fas fa-times"></i> Отменить задачу
-                        </button>` 
-                    : ''}
-                </div>
-            `;
-            
-            this.currentChatTaskId = task.id;
-            this.chatMessages = messages;
-        },
+            </div>
+        ` : ''}
+        
+        <div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="app.toggleTaskChat(${task.id})" id="toggleChatBtn" style="flex: 1;">
+                <i class="fas fa-comments"></i>
+                ${messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат'}
+            </button>
+            ${canCancel ? 
+                `<button class="btn btn-secondary" onclick="app.cancelUserTask(${task.id})" style="flex: 1; background: var(--error); color: white;">
+                    <i class="fas fa-times"></i> Отменить задачу
+                </button>` 
+            : ''}
+        </div>
+    `;
+    
+    this.currentChatTaskId = task.id;
+    this.chatMessages = messages;
+},
 
         cancelUserTask: async function(taskId) {
             if (!confirm('Вы уверены, что хотите отменить задачу?')) return;
