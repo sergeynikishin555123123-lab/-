@@ -6905,48 +6905,69 @@ app.delete('/api/admin/users/:id', authMiddleware(['admin', 'superadmin']), asyn
     }
 });
 
-// Создание пользователя администратором
+// Создание/обновление пользователя администратором
 app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req, res) => {
     try {
-        const { email, password, first_name, last_name, phone, role = 'client', 
-                subscription_plan = 'essential', phone_verified = true } = req.body;
+        const { 
+            email, 
+            password, 
+            first_name, 
+            last_name = '', 
+            phone, 
+            role = 'client', 
+            subscription_plan = 'essential', 
+            phone_verified = false,
+            subscription_status = 'active'
+        } = req.body;
         
-        if (!email || !password || !first_name) {
+        console.log('👑 Создание пользователя администратором:', { 
+            phone, 
+            first_name, 
+            role,
+            email: email || 'email не указан'
+        });
+        
+        // ВАЖНО: Делаем email НЕОБЯЗАТЕЛЬНЫМ
+        if (!phone || !password || !first_name) {
             return res.status(400).json({
                 success: false,
-                error: 'Заполните все обязательные поля: email, пароль и имя'
+                error: 'Заполните обязательные поля: телефон, пароль и имя'
             });
         }
         
-        if (!validateEmail(email)) {
+        // Валидация email, если он указан
+        if (email && email.trim() && !validateEmail(email)) {
             return res.status(400).json({
                 success: false,
                 error: 'Некорректный email адрес'
             });
         }
         
-        if (phone && !validatePhone(phone)) {
+        // Валидация телефона
+        const formattedPhone = formatPhone(phone);
+        if (!validatePhone(formattedPhone)) {
             return res.status(400).json({
                 success: false,
                 error: 'Некорректный номер телефона'
             });
         }
         
-        const existingUser = await db.get('SELECT id FROM users WHERE email = ?', [email]);
-        if (existingUser) {
+        // Проверяем уникальность телефона
+        const existingPhone = await db.get('SELECT id FROM users WHERE phone = ?', [formattedPhone]);
+        if (existingPhone) {
             return res.status(409).json({
                 success: false,
-                error: 'Пользователь с таким email уже существует'
+                error: 'Пользователь с таким телефоном уже существует'
             });
         }
         
-        if (phone) {
-            const formattedPhone = formatPhone(phone);
-            const existingPhone = await db.get('SELECT id FROM users WHERE phone = ?', [formattedPhone]);
-            if (existingPhone) {
+        // Проверяем уникальность email, только если он указан
+        if (email && email.trim()) {
+            const existingEmail = await db.get('SELECT id FROM users WHERE email = ?', [email]);
+            if (existingEmail) {
                 return res.status(409).json({
                     success: false,
-                    error: 'Пользователь с таким телефоном уже существует'
+                    error: 'Пользователь с таким email уже существует'
                 });
             }
         }
@@ -6954,43 +6975,106 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
         const hashedPassword = await bcrypt.hash(password, 12);
         const avatarUrl = generateAvatarUrl(first_name, last_name, role);
         
+        // Настройки для разных ролей
         const isAdmin = ['admin', 'manager', 'superadmin'].includes(role);
         const finalSubscriptionPlan = isAdmin ? 'premium' : subscription_plan;
-        const subscriptionStatus = isAdmin ? 'active' : 'pending';
-        const tasksLimit = isAdmin ? 999 : 5;
-        const initialFeePaid = isAdmin ? 1 : 0;
+        const finalSubscriptionStatus = isAdmin ? 'active' : subscription_status;
+        const tasksLimit = isAdmin ? 999 : (role === 'performer' ? 999 : 5);
+        const initialFeePaid = isAdmin || role === 'performer' ? 1 : 0;
+        const phoneVerifiedValue = phone_verified ? 1 : 0;
+        const emailVerifiedValue = email && email.trim() ? 1 : 0;
+        
+        // Настраиваем дату окончания подписки
+        let subscriptionExpires = null;
+        if (finalSubscriptionStatus === 'active') {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            subscriptionExpires = expiryDate.toISOString().split('T')[0];
+        }
+        
+        // Получаем сумму вступительного взноса для подписки
+        let initialFeeAmount = 0;
+        if (role === 'client') {
+            const subscription = await db.get(
+                'SELECT initial_fee, tasks_limit FROM subscriptions WHERE name = ?',
+                [finalSubscriptionPlan]
+            );
+            initialFeeAmount = subscription ? subscription.initial_fee : 0;
+        }
         
         const result = await db.run(
             `INSERT INTO users 
             (email, password, first_name, last_name, phone, phone_verified, role, 
-             subscription_plan, subscription_status, tasks_limit, initial_fee_paid,
-             avatar_url, email_verified) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             subscription_plan, subscription_status, subscription_expires, 
+             tasks_limit, initial_fee_paid, initial_fee_amount,
+             avatar_url, email_verified, is_active) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                email,
+                email && email.trim() ? email : null, // email МОЖЕТ БЫТЬ NULL
                 hashedPassword,
                 first_name,
                 last_name || '',
-                phone ? formatPhone(phone) : null,
-                phone_verified ? 1 : 0,
+                formattedPhone,
+                phoneVerifiedValue,
                 role,
                 finalSubscriptionPlan,
-                subscriptionStatus,
+                finalSubscriptionStatus,
+                subscriptionExpires,
                 tasksLimit,
                 initialFeePaid,
+                initialFeeAmount,
                 avatarUrl,
-                1
+                emailVerifiedValue,
+                1 // is_active = true для новых пользователей
             ]
         );
         
         const userId = result.lastID;
         
+        // Если это исполнитель, добавляем все категории
+        if (role === 'performer') {
+            try {
+                const categories = await db.all('SELECT id FROM categories WHERE is_active = 1');
+                for (const category of categories) {
+                    await db.run(
+                        `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, is_active) 
+                         VALUES (?, ?, 1)`,
+                        [userId, category.id]
+                    );
+                }
+            } catch (error) {
+                console.warn('Ошибка добавления специализаций исполнителю:', error.message);
+            }
+        }
+        
+        // Создаем уведомление для пользователя
+        try {
+            await db.run(
+                `INSERT INTO notifications 
+                (user_id, type, title, message) 
+                VALUES (?, ?, ?, ?)`,
+                [
+                    userId,
+                    'welcome',
+                    'Добро пожаловать!',
+                    'Ваш аккаунт был создан администратором. Добро пожаловать в Женский Консьерж!'
+                ]
+            );
+        } catch (error) {
+            console.warn('Ошибка создания уведомления:', error.message);
+        }
+        
+        // Получаем созданного пользователя
         const user = await db.get(
             `SELECT id, email, first_name, last_name, phone, phone_verified, role, 
-                    subscription_plan, subscription_status, avatar_url
+                    subscription_plan, subscription_status, subscription_expires,
+                    initial_fee_paid, initial_fee_amount, avatar_url, tasks_limit, 
+                    user_rating, is_active, created_at
              FROM users WHERE id = ?`,
             [userId]
         );
+        
+        console.log(`✅ Пользователь успешно создан администратором: ID ${userId}, телефон ${formattedPhone}`);
         
         res.status(201).json({
             success: true,
@@ -6998,17 +7082,34 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
             data: { 
                 user,
                 login_credentials: {
-                    email: email,
-                    password: password
+                    phone: formattedPhone,
+                    password: password,
+                    email: email || null
                 }
             }
         });
         
     } catch (error) {
-        console.error('❌ Ошибка создания пользователя:', error.message);
+        console.error('❌ Ошибка создания пользователя администратором:', error.message);
+        console.error('❌ Stack trace:', error.stack);
+        
+        if (error.message.includes('UNIQUE constraint failed') || error.message.includes('SQLITE_CONSTRAINT')) {
+            if (error.message.includes('phone')) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Пользователь с таким телефоном уже существует'
+                });
+            } else if (error.message.includes('email')) {
+                return res.status(409).json({
+                    success: false,
+                    error: 'Пользователь с таким email уже существует'
+                });
+            }
+        }
+        
         res.status(500).json({
             success: false,
-            error: 'Ошибка создания пользователя'
+            error: 'Внутренняя ошибка сервера при создании пользователя: ' + error.message
         });
     }
 });
