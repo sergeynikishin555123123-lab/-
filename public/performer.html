@@ -898,16 +898,13 @@
                         <h2 class="section-title">Панель исполнителя</h2>
                         <p class="section-subtitle">Станьте исполнителем и зарабатывайте на выполнении бытовых задач. Гибкий график, хороший доход и помощь людям.</p>
                         
-                        <div class="auth-actions">
-                            <button class="btn btn-primary" onclick="showPerformerLoginModal()">
-                                <i class="fas fa-sign-in-alt"></i>
-                                Войти как исполнитель
-                            </button>
-                            <button class="btn btn-secondary" onclick="showPerformerRegisterModal()">
-                                <i class="fas fa-user-plus"></i>
-                                Стать исполнителем
-                            </button>
-                        </div>
+<!-- Стало: -->
+<div class="auth-actions">
+    <button class="btn btn-primary" onclick="showPerformerLoginModal()">
+        <i class="fas fa-sign-in-alt"></i>
+        Войти как исполнитель
+    </button>
+</div>
                     </div>
                 </div>
             </div>
@@ -1505,11 +1502,12 @@
                     Войти как исполнитель
                 </button>
             </form>
-            <div style="text-align: center; margin-top: 20px;">
-                <p style="color: var(--graphite-medium); font-size: 0.9rem;">Еще не исполнитель? 
-                    <a href="#" onclick="showPerformerRegisterModal()" style="color: var(--performer-blue); text-decoration: none; font-weight: 600;">Стать исполнителем</a>
-                </p>
-            </div>
+            <!-- Стало: -->
+<div style="text-align: center; margin-top: 20px;">
+    <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+        Для регистрации как исполнителя обратитесь к администратору
+    </p>
+</div>
         </div>
     </div>
     
