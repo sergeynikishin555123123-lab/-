@@ -3160,7 +3160,7 @@
             }
         }
         
-       async function saveUser() {
+async function saveUser() {
     const id = document.getElementById('userId').value;
     const phone = document.getElementById('userPhone').value;
     const email = document.getElementById('userEmail').value;
@@ -3172,124 +3172,129 @@
     const phone_verified = document.getElementById('userPhoneVerified').checked ? 1 : 0;
     
     // Валидация полей - УБРАЛИ проверку email
-if (!phone || !first_name || !role) {
-    showNotification('Заполните обязательные поля: телефон, имя, роль', 'error');
-    return;
-}
-            
-            if (!id && !password) {
-                showNotification('Для нового пользователя укажите пароль', 'error');
-                return;
-            }
-            
-            try {
-                showLoading('Сохранение пользователя...');
-                
-                // Формируем данные пользователя
-                const userData = {
-        phone: phone.replace(/\D/g, ''),
-        email: email || null,  // Может быть null
-        first_name,
-        last_name: last_name || '',
-        role,
-        phone_verified,
-        email_verified: email ? 1 : 0,  // Проверяем, есть ли email
-        is_active: 1
-    };
-                
-                // Добавляем пароль для нового пользователя
-                if (!id && password) {
-                    userData.password = password;
-                }
-                
-                // Для клиентов добавляем подписку
-                if (role === 'client') {
-                    userData.subscription_plan = subscription_plan || 'essential';
-                    userData.subscription_status = 'active';
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + 30);
-                    userData.subscription_expires = expiryDate.toISOString().split('T')[0];
-                    userData.initial_fee_paid = 1;
-                }
-                
-                // Для исполнителей
-                if (role === 'performer') {
-                    userData.performer_status = 'pending'; // или 'active' в зависимости от вашей логики
-                    userData.balance = 0;
-                }
-                
-                const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
-                const method = id ? 'PUT' : 'POST';
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                const data = await response.json();
-                
-               
-
-if (data.success) {
-    showNotification('Пользователь успешно сохранен', 'success');
-    closeModal('userModal');
-    
-    // Автоматически создаем тестовые данные для входа
-    if (!id) {
-        // Для новых пользователей показываем данные для входа
-        setTimeout(() => {
-            showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
-        }, 500);
+    if (!phone || !first_name || !role) {
+        showNotification('Заполните обязательные поля: телефон, имя, роль', 'error');
+        return;
     }
     
-    loadUsers();
-} else {
-    // Обрабатываем специфические ошибки
-    if (data.error && data.error.includes('уже существует')) {
-        if (data.error.includes('email')) {
-            // Если ошибка в email, предлагаем оставить его пустым
-            if (confirm('Пользователь с таким email уже существует. Хотите создать пользователя без email?')) {
-                // Пересоздаем пользователя без email
-                userData.email = null;
-                userData.email_verified = 0;
-                
-                // Повторяем запрос
-                const retryResponse = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify(userData)
-                });
-                
-                const retryData = await retryResponse.json();
-                
-                if (retryData.success) {
-                    showNotification('Пользователь успешно создан без email', 'success');
-                    closeModal('userModal');
-                    loadUsers();
-                    
-                    if (!id) {
-                        setTimeout(() => {
-                            showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
-                        }, 500);
-                    }
-                } else {
-                    throw new Error(retryData.error || 'Ошибка создания пользователя');
-                }
-            }
-        } else if (data.error.includes('телефоном')) {
-            throw new Error('Пользователь с таким телефоном уже существует');
-        } else {
-            throw new Error(data.error || 'Ошибка сохранения пользователя');
+    if (!id && !password) {
+        showNotification('Для нового пользователя укажите пароль', 'error');
+        return;
+    }
+    
+    try {
+        showLoading('Сохранение пользователя...');
+        
+        // Формируем данные пользователя
+        const userData = {
+            phone: phone.replace(/\D/g, ''),
+            email: email || null,  // Может быть null
+            first_name,
+            last_name: last_name || '',
+            role,
+            phone_verified,
+            email_verified: email ? 1 : 0,  // Проверяем, есть ли email
+            is_active: 1
+        };
+        
+        // Добавляем пароль для нового пользователя
+        if (!id && password) {
+            userData.password = password;
         }
-    } else {
-        throw new Error(data.error || 'Ошибка сохранения пользователя');
+        
+        // Для клиентов добавляем подписку
+        if (role === 'client') {
+            userData.subscription_plan = subscription_plan || 'essential';
+            userData.subscription_status = 'active';
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            userData.subscription_expires = expiryDate.toISOString().split('T')[0];
+            userData.initial_fee_paid = 1;
+        }
+        
+        // Для исполнителей
+        if (role === 'performer') {
+            userData.performer_status = 'pending'; // или 'active' в зависимости от вашей логики
+            userData.balance = 0;
+        }
+        
+        const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
+        const method = id ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json(); // Changed variable name from 'data' to 'result'
+
+        if (result.success) {
+            showNotification('Пользователь успешно сохранен', 'success');
+            closeModal('userModal');
+            
+            // Автоматически создаем тестовые данные для входа
+            if (!id) {
+                // Для новых пользователей показываем данные для входа
+                setTimeout(() => {
+                    showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
+                }, 500);
+            }
+            
+            loadUsers();
+        } else {
+            // Обрабатываем специфические ошибки
+            if (result.error && result.error.includes('уже существует')) {
+                if (result.error.includes('email')) {
+                    // Если ошибка в email, предлагаем оставить его пустым
+                    if (confirm('Пользователь с таким email уже существует. Хотите создать пользователя без email?')) {
+                        // Пересоздаем пользователя без email
+                        userData.email = null;
+                        userData.email_verified = 0;
+                        
+                        // Повторяем запрос
+                        const retryResponse = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
+                            body: JSON.stringify(userData)
+                        });
+                        
+                        const retryData = await retryResponse.json();
+                        
+                        if (retryData.success) {
+                            showNotification('Пользователь успешно создан без email', 'success');
+                            closeModal('userModal');
+                            loadUsers();
+                            
+                            if (!id) {
+                                setTimeout(() => {
+                                    showNotification(`Пользователь создан! Данные для входа: ${phone} / ${password}`, 'success');
+                                }, 500);
+                            }
+                        } else {
+                            throw new Error(retryData.error || 'Ошибка создания пользователя');
+                        }
+                    }
+                } else if (result.error.includes('телефоном')) {
+                    throw new Error('Пользователь с таким телефоном уже существует');
+                } else {
+                    throw new Error(result.error || 'Ошибка сохранения пользователя');
+                }
+            } else {
+                throw new Error(result.error || 'Ошибка сохранения пользователя');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения пользователя:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
     }
 }
         
@@ -3308,7 +3313,7 @@ if (data.success) {
                     }
                 });
                 
-                const data = await response.json();
+                const result = await response.json();
                 
                 if (data.success) {
                     showNotification('Пользователь успешно удален', 'success');
