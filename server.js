@@ -5341,6 +5341,79 @@ app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 
         });
     }
 });
+
+// Получение задач исполнителя
+app.get('/api/performer/my-tasks', authMiddleware(['performer', 'admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const { status, date_from, date_to } = req.query;
+        
+        console.log('📋 Получение задач исполнителя:', {
+            performer_id: req.user.id,
+            status,
+            date_from,
+            date_to
+        });
+        
+        let query = `
+            SELECT t.*, 
+                   c.display_name as category_name,
+                   c.icon as category_icon,
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name,
+                   u.avatar_url as client_avatar,
+                   u.user_rating as client_rating
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN users u ON t.client_id = u.id
+            WHERE t.performer_id = ?
+        `;
+        
+        const params = [req.user.id];
+        
+        // Фильтр по статусу
+        if (status && status !== 'all') {
+            query += ' AND t.status = ?';
+            params.push(status);
+        }
+        
+        // Фильтр по дате от
+        if (date_from) {
+            query += ' AND DATE(t.created_at) >= ?';
+            params.push(date_from);
+        }
+        
+        // Фильтр по дате до
+        if (date_to) {
+            query += ' AND DATE(t.created_at) <= ?';
+            params.push(date_to);
+        }
+        
+        query += ' ORDER BY t.created_at DESC';
+        
+        console.log('SQL запрос моих задач:', query);
+        console.log('Параметры:', params);
+        
+        const tasks = await db.all(query, params);
+        
+        console.log(`✅ Найдено задач исполнителя: ${tasks.length}`);
+        
+        res.json({
+            success: true,
+            data: {
+                tasks: tasks,
+                count: tasks.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения задач исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения задач',
+            message: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
 // Получение специализаций исполнителя
 // Получение специализаций исполнителя
 app.get('/api/performer/categories', authMiddleware(['performer']), async (req, res) => {
