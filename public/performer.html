@@ -3357,103 +3357,145 @@ async function acceptTask(taskId) {
             }
         }
         
-        // Загрузка категорий исполнителя
-        async function loadPerformerCategories() {
-            try {
-                if (!currentToken) return;
+     // Загрузка категорий исполнителя
+async function loadPerformerCategories() {
+    try {
+        if (!currentToken) return;
+        
+        const response = await fetch(`${API_BASE_URL}/api/performer/categories`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.categories) {
+                const performerCategories = data.data.categories;
                 
-                const response = await fetch(`${API_BASE_URL}/api/performer/stats`, {
+                // Устанавливаем чекбоксы
+                document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+                    checkbox.checked = performerCategories.some(cat => cat.id == checkbox.value);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки категорий исполнителя:', error);
+    }
+}
+        
+       // Сохранение профиля
+async function savePerformerProfile() {
+    try {
+        const firstName = document.getElementById('editFirstName').value;
+        const lastName = document.getElementById('editLastName').value;
+        const phone = document.getElementById('editPhone').value;
+        const email = document.getElementById('editEmail').value;
+        const bio = document.getElementById('editBio').value;
+        
+        if (!firstName || !lastName || !phone) {
+            showNotification('Заполните обязательные поля', 'error');
+            return;
+        }
+        
+        // Собираем выбранные категории
+        const categoryCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+        const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
+        
+        showLoading('Сохранение профиля...');
+        
+        // 1. Сохраняем основные данные профиля
+        const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                phone: phone,
+                email: email || null,
+                bio: bio || ''
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // 2. Сохраняем категории исполнителя
+            try {
+                // Сначала получим текущие категории
+                const currentCategoriesResponse = await fetch(`${API_BASE_URL}/api/performer/categories`, {
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
                     }
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        const categories = data.data.categories || [];
-                        
-                        // Устанавливаем чекбоксы
-                        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-                            checkbox.checked = categories.some(cat => cat.id == checkbox.value);
+                let currentCategories = [];
+                if (currentCategoriesResponse.ok) {
+                    const currentData = await currentCategoriesResponse.json();
+                    if (currentData.success) {
+                        currentCategories = currentData.data.categories || [];
+                    }
+                }
+                
+                // Удаляем категории, которые были сняты
+                for (const currentCat of currentCategories) {
+                    if (!categories.includes(currentCat.id.toString())) {
+                        await fetch(`${API_BASE_URL}/api/performer/categories/${currentCat.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${currentToken}`
+                            }
                         });
                     }
                 }
-            } catch (error) {
-                console.error('Ошибка загрузки категорий исполнителя:', error);
-            }
-        }
-        
-        // Сохранение профиля
-        async function savePerformerProfile() {
-            try {
-                const firstName = document.getElementById('editFirstName').value;
-                const lastName = document.getElementById('editLastName').value;
-                const phone = document.getElementById('editPhone').value;
-                const email = document.getElementById('editEmail').value;
-                const bio = document.getElementById('editBio').value;
                 
-                if (!firstName || !lastName || !phone) {
-                    showNotification('Заполните обязательные поля', 'error');
-                    return;
-                }
-                
-                // Собираем выбранные категории
-                const categoryCheckboxes = document.querySelectorAll('.category-checkbox:checked');
-                const categories = Array.from(categoryCheckboxes).map(cb => cb.value);
-                
-                showLoading('Сохранение профиля...');
-                
-                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${currentToken}`
-                    },
-                    body: JSON.stringify({
-                        first_name: firstName,
-                        last_name: lastName,
-                        phone: phone,
-                        email: email || null,
-                        bio: bio || ''
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Обновляем категории исполнителя
-                    for (const categoryId of categories) {
+                // Добавляем новые категории
+                for (const categoryId of categories) {
+                    // Проверяем, есть ли уже эта категория
+                    const alreadyHasCategory = currentCategories.some(cat => cat.id == categoryId);
+                    if (!alreadyHasCategory) {
                         await fetch(`${API_BASE_URL}/api/performer/categories`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Authorization': `Bearer ${currentToken}`
                             },
-                            body: JSON.stringify({ category_id: categoryId })
+                            body: JSON.stringify({ 
+                                category_id: categoryId,
+                                is_active: 1 
+                            })
                         });
                     }
-                    
-                    showNotification('Профиль успешно сохранен', 'success');
-                    
-                    // Обновляем данные исполнителя
-                    currentPerformer = { ...currentPerformer, first_name: firstName, last_name: lastName, phone, email, bio };
-                    localStorage.setItem('currentPerformer', JSON.stringify(currentPerformer));
-                    
-                    // Обновляем интерфейс
-                    updatePerformerInterface();
-                    loadProfileStats();
-                    
-                } else {
-                    throw new Error(data.error || 'Ошибка сохранения профиля');
                 }
-            } catch (error) {
-                console.error('Ошибка сохранения профиля:', error);
-                showNotification(error.message, 'error');
-            } finally {
-                hideLoading();
+                
+            } catch (categoryError) {
+                console.error('Ошибка обновления категорий:', categoryError);
+                // Не прерываем сохранение из-за ошибки категорий
             }
+            
+            showNotification('Профиль успешно сохранен', 'success');
+            
+            // Обновляем данные исполнителя
+            currentPerformer = { ...currentPerformer, first_name: firstName, last_name: lastName, phone, email, bio };
+            localStorage.setItem('currentPerformer', JSON.stringify(currentPerformer));
+            
+            // Обновляем интерфейс
+            updatePerformerInterface();
+            loadProfileStats();
+            
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения профиля');
         }
+    } catch (error) {
+        console.error('Ошибка сохранения профиля:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
         
         // Загрузка данных о заработке
         async function loadEarnings() {
