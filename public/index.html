@@ -1523,7 +1523,7 @@ img[src*="data:image/svg"] {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-    /* ==================== СТИЛИ ДЛЯ ЛОГОТИПА ==================== */
+    /* ==================== ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЛОГОТИПА ==================== */
     .logo-container {
         display: flex;
         align-items: center;
@@ -1536,13 +1536,9 @@ img[src*="data:image/svg"] {
         width: 48px;
         height: 48px;
         border-radius: 12px;
-        background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
-        padding: 3px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(197, 168, 128, 0.3);
-        border: 2px solid rgba(255, 255, 255, 0.8);
         position: relative;
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1550,34 +1546,15 @@ img[src*="data:image/svg"] {
     
     .logo-frame:hover {
         transform: rotate(5deg) scale(1.05);
-        box-shadow: 0 6px 20px rgba(197, 168, 128, 0.4);
-    }
-    
-    .logo-frame::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(135deg, 
-            rgba(255, 255, 255, 0.8), 
-            rgba(242, 221, 230, 0.4), 
-            rgba(197, 168, 128, 0.2));
-        border-radius: 13px;
-        z-index: 0;
     }
     
     .logo-img {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
         object-fit: contain;
         position: relative;
         z-index: 1;
-        background: white;
-        padding: 5px;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9);
         transition: transform 0.3s ease;
     }
     
@@ -1630,43 +1607,21 @@ img[src*="data:image/svg"] {
         width: 80px;
         height: 80px;
         border-radius: 16px;
-        background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
-        padding: 4px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 15px;
-        box-shadow: 0 6px 20px rgba(197, 168, 128, 0.3);
-        border: 3px solid rgba(255, 255, 255, 0.9);
         position: relative;
         overflow: hidden;
     }
     
-    .auth-logo-frame::before {
-        content: '';
-        position: absolute;
-        top: -3px;
-        left: -3px;
-        right: -3px;
-        bottom: -3px;
-        background: linear-gradient(135deg, 
-            rgba(255, 255, 255, 0.9), 
-            rgba(242, 221, 230, 0.5), 
-            rgba(197, 168, 128, 0.3));
-        border-radius: 18px;
-        z-index: 0;
-    }
-    
     .auth-logo-img {
-        width: 68px;
-        height: 68px;
-        border-radius: 12px;
+        width: 100%;
+        height: 100%;
+        border-radius: 14px;
         object-fit: contain;
         position: relative;
         z-index: 1;
-        background: white;
-        padding: 8px;
-        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.9);
     }
     
     .auth-logo-text-container {
