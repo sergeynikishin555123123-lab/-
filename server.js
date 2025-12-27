@@ -7114,6 +7114,348 @@ app.post('/api/admin/users', authMiddleware(['admin', 'superadmin']), async (req
     }
 });
 
+// Админ: Получение полной информации о задаче
+app.get('/api/admin/tasks/:id/details', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        
+        console.log(`👑 Админ запрашивает детали задачи: ${taskId}`);
+        
+        // Получаем полную информацию о задаче
+        const task = await db.get(`
+            SELECT 
+                t.*,
+                c.display_name as category_name,
+                c.icon as category_icon,
+                c.color as category_color,
+                s.name as service_name,
+                s.description as service_description,
+                s.image_url as service_image,
+                u1.id as client_id,
+                u1.first_name as client_first_name,
+                u1.last_name as client_last_name,
+                u1.phone as client_phone,
+                u1.email as client_email,
+                u1.avatar_url as client_avatar,
+                u1.user_rating as client_rating,
+                u2.id as performer_id,
+                u2.first_name as performer_first_name,
+                u2.last_name as performer_last_name,
+                u2.phone as performer_phone,
+                u2.email as performer_email,
+                u2.avatar_url as performer_avatar,
+                u2.user_rating as performer_rating,
+                u2.role as performer_role,
+                (SELECT COUNT(*) FROM task_messages WHERE task_id = t.id) as messages_count,
+                (SELECT COUNT(*) FROM reviews WHERE task_id = t.id) as reviews_count
+            FROM tasks t
+            LEFT JOIN categories c ON t.category_id = c.id
+            LEFT JOIN services s ON t.service_id = s.id
+            LEFT JOIN users u1 ON t.client_id = u1.id
+            LEFT JOIN users u2 ON t.performer_id = u2.id
+            WHERE t.id = ?
+        `, [taskId]);
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        // Получаем историю статусов
+        const statusHistory = await db.all(`
+            SELECT 
+                tsh.*,
+                u.first_name as changed_by_first_name,
+                u.last_name as changed_by_last_name,
+                u.role as changed_by_role
+            FROM task_status_history tsh
+            LEFT JOIN users u ON tsh.changed_by = u.id
+            WHERE tsh.task_id = ?
+            ORDER BY tsh.created_at ASC
+        `, [taskId]);
+        
+        // Получаем сообщения чата (последние 50)
+        const messages = await db.all(`
+            SELECT 
+                tm.*,
+                u.first_name,
+                u.last_name,
+                u.avatar_url,
+                u.role
+            FROM task_messages tm
+            LEFT JOIN users u ON tm.user_id = u.id
+            WHERE tm.task_id = ?
+            ORDER BY tm.created_at DESC
+            LIMIT 50
+        `, [taskId]);
+        
+        // Получаем отзыв, если есть
+        const review = await db.get(`
+            SELECT r.*,
+                   u.first_name as client_first_name,
+                   u.last_name as client_last_name
+            FROM reviews r
+            LEFT JOIN users u ON r.client_id = u.id
+            WHERE r.task_id = ?
+        `, [taskId]);
+        
+        // Получаем транзакции связанные с задачей
+        const transactions = await db.all(`
+            SELECT *
+            FROM transactions
+            WHERE metadata LIKE ? OR description LIKE ?
+            ORDER BY created_at DESC
+        `, [`%${taskId}%`, `%${task.task_number}%`]);
+        
+        // Собираем все данные
+        const taskDetails = {
+            ...task,
+            status_history: statusHistory,
+            messages: messages.reverse(), // возвращаем в правильном порядке
+            review: review || null,
+            transactions: transactions,
+            created_at_formatted: new Date(task.created_at).toLocaleString('ru-RU'),
+            deadline_formatted: new Date(task.deadline).toLocaleString('ru-RU'),
+            completed_at_formatted: task.completed_at ? new Date(task.completed_at).toLocaleString('ru-RU') : null
+        };
+        
+        console.log(`✅ Детали задачи ${taskId} отправлены администратору`);
+        
+        res.json({
+            success: true,
+            data: {
+                task: taskDetails
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения деталей задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения деталей задачи: ' + error.message
+        });
+    }
+});
+
+// Админ: Получение списка исполнителей для назначения
+app.get('/api/admin/tasks/:id/available-performers', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        
+        // Получаем информацию о задаче
+        const task = await db.get('SELECT category_id FROM tasks WHERE id = ?', [taskId]);
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        // Получаем исполнителей с соответствующей специализацией
+        const performers = await db.all(`
+            SELECT 
+                u.id,
+                u.first_name,
+                u.last_name,
+                u.phone,
+                u.email,
+                u.avatar_url,
+                u.user_rating,
+                pc.experience_years,
+                (SELECT COUNT(*) FROM tasks t2 WHERE t2.performer_id = u.id AND t2.status = 'completed') as completed_tasks
+            FROM users u
+            JOIN performer_categories pc ON u.id = pc.performer_id
+            WHERE u.role = 'performer' 
+              AND u.is_active = 1
+              AND pc.category_id = ?
+              AND pc.is_active = 1
+            ORDER BY u.user_rating DESC, completed_tasks DESC
+        `, [task.category_id]);
+        
+        res.json({
+            success: true,
+            data: {
+                performers,
+                count: performers.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения исполнителей:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения исполнителей'
+        });
+    }
+});
+
+// Админ: Изменение статуса задачи
+app.put('/api/admin/tasks/:id/status', authMiddleware(['admin', 'superadmin', 'manager']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const { status, notes, performer_id } = req.body;
+        
+        console.log(`👑 Админ изменяет статус задачи ${taskId}: ${status}`);
+        
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                error: 'Не указан новый статус'
+            });
+        }
+        
+        // Получаем текущую задачу
+        const task = await db.get('SELECT * FROM tasks WHERE id = ?', [taskId]);
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        // Подготовка данных для обновления
+        const updateData = { 
+            status: status,
+            updated_at: new Date().toISOString()
+        };
+        
+        // Если назначается исполнитель
+        if (status === 'assigned' && performer_id) {
+            updateData.performer_id = performer_id;
+            
+            // Проверяем существует ли исполнитель
+            const performer = await db.get(
+                'SELECT id FROM users WHERE id = ? AND role = "performer" AND is_active = 1',
+                [performer_id]
+            );
+            
+            if (!performer) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Исполнитель не найден или неактивен'
+                });
+            }
+        }
+        
+        // Если задача завершается
+        if (status === 'completed') {
+            updateData.completed_at = new Date().toISOString();
+            
+            if (task.performer_id) {
+                await db.run(
+                    `UPDATE users SET 
+                        completed_tasks = completed_tasks + 1,
+                        updated_at = CURRENT_TIMESTAMP 
+                     WHERE id = ?`,
+                    [task.performer_id]
+                );
+            }
+        }
+        
+        // Обновляем задачу
+        const updateFields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
+        const updateValues = [...Object.values(updateData), taskId];
+        
+        await db.run(
+            `UPDATE tasks SET ${updateFields} WHERE id = ?`,
+            updateValues
+        );
+        
+        // Добавляем запись в историю статусов
+        await db.run(
+            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
+             VALUES (?, ?, ?, ?)`,
+            [taskId, status, req.user.id, notes || `Статус изменен администратором`]
+        );
+        
+        // Отправляем уведомления
+        const notificationData = {
+            'assigned': {
+                title: 'Задача назначена вам',
+                message: `Администратор назначил вас на задачу "${task.title}"`,
+                type: 'task_assigned'
+            },
+            'in_progress': {
+                title: 'Задача взята в работу',
+                message: `Администратор изменил статус задачи "${task.title}" на "В работе"`,
+                type: 'task_in_progress'
+            },
+            'completed': {
+                title: 'Задача завершена',
+                message: `Администратор завершил задачу "${task.title}"`,
+                type: 'task_completed'
+            },
+            'cancelled': {
+                title: 'Задача отменена',
+                message: `Администратор отменил задачу "${task.title}"`,
+                type: 'task_cancelled'
+            }
+        };
+        
+        const notifyData = notificationData[status];
+        if (notifyData) {
+            const participants = [task.client_id];
+            
+            if (task.performer_id) {
+                participants.push(task.performer_id);
+            }
+            
+            if (status === 'assigned' && performer_id) {
+                participants.push(performer_id);
+            }
+            
+            for (const participantId of participants.filter(Boolean)) {
+                await db.run(
+                    `INSERT INTO notifications 
+                    (user_id, type, title, message, related_id, related_type) 
+                    VALUES (?, ?, ?, ?, ?, ?)`,
+                    [
+                        participantId,
+                        notifyData.type,
+                        notifyData.title,
+                        notifyData.message,
+                        taskId,
+                        'task'
+                    ]
+                );
+            }
+        }
+        
+        // Получаем обновленную задачу
+        const updatedTask = await db.get(
+            `SELECT t.*, 
+                    u1.first_name as client_first_name,
+                    u1.last_name as client_last_name,
+                    u2.first_name as performer_first_name,
+                    u2.last_name as performer_last_name
+             FROM tasks t
+             LEFT JOIN users u1 ON t.client_id = u1.id
+             LEFT JOIN users u2 ON t.performer_id = u2.id
+             WHERE t.id = ?`,
+            [taskId]
+        );
+        
+        res.json({
+            success: true,
+            message: `Статус задачи изменен на "${status}"`,
+            data: {
+                task: updatedTask,
+                new_status: status,
+                changed_by_admin: true
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка изменения статуса задачи:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка изменения статуса задачи: ' + error.message
+        });
+    }
+});
+
 // ==================== УПРАВЛЕНИЕ ПОДДЕРЖКОЙ (АДМИН) ====================
 
 // Админ: получение всех обращений в поддержку
