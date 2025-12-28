@@ -6839,7 +6839,268 @@ renderNoAdsMessage: function() {
                 this.showNotification('Ошибка загрузки главной страницы', 'error');
             }
         },
+// ==================== РЕКЛАМНЫЕ БАННЕРЫ ====================
+loadExternalAds: async function() {
+    try {
+        console.log('🔄 Загрузка рекламных баннеров...');
+        
+        const response = await fetch(this.API_BASE_URL + '/api/promo-banners');
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                this.promoBanners = result.data.banners || [];
+                this.renderExternalAds();
+                return;
+            }
+        }
+        console.warn('⚠️ Не удалось загрузить рекламные баннеры');
+    } catch (error) {
+        console.error('❌ Ошибка загрузки баннеров:', error);
+    }
+},
 
+renderExternalAds: function() {
+    const container = document.getElementById('external-ads-container');
+    if (!container) {
+        console.warn('Контейнер для рекламы не найден');
+        return;
+    }
+    
+    if (!this.promoBanners || this.promoBanners.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    // Фильтруем активные баннеры
+    const activeBanners = this.promoBanners.filter(banner => {
+        if (!banner.is_active) return false;
+        
+        // Проверяем даты активности
+        const now = new Date();
+        const startDate = banner.start_date ? new Date(banner.start_date) : null;
+        const endDate = banner.end_date ? new Date(banner.end_date) : null;
+        
+        if (startDate && startDate > now) return false;
+        if (endDate && endDate < now) return false;
+        
+        return true;
+    });
+    
+    if (activeBanners.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let html = '<div class="ads-section" style="margin-top: 20px;">';
+    
+    activeBanners.forEach((banner, index) => {
+        const isFirst = index === 0;
+        const bannerId = banner.id;
+        
+        // Регистрируем просмотр
+        setTimeout(() => {
+            this.registerBannerView(bannerId);
+        }, 1000 * (index + 1));
+        
+        if (banner.type === 'video') {
+            html += this.renderVideoBanner(banner, isFirst);
+        } else {
+            html += this.renderImageBanner(banner, isFirst);
+        }
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Добавляем обработчики кликов
+    setTimeout(() => {
+        this.setupBannerClickHandlers();
+    }, 100);
+},
+
+renderImageBanner: function(banner, isMain = false) {
+    const hasImage = banner.image_url && banner.image_url.trim() !== '';
+    const imageUrl = hasImage ? 
+        this.getImageUrl(banner.image_url, 'promo') : 
+        this.createSvgFallback('default');
+    
+    return `
+        <div class="promo-banner ${isMain ? 'promo-banner-main' : 'promo-banner-secondary'}" 
+             data-banner-id="${banner.id}" 
+             data-link="${banner.link || '#'}" 
+             data-target="${banner.target || 'none'}">
+            
+            ${isMain ? `
+                <div class="promo-banner-main-content">
+                    ${hasImage ? `
+                        <img src="${imageUrl}" 
+                             alt="${banner.title}"
+                             loading="lazy"
+                             onerror="this.onerror=null; this.src='${this.createSvgFallback('default')}';"
+                             class="promo-banner-image">
+                    ` : ''}
+                    
+                    <div class="promo-banner-overlay">
+                        <div class="promo-banner-text">
+                            <h3>${banner.title}</h3>
+                            ${banner.description ? `<p>${banner.description}</p>` : ''}
+                            ${banner.link_text ? `
+                                <button class="btn btn-primary btn-promo">
+                                    ${banner.link_text} <i class="fas fa-arrow-right"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            ` : `
+                <div class="promo-banner-secondary-content">
+                    ${hasImage ? `
+                        <div class="promo-banner-image-small">
+                            <img src="${imageUrl}" 
+                                 alt="${banner.title}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.src='${this.createSvgFallback('default')}';">
+                        </div>
+                    ` : ''}
+                    
+                    <div class="promo-banner-secondary-text">
+                        <h4>${banner.title}</h4>
+                        ${banner.description ? `<p>${banner.description}</p>` : ''}
+                        ${banner.link_text ? `
+                            <a href="#" class="promo-link" onclick="event.preventDefault(); app.handleBannerClick(${banner.id})">
+                                ${banner.link_text} <i class="fas fa-chevron-right"></i>
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `}
+        </div>
+    `;
+},
+
+renderVideoBanner: function(banner, isMain = false) {
+    return `
+        <div class="promo-banner promo-banner-video" 
+             data-banner-id="${banner.id}" 
+             data-link="${banner.link || '#'}" 
+             data-target="${banner.target || 'none'}">
+            
+            <div class="promo-video-container">
+                ${banner.video_url ? `
+                    <video class="promo-video" 
+                           ${isMain ? 'autoplay muted loop playsinline' : 'controls'}
+                           poster="${banner.image_url || ''}">
+                        <source src="${this.getImageUrl(banner.video_url, 'promo')}" type="video/mp4">
+                    </video>
+                ` : ''}
+                
+                <div class="promo-video-overlay">
+                    <div class="promo-video-text">
+                        <h3>${banner.title}</h3>
+                        ${banner.description ? `<p>${banner.description}</p>` : ''}
+                        ${banner.link_text ? `
+                            <button class="btn btn-primary btn-promo">
+                                ${banner.link_text} <i class="fas fa-arrow-right"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+},
+
+setupBannerClickHandlers: function() {
+    document.querySelectorAll('.promo-banner').forEach(banner => {
+        banner.addEventListener('click', (e) => {
+            // Не обрабатываем клики по кнопкам внутри
+            if (e.target.closest('.btn-promo') || e.target.closest('.promo-link')) {
+                return;
+            }
+            
+            const bannerId = banner.dataset.bannerId;
+            const link = banner.dataset.link;
+            const target = banner.dataset.target;
+            
+            this.handleBannerClick(bannerId, link, target);
+        });
+    });
+},
+
+handleBannerClick: function(bannerId, link = '#', target = 'none') {
+    // Регистрируем клик
+    this.registerBannerClick(bannerId);
+    
+    // Обрабатываем действие по цели
+    switch(target) {
+        case 'create_task':
+            if (this.currentUser) {
+                this.checkSubscription();
+            } else {
+                this.showLoginModal();
+            }
+            break;
+            
+        case 'subscription':
+            this.navigateToPage('subscription');
+            break;
+            
+        case 'become_performer':
+            this.showNotification('Функция "Стать исполнителем" в разработке', 'info');
+            break;
+            
+        case 'external':
+            if (link && link !== '#') {
+                window.open(link, '_blank');
+            }
+            break;
+            
+        case 'internal':
+            if (link && link !== '#') {
+                this.navigateToPage(link);
+            }
+            break;
+            
+        default:
+            // Ничего не делаем
+            break;
+    }
+},
+
+registerBannerView: async function(bannerId) {
+    try {
+        await fetch(`${this.API_BASE_URL}/api/promo-banners/${bannerId}/view`, {
+            method: 'POST'
+        });
+    } catch (error) {
+        console.error('Ошибка регистрации просмотра:', error);
+    }
+},
+
+registerBannerClick: async function(bannerId) {
+    try {
+        await fetch(`${this.API_BASE_URL}/api/promo-banners/${bannerId}/click`, {
+            method: 'POST'
+        });
+    } catch (error) {
+        console.error('Ошибка регистрации клика:', error);
+    }
+},
+
+getImageUrl: function(imagePath, type = 'default') {
+    if (!imagePath || imagePath.trim() === '') {
+        return this.createSvgFallback(type);
+    }
+    
+    // Если уже полный URL
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+        return imagePath;
+    }
+    
+    // Добавляем базовый URL
+    const baseUrl = this.API_BASE_URL.replace('/api', '');
+    return baseUrl + imagePath;
+},
         // ==================== УСЛУГИ ====================
         loadTopServices: async function() {
             try {
