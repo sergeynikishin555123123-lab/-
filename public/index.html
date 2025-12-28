@@ -2941,33 +2941,33 @@ img[src*="data:image/svg"] {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
-    /* Исправление карточек категорий и услуг */
-    .category-card-main-style {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px 15px;
-        background: var(--card-bg);
-        border-radius: var(--radius-lg);
-        border: 1px solid rgba(242, 221, 230, 0.3);
-        box-shadow: var(--shadow-sm);
-        transition: var(--transition);
-        cursor: pointer;
-        position: relative;
-        overflow: hidden;
-        height: 100%;
-        text-align: center;
-        animation: fadeIn 0.5s ease;
-        min-height: 320px;
-        max-height: 380px;
-    }
-    
-    .category-card-main-style:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow);
-        border-color: var(--pastel-pink);
-        background: var(--card-hover-bg);
-    }
+/* Стили для карточек категорий и услуг */
+.category-card-main-style {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 15px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(242, 221, 230, 0.3);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+    min-height: 320px;
+    max-height: 380px;
+}
+
+.category-card-main-style:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+    background: var(--card-hover-bg);
+}
     
     .category-image-main {
         width: 100px;
@@ -3033,18 +3033,100 @@ img[src*="data:image/svg"] {
         border: 1px solid rgba(242, 221, 230, 0.2);
     }
     
+/* Подпись с количеством услуг - МЕНЬШЕ и ЗОЛОТОЙ */
+.category-card-footer {
+    margin-top: auto;
+    color: var(--gold-metallic); /* Золотой цвет */
+    font-weight: 600;
+    font-size: 0.8rem !important; /* Уменьшен размер */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5px;
+}
+
+    /* Иконка стрелочки - золотая */
+.category-card-footer .fa-arrow-right {
+    color: var(--gold-metallic); /* Золотая стрелочка */
+    font-size: 0.75rem !important; /* Уменьшен размер */
+    margin-left: 4px;
+}
+/* Надпись "Выбрать" - золотая */
+.category-card-footer span:last-child {
+    color: var(--gold-metallic); /* Золотой цвет */
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Иконка папки для категории - золотая */
+.category-card-footer .fa-folder,
+.category-card-footer .fa-list {
+    color: var(--gold-metallic); /* Золотая иконка */
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
     .category-card-footer {
-        margin-top: auto;
-        color: var(--pastel-pink);
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0 5px;
+        font-size: 0.75rem !important; /* Еще меньше на мобильных */
     }
     
+    .category-card-footer .fa-arrow-right {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Для страницы всех услуг - те же стили */
+#allServicesList .category-card-footer {
+    color: var(--gold-metallic); /* Золотой цвет */
+    font-size: 0.8rem !important;
+}
+
+#allServicesList .category-card-footer span:last-child {
+    color: var(--gold-metallic);
+}
+
+#allServicesList .category-card-footer .fa-folder,
+#allServicesList .category-card-footer .fa-list {
+    color: var(--gold-metallic);
+}
+
+/* Для главной страницы - те же стили */
+.grid-2-main .category-card-footer,
+.grid-3-main .category-card-footer {
+    color: var(--gold-metallic); /* Золотой цвет */
+    font-size: 0.8rem !important;
+}
+
+/* Для стрелочки во всех карточках */
+.category-card-footer .fa-arrow-right,
+.service-card-square .fa-arrow-right {
+    color: var(--gold-metallic) !important; /* Золотая стрелочка */
+    font-size: 0.75rem !important;
+}
+
+/* Стили для квадратных карточек услуг */
+.service-card-square .service-card-footer {
+    margin-top: auto;
+    color: var(--gold-metallic); /* Золотой цвет */
+    font-weight: 600;
+    font-size: 0.8rem !important; /* Уменьшен размер */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 10px;
+}
+
+/* Для топ услуг на главной */
+#topServicesGrid .category-card-footer {
+    color: var(--gold-metallic) !important; /* Переопределяем старые стили */
+}
+
+#topServicesGrid .category-card-footer .fa-star {
+    color: var(--gold-metallic) !important; /* Золотая звезда */
+}
     /* Для страницы всех услуг */
     #allServicesList .category-card-main-style {
         min-height: 300px;
