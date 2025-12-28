@@ -167,7 +167,8 @@ const ensureUploadDirs = () => {
         'public/uploads/categories',
         'public/uploads/services',
         'public/uploads/users',
-        'public/uploads/logo'
+        'public/uploads/logo',
+        'public/uploads/promo'  // ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
     ];
     
     dirs.forEach(dir => {
@@ -3573,7 +3574,302 @@ app.get('/api/reviews', async (req, res) => {
 });
 
 // ==================== ПОДПИСКИ ====================
+// ==================== РЕКЛАМНЫЕ БАННЕРЫ ====================
 
+// Получение активных баннеров
+app.get('/api/promo-banners', async (req, res) => {
+    try {
+        // Создаем таблицу если ее нет
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS promo_banners (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                video_url TEXT,
+                type TEXT DEFAULT 'image' CHECK(type IN ('image', 'video')),
+                link TEXT,
+                link_text TEXT,
+                target TEXT DEFAULT 'none',
+                is_active INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                views_count INTEGER DEFAULT 0,
+                clicks_count INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+        
+        // Проверяем есть ли баннеры
+        const bannerCount = await db.get('SELECT COUNT(*) as count FROM promo_banners');
+        if (!bannerCount.count || bannerCount.count === 0) {
+            // Создаем демо-баннеры
+            const demoBanners = [
+                ['Первая задача бесплатно!', 'Создайте первую задачу и получите скидку 100%', null, null, 'image', '#', 'Создать задачу', 'create_task', 1, 1],
+                ['Премиум подписка со скидкой 30%', 'Только до конца месяца!', null, null, 'image', '#', 'Выбрать подписку', 'subscription', 1, 2],
+                ['Станьте исполнителем', 'Зарабатывайте от 50 000 рублей в месяц', null, null, 'image', '#', 'Узнать больше', 'become_performer', 1, 3]
+            ];
+            
+            for (const banner of demoBanners) {
+                await db.run(
+                    `INSERT INTO promo_banners 
+                    (title, description, image_url, video_url, type, link, link_text, target, is_active, sort_order) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    banner
+                );
+            }
+        }
+        
+        const banners = await db.all(
+            'SELECT * FROM promo_banners WHERE is_active = 1 ORDER BY sort_order ASC, created_at DESC'
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                banners,
+                count: banners.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения баннеров:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения баннеров'
+        });
+    }
+});
+
+// Увеличение счетчика просмотров
+app.post('/api/promo-banners/:id/view', async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        await db.run(
+            'UPDATE promo_banners SET views_count = views_count + 1 WHERE id = ?',
+            [bannerId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Просмотр засчитан'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления счетчика:', error.message);
+        res.json({
+            success: false,
+            error: 'Ошибка обновления счетчика'
+        });
+    }
+});
+
+// Увеличение счетчика кликов
+app.post('/api/promo-banners/:id/click', async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        await db.run(
+            'UPDATE promo_banners SET clicks_count = clicks_count + 1 WHERE id = ?',
+            [bannerId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Клик засчитан'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления счетчика:', error.message);
+        res.json({
+            success: false,
+            error: 'Ошибка обновления счетчика'
+        });
+    }
+});
+
+// Админ: Управление баннерами
+app.get('/api/admin/promo-banners', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const banners = await db.all(
+            'SELECT * FROM promo_banners ORDER BY sort_order ASC, created_at DESC'
+        );
+        
+        res.json({
+            success: true,
+            data: {
+                banners,
+                count: banners.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения баннеров:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения баннеров'
+        });
+    }
+});
+
+// Админ: Создание/обновление баннера
+app.post('/api/admin/promo-banners', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { 
+            id, title, description, image_url, video_url, type, 
+            link, link_text, target, is_active, sort_order 
+        } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните название баннера'
+            });
+        }
+        
+        const bannerData = {
+            title,
+            description: description || null,
+            image_url: image_url || null,
+            video_url: video_url || null,
+            type: type || 'image',
+            link: link || '#',
+            link_text: link_text || 'Подробнее',
+            target: target || 'none',
+            is_active: is_active ? 1 : 0,
+            sort_order: sort_order || 0,
+            updated_at: new Date().toISOString()
+        };
+        
+        if (id) {
+            // Обновление существующего баннера
+            await db.run(
+                `UPDATE promo_banners SET 
+                    title = ?,
+                    description = ?,
+                    image_url = ?,
+                    video_url = ?,
+                    type = ?,
+                    link = ?,
+                    link_text = ?,
+                    target = ?,
+                    is_active = ?,
+                    sort_order = ?,
+                    updated_at = ?
+                 WHERE id = ?`,
+                [
+                    bannerData.title,
+                    bannerData.description,
+                    bannerData.image_url,
+                    bannerData.video_url,
+                    bannerData.type,
+                    bannerData.link,
+                    bannerData.link_text,
+                    bannerData.target,
+                    bannerData.is_active,
+                    bannerData.sort_order,
+                    bannerData.updated_at,
+                    id
+                ]
+            );
+            
+            const banner = await db.get('SELECT * FROM promo_banners WHERE id = ?', [id]);
+            
+            res.json({
+                success: true,
+                message: 'Баннер обновлен',
+                data: { banner }
+            });
+        } else {
+            // Создание нового баннера
+            const result = await db.run(
+                `INSERT INTO promo_banners 
+                (title, description, image_url, video_url, type, link, link_text, target, is_active, sort_order) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    bannerData.title,
+                    bannerData.description,
+                    bannerData.image_url,
+                    bannerData.video_url,
+                    bannerData.type,
+                    bannerData.link,
+                    bannerData.link_text,
+                    bannerData.target,
+                    bannerData.is_active,
+                    bannerData.sort_order
+                ]
+            );
+            
+            const bannerId = result.lastID;
+            const banner = await db.get('SELECT * FROM promo_banners WHERE id = ?', [bannerId]);
+            
+            res.status(201).json({
+                success: true,
+                message: 'Баннер создан',
+                data: { banner }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Ошибка сохранения баннера:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения баннера'
+        });
+    }
+});
+
+// Админ: Удаление баннера
+app.delete('/api/admin/promo-banners/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        await db.run('DELETE FROM promo_banners WHERE id = ?', [bannerId]);
+        
+        res.json({
+            success: true,
+            message: 'Баннер удален',
+            data: { id: bannerId }
+        });
+        
+    } catch (error) {
+        console.error('Ошибка удаления баннера:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления баннера'
+        });
+    }
+});
+
+// Загрузка изображения/видео для баннера
+app.post('/api/admin/upload-promo', authMiddleware(['admin', 'superadmin']), simpleUpload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл не был загружен'
+            });
+        }
+        
+        const fileUrl = `/uploads/promo/${req.file.filename}`;
+        console.log(`✅ Рекламный материал сохранен: ${fileUrl}`);
+        
+        res.json({
+            success: true,
+            message: 'Файл загружен',
+            data: {
+                url: fileUrl,
+                filename: req.file.filename,
+                type: req.body.type || 'image'
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки рекламного материала:', error.message);
+        res.status(500).json({ success: false, error: 'Ошибка загрузки' });
+    }
+});
 // Получение всех подписок
 app.get('/api/subscriptions', async (req, res) => {
     try {
