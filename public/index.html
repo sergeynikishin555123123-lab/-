@@ -3376,7 +3376,134 @@ img[src*="data:image/svg"] {
         border: none !important;
     }
 }
+            @media (max-width: 768px) {
+    /* Уменьшаем увеличенный логотип в шапке для мобильных */
+    .top-nav .logo-frame {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .top-nav .logo-img {
+        width: 60px !important;
+        height: 60px !important;
+    }
+    
+    .logo-woman, .logo-help {
+        font-size: 1.4rem !important;
+    }
+    
+    .logo-tagline {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Уменьшаем увеличенный логотип на странице авторизации для мобильных */
+    .auth-logo-frame {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .auth-logo-img {
+        width: 90px !important;
+        height: 90px !important;
+    }
+    
+    .auth-logo-woman,
+    .auth-logo-help {
+        font-size: 2.2rem !important;
+    }
+    
+    .auth-logo-tagline {
+        font-size: 0.95rem !important;
+    }
+}
 
+@media (max-width: 480px) {
+    /* Дополнительные корректировки для очень маленьких экранов */
+    .top-nav .logo-frame {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .top-nav .logo-img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .logo-woman, .logo-help {
+        font-size: 1.2rem !important;
+    }
+    
+    .logo-tagline {
+        font-size: 0.65rem !important;
+    }
+    
+    .auth-logo-frame {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    .auth-logo-img {
+        width: 75px !important;
+        height: 75px !important;
+    }
+    
+    .auth-logo-woman,
+    .auth-logo-help {
+        font-size: 1.8rem !important;
+    }
+    
+    .auth-logo-tagline {
+        font-size: 0.85rem !important;
+    }
+}
+            .user-avatar {
+    width: 52px !important; /* Было 44px */
+    height: 52px !important; /* Было 44px */
+    font-size: 1.4rem !important; /* Было 1.2rem */
+}
+            /* Увеличение логотипа на странице авторизации в 2 раза */
+.auth-logo-frame {
+    width: 160px !important; /* Было 80px */
+    height: 160px !important; /* Было 80px */
+    margin: 0 auto 25px !important; /* Увеличиваем отступ */
+}
+
+.auth-logo-img {
+    width: 120px !important; /* Было 60px */
+    height: 120px !important; /* Было 60px */
+    border-radius: var(--radius-lg) !important;
+}
+
+/* Увеличение текста */
+.auth-logo-woman,
+.auth-logo-help {
+    font-size: 2.8rem !important; /* Было 2rem */
+}
+
+.auth-logo-tagline {
+    font-size: 1.1rem !important; /* Было 0.9rem */
+    margin-top: 10px !important;
+}
+/* Увеличение логотипа в шапке в 2 раза */
+.top-nav .logo-frame {
+    width: 80px !important; /* Было 40px */
+    height: 80px !important; /* Было 40px */
+}
+
+.top-nav .logo-img {
+    width: 80px !important; /* Было 40px */
+    height: 80px !important; /* Было 40px */
+    border-radius: 12px !important; /* Было 8px */
+}
+
+/* Обновление текста рядом с логотипом */
+.logo-woman, .logo-help {
+    font-size: 1.8rem !important; /* Было 1.4rem */
+}
+
+.logo-tagline {
+    font-size: 0.85rem !important; /* Было 0.65rem */
+}
 /* Убираем обводку в логотипе шапки */
 .top-nav .logo-frame {
     border: none !important;
