@@ -1697,7 +1697,165 @@ img[src*="data:image/svg"] {
             box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2);
             background: white;
         }
-        
+        /* Стили для блока внешней рекламы */
+.external-ad-container {
+    width: 100%;
+    margin-top: 30px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid rgba(61, 61, 61, 0.1);
+    box-shadow: var(--shadow-sm);
+    background: white;
+}
+
+.external-ad-header {
+    padding: 15px 20px;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+    color: var(--graphite-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.external-ad-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.external-ad-badge {
+    background: var(--gold-metallic);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.external-ad-content {
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.external-ad-image-container {
+    width: 100%;
+    height: auto;
+    min-height: 150px;
+    max-height: 300px;
+    overflow: hidden;
+    position: relative;
+}
+
+.external-ad-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.external-ad-text-container {
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.external-ad-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.external-ad-description {
+    font-size: 0.9rem;
+    color: var(--graphite-medium);
+    margin-bottom: 15px;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.external-ad-cta {
+    display: inline-block;
+    padding: 10px 20px;
+    background: var(--gold-metallic);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.external-ad-cta:hover {
+    background: var(--gold-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.external-ad-footer {
+    padding: 10px 20px;
+    border-top: 1px solid rgba(61, 61, 61, 0.1);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--graphite-light);
+    background: var(--ivory-bg);
+}
+
+.no-ads-message {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--graphite-medium);
+}
+
+.no-ads-message i {
+    font-size: 2rem;
+    opacity: 0.3;
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .external-ad-container {
+        margin-top: 20px;
+    }
+    
+    .external-ad-text-container {
+        padding: 15px;
+    }
+    
+    .external-ad-title {
+        font-size: 1.1rem;
+    }
+    
+    .external-ad-description {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .external-ad-container {
+        margin-top: 15px;
+    }
+    
+    .external-ad-header {
+        padding: 12px 15px;
+    }
+    
+    .external-ad-text-container {
+        padding: 12px;
+    }
+
         /* Создание задачи */
         .create-task-form {
             margin-top: 20px;
@@ -4252,7 +4410,7 @@ img[src*="data:image/svg"] {
                     Решение есть
                 </div>
                 
-               <!-- ОПИСАНИЕ -->
+<!-- ОПИСАНИЕ -->
 <p class="section-subtitle" style="font-size: 0.9rem; margin-bottom: 25px; text-align: center;">
     Премиум сервис помощи для женщин. Оставляйте бытовые задачи профессионалам и наслаждайтесь свободным временем.
 </p>
@@ -4302,33 +4460,9 @@ img[src*="data:image/svg"] {
     </div>
 </div>
 
-<!-- РЕКЛАМНЫЕ БАННЕРЫ -->
-<div class="promo-banner-container" id="promoBanners" style="margin-top: 30px;">
-    <div class="promo-header">
-        <h4>
-            <i class="fas fa-star" style="color: var(--gold-metallic);"></i>
-            Акции и специальные предложения
-        </h4>
-    </div>
-    
-    <div class="promo-slider" id="promoSlider">
-        <!-- Баннеры будут загружаться динамически -->
-        <div class="loader" style="text-align: center; padding: 20px;">
-            <div class="spinner"></div>
-            <p>Загрузка акций...</p>
-        </div>
-    </div>
-    
-    <div class="promo-indicators" id="promoIndicators">
-        <!-- Индикаторы слайдера -->
-    </div>
-    
-    <div class="promo-footer" style="text-align: center; margin-top: 15px;">
-        <button class="btn btn-secondary btn-sm" onclick="app.navigateToPage('subscription')">
-            <i class="fas fa-crown"></i>
-            Посмотреть все предложения
-        </button>
-    </div>
+<!-- БЛОК ДЛЯ РЕКЛАМЫ ДРУГИХ СЕРВИСОВ -->
+<div id="external-ads-container" style="margin-top: 30px;">
+    <!-- Контент будет загружаться динамически из админки -->
 </div>
             </div>
         </div>
@@ -5312,6 +5446,12 @@ createSvgFallback: function(type) {
                         <text x="${width/2}" y="${height/2 + 5}" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#3D3D3D">U</text>
                     </svg>`;
                     break;
+            case 'ad':
+    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+        <rect width="${width}" height="${height}" fill="#F9F7F3" rx="8"/>
+        <text x="${width/2}" y="${height/2 + 5}" font-family="Arial" font-size="24" fill="#C5A880" text-anchor="middle">AD</text>
+    </svg>`;
+    break;
                 default:
                     svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
                         <rect width="${width}" height="${height}" fill="#F2DDE6" rx="10"/>
@@ -6115,7 +6255,103 @@ trackPromoView: async function(bannerId) {
             }
             return phone;
         },
+// ==================== ЗАГРУЗКА ВНЕШНЕЙ РЕКЛАМЫ ====================
+loadExternalAds: async function() {
+    try {
+        const response = await fetch(this.API_BASE_URL + '/api/external-ads');
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data.ads && result.data.ads.length > 0) {
+                this.renderExternalAd(result.data.ads[0]); // Показываем первую активную рекламу
+                return;
+            }
+        }
+    } catch (error) {
+        console.log('Ошибка загрузки рекламы:', error.message);
+    }
+    
+    // Если нет рекламы или ошибка - показываем сообщение
+    this.renderNoAdsMessage();
+},
 
+renderExternalAd: function(ad) {
+    const container = document.getElementById('external-ads-container');
+    if (!container) return;
+    
+    // Определяем тип контента
+    const hasImage = ad.image_url && ad.image_url.trim() !== '';
+    const imageUrl = hasImage ? this.getImageUrl(ad.image_url, 'ad') : '';
+    
+    container.innerHTML = `
+        <div class="external-ad-container">
+            <div class="external-ad-header">
+                <h4>
+                    <i class="fas fa-ad" style="color: var(--gold-metallic);"></i>
+                    Партнерский проект
+                </h4>
+                <span class="external-ad-badge">Реклама</span>
+            </div>
+            
+            <div class="external-ad-content">
+                ${hasImage ? `
+                    <div class="external-ad-image-container">
+                        <img src="${imageUrl}" 
+                             alt="${ad.title}" 
+                             class="external-ad-image"
+                             onerror="this.style.display='none'; this.parentElement.style.minHeight='auto';"
+                             style="width: 100%; height: auto; max-height: 250px; object-fit: cover;">
+                    </div>
+                ` : ''}
+                
+                <div class="external-ad-text-container">
+                    <h5 class="external-ad-title">${ad.title}</h5>
+                    ${ad.description ? `<div class="external-ad-description">${ad.description}</div>` : ''}
+                    
+                    ${ad.cta_text && ad.cta_url ? `
+                        <a href="${ad.cta_url}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="external-ad-cta">
+                            ${ad.cta_text}
+                        </a>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${ad.footer_text ? `
+                <div class="external-ad-footer">
+                    ${ad.footer_text}
+                </div>
+            ` : ''}
+        </div>
+    `;
+},
+
+renderNoAdsMessage: function() {
+    const container = document.getElementById('external-ads-container');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div class="external-ad-container">
+            <div class="external-ad-header">
+                <h4>
+                    <i class="fas fa-ad" style="color: var(--gold-metallic);"></i>
+                    Партнерские проекты
+                </h4>
+                <span class="external-ad-badge">Скоро</span>
+            </div>
+            
+            <div class="no-ads-message">
+                <i class="fas fa-handshake"></i>
+                <p>Здесь будут размещаться предложения от наших партнеров</p>
+            </div>
+            
+            <div class="external-ad-footer">
+                Для размещения рекламы обратитесь в поддержку
+            </div>
+        </div>
+    `;
+},
         // ==================== ЗАГРУЗКА ДАННЫХ ====================
         loadCategories: async function() {
             try {
@@ -9117,11 +9353,11 @@ renderTaskDetailsCompact: function(task, messages) {
                 
                 this.animateCounters();
                 
-                await Promise.all([
+        await Promise.all([
             this.loadCategories(),
             this.loadAllServices(),
             this.loadSubscriptions(),
-            this.loadPromoBanners()  // ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
+            this.loadExternalAds()  // ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
         ]);
                 
                 this.setupDefaultImages();
