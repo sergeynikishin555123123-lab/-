@@ -1135,6 +1135,10 @@
                 <i class="fas fa-comments"></i>
                 <span>Чат поддержки</span>
             </button>
+            <button class="admin-nav-btn" data-section="promo-banners">
+    <i class="fas fa-ad"></i>
+    <span>Рекламные баннеры</span>
+</button>
             <button class="admin-nav-btn" data-section="settings">
                 <i class="fas fa-cog"></i>
                 <span>Настройки</span>
@@ -1467,7 +1471,62 @@
                     <!-- Мобильные карточки чатов -->
                 </div>
             </section>
-            
+            <!-- Рекламные баннеры -->
+<section id="promo-banners" class="admin-section">
+    <div class="filters">
+        <div class="filter-group">
+            <div class="filter-label">Тип</div>
+            <select class="filter-select" id="promoTypeFilter">
+                <option value="all">Все типы</option>
+                <option value="image">Изображения</option>
+                <option value="video">Видео</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <div class="filter-label">Статус</div>
+            <select class="filter-select" id="promoStatusFilter">
+                <option value="all">Все статусы</option>
+                <option value="active">Активные</option>
+                <option value="inactive">Неактивные</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <div class="filter-label">Поиск</div>
+            <input type="text" class="filter-input" id="promoSearch" 
+                   placeholder="Название или описание">
+        </div>
+        
+        <div style="flex: 1; min-width: 150px;">
+            <button class="btn btn-primary" id="addPromoBtn">
+                <i class="fas fa-plus"></i>
+                <span>Добавить баннер</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Статистика -->
+    <div class="stats-grid" id="promoStats" style="margin-bottom: 20px;">
+        <div class="loader"></div>
+    </div>
+    
+    <!-- Таблица баннеров -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3><i class="fas fa-ad"></i> Управление рекламными баннерами</h3>
+            <span id="promoBannersCount">0 баннеров</span>
+        </div>
+        <div id="promoBannersTable">
+            <div class="loader"></div>
+        </div>
+    </div>
+    
+    <!-- Мобильные карточки -->
+    <div class="mobile-cards-container" id="promoBannersMobile">
+        <!-- Мобильные карточки баннеров -->
+    </div>
+</section>
             <!-- Настройки -->
             <section id="settings" class="admin-section">
                 <div class="table-container">
@@ -2086,7 +2145,129 @@
         </div>
     </div>
 </div>
-
+<!-- Модальное окно создания/редактирования баннера -->
+<div class="modal" id="promoModal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3 class="modal-title" id="promoModalTitle">Добавить рекламный баннер</h3>
+            <button class="modal-close" id="closePromoModal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="promoForm">
+                <input type="hidden" id="promoId">
+                
+                <div class="form-group">
+                    <label for="promoTitle">Заголовок баннера *</label>
+                    <input type="text" id="promoTitle" class="form-input" required 
+                           placeholder="Например: Первая задача бесплатно!">
+                </div>
+                
+                <div class="form-group">
+                    <label for="promoDescription">Описание</label>
+                    <textarea id="promoDescription" class="form-input" 
+                              placeholder="Краткое описание предложения" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promoType">Тип контента *</label>
+                        <select id="promoType" class="form-input" required>
+                            <option value="image">Изображение</option>
+                            <option value="video">Видео</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="promoSortOrder">Порядок отображения</label>
+                        <input type="number" id="promoSortOrder" class="form-input" value="0" min="0">
+                    </div>
+                </div>
+                
+                <!-- Загрузка медиа -->
+                <div class="form-group" id="imageUploadGroup">
+                    <label for="promoImageUpload">Загрузить изображение *</label>
+                    <input type="file" id="promoImageUpload" class="form-input" 
+                           accept="image/*" style="padding: 8px;">
+                    <div id="promoImagePreview" style="margin-top: 8px;"></div>
+                    <small style="color: var(--graphite-medium);">
+                        Рекомендуемый размер: 1200×400px. Форматы: JPG, PNG, WebP
+                    </small>
+                </div>
+                
+                <div class="form-group" id="videoUploadGroup" style="display: none;">
+                    <label for="promoVideoUpload">Загрузить видео *</label>
+                    <input type="file" id="promoVideoUpload" class="form-input" 
+                           accept="video/*" style="padding: 8px;">
+                    <div id="promoVideoPreview" style="margin-top: 8px;"></div>
+                    <small style="color: var(--graphite-medium);">
+                        Форматы: MP4, WebM. Максимальный размер: 50MB
+                    </small>
+                </div>
+                
+                <!-- Ссылка -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promoLink">Ссылка</label>
+                        <input type="text" id="promoLink" class="form-input" 
+                               placeholder="https://example.com или # для внутренней ссылки">
+                    </div>
+                    <div class="form-group">
+                        <label for="promoLinkText">Текст ссылки</label>
+                        <input type="text" id="promoLinkText" class="form-input" 
+                               value="Узнать больше">
+                    </div>
+                </div>
+                
+                <!-- Целевое действие -->
+                <div class="form-group">
+                    <label for="promoTarget">Целевое действие</label>
+                    <select id="promoTarget" class="form-input">
+                        <option value="none">Нет действия</option>
+                        <option value="create_task">Создать задачу</option>
+                        <option value="subscription">Выбрать подписку</option>
+                        <option value="become_performer">Стать исполнителем</option>
+                        <option value="external">Внешняя ссылка</option>
+                    </select>
+                </div>
+                
+                <!-- Даты активности -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promoStartDate">Дата начала показа</label>
+                        <input type="date" id="promoStartDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="promoEndDate">Дата окончания показа</label>
+                        <input type="date" id="promoEndDate" class="form-input">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; margin-bottom: 6px;">Статус</label>
+                    <div style="display: flex; gap: 16px;">
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <input type="radio" name="promoStatus" value="active" checked>
+                            <span>Активен</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <input type="radio" name="promoStatus" value="inactive">
+                            <span>Неактивен</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelPromoModal">Отмена</button>
+            <button type="button" class="btn btn-primary" id="savePromoBtn">
+                <i class="fas fa-save"></i>
+                Сохранить баннер
+            </button>
+        </div>
+    </div>
+</div>
 <!-- Модальное окно изменения статуса задачи -->
 <div class="modal" id="changeStatusModal">
     <div class="modal-content" style="max-width: 500px;">
@@ -2176,6 +2357,7 @@
             // Инициализация обработчиков событий
             initEventListeners();
             
+             initPromoHandlers();
             // Определение типа устройства
             window.addEventListener('resize', handleResize);
             handleResize();
@@ -2565,6 +2747,10 @@
                 case 'settings':
                     loadSettings();
                     break;
+                    case 'promo-banners':
+    loadPromoBanners();
+    break;
+                    
             }
         }
         
@@ -4322,7 +4508,683 @@ async function saveUser() {
                 hideLoading();
             }
         }
+        // ==================== РЕКЛАМНЫЕ БАННЕРЫ ====================
+
+// Загрузка баннеров
+async function loadPromoBanners() {
+    try {
+        showLoading('Загрузка рекламных баннеров...');
         
+        const typeFilter = document.getElementById('promoTypeFilter').value;
+        const statusFilter = document.getElementById('promoStatusFilter').value;
+        const search = document.getElementById('promoSearch').value;
+        
+        let url = '/api/admin/promo-banners?';
+        const params = [];
+        
+        if (typeFilter !== 'all') {
+            params.push(`type=${typeFilter}`);
+        }
+        
+        if (statusFilter !== 'all') {
+            params.push(`is_active=${statusFilter === 'active' ? 1 : 0}`);
+        }
+        
+        if (search) {
+            params.push(`search=${encodeURIComponent(search)}`);
+        }
+        
+        if (params.length > 0) {
+            url += params.join('&');
+        }
+        
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            renderPromoBanners(data.data.banners);
+            loadPromoStats();
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки баннеров');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки баннеров:', error);
+        showNotification('Ошибка загрузки баннеров', 'error');
+        document.getElementById('promoBannersTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Ошибка загрузки баннеров</p>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+// Загрузка статистики
+async function loadPromoStats() {
+    try {
+        const response = await fetch('/api/admin/promo-banners/stats', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const stats = data.data.stats;
+            const popular = data.data.popular_banners;
+            
+            document.getElementById('promoStats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Всего баннеров</div>
+                    <div class="stat-value">${stats.total_banners || 0}</div>
+                    <div class="stat-subtext">
+                        <span>🖼️ Изображений: ${stats.image_banners || 0}</span>
+                        <span>🎬 Видео: ${stats.video_banners || 0}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Активных</div>
+                    <div class="stat-value">${stats.active_banners || 0}</div>
+                    <div class="stat-subtext">
+                        <span>📊 CTR: ${stats.avg_clicks ? (stats.avg_clicks / stats.avg_views * 100).toFixed(2) + '%' : '0%'}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Всего просмотров</div>
+                    <div class="stat-value">${formatNumber(stats.total_views || 0)}</div>
+                    <div class="stat-subtext">
+                        <span>👁️ Среднее: ${formatNumber(Math.round(stats.avg_views || 0))}</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Всего кликов</div>
+                    <div class="stat-value">${formatNumber(stats.total_clicks || 0)}</div>
+                    <div class="stat-subtext">
+                        <span>👆 Среднее: ${formatNumber(Math.round(stats.avg_clicks || 0))}</span>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки статистики баннеров:', error);
+    }
+}
+
+// Рендер баннеров
+function renderPromoBanners(banners) {
+    document.getElementById('promoBannersCount').textContent = `${banners.length} баннеров`;
+    
+    if (banners.length === 0) {
+        document.getElementById('promoBannersTable').innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-ad"></i>
+                <p>Баннеры не найдены</p>
+            </div>
+        `;
+        
+        document.getElementById('promoBannersMobile').innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+                <i class="fas fa-ad"></i>
+                <p>Баннеры не найдены</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Десктопная версия (таблица)
+    let bannersHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Превью</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Статистика</th>
+                    <th>Даты</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    // Мобильная версия (карточки)
+    let mobileCardsHtml = '';
+    
+    banners.forEach(banner => {
+        const statusText = banner.is_active ? 'Активен' : 'Неактивен';
+        const statusColor = banner.is_active ? 'var(--success)' : 'var(--error)';
+        const typeIcon = banner.type === 'video' ? '🎬' : '🖼️';
+        
+        const now = new Date();
+        const startDate = banner.start_date ? new Date(banner.start_date) : null;
+        const endDate = banner.end_date ? new Date(banner.end_date) : null;
+        
+        let dateStatus = 'Без ограничений';
+        if (startDate && endDate) {
+            if (now < startDate) {
+                dateStatus = 'Ожидает запуска';
+            } else if (now > endDate) {
+                dateStatus = 'Завершен';
+            } else {
+                dateStatus = 'Активен';
+            }
+        }
+        
+        // Статистика
+        const ctr = banner.views_count > 0 
+            ? ((banner.clicks_count / banner.views_count) * 100).toFixed(2) 
+            : 0;
+        
+        // Превью
+        let previewHtml = '';
+        if (banner.type === 'video' && banner.video_url) {
+            previewHtml = `
+                <div style="position: relative; width: 80px; height: 60px; background: #000; border-radius: 4px; overflow: hidden;">
+                    <video style="width: 100%; height: 100%; object-fit: cover;" muted>
+                        <source src="${banner.video_url}" type="video/mp4">
+                    </video>
+                    <div style="position: absolute; top: 2px; right: 2px; background: rgba(0,0,0,0.7); color: white; padding: 2px 4px; border-radius: 3px; font-size: 0.6rem;">
+                        🎬
+                    </div>
+                </div>
+            `;
+        } else if (banner.image_url) {
+            previewHtml = `
+                <div style="width: 80px; height: 60px; background: #f0f0f0; border-radius: 4px; overflow: hidden;">
+                    <img src="${banner.image_url}" 
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='/api/images/test/default';"
+                         alt="${banner.title}">
+                </div>
+            `;
+        } else {
+            previewHtml = `
+                <div style="width: 80px; height: 60px; background: var(--pastel-pink); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--gold-metallic);">
+                    <i class="fas fa-ad" style="font-size: 1.5rem;"></i>
+                </div>
+            `;
+        }
+        
+        // Десктопная строка
+        bannersHtml += `
+            <tr>
+                <td>${previewHtml}</td>
+                <td>
+                    <div style="font-weight: 600;">${banner.title}</div>
+                    <div style="font-size: 0.8rem; color: var(--graphite-medium); margin-top: 4px;">
+                        ${banner.description || 'Нет описания'}
+                    </div>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 1.2rem;">${typeIcon}</span>
+                        <span>${banner.type === 'video' ? 'Видео' : 'Изображение'}</span>
+                    </div>
+                </td>
+                <td>
+                    <div>👁️ ${formatNumber(banner.views_count)}</div>
+                    <div>👆 ${formatNumber(banner.clicks_count)}</div>
+                    <div style="font-size: 0.8rem; color: ${ctr > 5 ? 'var(--success)' : ctr > 2 ? 'var(--warning)' : 'var(--error)'};">
+                        CTR: ${ctr}%
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size: 0.8rem;">
+                        <div>${dateStatus}</div>
+                        ${banner.start_date ? `<div>С: ${new Date(banner.start_date).toLocaleDateString('ru-RU')}</div>` : ''}
+                        ${banner.end_date ? `<div>По: ${new Date(banner.end_date).toLocaleDateString('ru-RU')}</div>` : ''}
+                    </div>
+                </td>
+                <td>
+                    <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                        ${statusText}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-secondary btn-icon" onclick="editPromoBanner(${banner.id})" title="Редактировать">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error btn-icon" onclick="deletePromoBanner(${banner.id})" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        
+        // Мобильная карточка
+        mobileCardsHtml += `
+            <div class="mobile-card">
+                <div class="mobile-card-header">
+                    <div class="mobile-card-title">${banner.title}</div>
+                    <div style="display: flex; gap: 4px;">
+                        <span style="background: ${statusColor}; color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                            ${statusText}
+                        </span>
+                        <span style="background: var(--info); color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.75rem;">
+                            ${typeIcon} ${banner.type === 'video' ? 'Видео' : 'Изображение'}
+                        </span>
+                    </div>
+                </div>
+                
+                ${banner.image_url || banner.video_url ? `
+                    <div style="margin: 12px 0; text-align: center;">
+                        ${banner.type === 'video' ? `
+                            <div style="position: relative; max-height: 150px; overflow: hidden; border-radius: 8px;">
+                                <video style="width: 100%; max-height: 150px; object-fit: cover;" controls muted>
+                                    <source src="${banner.video_url}" type="video/mp4">
+                                </video>
+                            </div>
+                        ` : `
+                            <img src="${banner.image_url}" 
+                                 style="max-width: 100%; max-height: 150px; border-radius: 8px;"
+                                 onerror="this.onerror=null; this.src='/api/images/test/default';"
+                                 alt="${banner.title}">
+                        `}
+                    </div>
+                ` : ''}
+                
+                <div class="mobile-card-info">
+                    <div class="mobile-card-info-item">
+                        <span class="mobile-card-label">Просмотры</span>
+                        <span class="mobile-card-value">${formatNumber(banner.views_count)}</span>
+                    </div>
+                    <div class="mobile-card-info-item">
+                        <span class="mobile-card-label">Клики</span>
+                        <span class="mobile-card-value">${formatNumber(banner.clicks_count)}</span>
+                    </div>
+                    <div class="mobile-card-info-item">
+                        <span class="mobile-card-label">CTR</span>
+                        <span class="mobile-card-value" style="color: ${ctr > 5 ? 'var(--success)' : ctr > 2 ? 'var(--warning)' : 'var(--error)'};">
+                            ${ctr}%
+                        </span>
+                    </div>
+                    <div class="mobile-card-info-item">
+                        <span class="mobile-card-label">Статус</span>
+                        <span class="mobile-card-value">${dateStatus}</span>
+                    </div>
+                </div>
+                
+                <p class="mobile-card-description">
+                    ${banner.description || 'Нет описания'}
+                </p>
+                
+                <div class="mobile-card-actions">
+                    <button class="btn btn-sm btn-secondary mobile-card-btn" onclick="editPromoBanner(${banner.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-error mobile-card-btn" onclick="deletePromoBanner(${banner.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    bannersHtml += '</tbody></table>';
+    document.getElementById('promoBannersTable').innerHTML = bannersHtml;
+    document.getElementById('promoBannersMobile').innerHTML = mobileCardsHtml;
+}
+
+// Показать модальное окно создания баннера
+function showAddPromoModal() {
+    document.getElementById('promoModalTitle').textContent = 'Добавить рекламный баннер';
+    document.getElementById('promoForm').reset();
+    document.getElementById('promoId').value = '';
+    document.getElementById('promoType').value = 'image';
+    document.getElementById('promoSortOrder').value = '0';
+    document.getElementById('promoLink').value = '#';
+    document.getElementById('promoLinkText').value = 'Узнать больше';
+    document.getElementById('promoTarget').value = 'none';
+    document.querySelector('input[name="promoStatus"][value="active"]').checked = true;
+    document.getElementById('promoImagePreview').innerHTML = '';
+    document.getElementById('promoVideoPreview').innerHTML = '';
+    
+    // Показать/скрыть соответствующие поля загрузки
+    togglePromoUploadFields();
+    
+    showModal('promoModal');
+}
+
+// Переключение полей загрузки в зависимости от типа
+function togglePromoUploadFields() {
+    const type = document.getElementById('promoType').value;
+    const imageGroup = document.getElementById('imageUploadGroup');
+    const videoGroup = document.getElementById('videoUploadGroup');
+    
+    if (type === 'video') {
+        imageGroup.style.display = 'none';
+        videoGroup.style.display = 'block';
+        document.getElementById('promoImageUpload').required = false;
+        document.getElementById('promoVideoUpload').required = true;
+    } else {
+        imageGroup.style.display = 'block';
+        videoGroup.style.display = 'none';
+        document.getElementById('promoImageUpload').required = true;
+        document.getElementById('promoVideoUpload').required = false;
+    }
+}
+
+// Предпросмотр изображения
+function previewPromoImage(input) {
+    const preview = document.getElementById('promoImagePreview');
+    if (!input.files[0]) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        preview.innerHTML = `
+            <div style="position: relative; display: inline-block;">
+                <img src="${e.target.result}" style="max-width: 300px; max-height: 150px; border-radius: 8px; border: 2px solid var(--gold-metallic);">
+                <button type="button" onclick="clearPromoImagePreview()" 
+                        style="position: absolute; top: 5px; right: 5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                    ×
+                </button>
+            </div>
+        `;
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+// Предпросмотр видео
+function previewPromoVideo(input) {
+    const preview = document.getElementById('promoVideoPreview');
+    if (!input.files[0]) return;
+    
+    const url = URL.createObjectURL(input.files[0]);
+    preview.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+            <video controls style="max-width: 300px; max-height: 150px; border-radius: 8px; border: 2px solid var(--gold-metallic);">
+                <source src="${url}" type="${input.files[0].type}">
+                Ваш браузер не поддерживает видео.
+            </video>
+            <button type="button" onclick="clearPromoVideoPreview()" 
+                    style="position: absolute; top: 5px; right: 5px; background: var(--error); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer;">
+                ×
+            </button>
+            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--graphite-medium);">
+                ${(input.files[0].size / 1024 / 1024).toFixed(2)} MB • ${input.files[0].type}
+            </div>
+        </div>
+    `;
+}
+
+// Очистка предпросмотра
+function clearPromoImagePreview() {
+    document.getElementById('promoImagePreview').innerHTML = '';
+    document.getElementById('promoImageUpload').value = '';
+}
+
+function clearPromoVideoPreview() {
+    document.getElementById('promoVideoPreview').innerHTML = '';
+    document.getElementById('promoVideoUpload').value = '';
+}
+
+// Загрузка медиа файла
+async function uploadPromoMedia(file, type) {
+    if (!file) return null;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        showLoading(`Загрузка ${type === 'video' ? 'видео' : 'изображения'}...`);
+        
+        const response = await fetch('/api/admin/upload-promo-media', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            return data.data;
+        } else {
+            throw new Error(data.error || 'Ошибка загрузки');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки медиа:', error);
+        showNotification('Ошибка загрузки медиа: ' + error.message, 'error');
+        return null;
+    } finally {
+        hideLoading();
+    }
+}
+
+// Сохранение баннера
+async function savePromoBanner() {
+    try {
+        const id = document.getElementById('promoId').value;
+        const title = document.getElementById('promoTitle').value;
+        const description = document.getElementById('promoDescription').value;
+        const type = document.getElementById('promoType').value;
+        const link = document.getElementById('promoLink').value;
+        const link_text = document.getElementById('promoLinkText').value;
+        const target = document.getElementById('promoTarget').value;
+        const sort_order = document.getElementById('promoSortOrder').value;
+        const is_active = document.querySelector('input[name="promoStatus"]:checked').value === 'active';
+        const start_date = document.getElementById('promoStartDate').value;
+        const end_date = document.getElementById('promoEndDate').value;
+        
+        if (!title) {
+            showNotification('Заполните название баннера', 'error');
+            return;
+        }
+        
+        showLoading('Сохранение баннера...');
+        
+        let image_url = null;
+        let video_url = null;
+        
+        // Загрузка медиа в зависимости от типа
+        if (type === 'image') {
+            const imageInput = document.getElementById('promoImageUpload');
+            if (imageInput && imageInput.files[0]) {
+                const uploadResult = await uploadPromoMedia(imageInput.files[0], 'image');
+                if (uploadResult) {
+                    image_url = uploadResult.url;
+                }
+            } else if (!id) {
+                showNotification('Загрузите изображение для баннера', 'error');
+                return;
+            }
+        } else if (type === 'video') {
+            const videoInput = document.getElementById('promoVideoUpload');
+            if (videoInput && videoInput.files[0]) {
+                const uploadResult = await uploadPromoMedia(videoInput.files[0], 'video');
+                if (uploadResult) {
+                    video_url = uploadResult.url;
+                }
+            } else if (!id) {
+                showNotification('Загрузите видео для баннера', 'error');
+                return;
+            }
+        }
+        
+        const response = await fetch('/api/admin/promo-banners', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentToken}`
+            },
+            body: JSON.stringify({
+                id: id || null,
+                title,
+                description: description || null,
+                image_url,
+                video_url,
+                type,
+                link,
+                link_text,
+                target,
+                is_active,
+                sort_order: parseInt(sort_order),
+                start_date: start_date || null,
+                end_date: end_date || null
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Баннер успешно сохранен', 'success');
+            closeModal('promoModal');
+            loadPromoBanners();
+        } else {
+            throw new Error(data.error || 'Ошибка сохранения баннера');
+        }
+    } catch (error) {
+        console.error('Ошибка сохранения баннера:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Редактирование баннера
+async function editPromoBanner(bannerId) {
+    try {
+        showLoading('Загрузка данных баннера...');
+        
+        const response = await fetch('/api/admin/promo-banners', {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const banner = data.data.banners.find(b => b.id == bannerId);
+            if (banner) {
+                document.getElementById('promoModalTitle').textContent = 'Редактировать баннер';
+                document.getElementById('promoId').value = banner.id;
+                document.getElementById('promoTitle').value = banner.title;
+                document.getElementById('promoDescription').value = banner.description || '';
+                document.getElementById('promoType').value = banner.type;
+                document.getElementById('promoLink').value = banner.link;
+                document.getElementById('promoLinkText').value = banner.link_text;
+                document.getElementById('promoTarget').value = banner.target;
+                document.getElementById('promoSortOrder').value = banner.sort_order;
+                document.getElementById('promoStartDate').value = banner.start_date || '';
+                document.getElementById('promoEndDate').value = banner.end_date || '';
+                
+                // Предпросмотр существующих медиа
+                if (banner.type === 'image' && banner.image_url) {
+                    document.getElementById('promoImagePreview').innerHTML = `
+                        <div style="position: relative; display: inline-block;">
+                            <img src="${banner.image_url}" style="max-width: 300px; max-height: 150px; border-radius: 8px; border: 2px solid var(--gold-metallic);">
+                            <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                                Текущее
+                            </div>
+                        </div>
+                    `;
+                } else if (banner.type === 'video' && banner.video_url) {
+                    document.getElementById('promoVideoPreview').innerHTML = `
+                        <div style="position: relative; display: inline-block;">
+                            <video controls style="max-width: 300px; max-height: 150px; border-radius: 8px; border: 2px solid var(--gold-metallic);">
+                                <source src="${banner.video_url}" type="video/mp4">
+                            </video>
+                            <div style="position: absolute; top: 5px; left: 5px; background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem;">
+                                Текущее
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                const statusRadios = document.getElementsByName('promoStatus');
+                statusRadios.forEach(radio => {
+                    radio.checked = radio.value === (banner.is_active ? 'active' : 'inactive');
+                });
+                
+                togglePromoUploadFields();
+                showModal('promoModal');
+            } else {
+                throw new Error('Баннер не найден');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки баннера:', error);
+        showNotification('Ошибка загрузки баннера', 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Удаление баннера
+async function deletePromoBanner(bannerId) {
+    if (!confirm('Вы уверены, что хотите удалить этот баннер? Все связанные файлы также будут удалены.')) {
+        return;
+    }
+    
+    try {
+        showLoading('Удаление баннера...');
+        
+        const response = await fetch(`/api/admin/promo-banners/${bannerId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Баннер успешно удален', 'success');
+            loadPromoBanners();
+        } else {
+            throw new Error(data.error || 'Ошибка удаления баннера');
+        }
+    } catch (error) {
+        console.error('Ошибка удаления баннера:', error);
+        showNotification(error.message, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Добавьте обработчики событий для промо-баннеров
+function initPromoHandlers() {
+    // Кнопка добавления баннера
+    document.getElementById('addPromoBtn').addEventListener('click', showAddPromoModal);
+    
+    // Закрытие модалки
+    document.getElementById('closePromoModal').addEventListener('click', () => closeModal('promoModal'));
+    document.getElementById('cancelPromoModal').addEventListener('click', () => closeModal('promoModal'));
+    
+    // Сохранение баннера
+    document.getElementById('savePromoBtn').addEventListener('click', savePromoBanner);
+    
+    // Изменение типа контента
+    document.getElementById('promoType').addEventListener('change', togglePromoUploadFields);
+    
+    // Предпросмотр изображений
+    document.getElementById('promoImageUpload').addEventListener('change', function() {
+        previewPromoImage(this);
+    });
+    
+    // Предпросмотр видео
+    document.getElementById('promoVideoUpload').addEventListener('change', function() {
+        previewPromoVideo(this);
+    });
+    
+    // Фильтры
+    document.getElementById('promoTypeFilter').addEventListener('change', () => loadPromoBanners());
+    document.getElementById('promoStatusFilter').addEventListener('change', () => loadPromoBanners());
+    document.getElementById('promoSearch').addEventListener('input', () => {
+        debounce(() => loadPromoBanners(), 500);
+    });
+}
         async function uploadServiceImage(file) {
             const formData = new FormData();
             formData.append('image', file);
@@ -4961,6 +5823,8 @@ async function saveUser() {
             
             document.getElementById('transactionsTable').innerHTML = transHtml;
         }
+
+
         
         // Функции для чата поддержки
         async function loadSupportChats() {
@@ -5514,6 +6378,16 @@ async function saveUser() {
         window.loadTasks = loadTasks;
         window.loadSubscriptions = loadSubscriptions;
         window.loadTransactions = loadTransactions;
+        window.loadPromoBanners = loadPromoBanners;
+window.showAddPromoModal = showAddPromoModal;
+window.editPromoBanner = editPromoBanner;
+window.deletePromoBanner = deletePromoBanner;
+window.savePromoBanner = savePromoBanner;
+window.previewPromoImage = previewPromoImage;
+window.previewPromoVideo = previewPromoVideo;
+window.clearPromoImagePreview = clearPromoImagePreview;
+window.clearPromoVideoPreview = clearPromoVideoPreview;
+window.togglePromoUploadFields = togglePromoUploadFields;
         window.editService = editService;
         window.deleteService = deleteService;
         window.editSubscription = editSubscription;
