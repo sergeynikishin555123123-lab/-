@@ -3444,7 +3444,169 @@ img[src*="data:image/svg"] {
             #allServicesList .category-description-main {
                 font-size: 0.85rem;
             }
-        }
+        /* ДОБАВЬТЕ ЭТИ СТИЛИ В КОНЕЦ ФАЙЛА CSS */
+
+/* Основные исправления для карточки с изображением */
+.external-ad-container {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(242, 221, 230, 0.3);
+    transition: all 0.3s ease;
+    margin: 20px 0;
+}
+
+.external-ad-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-color: var(--pastel-pink);
+}
+
+/* Исправление для контейнера изображения */
+.external-ad-image-container {
+    width: 100%;
+    height: 200px; /* Фиксированная высота */
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, rgba(249, 247, 243, 0.5), rgba(242, 221, 230, 0.2));
+}
+
+.external-ad-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Важно: изображение заполняет контейнер */
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.external-ad-container:hover .external-ad-image {
+    transform: scale(1.05);
+}
+
+/* Для SVG фолбэков */
+.external-ad-image[src*="data:image/svg"] {
+    padding: 40px;
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+    object-fit: contain;
+}
+
+/* Контейнер для текста */
+.external-ad-text-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+}
+
+.external-ad-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    margin-bottom: 10px;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.external-ad-description {
+    font-size: 0.9rem;
+    color: var(--graphite-medium);
+    margin-bottom: 15px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+/* Кнопка CTA */
+.external-ad-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark));
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(197, 168, 128, 0.25);
+    margin-top: 10px;
+}
+
+.external-ad-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(197, 168, 128, 0.35);
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold-metallic));
+}
+
+/* Футер */
+.external-ad-footer {
+    padding: 12px 20px;
+    border-top: 1px solid rgba(61, 61, 61, 0.1);
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--graphite-light);
+    background: var(--ivory-bg);
+}
+
+/* Бейдж в шапке */
+.external-ad-badge {
+    background: var(--gold-metallic);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .external-ad-container {
+        margin: 15px 0;
+    }
+    
+    .external-ad-image-container {
+        height: 160px;
+    }
+    
+    .external-ad-text-container {
+        padding: 15px;
+        min-height: 100px;
+    }
+    
+    .external-ad-title {
+        font-size: 1.1rem;
+    }
+    
+    .external-ad-description {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .external-ad-image-container {
+        height: 140px;
+    }
+    
+    .external-ad-header {
+        padding: 12px 15px;
+    }
+    
+    .external-ad-text-container {
+        padding: 12px;
+    }
+    
+    .external-ad-cta {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+
         /* Стили для рекламных баннеров */
 .promo-banner-container {
     background: white;
@@ -7077,6 +7239,78 @@ getImageUrl: function(imagePath, type = 'default') {
     
     // Для тестовых изображений
     return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
+},
+        renderExternalAd: function(ad) {
+    const container = document.getElementById('external-ads-container');
+    if (!container) return;
+    
+    const hasImage = ad.image_url && ad.image_url.trim() !== '';
+    const imageUrl = hasImage ? 
+        this.getImageUrl(ad.image_url, 'promo') : 
+        this.createSvgFallback('ad');
+    
+    // Отладка
+    console.log('Рендеринг баннера:', {
+        title: ad.title,
+        hasImage: hasImage,
+        imageUrl: imageUrl,
+        originalUrl: ad.image_url
+    });
+    
+    container.innerHTML = `
+        <div class="external-ad-container">
+            <div class="external-ad-header">
+                <h4>
+                    <i class="fas fa-star" style="color: var(--gold-metallic);"></i>
+                    Специальное предложение
+                </h4>
+                <span class="external-ad-badge">Новинка</span>
+            </div>
+            
+            <div class="external-ad-content">
+                <div class="external-ad-image-container">
+                    <img src="${imageUrl}" 
+                         alt="${ad.title}" 
+                         class="external-ad-image"
+                         onerror="console.error('❌ Ошибка загрузки:', this.src); this.onerror=null; this.src='${this.createSvgFallback('ad')}';"
+                         style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                
+                <div class="external-ad-text-container">
+                    <h5 class="external-ad-title">${ad.title}</h5>
+                    
+                    ${ad.description ? `
+                        <div class="external-ad-description">${ad.description}</div>
+                    ` : ''}
+                    
+                    ${ad.cta_text ? `
+                        <button class="external-ad-cta" onclick="app.handleAdClick(${ad.id})">
+                            ${ad.cta_text} <i class="fas fa-arrow-right"></i>
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${ad.footer_text ? `
+                <div class="external-ad-footer">
+                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
+                    ${ad.footer_text}
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    // Тестируем загрузку изображения
+    setTimeout(() => {
+        const img = container.querySelector('img');
+        if (img) {
+            img.onload = () => console.log('✅ Изображение загружено:', img.src);
+            img.onerror = () => {
+                console.log('❌ Ошибка, устанавливаю фолбэк');
+                img.src = this.createSvgFallback('ad');
+            };
+        }
+    }, 100);
 },
         // ==================== УСЛУГИ ====================
         loadTopServices: async function() {
