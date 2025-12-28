@@ -6376,6 +6376,10 @@ createSvgFallback: function(type) {
         },
 // В объект app добавляем:
 showRatePerformerModal: function(taskId) {
+    if (!this.currentUser) {
+        this.showNotification('Для оценки необходимо войти в систему', 'warning');
+        return;
+    }
     this.loadTaskForRating(taskId);
 },
 
@@ -7398,11 +7402,11 @@ renderTaskDetailsCompact: function(task, messages) {
         ${messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат'}
     </button>
     
-    ${task.status === 'completed' && !task.rating && req.user.id === task.client_id ? 
-        `<button class="btn btn-success" onclick="app.showRatePerformerModal(${task.id})" style="flex: 1; background: var(--success);">
-            <i class="fas fa-star"></i> Оценить исполнителя
-        </button>` 
-    : ''}
+   ${task.status === 'completed' && !task.rating && app.currentUser && app.currentUser.id === task.client_id ? 
+    `<button class="btn btn-success" onclick="app.showRatePerformerModal(${task.id})" style="flex: 1; background: var(--success);">
+        <i class="fas fa-star"></i> Оценить исполнителя
+    </button>` 
+: ''}
     
     ${canCancel ? 
         `<button class="btn btn-secondary" onclick="app.cancelUserTask(${task.id})" style="flex: 1; background: var(--error); color: white;">
