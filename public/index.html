@@ -2712,11 +2712,12 @@ img[src*="data:image/svg"] {
         }
 
         .stats-grid-compact {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 10px;
-        }
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 10px;
+    width: 100%;
+}
 
         .stat-item-compact {
             text-align: center;
