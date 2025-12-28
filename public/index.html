@@ -584,19 +584,30 @@ img[src*="data:image/svg"] {
             width: 100%;
         }
 
-        .category-description-main {
-            color: var(--graphite-medium);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-            line-height: 1.4;
-            flex-grow: 1;
-            background: rgba(242, 221, 230, 0.1);
-            padding: 10px;
-            border-radius: 12px;
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            width: 100%;
-        }
+.category-description-main {
+    color: var(--graphite-medium);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    flex-grow: 1;
+    background: rgba(242, 221, 230, 0.1);
+    padding: 12px;
+    border-radius: 12px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+    width: 100%;
+    max-height: 90px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    margin-bottom: 15px;
+    border: 1px solid rgba(242, 221, 230, 0.2);
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
 
         .category-card-footer {
             margin-top: 15px;
@@ -1941,11 +1952,12 @@ img[src*="data:image/svg"] {
         background: none !important;
     }
     
-    .logo-img {
-        border: none !important;
-        box-shadow: none !important;
-        background: none !important;
-    }
+.logo-img {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+}
     
     /* Упрощаем аватар пользователя */
     .user-avatar {
@@ -1953,13 +1965,16 @@ img[src*="data:image/svg"] {
         box-shadow: 0 2px 6px rgba(61, 61, 61, 0.1) !important;
     }
     
-    /* Убираем окантовку для логотипа на странице авторизации */
-    .auth-logo-frame,
-    .auth-logo-img {
-        border: none !important;
-        box-shadow: none !important;
-        background: none !important;
-    }
+   .logo-frame,
+.auth-logo-frame,
+.logo-img,
+.auth-logo-img {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: contain !important;
+    border-radius: var(--radius) !important;
+    display: block !important;
+}
     
 .logo-img {
         width: 40px !important;
@@ -2016,21 +2031,24 @@ img[src*="data:image/svg"] {
         margin-bottom: 25px;
     }
     
-   .auth-logo-frame {
-        border: none !important;
-        background: none !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-    }
-     .auth-logo-frame::before {
-        display: none !important;
-    }
-    .auth-logo-img {
-        border: none !important;
-        background: none !important;
-        padding: 0 !important;
-        box-shadow: none !important;
-    }
+.auth-logo-frame {
+    width: 80px !important;
+    height: 80px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto 20px !important;
+    background: var(--ivory-light) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 10px !important;
+}
+.auth-logo-img {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: contain !important;
+    border-radius: var(--radius) !important;
+    display: block !important;
+}
     .auth-logo-text-container {
         display: flex;
         flex-direction: column;
@@ -2135,7 +2153,54 @@ img[src*="data:image/svg"] {
             cursor: pointer;
             transition: var(--transition);
         }
-        
+
+/* Гарантируем что изображения логотипа остаются в рамках */
+.logo-img,
+.auth-logo-img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+    display: block !important;
+}
+
+/* Исправление для SVG логотипов */
+.logo-img[src*="data:image/svg"],
+.auth-logo-img[src*="data:image/svg"] {
+    padding: 8px !important;
+    background: linear-gradient(135deg, var(--gold-metallic), var(--gold-dark)) !important;
+}
+
+/* Убираем псевдоэлементы которые могут создавать обводку */
+.logo-frame::before,
+.logo-frame::after,
+.auth-logo-frame::before,
+.auth-logo-frame::after {
+    display: none !important;
+}
+
+/* Исправление для мобильных */
+@media (max-width: 768px) {
+    .logo-frame,
+    .auth-logo-frame {
+        padding: 0 !important;
+    }
+    
+    .logo-img {
+        width: 35px !important;
+        height: 35px !important;
+    }
+    
+    .auth-logo-frame {
+        width: 70px !important;
+        height: 70px !important;
+    }
+    
+    .auth-logo-img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+}
+    
         /* Стили для страницы всех услуг */
         .all-services-header {
             display: flex;
@@ -2549,11 +2614,12 @@ img[src*="data:image/svg"] {
         background: none !important;
     }
     
-    .logo-img {
-        border: none !important;
-        box-shadow: none !important;
-        background: none !important;
-    }
+.logo-img {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+}
     
     /* Убираем окантовку для аватара пользователя */
 }
@@ -2731,12 +2797,13 @@ img[src*="data:image/svg"] {
         font-size: 1rem;
     }
     
-    #allServicesList .category-description-main {
-        font-size: 0.8rem;
-        padding: 10px;
-        max-height: 80px;
-        -webkit-line-clamp: 3;
-    }
+ #allServicesList .category-description-main {
+    font-size: 0.8rem;
+    padding: 10px;
+    max-height: 80px;
+    -webkit-line-clamp: 3;
+}
+
     
     /* Адаптивные стили */
     @media (max-width: 768px) {
@@ -3224,22 +3291,24 @@ img[src*="data:image/svg"] {
         <div class="auth-content">
             <div class="card auth-card" style="padding: 40px 30px;">
                 <!-- ОБНОВЛЕННЫЙ ЛОГОТИП -->
-                <div class="auth-logo-container">
-                    <div class="auth-logo-frame">
-                        <img src="" 
-                             alt="WOMAN HELP" 
-                             class="auth-logo-img" 
-                             id="authLogoImg"
-                             loading="lazy">
-                    </div>
-                    <div class="auth-logo-text-container">
-                        <div class="auth-logo-main-text">
-                            <span class="auth-logo-woman">WOMAN</span>
-                            <span class="auth-logo-help">HELP</span>
-                        </div>
-                        <div class="auth-logo-tagline">Премиум сервис помощи для женщин</div>
-                    </div>
-                </div>
+                <!-- ОБНОВЛЕННЫЙ ЛОГОТИП -->
+<div class="auth-logo-container">
+    <div class="auth-logo-frame">
+        <img src="" 
+             alt="WOMAN HELP" 
+             class="auth-logo-img" 
+             id="authLogoImg"
+             loading="lazy"
+             style="max-width: 100%; max-height: 100%;">
+    </div>
+    <div class="auth-logo-text-container">
+        <div class="auth-logo-main-text">
+            <span class="auth-logo-woman">WOMAN</span>
+            <span class="auth-logo-help">HELP</span>
+        </div>
+        <div class="auth-logo-tagline">Премиум сервис помощи для женщин</div>
+    </div>
+</div>
                 
                 <!-- Остальной контент без изменений -->
                 <div class="tagline" style="font-size: 1.2rem; color: var(--pastel-pink); font-weight: 600; margin-bottom: 10px; text-align: center;">
@@ -4226,17 +4295,16 @@ createSvgFallback: function(type) {
     
     switch(type) {
         case 'logo':
-            svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-                <rect width="${width}" height="${height}" rx="12" fill="white"/>
-                <rect width="${width}" height="${height}" rx="12" fill="url(#logoGradient)" opacity="0.9"/>
-                <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#C5A880;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#A78B65;stop-opacity:1" />
-                </linearGradient>
-                <text x="${width/2}" y="${height/2 + 12}" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">WH</text>
-                <rect width="${width}" height="${height}" rx="12" fill="none" stroke="white" stroke-width="2"/>
-            </svg>`;
-            break;
+    svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+        <rect width="${width}" height="${height}" rx="12" fill="white"/>
+        <rect width="${width}" height="${height}" rx="12" fill="url(#logoGradient)" opacity="0.9"/>
+        <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#C5A880;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#A78B65;stop-opacity:1" />
+        </linearGradient>
+        <text x="${width/2}" y="${height/2 + 12}" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">WH</text>
+    </svg>`;
+    break;
                 case 'category':
                     svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
                         <circle cx="${width/2}" cy="${height/2}" r="${width/2}" fill="#F2DDE6"/>
@@ -4320,7 +4388,7 @@ createSvgFallback: function(type) {
             return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
         },
 
-  loadLogo: async function() {
+ loadLogo: async function() {
     try {
         console.log('Загрузка логотипа...');
         
@@ -4332,13 +4400,15 @@ createSvgFallback: function(type) {
                 const logoUrl = this.getImageUrl(result.data.logo_url, 'logo');
                 console.log('Логотип из API:', logoUrl);
                 
-                // Обновляем оба логотипа
+                // Обновляем все логотипы
                 const logos = document.querySelectorAll('.logo-img, .auth-logo-img');
                 logos.forEach(function(img) {
                     img.src = logoUrl;
+                    img.style.objectFit = 'contain'; // Добавляем это свойство
                     img.onerror = function() {
                         console.log('Ошибка загрузки логотипа из API, используем фолбэк');
                         this.src = app.createSvgFallback('logo');
+                        this.style.objectFit = 'contain';
                         this.onerror = null;
                     };
                     
@@ -4360,6 +4430,7 @@ createSvgFallback: function(type) {
     const logos = document.querySelectorAll('.logo-img, .auth-logo-img');
     logos.forEach(function(img) {
         img.src = svgFallback;
+        img.style.objectFit = 'contain'; // Добавляем это свойство
         img.onerror = null;
         img.classList.add('loaded');
     });
