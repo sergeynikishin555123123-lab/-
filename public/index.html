@@ -7018,20 +7018,65 @@ registerBannerClick: async function(bannerId) {
     }
 },
 
-// Добавьте эту функцию для получения изображения
 getImageUrl: function(imagePath, type = 'default') {
     if (!imagePath || imagePath.trim() === '') {
         return this.createSvgFallback(type);
     }
+    
+    console.log('Получение URL для:', imagePath, 'тип:', type);
     
     // Если уже полный URL
     if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
         return imagePath;
     }
     
-    // Добавляем базовый URL
-    const baseUrl = this.API_BASE_URL;
-    return baseUrl + imagePath;
+    // Для рекламных баннеров
+    if (type === 'promo' || type === 'ad') {
+        // Разные варианты путей
+        if (imagePath.startsWith('/uploads/promo/')) {
+            return this.API_BASE_URL + imagePath + '?t=' + Date.now();
+        } else if (imagePath.startsWith('/uploads/') && !imagePath.startsWith('/uploads/promo/')) {
+            const filename = imagePath.split('/').pop();
+            return this.API_BASE_URL + '/uploads/promo/' + filename + '?t=' + Date.now();
+        } else if (imagePath.startsWith('promo/')) {
+            return this.API_BASE_URL + '/uploads/' + imagePath + '?t=' + Date.now();
+        } else if (!imagePath.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/promo/' + imagePath + '?t=' + Date.now();
+        }
+    }
+    
+    // Для других типов
+    if (type === 'logo') {
+        if (imagePath.startsWith('/uploads/logo/')) {
+            return this.API_BASE_URL + imagePath + '?t=' + Date.now();
+        } else if (!imagePath.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/logo/' + imagePath + '?t=' + Date.now();
+        }
+    }
+    
+    if (type === 'service') {
+        if (imagePath.startsWith('/uploads/services/')) {
+            return this.API_BASE_URL + imagePath + '?t=' + Date.now();
+        } else if (!imagePath.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/services/' + imagePath + '?t=' + Date.now();
+        }
+    }
+    
+    if (type === 'category') {
+        if (imagePath.startsWith('/uploads/categories/')) {
+            return this.API_BASE_URL + imagePath + '?t=' + Date.now();
+        } else if (!imagePath.startsWith('/')) {
+            return this.API_BASE_URL + '/uploads/categories/' + imagePath + '?t=' + Date.now();
+        }
+    }
+    
+    // По умолчанию
+    if (imagePath.startsWith('/')) {
+        return this.API_BASE_URL + imagePath + '?t=' + Date.now();
+    }
+    
+    // Для тестовых изображений
+    return this.API_BASE_URL + '/api/images/test/' + type + '?t=' + Date.now();
 },
         // ==================== УСЛУГИ ====================
         loadTopServices: async function() {
