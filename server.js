@@ -598,7 +598,30 @@ await db.exec(`
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
+// server.js - добавьте эту таблицу в раздел создания таблиц
 
+// Таблица рекламных баннеров
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS promo_banners (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        video_url TEXT,
+        type TEXT DEFAULT 'image' CHECK(type IN ('image', 'video')),
+        link TEXT,
+        link_text TEXT,
+        target TEXT DEFAULT 'none',
+        is_active INTEGER DEFAULT 1,
+        sort_order INTEGER DEFAULT 0,
+        views_count INTEGER DEFAULT 0,
+        clicks_count INTEGER DEFAULT 0,
+        start_date DATE,
+        end_date DATE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`);
         // Настройки системы
         await db.exec(`
             CREATE TABLE IF NOT EXISTS settings (
@@ -7165,6 +7188,415 @@ app.get('/api/admin/users-detailed', authMiddleware(['admin', 'superadmin']), as
         res.status(500).json({
             success: false,
             error: 'Ошибка получения пользователей'
+        });
+    }
+});
+
+// ==================== РЕКЛАМНЫЕ БАННЕРЫ ====================
+
+// Создайте директорию для рекламных материалов
+const promoStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        ensureUploadDirs();
+        cb(null, 'public/uploads/promo');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extension = path.extname(file.originalname).toLowerCase();
+        const filename = `promo-${uniqueSuffix}${extension}`;
+        cb(null, filename);
+    }
+});
+
+const promoUpload = multer({ 
+    storage: promoStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB для видео
+    fileFilter: function (req, file, cb) {
+        const allowedTypes = /jpeg|jpg|png|gif|svg|webp|mp4|mov|avi|mkv|webm/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        
+        if (mimetype && extname) {
+            cb(null, true);
+        } else {
+            cb(new Error('Разрешены только изображения и видео (jpeg, jpg, png, gif, svg, webp, mp4, mov, avi, mkv, webm)'));
+        }
+    }
+});
+
+// Получение активных баннеров (публичный API)
+app.get('/api/promo-banners', async (req, res) => {
+    try {
+        const now = new Date().toISOString().split('T')[0];
+        
+        const banners = await db.all(`
+            SELECT * FROM promo_banners 
+            WHERE is_active = 1 
+            AND (start_date IS NULL OR start_date <= ?)
+            AND (end_date IS NULL OR end_date >= ?)
+            ORDER BY sort_order ASC, created_at DESC
+        `, [now, now]);
+        
+        res.json({
+            success: true,
+            data: {
+                banners,
+                count: banners.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения баннеров:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения баннеров'
+        });
+    }
+});
+
+// Увеличение счетчика просмотров
+app.post('/api/promo-banners/:id/view', async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        await db.run(
+            'UPDATE promo_banners SET views_count = views_count + 1 WHERE id = ?',
+            [bannerId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Просмотр засчитан'
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка обновления счетчика:', error.message);
+        res.json({
+            success: false,
+            error: 'Ошибка обновления счетчика'
+        });
+    }
+});
+
+// Увеличение счетчика кликов
+app.post('/api/promo-banners/:id/click', async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        await db.run(
+            'UPDATE promo_banners SET clicks_count = clicks_count + 1 WHERE id = ?',
+            [bannerId]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Клик засчитан'
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка обновления счетчика:', error.message);
+        res.json({
+            success: false,
+            error: 'Ошибка обновления счетчика'
+        });
+    }
+});
+
+// ==================== АДМИН: УПРАВЛЕНИЕ БАННЕРАМИ ====================
+
+// Получение всех баннеров (админ)
+app.get('/api/admin/promo-banners', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { is_active, type, search } = req.query;
+        
+        let query = 'SELECT * FROM promo_banners WHERE 1=1';
+        const params = [];
+        
+        if (is_active && is_active !== 'all') {
+            query += ' AND is_active = ?';
+            params.push(is_active === 'active' ? 1 : 0);
+        }
+        
+        if (type && type !== 'all') {
+            query += ' AND type = ?';
+            params.push(type);
+        }
+        
+        if (search && search.trim()) {
+            query += ' AND (title LIKE ? OR description LIKE ?)';
+            const searchTerm = `%${search.trim()}%`;
+            params.push(searchTerm, searchTerm);
+        }
+        
+        query += ' ORDER BY sort_order ASC, created_at DESC';
+        
+        const banners = await db.all(query, params);
+        
+        res.json({
+            success: true,
+            data: {
+                banners,
+                count: banners.length
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения баннеров:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения баннеров'
+        });
+    }
+});
+
+// Загрузка медиа для баннера
+app.post('/api/admin/upload-promo-media', authMiddleware(['admin', 'superadmin']), promoUpload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл не был загружен'
+            });
+        }
+        
+        const fileUrl = `/uploads/promo/${req.file.filename}`;
+        const fileType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
+        
+        console.log(`✅ Рекламный материал сохранен: ${fileUrl} (тип: ${fileType})`);
+        
+        res.json({
+            success: true,
+            message: 'Файл успешно загружен',
+            data: {
+                url: fileUrl,
+                filename: req.file.filename,
+                type: fileType,
+                mimetype: req.file.mimetype,
+                size: req.file.size
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки рекламного материала:', error.message);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Ошибка загрузки файла'
+        });
+    }
+});
+
+// Создание/обновление баннера
+app.post('/api/admin/promo-banners', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const { 
+            id, 
+            title, 
+            description, 
+            image_url, 
+            video_url, 
+            type, 
+            link, 
+            link_text, 
+            target,
+            is_active, 
+            sort_order,
+            start_date,
+            end_date
+        } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заполните название баннера'
+            });
+        }
+        
+        const bannerData = {
+            title: title.trim(),
+            description: description?.trim() || null,
+            image_url: image_url || null,
+            video_url: video_url || null,
+            type: type || 'image',
+            link: link || '#',
+            link_text: link_text || 'Подробнее',
+            target: target || 'none',
+            is_active: is_active ? 1 : 0,
+            sort_order: sort_order || 0,
+            start_date: start_date || null,
+            end_date: end_date || null
+        };
+        
+        if (id) {
+            // Обновление существующего баннера
+            await db.run(
+                `UPDATE promo_banners SET 
+                    title = ?,
+                    description = ?,
+                    image_url = ?,
+                    video_url = ?,
+                    type = ?,
+                    link = ?,
+                    link_text = ?,
+                    target = ?,
+                    is_active = ?,
+                    sort_order = ?,
+                    start_date = ?,
+                    end_date = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
+                [
+                    bannerData.title,
+                    bannerData.description,
+                    bannerData.image_url,
+                    bannerData.video_url,
+                    bannerData.type,
+                    bannerData.link,
+                    bannerData.link_text,
+                    bannerData.target,
+                    bannerData.is_active,
+                    bannerData.sort_order,
+                    bannerData.start_date,
+                    bannerData.end_date,
+                    id
+                ]
+            );
+            
+            const banner = await db.get('SELECT * FROM promo_banners WHERE id = ?', [id]);
+            
+            res.json({
+                success: true,
+                message: 'Баннер обновлен',
+                data: { banner }
+            });
+        } else {
+            // Создание нового баннера
+            const result = await db.run(
+                `INSERT INTO promo_banners 
+                (title, description, image_url, video_url, type, link, link_text, target, is_active, sort_order, start_date, end_date) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    bannerData.title,
+                    bannerData.description,
+                    bannerData.image_url,
+                    bannerData.video_url,
+                    bannerData.type,
+                    bannerData.link,
+                    bannerData.link_text,
+                    bannerData.target,
+                    bannerData.is_active,
+                    bannerData.sort_order,
+                    bannerData.start_date,
+                    bannerData.end_date
+                ]
+            );
+            
+            const bannerId = result.lastID;
+            const banner = await db.get('SELECT * FROM promo_banners WHERE id = ?', [bannerId]);
+            
+            res.status(201).json({
+                success: true,
+                message: 'Баннер создан',
+                data: { banner }
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Ошибка сохранения баннера:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка сохранения баннера'
+        });
+    }
+});
+
+// Удаление баннера
+app.delete('/api/admin/promo-banners/:id', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        
+        // Получаем информацию о баннере для удаления файлов
+        const banner = await db.get('SELECT image_url, video_url FROM promo_banners WHERE id = ?', [bannerId]);
+        
+        if (banner) {
+            // Удаляем файлы с диска
+            if (banner.image_url) {
+                const imagePath = path.join(__dirname, 'public', banner.image_url);
+                try {
+                    await fs.unlink(imagePath);
+                    console.log(`🗑️ Удалено изображение: ${imagePath}`);
+                } catch (err) {
+                    console.warn(`⚠️ Не удалось удалить файл: ${err.message}`);
+                }
+            }
+            
+            if (banner.video_url) {
+                const videoPath = path.join(__dirname, 'public', banner.video_url);
+                try {
+                    await fs.unlink(videoPath);
+                    console.log(`🗑️ Удалено видео: ${videoPath}`);
+                } catch (err) {
+                    console.warn(`⚠️ Не удалось удалить файл: ${err.message}`);
+                }
+            }
+        }
+        
+        // Удаляем запись из БД
+        await db.run('DELETE FROM promo_banners WHERE id = ?', [bannerId]);
+        
+        res.json({
+            success: true,
+            message: 'Баннер удален',
+            data: { id: bannerId }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка удаления баннера:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка удаления баннера'
+        });
+    }
+});
+
+// Получение статистики баннеров
+app.get('/api/admin/promo-banners/stats', authMiddleware(['admin', 'superadmin']), async (req, res) => {
+    try {
+        const stats = await db.get(`
+            SELECT 
+                COUNT(*) as total_banners,
+                SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active_banners,
+                SUM(views_count) as total_views,
+                SUM(clicks_count) as total_clicks,
+                ROUND(AVG(views_count), 2) as avg_views,
+                ROUND(AVG(clicks_count), 2) as avg_clicks,
+                SUM(CASE WHEN type = 'image' THEN 1 ELSE 0 END) as image_banners,
+                SUM(CASE WHEN type = 'video' THEN 1 ELSE 0 END) as video_banners
+            FROM promo_banners
+        `);
+        
+        // Самые популярные баннеры
+        const popularBanners = await db.all(`
+            SELECT id, title, views_count, clicks_count, 
+                   ROUND(clicks_count * 100.0 / NULLIF(views_count, 0), 2) as ctr
+            FROM promo_banners 
+            WHERE views_count > 0
+            ORDER BY views_count DESC 
+            LIMIT 5
+        `);
+        
+        res.json({
+            success: true,
+            data: {
+                stats,
+                popular_banners: popularBanners
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения статистики баннеров:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения статистики'
         });
     }
 });
