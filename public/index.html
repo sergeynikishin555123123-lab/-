@@ -2112,6 +2112,13 @@ img[src*="data:image/svg"] {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    .contact-type-btn[data-type="chat_wh"] i {
+    color: var(--pastel-pink);
+}
+
+.contact-type-btn.selected[data-type="chat_wh"] i {
+    color: var(--gold-metallic);
+}
     /* ==================== ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЛОГОТИПА ==================== */
     .logo-container {
         display: flex;
@@ -4228,23 +4235,26 @@ img[src*="data:image/svg"] {
                         <div style="padding: 20px;">
                             <h3 style="margin-bottom: 20px; color: var(--graphite-dark);">Настройки аккаунта</h3>
                             
-                            <div class="form-group">
-                                <label class="form-label">Уведомления</label>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" id="notifyEmail" checked>
-                                        <span>Email уведомления</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" id="notifySMS" checked>
-                                        <span>SMS уведомления</span>
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                                        <input type="checkbox" id="notifyPush" checked>
-                                        <span>Push-уведомления</span>
-                                    </label>
-                                </div>
-                            </div>
+                           <div class="form-group">
+    <label class="form-label">Предпочтительный способ связи *</label>
+    <div class="contact-type-buttons">
+        <label class="contact-type-btn" data-type="phone">
+            <input type="radio" name="contactType" value="phone" checked style="display: none;">
+            <i class="fas fa-phone" style="color: var(--gold-metallic);"></i>
+            <span class="btn-label">Телефон</span>
+        </label>
+        <label class="contact-type-btn" data-type="chat_wh">
+            <input type="radio" name="contactType" value="chat_wh" style="display: none;">
+            <i class="fas fa-comment-alt" style="color: var(--pastel-pink);"></i>
+            <span class="btn-label">Чат WH</span>
+        </label>
+        <label class="contact-type-btn" data-type="telegram">
+            <input type="radio" name="contactType" value="telegram" style="display: none;">
+            <i class="fab fa-telegram" style="color: #0088cc;"></i>
+            <span class="btn-label">Telegram</span>
+        </label>
+    </div>
+</div>
                             
                             <div class="form-group">
                                 <label class="form-label">Конфиденциальность</label>
