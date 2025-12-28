@@ -7317,6 +7317,38 @@ getImageUrl: function(imagePath, type = 'default') {
         }
     }, 100);
 },
+        // Добавьте эту функцию для обработки кликов по всему баннеру
+setupAdClickHandlers: function() {
+    const container = document.getElementById('external-ads-container');
+    if (!container) return;
+    
+    const adLink = container.querySelector('.external-ad-cta');
+    if (adLink) {
+        adLink.addEventListener('click', function(e) {
+            console.log('Клик по CTA кнопке');
+            // Открываем ссылку в новой вкладке
+            if (this.href && this.href !== '#') {
+                window.open(this.href, '_blank');
+                e.preventDefault();
+            }
+        });
+    }
+    
+    // Также можно кликать по всему баннеру
+    const adContainer = container.querySelector('.external-ad-container');
+    if (adContainer) {
+        adContainer.addEventListener('click', function(e) {
+            // Не обрабатываем клики по кнопке (она уже обработана)
+            if (e.target.closest('.external-ad-cta')) return;
+            
+            const link = this.querySelector('.external-ad-cta');
+            if (link && link.href && link.href !== '#') {
+                window.open(link.href, '_blank');
+                console.log('Клик по баннеру, открываю:', link.href);
+            }
+        });
+    }
+},
         // ==================== УСЛУГИ ====================
         loadTopServices: async function() {
             try {
