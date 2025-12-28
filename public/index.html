@@ -7249,32 +7249,30 @@ getImageUrl: function(imagePath, type = 'default') {
         this.getImageUrl(ad.image_url, 'promo') : 
         this.createSvgFallback('ad');
     
-    // Отладка
-    console.log('Рендеринг баннера:', {
-        title: ad.title,
-        hasImage: hasImage,
-        imageUrl: imageUrl,
-        originalUrl: ad.image_url
-    });
+    console.log('Рендеринг баннера:', ad.title, 'ссылка:', ad.cta_url);
+    
+    // Проверяем, есть ли URL для кнопки
+    const hasValidLink = ad.cta_url && ad.cta_url.trim() !== '' && ad.cta_url !== '#';
     
     container.innerHTML = `
         <div class="external-ad-container">
             <div class="external-ad-header">
                 <h4>
                     <i class="fas fa-star" style="color: var(--gold-metallic);"></i>
-                    Специальное предложение
+                    ${ad.title}
                 </h4>
-                <span class="external-ad-badge">Новинка</span>
+                <span class="external-ad-badge">Реклама</span>
             </div>
             
             <div class="external-ad-content">
-                <div class="external-ad-image-container">
-                    <img src="${imageUrl}" 
-                         alt="${ad.title}" 
-                         class="external-ad-image"
-                         onerror="console.error('❌ Ошибка загрузки:', this.src); this.onerror=null; this.src='${this.createSvgFallback('ad')}';"
-                         style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
+                ${hasImage ? `
+                    <div class="external-ad-image-container">
+                        <img src="${imageUrl}" 
+                             alt="${ad.title}" 
+                             class="external-ad-image"
+                             onerror="this.onerror=null; this.src='${this.createSvgFallback('ad')}';">
+                    </div>
+                ` : ''}
                 
                 <div class="external-ad-text-container">
                     <h5 class="external-ad-title">${ad.title}</h5>
@@ -7283,18 +7281,25 @@ getImageUrl: function(imagePath, type = 'default') {
                         <div class="external-ad-description">${ad.description}</div>
                     ` : ''}
                     
-                    ${ad.cta_text ? `
+                    ${hasValidLink && ad.cta_text ? `
+                        <a href="${ad.cta_url}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="external-ad-cta"
+                           onclick="app.handleAdClick(${ad.id})">
+                            ${ad.cta_text} <i class="fas fa-external-link-alt"></i>
+                        </a>
+                    ` : (ad.cta_text ? `
                         <button class="external-ad-cta" onclick="app.handleAdClick(${ad.id})">
                             ${ad.cta_text} <i class="fas fa-arrow-right"></i>
                         </button>
-                    ` : ''}
+                    ` : '')}
                 </div>
             </div>
             
             ${ad.footer_text ? `
                 <div class="external-ad-footer">
-                    <i class="fas fa-info-circle" style="margin-right: 5px;"></i>
-                    ${ad.footer_text}
+                    <i class="fas fa-info-circle"></i> ${ad.footer_text}
                 </div>
             ` : ''}
         </div>
