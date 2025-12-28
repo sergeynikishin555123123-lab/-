@@ -4454,26 +4454,26 @@ img[src*="data:image/svg"] {
                         <input type="text" id="taskContact" class="form-input" placeholder="Телефон или Telegram" required>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Предпочтительный способ связи *</label>
-                        <div class="contact-type-buttons">
-                            <label class="contact-type-btn" data-type="phone">
-                                <input type="radio" name="contactType" value="phone" checked style="display: none;">
-                                <i class="fas fa-phone" style="color: var(--gold-metallic);"></i>
-                                <span class="btn-label">Телефон</span>
-                            </label>
-                            <label class="contact-type-btn" data-type="whatsapp">
-                                <input type="radio" name="contactType" value="whatsapp" style="display: none;">
-                                <i class="fab fa-whatsapp" style="color: #25D366;"></i>
-                                <span class="btn-label">WhatsApp</span>
-                            </label>
-                            <label class="contact-type-btn" data-type="telegram">
-                                <input type="radio" name="contactType" value="telegram" style="display: none;">
-                                <i class="fab fa-telegram" style="color: #0088cc;"></i>
-                                <span class="btn-label">Telegram</span>
-                            </label>
-                        </div>
-                    </div>
+                   <div class="form-group">
+    <label class="form-label">Предпочтительный способ связи *</label>
+    <div class="contact-type-buttons">
+        <label class="contact-type-btn" data-type="phone">
+            <input type="radio" name="contactType" value="phone" checked style="display: none;">
+            <i class="fas fa-phone"></i>
+            <span class="btn-label">Телефон</span>
+        </label>
+        <label class="contact-type-btn" data-type="chat_wh">
+            <input type="radio" name="contactType" value="chat_wh" style="display: none;">
+            <i class="fas fa-comment-alt"></i>
+            <span class="btn-label">Чат WH</span>
+        </label>
+        <label class="contact-type-btn" data-type="telegram">
+            <input type="radio" name="contactType" value="telegram" style="display: none;">
+            <i class="fab fa-telegram"></i>
+            <span class="btn-label">Telegram</span>
+        </label>
+    </div>
+</div>
                     
                     <div style="display: flex; gap: 12px; margin-top: 30px;">
                         <button type="button" class="btn btn-secondary" onclick="app.cancelTask()" style="flex: 1;">
