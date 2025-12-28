@@ -2062,30 +2062,31 @@ img[src*="data:image/svg"] {
             box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2), inset 0 2px 4px rgba(61, 61, 61, 0.03);
         }
         
-        .send-message-btn {
-            background: var(--action-gradient);
-            color: var(--graphite-dark);
-            border: none;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 4px;
-        }
+.send-message-btn {
+    background: var(--action-gradient) !important; /* Розовый градиент */
+    color: var(--graphite-dark) !important;
+    border: none !important;
+    border-radius: 50% !important;
+    width: 56px !important;
+    height: 56px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: var(--transition) !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin-bottom: 4px !important;
+    flex-shrink: 0 !important;
+}
 
-        .send-message-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
+.send-message-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow) !important;
+}
 
-        .send-message-btn i {
-            font-size: 1.2rem;
-        }
+.send-message-btn i {
+    font-size: 1.2rem !important;
+}
 
         .send-message-btn::after {
             content: 'Отправить';
@@ -4554,12 +4555,12 @@ img[src*="data:image/svg"] {
                             <!-- Сообщения чата -->
                         </div>
                         
-                        <div class="chat-input-area">
-                            <textarea id="inlineChatMessage" class="chat-input" placeholder="Введите сообщение..." rows="1"></textarea>
-                            <button class="send-message-btn" onclick="app.sendInlineChatMessage()">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
+                       <div class="chat-input-area">
+    <textarea id="inlineChatMessage" class="chat-input" placeholder="Введите сообщение..." rows="1"></textarea>
+    <button class="send-message-btn" onclick="app.sendInlineChatMessage()">
+        <i class="fas fa-paper-plane"></i>
+    </button>
+</div>
                     </div>
                 </section>
             </div>
