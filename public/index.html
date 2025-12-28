@@ -7241,7 +7241,7 @@ renderTaskDetailsCompact: function(task, messages) {
             notification.innerHTML = '<i class="' + icon + '"></i><span>' + message + '</span>';
             document.body.appendChild(notification);
             
-            const duration = type === 'success' ? 4000 : 5000;
+           const duration = type === 'success' ? 6000 : 5000; // 5 секунд для всех типов
             
             setTimeout(function() {
                 if (notification.parentNode) {
