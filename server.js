@@ -8392,6 +8392,148 @@ app.put('/api/tasks/:id/complete', authMiddleware(['client', 'admin', 'superadmi
     }
 });
 
+// После маршрута завершения задачи добавьте:
+
+// Оценка исполнителя после завершения задачи
+app.post('/api/tasks/:id/rate', authMiddleware(['client', 'admin', 'superadmin']), async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const { rating, comment } = req.body;
+        
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                error: 'Рейтинг должен быть от 1 до 5'
+            });
+        }
+        
+        // Получаем информацию о задаче
+        const task = await db.get(
+            'SELECT * FROM tasks WHERE id = ?',
+            [taskId]
+        );
+        
+        if (!task) {
+            return res.status(404).json({
+                success: false,
+                error: 'Задача не найдена'
+            });
+        }
+        
+        // Проверяем, что задача завершена
+        if (task.status !== 'completed') {
+            return res.status(400).json({
+                success: false,
+                error: 'Можно оценить только завершенные задачи'
+            });
+        }
+        
+        // Проверяем, что оценку ставит клиент или администратор
+        if (req.user.id !== task.client_id && !['admin', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                error: 'Только клиент может оценить исполнителя'
+            });
+        }
+        
+        // Проверяем, что у задачи есть исполнитель
+        if (!task.performer_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'У задачи нет исполнителя'
+            });
+        }
+        
+        // Проверяем, не оценивалась ли задача ранее
+        const existingReview = await db.get(
+            'SELECT id FROM reviews WHERE task_id = ?',
+            [taskId]
+        );
+        
+        if (existingReview) {
+            return res.status(400).json({
+                success: false,
+                error: 'Эта задача уже была оценена'
+            });
+        }
+        
+        // Создаем отзыв
+        await db.run(
+            `INSERT INTO reviews 
+            (task_id, client_id, performer_id, rating, comment, is_anonymous) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [taskId, req.user.id, task.performer_id, rating, comment || null, 0]
+        );
+        
+        // Обновляем рейтинг исполнителя
+        await updatePerformerRating(task.performer_id);
+        
+        // Добавляем уведомление исполнителю
+        await db.run(
+            `INSERT INTO notifications 
+            (user_id, type, title, message, related_id, related_type) 
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+                task.performer_id,
+                'new_review',
+                'Новая оценка',
+                `Вы получили оценку ${rating}/5 за выполнение задачи "${task.title}"`,
+                taskId,
+                'task'
+            ]
+        );
+        
+        res.json({
+            success: true,
+            message: 'Спасибо за вашу оценку!',
+            data: {
+                task_id: taskId,
+                rating,
+                comment: comment || null
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка оценки исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка оценки исполнителя'
+        });
+    }
+});
+
+// Функция обновления рейтинга исполнителя
+async function updatePerformerRating(performerId) {
+    try {
+        // Получаем средний рейтинг исполнителя
+        const ratingStats = await db.get(`
+            SELECT 
+                AVG(rating) as avg_rating,
+                COUNT(*) as total_reviews
+            FROM reviews 
+            WHERE performer_id = ?
+        `, [performerId]);
+        
+        if (ratingStats && ratingStats.avg_rating) {
+            // Обновляем рейтинг в профиле пользователя
+            await db.run(
+                'UPDATE users SET user_rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [ratingStats.avg_rating.toFixed(1), performerId]
+            );
+            
+            // Обновляем статистику исполнителя
+            await db.run(
+                'UPDATE users SET completed_tasks = completed_tasks + 1 WHERE id = ?',
+                [performerId]
+            );
+            
+            console.log(`✅ Обновлен рейтинг исполнителя ${performerId}: ${ratingStats.avg_rating.toFixed(1)}`);
+        }
+    } catch (error) {
+        console.error('❌ Ошибка обновления рейтинга исполнителя:', error.message);
+    }
+}
+
 // ==================== ОБСЛУЖИВАНИЕ ====================
 
 // Обслуживание статических файлов
