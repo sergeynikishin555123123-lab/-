@@ -5031,7 +5031,95 @@ app.get('/api/performer/stats', authMiddleware(['performer', 'admin', 'superadmi
         });
     }
 });
-
+// В server.js добавьте:
+app.get('/api/performer/:id/profile', async (req, res) => {
+    try {
+        const performerId = req.params.id;
+        
+        const performer = await db.get(
+            `SELECT 
+                u.id, u.first_name, u.last_name, u.email, u.phone, u.avatar_url, 
+                u.user_rating, u.completed_tasks, u.bio, u.created_at,
+                COUNT(DISTINCT r.id) as total_reviews,
+                COUNT(DISTINCT pc.category_id) as categories_count
+             FROM users u
+             LEFT JOIN reviews r ON u.id = r.performer_id
+             LEFT JOIN performer_categories pc ON u.id = pc.performer_id AND pc.is_active = 1
+             WHERE u.id = ? AND u.role = 'performer' AND u.is_active = 1
+             GROUP BY u.id`,
+            [performerId]
+        );
+        
+        if (!performer) {
+            return res.status(404).json({
+                success: false,
+                error: 'Исполнитель не найден'
+            });
+        }
+        
+        // Получаем последние отзывы
+        const recentReviews = await db.all(`
+            SELECT 
+                r.*,
+                u.first_name as client_first_name,
+                u.last_name as client_last_name,
+                t.title as task_title,
+                t.task_number
+            FROM reviews r
+            JOIN users u ON r.client_id = u.id
+            JOIN tasks t ON r.task_id = t.id
+            WHERE r.performer_id = ?
+            ORDER BY r.created_at DESC
+            LIMIT 5
+        `, [performerId]);
+        
+        // Получаем специализации
+        const categories = await db.all(`
+            SELECT 
+                c.id,
+                c.display_name,
+                c.icon,
+                pc.experience_years
+            FROM performer_categories pc
+            JOIN categories c ON pc.category_id = c.id
+            WHERE pc.performer_id = ? AND pc.is_active = 1
+            ORDER BY c.display_name
+        `, [performerId]);
+        
+        // Получаем статистику по рейтингам
+        const ratingStats = await db.all(`
+            SELECT 
+                rating,
+                COUNT(*) as count
+            FROM reviews
+            WHERE performer_id = ?
+            GROUP BY rating
+            ORDER BY rating DESC
+        `, [performerId]);
+        
+        res.json({
+            success: true,
+            data: {
+                performer,
+                recent_reviews: recentReviews,
+                categories,
+                rating_stats: ratingStats,
+                rating_summary: {
+                    average: performer.user_rating || 0,
+                    total: performer.total_reviews || 0,
+                    distribution: ratingStats
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения профиля исполнителя:', error.message);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка получения профиля исполнителя'
+        });
+    }
+});
 // Получение доступных задач для исполнителя
 app.get('/api/performer/available-tasks', authMiddleware(['performer', 'admin', 'superadmin', 'manager']), async (req, res) => {
     try {
@@ -8501,6 +8589,8 @@ app.post('/api/tasks/:id/rate', authMiddleware(['client', 'admin', 'superadmin']
         });
     }
 });
+
+
 
 // Функция обновления рейтинга исполнителя
 async function updatePerformerRating(performerId) {
