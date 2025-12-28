@@ -4316,11 +4316,11 @@ img[src*="data:image/svg"] {
                     </div>
                     
                     <div style="text-align: center; margin-top: 30px; display: none;" id="backToCategoriesBtn">
-                        <button class="btn btn-secondary" onclick="app.loadAllServicesPage()">
-                            <i class="fas fa-arrow-left"></i>
-                            Назад ко всем категориям
-                        </button>
-                    </div>
+    <button class="btn btn-secondary" onclick="app.navigateToPage('all-categories')">
+        <i class="fas fa-arrow-left"></i>
+        Назад ко всем категориям
+    </button>
+</div>
                 </section>
             </div>
         </div>
@@ -5938,9 +5938,9 @@ createSvgFallback: function(type) {
                             'Все услуги' +
                         '</button>' +
                         '<button class="btn btn-secondary" onclick="app.navigateToPage(\'all-categories\')">' +
-                            '<i class="fas fa-arrow-left"></i>' +
-                            'Категории' +
-                        '</button>' +
+    '<i class="fas fa-arrow-left"></i>' +
+    'Категории' +
+'</button>'
                     '</div>' +
                 '</div>' +
                 '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
