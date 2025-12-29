@@ -4129,6 +4129,362 @@ img[src*="data:image/svg"] {
             }
         }
 
+<!-- ==================== ДОБАВЬТЕ В CSS ==================== -->
+
+/* Стили для окна оценки исполнителя */
+.rating-modal-container {
+    max-width: 500px;
+    width: 100%;
+}
+
+.rating-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(242, 221, 230, 0.3);
+}
+
+.rating-performer-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.rating-performer-info {
+    flex: 1;
+}
+
+.rating-performer-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    margin-bottom: 5px;
+}
+
+.rating-task-info {
+    color: var(--graphite-medium);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.rating-performer-stats {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.rating-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: var(--graphite-medium);
+}
+
+.rating-stat-item i {
+    color: var(--gold-metallic);
+}
+
+.rating-section {
+    margin: 25px 0;
+    text-align: center;
+}
+
+.rating-title {
+    font-size: 1rem;
+    color: var(--graphite-dark);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+/* Звезды рейтинга */
+.rating-stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.rating-star {
+    font-size: 2.5rem;
+    color: #e0e0e0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.rating-star:hover {
+    transform: scale(1.1);
+}
+
+.rating-star.active {
+    color: #FFD700;
+    transform: scale(1.1);
+}
+
+.rating-value-display {
+    font-size: 1.1rem;
+    color: var(--graphite-dark);
+    margin-bottom: 25px;
+    font-weight: 600;
+    min-height: 24px;
+}
+
+/* Комментарий */
+.rating-comment-container {
+    margin: 25px 0;
+}
+
+.rating-comment-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    font-size: 0.95rem;
+}
+
+.rating-comment-box {
+    width: 100%;
+    min-height: 100px;
+    padding: 15px;
+    border: 1.5px solid rgba(242, 221, 230, 0.5);
+    border-radius: var(--radius);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+    transition: var(--transition);
+    background: var(--ivory-light);
+}
+
+.rating-comment-box:focus {
+    outline: none;
+    border-color: var(--pastel-pink);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(242, 221, 230, 0.2);
+}
+
+.rating-comment-counter {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--graphite-light);
+    margin-top: 5px;
+}
+
+/* Кнопка отправки */
+.rating-submit-btn {
+    background: linear-gradient(135deg, #38B2AC, #2ECC71) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius) !important;
+    padding: 14px 28px !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    width: 100% !important;
+    margin-top: 15px !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 4px 12px rgba(56, 178, 172, 0.25) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.rating-submit-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.rating-submit-btn:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(56, 178, 172, 0.35) !important;
+}
+
+.rating-submit-btn:hover:before {
+    left: 100%;
+}
+
+.rating-submit-btn:disabled {
+    background: var(--graphite-light) !important;
+    transform: none !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+}
+
+/* Заголовок в модальном окне */
+.rating-modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--graphite-dark);
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.rating-modal-subtitle {
+    color: var(--graphite-medium);
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+}
+
+/* Улучшение для карточек услуг */
+.category-card-footer {
+    margin-top: auto;
+    color: var(--gold-metallic);
+    font-weight: 600;
+    font-size: 0.8rem !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 5px;
+}
+
+.category-card-footer span:first-child {
+    color: var(--gold-metallic);
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+
+.category-card-footer span:last-child {
+    color: var(--gold-metallic);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem !important;
+}
+
+/* Убираем иконку папки в карточках услуг */
+.category-card-footer .fa-folder,
+.category-card-footer .fa-list {
+    display: none !important;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 768px) {
+    .rating-performer-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .rating-star {
+        font-size: 2rem;
+    }
+    
+    .category-card-footer span:first-child {
+        max-width: 55%;
+    }
+}
+
+/* Кнопка "Назад" в тарифах */
+.subscription-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid rgba(61, 61, 61, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 1;
+}
+
+.subscription-back-btn:hover {
+    background: var(--ivory-light);
+    transform: translateX(-2px);
+}
+
+/* Контейнер для тарифов */
+.subscription-screen {
+    position: relative;
+    padding-top: 20px;
+}
+
+/* Отображение способа связи в задаче */
+.task-contact-method {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 10px;
+    background: rgba(242, 221, 230, 0.1);
+    border: 1px solid rgba(242, 221, 230, 0.3);
+    color: var(--graphite-dark);
+}
+
+.task-contact-method.phone {
+    color: var(--gold-metallic);
+    background: rgba(197, 168, 128, 0.1);
+    border-color: rgba(197, 168, 128, 0.2);
+}
+
+.task-contact-method.chat_wh {
+    color: var(--pastel-pink);
+    background: rgba(242, 221, 230, 0.15);
+    border-color: rgba(242, 221, 230, 0.3);
+}
+
+.task-contact-method.telegram {
+    color: #0088cc;
+    background: rgba(0, 136, 204, 0.1);
+    border-color: rgba(0, 136, 204, 0.2);
+}
+
+/* Улучшение для кнопки "Оценить исполнителя" */
+.btn-success {
+    background: linear-gradient(135deg, #38B2AC, #2ECC71) !important;
+    color: white !important;
+    border: none !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-success:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #2ECC71, #38B2AC) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(56, 178, 172, 0.35) !important;
+}
+
+.btn-success:hover:before {
+    left: 100%;
+}
+    
 /* ==================== ИСПРАВЛЕНИЯ ДЛЯ ЛОГОТИПА БЕЗ ОБВОДОК ==================== */
 
 /* Убираем все обводки и рамки у логотипа */
@@ -5367,52 +5723,54 @@ img[src*="data:image/svg"] {
         </div>
         
         <!-- Страница подписок -->
-        <div id="subscription-page" class="page">
-            <div class="container subscription-screen">
-                <div class="subscription-content">
-                    <div class="card" style="padding: 40px 20px;">
-                        <div style="text-align: center; margin-bottom: 30px;">
-                            <i class="fas fa-crown" style="font-size: 3.5rem; color: var(--pastel-pink); margin-bottom: 20px;"></i>
-                            <h2 class="section-title">Выберите подписку</h2>
-                            <p class="section-subtitle">Для создания задач необходимо активировать подписку</p>
-                        </div>
-                        
-                        <div class="grid grid-2" id="subscriptionSelection">
-                            <!-- Подписки загружаются динамически -->
-                        </div>
-                        
-                        <div style="text-align: center; margin-top: 30px;">
-                            <p style="color: var(--graphite-medium); font-size: 0.9rem;">
-                                <i class="fas fa-info-circle"></i> Все услуги включены в подписку, дополнительная оплата не требуется
-                            </p>
-                        </div>
-                        
-                        <!-- Добавьте этот блок для документов -->
-                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
-                            <div style="text-align: center;">
-                                <p style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 20px;">
-                                    <i class="fas fa-file-contract"></i> Приобретая подписку, вы соглашаетесь с документами:
-                                </p>
-                                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                                    <button class="btn btn-secondary" onclick="app.showDocumentModal('offer')" style="padding: 10px 20px; font-size: 0.9rem;">
-                                        <i class="fas fa-file-alt"></i>
-                                        Оферта
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="app.showDocumentModal('privacy')" style="padding: 10px 20px; font-size: 0.9rem;">
-                                        <i class="fas fa-shield-alt"></i>
-                                        Конфиденциальность
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="app.showDocumentModal('refund')" style="padding: 10px 20px; font-size: 0.9rem;">
-                                        <i class="fas fa-undo-alt"></i>
-                                        Возврат средств
-                                    </button>
-                                </div>
-                            </div>
+      <!-- ==================== ОБНОВИТЕ HTML ДЛЯ СТРАНИЦЫ ПОДПИСОК ==================== -->
+<div id="subscription-page" class="page">
+    <div class="container subscription-screen">
+        <div class="subscription-content">
+            <!-- Кнопка "Назад" добавлена через JavaScript -->
+            <div class="card" style="padding: 40px 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <i class="fas fa-crown" style="font-size: 3.5rem; color: var(--pastel-pink); margin-bottom: 20px;"></i>
+                    <h2 class="section-title">Выберите подписку</h2>
+                    <p class="section-subtitle">Для создания задач необходимо активировать подписку</p>
+                </div>
+                
+                <div class="grid grid-2" id="subscriptionSelection">
+                    <!-- Подписки загружаются динамически -->
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <p style="color: var(--graphite-medium); font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> Все услуги включены в подписку, дополнительная оплата не требуется
+                    </p>
+                </div>
+                
+                <!-- Добавьте этот блок для документов -->
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(61, 61, 61, 0.1);">
+                    <div style="text-align: center;">
+                        <p style="color: var(--graphite-medium); font-size: 0.9rem; margin-bottom: 20px;">
+                            <i class="fas fa-file-contract"></i> Приобретая подписку, вы соглашаетесь с документами:
+                        </p>
+                        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="app.showDocumentModal('offer')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                <i class="fas fa-file-alt"></i>
+                                Оферта
+                            </button>
+                            <button class="btn btn-secondary" onclick="app.showDocumentModal('privacy')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                <i class="fas fa-shield-alt"></i>
+                                Конфиденциальность
+                            </button>
+                            <button class="btn btn-secondary" onclick="app.showDocumentModal('refund')" style="padding: 10px 20px; font-size: 0.9rem;">
+                                <i class="fas fa-undo-alt"></i>
+                                Возврат средств
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
     </main>
     
     <!-- Нижняя навигация -->
@@ -6671,65 +7029,64 @@ trackPromoView: async function(bannerId) {
             }
         },
 
-        renderAllServices: function() {
-            const container = document.getElementById('allServicesList');
-            const pageTitle = document.getElementById('servicesPageTitle');
-            
-            if (!container) return;
-            
-            if (!this.allServices || this.allServices.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
-                    '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
-                    '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
-                    '</div>';
-                return;
-            }
-            
-            if (pageTitle) {
-                pageTitle.textContent = 'Все услуги';
-            }
-            
-            container.innerHTML = '';
-            
-            this.allServices.forEach((service) => {
-                const card = document.createElement('div');
-                card.className = 'category-card-main-style';
-                card.onclick = () => { 
-                    this.selectService(service);
-                };
-                
-                const imageUrl = service.image_url ? 
-                    this.getImageUrl(service.image_url, 'service') : 
-                    this.createSvgFallback('service');
-                
-                const svgFallback = this.createSvgFallback('service');
-                
-                card.innerHTML = `
-                    <div class="category-image-main">
-                        <img src="${imageUrl}" 
-                             alt="${service.name}"
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='${svgFallback}';"
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    </div>
-                    <h3>${service.name}</h3>
-                    <div class="category-description-main">${service.description}</div>
-                    <div class="category-card-footer">
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                            ${service.category_name || 'Без категории'}
-                        </span>
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            Выбрать <i class="fas fa-arrow-right"></i>
-                        </span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            
-            const backBtn = document.getElementById('backToCategoriesBtn');
-            if (backBtn) backBtn.style.display = 'none';
-        },
+       renderAllServices: function() {
+    const container = document.getElementById('allServicesList');
+    const pageTitle = document.getElementById('servicesPageTitle');
+    
+    if (!container) return;
+    
+    if (!this.allServices || this.allServices.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px;">' +
+            '<i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--graphite-light); margin-bottom: 20px;"></i>' +
+            '<p style="color: var(--graphite-medium);">Услуги не найдены</p>' +
+            '</div>';
+        return;
+    }
+    
+    if (pageTitle) {
+        pageTitle.textContent = 'Все услуги';
+    }
+    
+    container.innerHTML = '';
+    
+    this.allServices.forEach((service) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { 
+            this.selectService(service);
+        };
+        
+        const imageUrl = service.image_url ? 
+            this.getImageUrl(service.image_url, 'service') : 
+            this.createSvgFallback('service');
+        
+        const svgFallback = this.createSvgFallback('service');
+        
+        // Обновленный футер без иконки папки
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${service.name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${svgFallback}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            </div>
+            <h3>${service.name}</h3>
+            <div class="category-description-main">${service.description}</div>
+            <div class="category-card-footer">
+                <span>${service.category_name || 'Без категории'}</span>
+                <span>
+                    Выбрать <i class="fas fa-arrow-right"></i>
+                </span>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+    
+    const backBtn = document.getElementById('backToCategoriesBtn');
+    if (backBtn) backBtn.style.display = 'none';
+},
+
 
         loadAllCategoriesPage: async function() {
             try {
@@ -6969,42 +7326,37 @@ trackPromoView: async function(bannerId) {
                 '<p style="color: var(--graphite-medium); margin-top: 10px;">Выберите услугу для создания задачи</p>' +
             '</div>';
             
-            this.services.forEach((service) => {
-                const card = document.createElement('div');
-                card.className = 'category-card-main-style';
-                card.onclick = () => { 
-                    this.selectService(service);
-                };
-                
-                const imageUrl = service.image_url ? 
-                    this.getImageUrl(service.image_url, 'service') : 
-                    this.createSvgFallback('service');
-                
-                const svgFallback = this.createSvgFallback('service');
-                
-                card.innerHTML = `
-                    <div class="category-image-main">
-                        <img src="${imageUrl}" 
-                             alt="${service.name}"
-                             loading="lazy"
-                             onerror="this.onerror=null; this.src='${svgFallback}'; this.style.objectFit='cover';"
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
-                    </div>
-                    <h3>${service.name}</h3>
-                    <div class="category-description-main">${service.description}</div>
-                    <div class="category-card-footer">
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            <i class="fas fa-folder" style="color: var(--graphite-light);"></i>
-                            ${category.display_name}
-                        </span>
-                        <span style="display: flex; align-items: center; gap: 4px;">
-                            Выбрать <i class="fas fa-arrow-right"></i>
-                        </span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        },
+    this.services.forEach((service) => {
+        const card = document.createElement('div');
+        card.className = 'category-card-main-style';
+        card.onclick = () => { 
+            this.selectService(service);
+        };
+        
+        const imageUrl = this.getImageUrl(service.image_url, 'service');
+        
+        // Обновленный футер
+        card.innerHTML = `
+            <div class="category-image-main">
+                <img src="${imageUrl}" 
+                     alt="${service.name}"
+                     loading="lazy"
+                     onerror="this.onerror=null; this.src='${this.createSvgFallback('service')}';"
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            </div>
+            <h3>${service.name}</h3>
+            <div class="category-description-main">${service.description}</div>
+            <div class="category-card-footer">
+                <span>${category.display_name}</span>
+                <span>
+                    Выбрать <i class="fas fa-arrow-right"></i>
+                </span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+},
 
         selectCategory: function(category) {
             if (!this.currentUser) {
@@ -7643,77 +7995,82 @@ renderRatePerformerModal: function(data) {
     
     const performer = data.performer;
     const task = data.task;
+    const performerInitial = performer.first_name ? performer.first_name.charAt(0).toUpperCase() : 'И';
     
     content.innerHTML = `
-        <div class="performer-info-rating">
-            <div class="performer-avatar-rating" id="ratePerformerAvatar">
-                ${performer.first_name ? performer.first_name.charAt(0).toUpperCase() : 'И'}
-            </div>
-            <div class="performer-details-rating">
-                <div class="performer-name-rating">
-                    ${performer.first_name || ''} ${performer.last_name || ''}
+        <div class="rating-modal-container">
+            <div class="rating-modal-header">
+                <div class="rating-performer-avatar">
+                    ${performerInitial}
                 </div>
-                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <span class="performer-rating-badge">
-                        <i class="fas fa-star"></i>
-                        ${performer.user_rating || 'Нет оценок'}
-                    </span>
-                    <span style="font-size: 0.85rem; color: var(--graphite-medium);">
-                        ${performer.completed_tasks || 0} выполненных задач
-                    </span>
+                <div class="rating-performer-info">
+                    <div class="rating-performer-name">
+                        ${performer.first_name || ''} ${performer.last_name || ''}
+                    </div>
+                    <div class="rating-task-info">
+                        Задача: <strong>${task.title}</strong>
+                    </div>
+                    <div class="rating-performer-stats">
+                        <div class="rating-stat-item">
+                            <i class="fas fa-star"></i>
+                            <span>${performer.user_rating || 'Нет оценок'}</span>
+                        </div>
+                        <div class="rating-stat-item">
+                            <i class="fas fa-tasks"></i>
+                            <span>${performer.completed_tasks || 0} задач</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <div style="margin-bottom: 15px;">
-            <div style="font-size: 0.9rem; color: var(--graphite-medium); margin-bottom: 8px;">
-                Задача: <strong>${task.title}</strong>
-            </div>
-        </div>
-        
-        <div class="rating-value" id="ratingValueDisplay">
-            Оцените работу (0/5)
-        </div>
-        
-        <div class="rating-stars" id="ratingStars">
-            ${Array(5).fill().map((_, i) => `
-                <div class="star" data-rating="${i + 1}" onclick="app.setRating(${i + 1})">
-                    <i class="fas fa-star"></i>
+            
+            <div class="rating-section">
+                <div class="rating-title">Как вы оцениваете качество работы?</div>
+                <div class="rating-value-display" id="ratingValueDisplay">
+                    Выберите оценку
                 </div>
-            `).join('')}
-        </div>
-        
-        <div style="margin: 20px 0;">
-            <textarea 
-                class="comment-box" 
-                id="ratingComment" 
-                placeholder="Напишите ваш отзыв о работе исполнителя (необязательно)..."
-                maxlength="500"></textarea>
-            <div style="text-align: right; font-size: 0.8rem; color: var(--graphite-light);">
-                <span id="commentLength">0</span>/500 символов
+                <div class="rating-stars-container">
+                    ${Array(5).fill().map((_, i) => `
+                        <div class="rating-star" data-rating="${i + 1}" onclick="app.setRating(${i + 1})">
+                            <i class="fas fa-star"></i>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
+            
+            <div class="rating-comment-container">
+                <label class="rating-comment-label">Ваш отзыв (необязательно)</label>
+                <textarea 
+                    class="rating-comment-box" 
+                    id="ratingComment" 
+                    placeholder="Поделитесь впечатлениями о работе исполнителя..."
+                    maxlength="500"
+                    rows="3"></textarea>
+                <div class="rating-comment-counter">
+                    <span id="commentLength">0</span>/500 символов
+                </div>
+            </div>
+            
+            <button class="btn rating-submit-btn" id="submitRatingBtn" onclick="app.submitRating(${task.id})" disabled>
+                <i class="fas fa-star"></i>
+                Отправить оценку
+            </button>
         </div>
-        
-        <button class="btn btn-primary" id="submitRatingBtn" style="width: 100%;" onclick="app.submitRating(${task.id})" disabled>
-            <i class="fas fa-star"></i>
-            Отправить оценку
-        </button>
     `;
     
     // Настраиваем обработчики событий
     setTimeout(() => {
-        const stars = document.querySelectorAll('.star');
+        const stars = document.querySelectorAll('.rating-star');
         stars.forEach(star => {
             star.addEventListener('mouseenter', (e) => {
                 const rating = parseInt(e.currentTarget.dataset.rating);
-                this.highlightStars(rating);
+                this.highlightRatingStars(rating);
             });
             
             star.addEventListener('mouseleave', () => {
                 if (!this.currentRating) {
-                    this.resetStars();
+                    this.resetRatingStars();
                 } else {
-                    this.highlightStars(this.currentRating);
+                    this.highlightRatingStars(this.currentRating);
                 }
             });
         });
@@ -7736,6 +8093,35 @@ renderRatePerformerModal: function(data) {
     this.currentTaskForRating = task.id;
     
     modal.classList.add('active');
+},
+
+        highlightRatingStars: function(rating) {
+    const stars = document.querySelectorAll('.rating-star');
+    stars.forEach((star, index) => {
+        const starRating = parseInt(star.dataset.rating);
+        if (starRating <= rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+},
+
+resetRatingStars: function() {
+    const stars = document.querySelectorAll('.rating-star');
+    stars.forEach(star => {
+        star.classList.remove('active');
+    });
+    
+    const ratingValue = document.getElementById('ratingValueDisplay');
+    if (ratingValue) {
+        ratingValue.textContent = 'Выберите оценку';
+    }
+    
+    const submitBtn = document.getElementById('submitRatingBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+    }
 },
 
 setRating: function(rating) {
@@ -7782,6 +8168,28 @@ resetStars: function() {
     }
 },
 
+setRating: function(rating) {
+    this.currentRating = rating;
+    this.highlightRatingStars(rating);
+    
+    const ratingValue = document.getElementById('ratingValueDisplay');
+    if (ratingValue) {
+        const ratingText = {
+            1: 'Плохо',
+            2: 'Удовлетворительно',
+            3: 'Хорошо',
+            4: 'Отлично',
+            5: 'Прекрасно'
+        };
+        ratingValue.textContent = `${rating}/5 • ${ratingText[rating] || 'Отлично'}`;
+    }
+    
+    const submitBtn = document.getElementById('submitRatingBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+    }
+},
+        
 submitRating: async function(taskId) {
     if (!this.currentRating) {
         this.showNotification('Выберите оценку', 'error');
@@ -7849,15 +8257,26 @@ submitRating: async function(taskId) {
         },
 
         loadSubscriptionPage: async function() {
-            try {
-                await this.loadSubscriptions();
-                this.renderSubscriptions();
-            } catch (error) {
-                console.error('Ошибка загрузки страницы подписок:', error);
-                this.showNotification('Ошибка загрузки подписок', 'error');
-            }
-        },
-
+    try {
+        // Добавляем кнопку назад
+        const subscriptionContent = document.querySelector('.subscription-content');
+        if (subscriptionContent) {
+            subscriptionContent.innerHTML = `
+                <button class="subscription-back-btn" onclick="app.navigateToPage('profile')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="card" style="padding: 40px 20px;">
+                    <!-- существующий контент -->
+            ` + subscriptionContent.innerHTML;
+        }
+        
+        await this.loadSubscriptions();
+        this.renderSubscriptions();
+    } catch (error) {
+        console.error('Ошибка загрузки страницы подписок:', error);
+        this.showNotification('Ошибка загрузки подписок', 'error');
+    }
+},
         renderSubscriptions: function() {
             const subscriptionContainer = document.getElementById('subscriptionSelection');
             if (!subscriptionContainer) return;
@@ -8558,8 +8977,7 @@ renderUserTasks: function() {
             }
         },
 
-// В функции renderTaskDetailsCompact обновите этот блок:
-
+// ==================== ОБНОВЛЕННАЯ ФУНКЦИЯ RENDER TASK DETAILS ====================
 renderTaskDetailsCompact: function(task, messages) {
     const container = document.getElementById('taskCompactDetails');
     const statusInfo = this.getStatusInfo(task.status);
@@ -8570,6 +8988,28 @@ renderTaskDetailsCompact: function(task, messages) {
     const serviceOrCategory = task.service_name ? 
         `Услуга: ${task.service_name}` : 
         (task.category_name ? `Категория: ${task.category_name}` : '-');
+    
+    // Определяем отображение способа связи
+    let contactMethodHtml = '';
+    if (task.contact_type) {
+        let icon = 'fas fa-phone';
+        let methodClass = 'phone';
+        let methodText = 'Телефон';
+        
+        if (task.contact_type === 'chat_wh') {
+            icon = 'fas fa-comment-alt';
+            methodClass = 'chat_wh';
+            methodText = 'Чат WH';
+        } else if (task.contact_type === 'telegram') {
+            icon = 'fab fa-telegram';
+            methodClass = 'telegram';
+            methodText = 'Telegram';
+        }
+        
+        contactMethodHtml = `<span class="task-contact-method ${methodClass}">
+            <i class="${icon}"></i> ${methodText}
+        </span>`;
+    }
     
     container.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
@@ -8586,6 +9026,7 @@ renderTaskDetailsCompact: function(task, messages) {
                     <span style="font-size: 0.9rem; color: var(--graphite-medium);">
                         <i class="fas fa-hashtag"></i> ${task.task_number}
                     </span>
+                    ${contactMethodHtml}
                 </div>
             </div>
             <div style="text-align: right;">
@@ -8627,29 +9068,30 @@ renderTaskDetailsCompact: function(task, messages) {
             </div>
         ` : ''}
         
-<div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
-    <button class="btn btn-primary" onclick="app.toggleTaskChat(${task.id})" id="toggleChatBtn" style="flex: 1;">
-        <i class="fas fa-comments"></i>
-        ${messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат'}
-    </button>
-    
-   ${task.status === 'completed' && !task.rating && app.currentUser && app.currentUser.id === task.client_id ? 
-    `<button class="btn btn-success" onclick="app.showRatePerformerModal(${task.id})" style="flex: 1; background: var(--success);">
-        <i class="fas fa-star"></i> Оценить исполнителя
-    </button>` 
-: ''}
-    
-    ${canCancel ? 
-        `<button class="btn btn-secondary" onclick="app.cancelUserTask(${task.id})" style="flex: 1; background: var(--error); color: white;">
-            <i class="fas fa-times"></i> Отменить задачу
-        </button>` 
-    : ''}
-</div>
+        <div style="display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="app.toggleTaskChat(${task.id})" id="toggleChatBtn" style="flex: 1;">
+                <i class="fas fa-comments"></i>
+                ${messages.length > 0 ? 'Чат (' + messages.length + ')' : 'Открыть чат'}
+            </button>
+            
+            ${task.status === 'completed' && !task.rating && app.currentUser && app.currentUser.id === task.client_id ? 
+            `<button class="btn btn-success" onclick="app.showRatePerforrenderRatePerformerModal: function(data) {merModal(${task.id})" style="flex: 1;">
+                <i class="fas fa-star"></i> Оценить исполнителя
+            </button>` 
+            : ''}
+            
+            ${canCancel ? 
+                `<button class="btn btn-secondary" onclick="app.cancelUserTask(${task.id})" style="flex: 1; background: var(--error); color: white;">
+                    <i class="fas fa-times"></i> Отменить задачу
+                </button>` 
+            : ''}
+        </div>
     `;
     
     this.currentChatTaskId = task.id;
     this.chatMessages = messages;
 },
+
 
         cancelUserTask: async function(taskId) {
             if (!confirm('Вы уверены, что хотите отменить задачу?')) return;
