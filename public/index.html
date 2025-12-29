@@ -1924,6 +1924,490 @@ html, body {
     margin-bottom: 15px;
 }
 
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ СТРАНИЦЫ ЗАДАЧ ==================== */
+
+/* Восстановление красивого отображения задач */
+.task-table-container {
+    display: block;
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(242, 221, 230, 0.5);
+    background: var(--card-bg);
+    box-shadow: var(--shadow-sm);
+}
+
+.task-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0;
+    display: table;
+}
+
+.task-history-table th {
+    background: linear-gradient(135deg, rgba(242, 221, 230, 0.2), rgba(232, 204, 217, 0.1));
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--graphite-dark);
+    border-bottom: 2px solid var(--pastel-pink);
+    font-size: 0.95rem;
+}
+
+.task-history-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(242, 221, 230, 0.3);
+    vertical-align: middle;
+    color: var(--graphite-medium);
+    font-size: 0.95rem;
+}
+
+.task-history-table tr {
+    transition: var(--transition);
+}
+
+.task-history-table tr:hover {
+    background: rgba(242, 221, 230, 0.1);
+}
+
+.task-history-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Цвета статусов для таблицы */
+.task-history-table .task-status {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.task-history-table .task-status.new {
+    background: linear-gradient(135deg, rgba(25, 118, 210, 0.15), rgba(33, 150, 243, 0.1));
+    color: #1565C0;
+    border: 1px solid rgba(25, 118, 210, 0.2);
+}
+
+.task-history-table .task-status.in_progress {
+    background: linear-gradient(135deg, rgba(103, 58, 183, 0.15), rgba(124, 77, 255, 0.1));
+    color: #512DA8;
+    border: 1px solid rgba(103, 58, 183, 0.2);
+}
+
+.task-history-table .task-status.completed {
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(102, 187, 106, 0.1));
+    color: #2E7D32;
+    border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.task-history-table .task-status.cancelled {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(239, 83, 80, 0.1));
+    color: #C62828;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+}
+
+.task-history-table .task-status.searching {
+    background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 167, 38, 0.1));
+    color: #EF6C00;
+    border: 1px solid rgba(255, 152, 0, 0.2);
+}
+
+.task-history-table .task-status.assigned {
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.15), rgba(66, 165, 245, 0.1));
+    color: #0277BD;
+    border: 1px solid rgba(33, 150, 243, 0.2);
+}
+
+/* Кнопки действий в таблице */
+.task-history-table .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: var(--radius-sm);
+}
+
+/* ==================== КНОПКА ГАЙДОВ (ВОССТАНОВЛЕНИЕ) ==================== */
+
+/* Кнопка "Гайды" - оригинальный дизайн */
+.guides-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--action-gradient);
+    color: var(--graphite-dark);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(242, 221, 230, 0.4);
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.guides-btn:hover {
+    background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
+    color: var(--graphite-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(197, 168, 128, 0.4);
+}
+
+.guides-btn:active {
+    transform: translateY(-1px);
+}
+
+.guides-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.guides-btn:hover i {
+    transform: translateX(3px);
+}
+
+/* ==================== ИСПРАВЛЕНИЯ ДЛЯ СЕТКИ УСЛУГ ==================== */
+
+/* Услуги по 2 в ряд (не плитками) */
+.grid-2-main {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.grid-3-main {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+#allServicesList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+}
+
+#allCategoriesList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    width: 100%;
+}
+
+/* Адаптивность для 2-колоночной сетки */
+@media (min-width: 1200px) {
+    .grid-2-main,
+    .grid-3-main,
+    #allServicesList,
+    #allCategoriesList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .grid-2-main,
+    .grid-3-main,
+    #allServicesList,
+    #allCategoriesList {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 767px) {
+    .grid-2-main,
+    .grid-3-main,
+    #allServicesList,
+    #allCategoriesList {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* ==================== КНОПКА БЫСТРЫХ ЗАДАЧ ==================== */
+
+/* Кнопка быстрого просмотра задач в мягко розовом кружочке */
+.quick-tasks-btn {
+    position: fixed;
+    bottom: 80px;
+    left: 20px;
+    z-index: 1000;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+    color: var(--graphite-dark);
+    text-decoration: none;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: pulse 2s infinite;
+    border: 3px solid white;
+}
+
+.quick-tasks-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+    box-shadow: 0 8px 30px rgba(242, 221, 230, 0.6);
+    background: linear-gradient(135deg, var(--pink-medium), var(--pastel-pink));
+}
+
+.quick-tasks-btn i {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.quick-tasks-btn:hover i {
+    transform: scale(1.2);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 4px 20px rgba(242, 221, 230, 0.6);
+    }
+    50% {
+        box-shadow: 0 4px 30px rgba(242, 221, 230, 0.8);
+    }
+    100% {
+        box-shadow: 0 4px 20px rgba(242, 221, 230, 0.6);
+    }
+}
+
+/* ==================== УБИРАЕМ КНОПКИ ВСЕХ ЗАДАЧ С ДРУГИХ СТРАНИЦ ==================== */
+
+/* Убираем кнопку "Показать все задачи" с других страниц */
+#profileTasksList .btn-secondary[onclick*="navigateToPage('tasks')"],
+.task-cards-container .btn-secondary[onclick*="navigateToPage('tasks')"] {
+    display: none !important;
+}
+
+/* ==================== ПОПАП ОКНО ЗАДАЧ ==================== */
+
+/* Стили для красивого попап окна задач */
+.tasks-popup-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    padding: 20px;
+    opacity: 0;
+    animation: fadeInModal 0.3s ease forwards;
+}
+
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(8px);
+    }
+}
+
+.tasks-popup-content {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    width: 100%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    animation: slideUpPopup 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(242, 221, 230, 0.3);
+}
+
+@keyframes slideUpPopup {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tasks-popup-header {
+    padding: 24px;
+    background: linear-gradient(135deg, var(--pastel-pink), var(--pink-medium));
+    color: var(--graphite-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tasks-popup-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+}
+
+.close-popup-btn {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: var(--graphite-dark);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.close-popup-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: rotate(90deg);
+}
+
+.tasks-popup-body {
+    padding: 24px;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+}
+
+/* Задачи в попапе */
+.task-quick-item {
+    padding: 20px;
+    border: 1px solid rgba(242, 221, 230, 0.3);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: white;
+}
+
+.task-quick-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    border-color: var(--pastel-pink);
+    background: var(--pink-light);
+}
+
+.task-quick-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.task-quick-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--graphite-dark);
+    flex: 1;
+    margin-right: 12px;
+}
+
+.task-quick-info {
+    color: var(--graphite-medium);
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.task-quick-date {
+    color: var(--graphite-light);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Пустое состояние в попапе */
+.tasks-popup-body .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.tasks-popup-body .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.tasks-popup-body .empty-state-title {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+}
+
+.tasks-popup-body .empty-state-description {
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+/* ==================== АДАПТИВНОСТЬ КНОПКИ ЗАДАЧ ==================== */
+
+@media (max-width: 768px) {
+    .quick-tasks-btn {
+        width: 50px;
+        height: 50px;
+        bottom: 70px;
+        left: 15px;
+    }
+    
+    .quick-tasks-btn i {
+        font-size: 1.3rem;
+    }
+    
+    .tasks-popup-content {
+        max-width: 90%;
+    }
+    
+    .tasks-popup-header {
+        padding: 20px;
+    }
+    
+    .tasks-popup-body {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .quick-tasks-btn {
+        width: 45px;
+        height: 45px;
+        bottom: 65px;
+        left: 10px;
+    }
+    
+    .quick-tasks-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .tasks-popup-header h3 {
+        font-size: 1.2rem;
+    }
+    
+    .task-quick-item {
+        padding: 16px;
+    }
+}
+    
 /* ==================== ИСПРАВЛЕНИЯ ДЛЯ ПЛАНШЕТОВ ==================== */
 @media (min-width: 769px) and (max-width: 1024px) {
     .top-nav {
