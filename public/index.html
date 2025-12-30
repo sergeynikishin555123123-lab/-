@@ -2076,7 +2076,7 @@ html, body {
 /* Услуги по 2 в ряд (не плитками) */
 .grid-2-main {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 24px;
     width: 100%;
     margin: 0 auto;
@@ -2092,18 +2092,63 @@ html, body {
 
 #allServicesList {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 24px;
     width: 100%;
 }
 
 #allCategoriesList {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 24px;
     width: 100%;
 }
+    #categoriesGrid.grid-2-main,
+#categoriesGrid {
+    grid-template-columns: 1fr !important;
+}
 
+/* Адаптивность */
+@media (max-width: 992px) {
+    .grid-2-main {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    #categoriesGrid.grid-2-main,
+    #categoriesGrid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .grid-2-main,
+    #allServicesList,
+    #allCategoriesList,
+    #categoriesGrid.grid-2-main,
+    #categoriesGrid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1400px) {
+    #categoriesGrid.grid-2-main,
+    #categoriesGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 768px) {
+    #allCategoriesList {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1400px) {
+    #allCategoriesList {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
 /* Адаптивность для 2-колоночной сетки */
 @media (min-width: 1200px) {
     .grid-2-main,
@@ -2359,7 +2404,19 @@ html, body {
     font-size: 0.95rem;
     margin-bottom: 20px;
 }
+/* Специальный класс для главной страницы - 1 в ряд */
+.categories-grid-single {
+    grid-template-columns: 1fr !important;
+    max-width: 600px;
+    margin: 0 auto;
+}
 
+@media (min-width: 992px) {
+    .categories-grid-single {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-width: 100%;
+    }
+}
 /* ==================== АДАПТИВНОСТЬ КНОПКИ ЗАДАЧ ==================== */
 
 @media (max-width: 768px) {
@@ -2543,6 +2600,37 @@ html, body {
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
     width: 100%;
+}
+    
+    /* В разделе сеток для главной страницы добавьте */
+#categoriesGrid {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+}
+
+/* Для очень широких экранов можно показать 2 в ряд */
+@media (min-width: 1200px) {
+    #categoriesGrid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+/* Адаптивность для страницы услуг */
+@media (max-width: 768px) {
+    #allServicesList {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+}
+
+@media (min-width: 1400px) {
+    #allServicesList {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+@media (max-width: 768px) {
+    #categoriesGrid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* Адаптивность для сетки 2 в ряд */
@@ -3282,17 +3370,15 @@ textarea, input, select {
                 </section>
                 
                 <!-- Популярные категории -->
-                <section class="section">
-                    <h2 class="section-title">Популярные категории</h2>
-                    <p class="section-subtitle">Выберите категорию для создания задачи</p>
-                    
-                    <div class="grid-2-main" id="categoriesGrid">
-                        <div class="loader" style="grid-column: 1 / -1; text-align: center;">
-                            <div class="spinner"></div>
-                            <p>Загрузка категорий...</p>
-                        </div>
-                    </div>
-                </section>
+                <!-- В разделе популярных категорий на главной -->
+<section class="section">
+    <h2 class="section-title">Популярные категории</h2>
+    <p class="section-subtitle">Выберите категорию для создания задачи</p>
+    
+    <div class="grid-2-main categories-grid-single" id="categoriesGrid">
+        <!-- категории будут здесь -->
+    </div>
+</section>
                 
                 <!-- Топ услуг -->
                 <section class="section">
