@@ -2120,16 +2120,6 @@ html, body {
     }
 }
 
-@media (max-width: 768px) {
-    .grid-2-main,
-    #allServicesList,
-    #allCategoriesList,
-    #categoriesGrid.grid-2-main,
-    #categoriesGrid {
-        grid-template-columns: 1fr !important;
-        gap: 16px;
-    }
-}
 
 @media (min-width: 1400px) {
     #categoriesGrid.grid-2-main,
@@ -2170,15 +2160,6 @@ html, body {
     }
 }
 
-@media (max-width: 767px) {
-    .grid-2-main,
-    .grid-3-main,
-    #allServicesList,
-    #allCategoriesList {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-}
 
 /* ==================== КНОПКА БЫСТРЫХ ЗАДАЧ ==================== */
 
@@ -2643,17 +2624,126 @@ html, body {
         gap: 20px;
     }
 }
-
-@media (max-width: 768px) {
+/* Оставьте только адаптацию для ОЧЕНЬ маленьких экранов */
+@media (max-width: 480px) {
     #allServicesList,
     #allCategoriesList,
-    #topServicesGrid,
-    #categoriesGrid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+    #topServicesGrid {
+        grid-template-columns: 1fr; /* Только на очень маленьких экранах 1 колонка */
+        gap: 15px;
+    }
+    
+    /* Оптимизация для маленьких экранов */
+    .category-card-main-style {
+        min-height: 260px;
+        padding: 15px;
+    }
+    
+    .category-image-main {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 0.95rem;
+        height: 38px;
+    }
+    
+    .category-description-main {
+        font-size: 0.8rem;
+        -webkit-line-clamp: 2;
     }
 }
 
+/* Адаптация для планшетов (широкие экраны) */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #allServicesList,
+    #allCategoriesList,
+    #topServicesGrid {
+        gap: 25px;
+    }
+    
+    .category-card-main-style {
+        min-height: 320px;
+    }
+}
+
+/* Для десктопов */
+@media (min-width: 1025px) {
+    #allServicesList,
+    #allCategoriesList,
+    #topServicesGrid {
+        gap: 30px;
+    }
+}
+    /* Оптимизация отображения на мобильных с 2 колонками */
+@media (max-width: 768px) {
+    /* Уменьшаем отступы */
+    .container {
+        padding: 0 12px;
+    }
+    
+    /* Уменьшаем карточки для 2-колоночного отображения */
+    .category-card-main-style {
+        padding: 12px 10px;
+        min-height: 280px;
+    }
+    
+    .category-image-main {
+        width: 65px;
+        height: 65px;
+        margin-bottom: 10px;
+    }
+    
+    .category-card-main-style h3 {
+        font-size: 0.9rem;
+        height: 36px;
+        margin-bottom: 8px;
+    }
+    
+    .category-description-main {
+        font-size: 0.8rem;
+        padding: 10px;
+        -webkit-line-clamp: 2;
+        margin-bottom: 10px;
+        max-height: 70px;
+    }
+    
+    .category-card-footer {
+        font-size: 0.75rem !important;
+        gap: 5px;
+    }
+    
+    /* Адаптация заголовков страниц */
+    .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+    
+    .section-subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+    }
+}
+
+/* Для горизонтальной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+    #allServicesList,
+    #allCategoriesList,
+    #topServicesGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .category-card-main-style {
+        min-height: 220px;
+    }
+    
+    .category-image-main {
+        width: 60px;
+        height: 60px;
+    }
+}
 /* ==================== ВОССТАНОВЛЕНИЕ СТРАНИЦЫ ЗАДАЧ ПО СТАТУСАМ ==================== */
 
 /* Контейнер страницы задач */
