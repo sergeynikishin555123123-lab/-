@@ -1339,7 +1339,7 @@ const addMissingTestData = async () => {
     }
 };
             
-           /async function assignPerformersToCategories() {
+async function assignPerformersToCategories() {
     try {
         const categories = await db.all("SELECT id FROM categories");
         const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
