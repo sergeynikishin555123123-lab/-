@@ -155,8 +155,13 @@ app.use((req, res, next) => {
 
 // ==================== КОНФИГУРАЦИЯ ====================
 const DEMO_MODE = true;
+const DB_RESET_MODE = false; // ⚠️ ВАЖНО: меняем на FALSE для сохранения данных
+const DB_PATH = process.env.NODE_ENV === 'production' 
+    ? '/data/concierge.db'  // ⬅️ Вне папки проекта
+    : './concierge.db';     // ⬅️ Для разработки
 
-// ==================== УЛУЧШЕННАЯ НАСТРОЙКА ЗАГРУЗКИ ФАЙЛОВ ====================
+// Проверяем наличие флага для сброса БД
+const shouldResetDB = process.argv.includes('--reset-db') || DB_RESET_MODE;
 
 // ==================== ПРОСТАЯ НАСТРОЙКА ДИРЕКТОРИЙ ====================
 
@@ -341,18 +346,169 @@ const initDatabase = async () => {
     try {
         console.log('🔄 Инициализация базы данных...');
         
-        const dbPath = process.env.NODE_ENV === 'production' ? '/tmp/concierge_prod.db' : './concierge.db';
-        console.log(`📁 Путь к базе данных: ${dbPath}`);
+        console.log(`📁 Путь к базе данных: ${DB_PATH}`);
+        console.log(`♻️  Режим сброса: ${shouldResetDB ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}`);
+        
+        // Проверяем существование файла БД
+        const dbExists = fsSync.existsSync(DB_PATH);
+        console.log(`📊 База данных существует: ${dbExists ? 'ДА' : 'НЕТ'}`);
         
         db = await open({
-            filename: dbPath,
+            filename: DB_PATH,
             driver: sqlite3.Database
         });
 
         console.log('✅ База данных SQLite подключена');
         await db.run('PRAGMA foreign_keys = ON');
+        await db.run('PRAGMA journal_mode = WAL'); // ⬅️ Для лучшей производительности
+        
+        // СОЗДАНИЕ ТАБЛИЦ МИГРАЦИЙ ПЕРВЫМ ДЕЛОМ
+        await createMigrationsTable();
+        
+        if (!dbExists || shouldResetDB) {
+            console.log('🔄 Создание/пересоздание таблиц...');
+            await createAllTables();
+            
+            // После создания таблиц применяем все миграции
+            await applyAllMigrations();
+            
+            // Создаем тестовые данные только при ПЕРВОМ запуске или сбросе
+            console.log('📝 Создание тестовых данных...');
+            await createInitialData();
+        } else {
+            console.log('ℹ️ База данных уже существует, проверяем миграции...');
+            // Проверяем и применяем недостающие миграции
+            await applyMissingMigrations();
+            
+            // ДОБАВЛЯЕМ только недостающие тестовые данные
+            await addMissingTestData();
+        }
 
-        // Создание таблиц
+        return db;
+    } catch (error) {
+        console.error('❌ Ошибка инициализации базы данных:', error.message);
+        throw error;
+    }
+};
+
+// ==================== МИГРАЦИИ ====================
+
+const createMigrationsTable = async () => {
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS migrations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            version INTEGER NOT NULL UNIQUE,
+            description TEXT NOT NULL,
+            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `);
+    console.log('✅ Таблица миграций создана/проверена');
+};
+
+const applyAllMigrations = async () => {
+    console.log('🔄 Применение всех миграций...');
+    
+    // Массив миграций в порядке версий
+    const migrations = [
+        {
+            version: 1,
+            description: 'Базовая структура таблиц',
+            apply: async () => {
+                // Все ваши CREATE TABLE запросы из старого кода
+                await createAllTables();
+            }
+        },
+        {
+            version: 2,
+            description: 'Добавление поля is_popular в categories',
+            apply: async () => {
+                try {
+                    // Проверяем есть ли уже поле
+                    const hasColumn = await db.get(`
+                        SELECT 1 FROM pragma_table_info('categories') 
+                        WHERE name = 'is_popular'
+                    `);
+                    
+                    if (!hasColumn) {
+                        await db.exec(`
+                            ALTER TABLE categories ADD COLUMN is_popular INTEGER DEFAULT 0
+                        `);
+                        console.log('✅ Добавлено поле is_popular в categories');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Ошибка при добавлении поля is_popular:', error.message);
+                }
+            }
+        },
+        // Добавляйте новые миграции здесь при изменениях структуры
+        // version: 3, 4, 5 и т.д.
+    ];
+    
+    for (const migration of migrations) {
+        const exists = await db.get(
+            'SELECT 1 FROM migrations WHERE version = ?',
+            [migration.version]
+        );
+        
+        if (!exists) {
+            console.log(`🔄 Применение миграции v${migration.version}: ${migration.description}`);
+            await migration.apply();
+            
+            await db.run(
+                'INSERT INTO migrations (version, description) VALUES (?, ?)',
+                [migration.version, migration.description]
+            );
+            
+            console.log(`✅ Миграция v${migration.version} применена`);
+        }
+    }
+};
+
+const applyMissingMigrations = async () => {
+    console.log('🔍 Проверка недостающих миграций...');
+    
+    // Получаем текущую версию
+    const currentVersion = await db.get(
+        'SELECT MAX(version) as version FROM migrations'
+    );
+    
+    const appliedVersion = currentVersion?.version || 0;
+    
+    // Здесь нужно добавить только НОВЫЕ миграции (версии выше текущей)
+    const newMigrations = [
+        // Добавьте здесь новые миграции, которые вы создаете при изменении структуры
+        // Пример:
+        // {
+        //     version: 3,
+        //     description: 'Новое поле в таблице users',
+        //     apply: async () => {
+        //         await db.exec('ALTER TABLE users ADD COLUMN new_field TEXT');
+        //     }
+        // }
+    ].filter(m => m.version > appliedVersion);
+    
+    for (const migration of newMigrations) {
+        console.log(`🔄 Применение новой миграции v${migration.version}: ${migration.description}`);
+        await migration.apply();
+        
+        await db.run(
+            'INSERT INTO migrations (version, description) VALUES (?, ?)',
+            [migration.version, migration.description]
+        );
+        
+        console.log(`✅ Новая миграция v${migration.version} применена`);
+    }
+    
+    if (newMigrations.length === 0) {
+        console.log('✅ Все миграции актуальны');
+    }
+};
+
+// ==================== СОЗДАНИЕ ТАБЛИЦ ====================
+
+const createAllTables = async () => {
+    try {
+        console.log('🏗️  Создание всех таблиц...');
         await db.exec('BEGIN TRANSACTION');
 
         // Пользователи
@@ -427,44 +583,44 @@ const initDatabase = async () => {
             )
         `);
 
-// Категории
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE NOT NULL,
-        display_name TEXT NOT NULL,
-        description TEXT NOT NULL,
-        admin_description TEXT,
-        icon TEXT NOT NULL,
-        image_url TEXT,
-        color TEXT DEFAULT '#FF6B8B',
-        sort_order INTEGER DEFAULT 0,
-        is_popular INTEGER DEFAULT 0,  -- ← ДОБАВЬТЕ ЭТУ СТРОЧКУ
-        is_active INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+        // Категории
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS categories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL,
+                display_name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                admin_description TEXT,
+                icon TEXT NOT NULL,
+                image_url TEXT,
+                color TEXT DEFAULT '#FF6B8B',
+                sort_order INTEGER DEFAULT 0,
+                is_popular INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
         
-// Услуги
-// Услуги - УБЕДИТЕСЬ ЧТО ЭТА ТАБЛИЦА ПРАВИЛЬНО СОЗДАЕТСЯ
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS services (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_id INTEGER NOT NULL,
-        name TEXT NOT NULL,
-        description TEXT NOT NULL,
-        image_url TEXT,
-        base_price REAL DEFAULT 0,
-        estimated_time TEXT,
-        is_active INTEGER DEFAULT 1,
-        sort_order INTEGER DEFAULT 0,
-        is_featured INTEGER DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-    )
-`);
+        // Услуги
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS services (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                category_id INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                image_url TEXT,
+                base_price REAL DEFAULT 0,
+                estimated_time TEXT,
+                is_active INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                is_featured INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+            )
+        `);
+
         // Задачи
         await db.exec(`
             CREATE TABLE IF NOT EXISTS tasks (
@@ -598,30 +754,30 @@ await db.exec(`
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
-// server.js - добавьте эту таблицу в раздел создания таблиц
 
-// Таблица рекламных баннеров
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS promo_banners (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        video_url TEXT,
-        type TEXT DEFAULT 'image' CHECK(type IN ('image', 'video')),
-        link TEXT,
-        link_text TEXT,
-        target TEXT DEFAULT 'none',
-        is_active INTEGER DEFAULT 1,
-        sort_order INTEGER DEFAULT 0,
-        views_count INTEGER DEFAULT 0,
-        clicks_count INTEGER DEFAULT 0,
-        start_date DATE,
-        end_date DATE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+        // Таблица рекламных баннеров
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS promo_banners (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                image_url TEXT,
+                video_url TEXT,
+                type TEXT DEFAULT 'image' CHECK(type IN ('image', 'video')),
+                link TEXT,
+                link_text TEXT,
+                target TEXT DEFAULT 'none',
+                is_active INTEGER DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                views_count INTEGER DEFAULT 0,
+                clicks_count INTEGER DEFAULT 0,
+                start_date DATE,
+                end_date DATE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         // Настройки системы
         await db.exec(`
             CREATE TABLE IF NOT EXISTS settings (
@@ -635,49 +791,43 @@ await db.exec(`
             )
         `);
 
-// FAQ
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS faq (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        question TEXT NOT NULL,
-        answer TEXT NOT NULL,
-        category TEXT DEFAULT 'general',
-        sort_order INTEGER DEFAULT 0,
-        is_active INTEGER DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`);
+        // FAQ
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS faq (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question TEXT NOT NULL,
+                answer TEXT NOT NULL,
+                category TEXT DEFAULT 'general',
+                sort_order INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
 
-// Чат поддержки (добавить этот блок)
-await db.exec(`
-    CREATE TABLE IF NOT EXISTS support_messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        message TEXT NOT NULL,
-        sender_type TEXT NOT NULL CHECK(sender_type IN ('user', 'support')),
-        is_read INTEGER DEFAULT 0,
-        read_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-`);
+        // Чат поддержки
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS support_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                message TEXT NOT NULL,
+                sender_type TEXT NOT NULL CHECK(sender_type IN ('user', 'support')),
+                is_read INTEGER DEFAULT 0,
+                read_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `);
 
-await db.exec('COMMIT');
+        await db.exec('COMMIT');
         console.log('✅ Все таблицы созданы');
-
-       // В функции initDatabase(), найдите вызов createInitialData():
-await createInitialData();
-
         
-        return db;
     } catch (error) {
         try {
             await db.exec('ROLLBACK');
         } catch (rollbackError) {
             console.error('Ошибка при ROLLBACK:', rollbackError.message);
         }
-        console.error('❌ Ошибка инициализации базы данных:', error.message);
         throw error;
     }
 };
@@ -795,12 +945,12 @@ const generateDefaultImages = async () => {
     }
 };
 
-// ==================== ТЕСТОВЫЕ ДАННЫЕ ====================
+// ==================== ТЕСТОВЫЕ ДАННЫЕ (СОХРАНЕНИЕ СУЩЕСТВУЮЩИХ) ====================
 const createInitialData = async () => {
     try {
         console.log('📝 Создание начальных данных...');
 
-        // 1. Настройки системы
+        // 1. НАСТРОЙКИ СИСТЕМЫ - добавляем только если их нет
         const settingsExist = await db.get("SELECT 1 FROM settings WHERE key = 'site_name'");
         if (!settingsExist) {
             const settings = [
@@ -816,7 +966,7 @@ const createInitialData = async () => {
                 ['sms_code_expiry_minutes', '10', 'Время жизни SMS кода (минут)', 'sms'],
                 ['max_sms_attempts', '3', 'Максимальное количество попыток', 'sms'],
                 ['sms_cooldown_seconds', '60', 'Задержка между отправкой SMS (секунд)', 'sms'],
-                ['site_logo', '/uploads/logo/logo.png', 'Логотип сайта', 'appearance']
+                ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance']
             ];
 
             for (const setting of settings) {
@@ -830,9 +980,11 @@ const createInitialData = async () => {
                 }
             }
             console.log('✅ Настройки системы созданы');
+        } else {
+            console.log('ℹ️ Настройки системы уже существуют');
         }
 
-        // 2. FAQ
+        // 2. FAQ - добавляем только если их нет
         const faqExist = await db.get("SELECT 1 FROM faq LIMIT 1");
         if (!faqExist) {
             const faqs = [
@@ -857,9 +1009,11 @@ const createInitialData = async () => {
                 }
             }
             console.log('✅ FAQ созданы');
+        } else {
+            console.log('ℹ️ FAQ уже существуют');
         }
 
-        // 3. Подписки
+        // 3. ПОДПИСКИ - добавляем только если их нет
         const subscriptionsExist = await db.get("SELECT 1 FROM subscriptions LIMIT 1");
         if (!subscriptionsExist) {
             const subscriptions = [
@@ -891,23 +1045,24 @@ const createInitialData = async () => {
                 }
             }
             console.log('✅ Тарифы подписок созданы');
+        } else {
+            console.log('ℹ️ Подписки уже существуют');
         }
 
-// 4. Категории услуг с новыми названиями и описаниями
+        // 4. КАТЕГОРИИ - добавляем только если их нет
         const categoriesExist = await db.get("SELECT 1 FROM categories LIMIT 1");
         if (!categoriesExist) {
             const categories = [
-                // [name, display_name, description, admin_description, icon, image_url, color, sort_order, is_popular, is_active]
                 [
                     'home_and_household', 
                     'Дом и быт', 
                     'Уборка, стирка, ремонт и организация дома',
-                    `Полный спектр услуг для поддержания порядка и комфорта в доме. Наши помощницы специализируются на различных бытовых задачах: от генеральной уборки до мелкого ремонта. Все специалисты используют профессиональное оборудование, экологичные моющие средства и проходят регулярное обучение. Мы гарантируем качество выполнения каждой услуги и индивидуальный подход к потребностям клиента.`,
+                    `Полный спектр услуг для поддержания порядка и комфорта в доме...`,
                     '🏠', 
                     '/uploads/categories/home.jpg', 
                     '#FF6B8B', 
                     1, 
-                    1,  // is_popular
+                    1,
                     1
                 ],
                 [
@@ -972,10 +1127,12 @@ const createInitialData = async () => {
                     console.warn('Ошибка вставки категории:', error.message);
                 }
             }
-            console.log('✅ Категории услуг созданы с новыми названиями и описаниями');
+            console.log('✅ Категории услуг созданы');
+        } else {
+            console.log('ℹ️ Категории уже существуют');
         }
 
-       // 5. Услуги для каждой категории
+        // 5. УСЛУГИ - добавляем только если их нет
         const servicesExist = await db.get("SELECT 1 FROM services LIMIT 1");
         if (!servicesExist) {
             console.log('📝 Создание тестовых услуг...');
@@ -1049,10 +1206,15 @@ const createInitialData = async () => {
             }
             
             console.log(`✅ Тестовые услуги созданы (${services.length} услуг)`);
+        } else {
+            console.log('ℹ️ Услуги уже существуют');
         }
-        // 6. Тестовые пользователи
-        const usersExist = await db.get("SELECT 1 FROM users LIMIT 1");
+
+        // 6. ТЕСТОВЫЕ ПОЛЬЗОВАТЕЛИ - добавляем только если их нет
+        const usersExist = await db.get("SELECT 1 FROM users WHERE role IN ('superadmin', 'admin') LIMIT 1");
         if (!usersExist) {
+            console.log('👥 Создание тестовых пользователей...');
+            
             const passwordHash = await bcrypt.hash('admin123', 12);
             const clientPasswordHash = await bcrypt.hash('client123', 12);
             const performerPasswordHash = await bcrypt.hash('performer123', 12);
@@ -1079,29 +1241,103 @@ const createInitialData = async () => {
                 ['client3@concierge.test', clientPasswordHash, 'Оксана', 'Николаева', '+79999990011', 0, 'client', 'essential', 'pending', null, '/uploads/users/client3.png', 0, 500, 0, 500, 5, 0, 5, 0, 0, 0, 1, 1, null, null, null]
             ];
 
-            for (const user of users) {
-                const [email, password, first_name, last_name, phone, phone_verified, role, subscription_plan, subscription_status, subscription_expires, avatar_url, balance, initial_fee_amount, initial_fee_paid, initial_fee_amount2, tasks_limit, tasks_used, tasks_limit2, total_spent, user_rating, completed_tasks, is_active, email_verified, verification_token, reset_token, reset_token_expires] = user;
-                
+for (const user of users) {
                 try {
                     await db.run(
                         `INSERT OR IGNORE INTO users 
                         (email, password, first_name, last_name, phone, phone_verified, role, 
                          subscription_plan, subscription_status, subscription_expires,
-                         avatar_url, balance, initial_fee_paid, initial_fee_amount, 
+                         initial_fee_paid, initial_fee_amount, avatar_url, balance, 
                          tasks_limit, tasks_used, total_spent, user_rating, completed_tasks, 
                          is_active, email_verified, verification_token, reset_token, reset_token_expires) 
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                        [email, password, first_name, last_name, phone, phone_verified, role,
-                         subscription_plan, subscription_status, subscription_expires,
-                         avatar_url, balance, initial_fee_paid, initial_fee_amount, 
-                         tasks_limit, tasks_used, total_spent || 0, user_rating, completed_tasks,
-                         is_active, email_verified, verification_token, reset_token, reset_token_expires]
+                        user
                     );
                 } catch (error) {
-                    console.warn(`Ошибка вставки пользователя ${phone}:`, error.message);
+                    console.warn(`Ошибка вставки пользователя:`, error.message);
                 }
             }
             console.log('✅ Тестовые пользователи созданы');
+        } else {
+            console.log('ℹ️ Пользователи уже существуют');
+        }
+
+        console.log('🎉 Начальные данные созданы/проверены!');
+        
+    } catch (error) {
+        console.error('⚠️ Ошибка создания начальных данных:', error.message);
+    }
+};
+
+// ==================== ДОБАВЛЕНИЕ НЕДОСТАЮЩИХ ДАННЫХ ====================
+
+const addMissingTestData = async () => {
+    try {
+        console.log('🔍 Проверка недостающих тестовых данных...');
+        
+        let addedCount = 0;
+        
+        // 1. Проверяем супер-админа
+        const superadminExists = await db.get(
+            "SELECT 1 FROM users WHERE role = 'superadmin' AND phone = '+79991112233'"
+        );
+        
+        if (!superadminExists) {
+            const passwordHash = await bcrypt.hash('admin123', 12);
+            await db.run(
+                `INSERT OR IGNORE INTO users 
+                (email, password, first_name, last_name, phone, phone_verified, role,
+                 subscription_plan, subscription_status, subscription_expires,
+                 initial_fee_paid, initial_fee_amount, tasks_limit, avatar_url) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    'superadmin@concierge.test',
+                    passwordHash,
+                    'Александр',
+                    'Иванов',
+                    '+79991112233',
+                    1,
+                    'superadmin',
+                    'premium',
+                    'active',
+                    new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                    1,
+                    0,
+                    999,
+                    generateAvatarUrl('Александр', 'Иванов', 'superadmin')
+                ]
+            );
+            console.log('✅ Добавлен супер-админ');
+            addedCount++;
+        }
+        
+        // 2. Проверяем основные настройки
+        const requiredSettings = [
+            ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance'],
+            ['support_phone', '+79991234567', 'Телефон поддержки', 'general']
+        ];
+        
+        for (const setting of requiredSettings) {
+            const exists = await db.get("SELECT 1 FROM settings WHERE key = ?", [setting[0]]);
+            if (!exists) {
+                await db.run(
+                    `INSERT OR IGNORE INTO settings (key, value, description, category) VALUES (?, ?, ?, ?)`,
+                    setting
+                );
+                addedCount++;
+            }
+        }
+        
+        if (addedCount > 0) {
+            console.log(`✅ Добавлено ${addedCount} недостающих записей`);
+        } else {
+            console.log('✅ Все необходимые данные уже существуют');
+        }
+        
+    } catch (error) {
+        console.warn('⚠️ Ошибка при добавлении недостающих данных:', error.message);
+    }
+};
             
             // Назначаем помощников к категориям
             const categories = await db.all("SELECT id FROM categories");
@@ -9724,22 +9960,60 @@ app.use((err, req, res, next) => {
     });
 });
 
+// ==================== ОСОБЫЕ КОМАНДЫ ====================
+
+// Команда для сброса БД: node server.js --reset-db
+if (process.argv.includes('--reset-db')) {
+    console.log('⚠️  ВНИМАНИЕ: Будет выполнен сброс базы данных!');
+    console.log('Для отмены нажмите Ctrl+C в течение 5 секунд...');
+    
+    setTimeout(async () => {
+        console.log('🗑️  Сброс базы данных...');
+        try {
+            if (fsSync.existsSync(DB_PATH)) {
+                await fs.unlink(DB_PATH);
+                console.log('✅ База данных удалена');
+            }
+            process.exit(0);
+        } catch (error) {
+            console.error('❌ Ошибка при сбросе БД:', error.message);
+            process.exit(1);
+        }
+    }, 5000);
+}
+
+// Команда для резервного копирования: node server.js --backup
+if (process.argv.includes('--backup')) {
+    console.log('💾 Создание резервной копии базы данных...');
+    const backupPath = `${DB_PATH}.backup.${Date.now()}`;
+    
+    try {
+        await fs.copyFile(DB_PATH, backupPath);
+        console.log(`✅ Резервная копия создана: ${backupPath}`);
+        process.exit(0);
+    } catch (error) {
+        console.error('❌ Ошибка создания резервной копии:', error.message);
+        process.exit(1);
+    }
+}
+
 // ==================== ЗАПУСК СЕРВЕРА ====================
 const startServer = async () => {
     try {
         console.log('\n' + '='.repeat(80));
-        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v6.0.0');
+        console.log('🎀 ЗАПУСК ЖЕНСКОГО КОНСЬЕРЖА v6.0.0 (СОХРАНЕНИЕ ДАННЫХ)');
         console.log('='.repeat(80));
         console.log(`🌐 PORT: ${process.env.PORT || 3000}`);
         console.log(`🏷️  NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`📁 База данных: ${DB_PATH}`);
+        console.log(`♻️  Сброс БД: ${shouldResetDB ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}`);
         console.log(`📱 Демо-режим SMS: ${DEMO_MODE ? 'ВКЛЮЧЕН' : 'ВЫКЛЮЧЕН'}`);
-        console.log(`💾 База данных: ${process.env.NODE_ENV === 'production' ? '/tmp/concierge_prod.db' : './concierge.db'}`);
         console.log('='.repeat(80));
         
         ensureUploadDirs();
         createDefaultLogo();
         
-        await initDatabase();
+        await initDatabase();;
         console.log('✅ База данных готова');
         console.log('✅ SMS верификация настроена');
         console.log('✅ Все API настроены');
