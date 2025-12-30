@@ -117,7 +117,6 @@ app.use(express.urlencoded({
 }));
 
 // Статические файлы с правильными заголовками
-// Статические файлы с правильными заголовками
 app.use(express.static('public', {
     setHeaders: (res, filePath) => {
         const ext = path.extname(filePath).toLowerCase();
@@ -892,8 +891,6 @@ const createImagePlaceholder = (type = 'default', text = '') => {
     return placeholders[type] || placeholders.default;
 };
 
-
-
 // Функция для генерации дефолтных изображений при инициализации
 const generateDefaultImages = async () => {
     try {
@@ -1262,6 +1259,17 @@ for (const user of users) {
             console.log('ℹ️ Пользователи уже существуют');
         }
 
+        // 7. Проверяем наличие настройки логотипа
+        const logoSetting = await db.get("SELECT 1 FROM settings WHERE key = 'site_logo'");
+        if (!logoSetting) {
+            await db.run(
+                `INSERT OR IGNORE INTO settings (key, value, description, category) 
+                 VALUES (?, ?, ?, ?)`,
+                ['site_logo', '/uploads/logo/logo.svg', 'Логотип сайта', 'appearance']
+            );
+            console.log('✅ Настройка логотипа создана');
+        }
+
         console.log('🎉 Начальные данные созданы/проверены!');
         
     } catch (error) {
@@ -1338,8 +1346,9 @@ const addMissingTestData = async () => {
         console.warn('⚠️ Ошибка при добавлении недостающих данных:', error.message);
     }
 };
-            
-async function assignPerformersToCategories() {
+
+// Функция для назначения исполнителей категориям
+const assignPerformersToCategories = async () => {
     try {
         const categories = await db.all("SELECT id FROM categories");
         const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
@@ -1369,114 +1378,6 @@ async function assignPerformersToCategories() {
         console.log('✅ Назначения помощников по категориям созданы');
     } catch (error) {
         console.warn('⚠️ Ошибка при назначении помощников по категориям:', error.message);
-    }
-}
-
-// И вызовите функцию
-assignPerformersToCategories();
-// В функции createInitialData, добавьте после других настроек:
-const logoSetting = await db.get("SELECT 1 FROM settings WHERE key = 'site_logo'");
-if (!logoSetting) {
-    await db.run(
-        `INSERT OR IGNORE INTO settings (key, value, description, category) 
-         VALUES (?, ?, ?, ?)`,
-        ['site_logo', '/api/images/test/logo', 'Логотип сайта', 'appearance']
-    );
-    console.log('✅ Настройка логотипа создана');
-}
-            
-            // Создаем тестовые задачи
-            const clients = await db.all("SELECT id FROM users WHERE role = 'client' AND subscription_status = 'active' LIMIT 2");
-            const categoriesList = await db.all("SELECT id FROM categories");
-            const servicesList = await db.all("SELECT id FROM services WHERE is_active = 1");
-            
-            if (clients.length > 0 && categoriesList.length > 0 && servicesList.length > 0) {
-                const taskTitles = [
-                    'Уборка двухкомнатной квартиры',
-                    'Приготовление ужина на 4 персоны',
-                    'Маникюр с выездом на дом',
-                    'Покупка продуктов на неделю',
-                    'Няня на 4 часа'
-                ];
-                
-                const taskDescriptions = [
-                    'Необходимо сделать генеральную уборку в двухкомнатной квартире 55 кв.м. Особое внимание кухне и санузлу.',
-                    'Нужно приготовить ужин из 3-х блюд на 4 человека. Предпочтение русской кухне.',
-                    'Требуется сделать классический маникюр с покрытием гель-лаком. Цвет предпочитаю нейтральный.',
-                    'Собрать продуктовую корзину по списку из Ашана. Доставить до 18:00.',
-                    'Присмотреть за ребенком 5 лет на 4 часа. Поиграть, покормить обедом, погулять на площадке.'
-                ];
-                
-                const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
-                
-                for (let i = 0; i < 5; i++) {
-                    const client = clients[Math.floor(Math.random() * clients.length)];
-                    const category = categoriesList[Math.floor(Math.random() * categoriesList.length)];
-                    const service = servicesList[Math.floor(Math.random() * servicesList.length)];
-                    const performer = performers[Math.floor(Math.random() * performers.length)];
-                    
-                    const taskNumber = `TASK-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}${(i + 1).toString().padStart(3, '0')}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-                    
-                    const statuses = ['new', 'searching', 'assigned', 'in_progress', 'completed'];
-                    const status = statuses[Math.floor(Math.random() * statuses.length)];
-                    
-                    const deadline = new Date();
-                    deadline.setDate(deadline.getDate() + Math.floor(Math.random() * 7) + 1);
-                    
-                    try {
-                        await db.run(
-                            `INSERT INTO tasks 
-                            (task_number, title, description, client_id, performer_id, category_id, service_id, 
-                             status, priority, price, address, deadline, contact_info) 
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                            [
-                                taskNumber,
-                                taskTitles[i],
-                                taskDescriptions[i],
-                                client.id,
-                                status === 'completed' || status === 'in_progress' || status === 'assigned' ? performer.id : null,
-                                category.id,
-                                service.id,
-                                status,
-                                ['low', 'medium', 'high'][Math.floor(Math.random() * 3)],
-                                0,
-                                'г. Москва, ул. Примерная, д. ' + (Math.floor(Math.random() * 100) + 1),
-                                deadline.toISOString(),
-                                '+79991234567'
-                            ]
-                        );
-
-
-                        
-                        const taskId = (await db.get('SELECT last_insert_rowid() as id')).id;
-                        
-                        // Добавляем историю статусов
-                        await db.run(
-                            `INSERT INTO task_status_history (task_id, status, changed_by, notes) 
-                             VALUES (?, ?, ?, ?)`,
-                            [taskId, 'new', client.id, 'Задача создана']
-                        );
-                        
-                        if (status === 'completed') {
-                            // Для завершенных задач добавляем отзывы
-                            await db.run(
-                                `INSERT INTO reviews (task_id, client_id, performer_id, rating, comment, is_anonymous) 
-                                 VALUES (?, ?, ?, ?, ?, ?)`,
-                                [taskId, client.id, performer.id, Math.floor(Math.random() * 2) + 4, 'Отличная работа! Быстро и качественно.', 0]
-                            );
-                        }
-                    } catch (error) {
-                        console.warn('Ошибка создания тестовой задачи:', error.message);
-                    }
-                }
-                console.log('✅ Тестовые задачи созданы (5 задач)');
-            }
-        }
-
-        console.log('🎉 Все начальные данные созданы!');
-        
-    } catch (error) {
-        console.error('⚠️ Ошибка создания начальных данных:', error.message);
     }
 };
 
@@ -2478,7 +2379,7 @@ app.post('/api/auth/register-performer', async (req, res) => {
         const userId = result.lastID;
         
         try {
-            const categories = await db.all('SELECT id FROM categories WHERE is_active = 1');
+            const categories = await db.all('SELECT id FROM categories');
             for (const category of categories) {
                 await db.run(
                     `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, is_active) 
