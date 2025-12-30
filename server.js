@@ -1339,29 +1339,29 @@ const addMissingTestData = async () => {
     }
 };
             
-            // Назначаем помощников к категориям
-            const categories = await db.all("SELECT id FROM categories");
-            const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
-            
-            for (const performer of performers) {
-                const categoryIds = categories
-                    .sort(() => Math.random() - 0.5)
-                    .slice(0, 2 + Math.floor(Math.random() * 2))
-                    .map(c => c.id);
-                
-                for (const categoryId of categoryIds) {
-                    try {
-                        await db.run(
-                            `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, experience_years, hourly_rate) 
-                             VALUES (?, ?, ?, ?)`,
-                            [performer.id, categoryId, Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 500) + 500]
-                        );
-                    } catch (error) {
-                        console.warn('Ошибка вставки специализации:', error.message);
-                    }
-                }
-            }
-            console.log('✅ Назначения помощников по категориям созданы');
+           // Назначаем помощников к категориям
+const categories = await db.all("SELECT id FROM categories");
+const performers = await db.all("SELECT id FROM users WHERE role = 'performer'");
+
+for (const performer of performers) {
+    const categoryIds = categories
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 2 + Math.floor(Math.random() * 2))
+        .map(c => c.id);
+    
+    for (const categoryId of categoryIds) {
+        try {
+            await db.run(
+                `INSERT OR IGNORE INTO performer_categories (performer_id, category_id, experience_years, hourly_rate) 
+                 VALUES (?, ?, ?, ?)`,
+                [performer.id, categoryId, Math.floor(Math.random() * 5) + 1, Math.floor(Math.random() * 500) + 500]
+            );
+        } catch (error) {
+            console.warn('Ошибка вставки специализации:', error.message);
+        }
+    }
+}
+console.log('✅ Назначения помощников по категориям созданы');
 
 // В функции createInitialData, добавьте после других настроек:
 const logoSetting = await db.get("SELECT 1 FROM settings WHERE key = 'site_logo'");
