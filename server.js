@@ -1,4 +1,3 @@
-// server.js - ПОЛНЫЙ ИСПРАВЛЕННЫЙ ФАЙЛ С РАБОЧЕЙ ЗАГРУЗКОЙ ФОТО
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
